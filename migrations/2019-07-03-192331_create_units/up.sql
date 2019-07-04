@@ -1,0 +1,6 @@
+CREATE TABLE units (
+  id BIGSERIAL PRIMARY KEY,
+  sprite VARCHAR NOT NULL,
+  hp BIGINT NOT NULL,
+  speed REAL NOT NULL
+)

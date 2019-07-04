@@ -1,0 +1,1 @@
+DROP TABLE attacks_to_units

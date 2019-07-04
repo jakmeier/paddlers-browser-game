@@ -1,0 +1,5 @@
+CREATE TABLE attacks (
+  id BIGSERIAL PRIMARY KEY,
+  departure TIMESTAMP NOT NULL,
+  arrival TIMESTAMP NOT NULL
+)

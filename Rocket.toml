@@ -1,0 +1,2 @@
+[global.databases]
+game_db = { url = "postgres://postgres@localhost" }

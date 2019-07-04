@@ -1,0 +1,19 @@
+[package]
+name = "happy_town_backend_db_interface"
+version = "0.0.0"
+authors = ["jakmeier <jakmeier@student.ethz.ch>"]
+edition = "2018"
+
+[dependencies]
+db_lib = { path = "../db_lib"}
+
+rocket = "0.4"
+diesel = { version = "1.4", features = ["postgres", "chrono"] }
+serde = "1.0"
+serde_derive = "1.0"
+chrono = "0.4"
+
+[dependencies.rocket_contrib]
+version = "0.4"
+default-features = false
+features = ["diesel_postgres_pool"]

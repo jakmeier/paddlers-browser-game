@@ -1,0 +1,10 @@
+[workspace]
+
+members = [
+    "db_interface",
+    "db_lib",
+]
+
+default-members = [
+    "db_interface",
+]
