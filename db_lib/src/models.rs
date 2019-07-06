@@ -20,3 +20,17 @@ pub struct AttackToUnit {
     pub attack_id: i64,
     pub unit_id: i64,
 }
+
+use super::schema::units;
+pub type UNIT_ALL_COLUMNS_T =  (
+    units::id,
+    units::sprite,
+    units::hp,
+    units::speed,
+);
+pub const UNIT_ALL_COLUMNS: UNIT_ALL_COLUMNS_T = (
+    units::id,
+    units::sprite,
+    units::hp,
+    units::speed,
+);
