@@ -1,0 +1,28 @@
+use graphql_client::{GraphQLQuery, Response};
+
+pub use serde::Deserialize;
+type NaiveDateTime = f64;
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "api/schema.json",
+    query_path = "api/queries/attacks_query.graphql",
+)]
+pub struct AttacksQuery;
+pub type AttacksResponse = Response<attacks_query::ResponseData>;
+
+
+impl attacks_query::AttacksQueryAttacks {
+    #[allow(dead_code)]
+    pub fn departure(&self) -> chrono::NaiveDateTime {
+        f64_to_naive_dt(self.departure)
+    }
+    #[allow(dead_code)]
+    pub fn arrival(&self) -> chrono::NaiveDateTime {
+        f64_to_naive_dt(self.arrival)
+    }
+}
+
+fn f64_to_naive_dt(f: f64) -> chrono::NaiveDateTime {
+    chrono::NaiveDateTime::from_timestamp(f as i64, ((f%1.0) * 1_000_000.0) as u32)
+}
