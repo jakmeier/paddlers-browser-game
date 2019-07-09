@@ -1,6 +1,6 @@
 [package]
 name = "happy_town_backend_db_interface"
-version = "0.0.0"
+version = "0.0.1"
 authors = ["Jakob Meier <inbox@jakobmeier.ch>"]
 edition = "2018"
 
@@ -8,6 +8,7 @@ edition = "2018"
 db_lib = { path = "../db_lib"}
 
 rocket = "0.4"
+rocket_cors = "0.5"
 diesel = { version = "1.4", features = ["postgres", "chrono"] }
 serde = "1.0"
 serde_derive = "1.0"

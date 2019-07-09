@@ -24,7 +24,6 @@ pub fn get_graphql_handler(
     request: juniper_rocket::GraphQLRequest,
     schema: State<Schema>,
 ) -> juniper_rocket::GraphQLResponse {
-    println!("HEre {:?}", request);
     request.execute(&schema, &connection.into())
 }
 

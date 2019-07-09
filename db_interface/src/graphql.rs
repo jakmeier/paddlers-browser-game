@@ -39,6 +39,12 @@ impl Query {
             ctx.db.attacks().into_iter().map(GqlAttack::from).collect()
         )
     }
+    /// WIP for testing (should have at least a town filter)
+    fn buildings(ctx: &Context) -> FieldResult<Vec<GqlBuilding>> {
+        Ok(
+            ctx.db.buildings().into_iter().map(GqlBuilding::from).collect()
+        )
+    }
 }
 
 #[juniper::object(
@@ -95,5 +101,34 @@ impl GqlAttack {
     }
     fn arrival(&self) -> &NaiveDateTime {
         &self.0.arrival
+    }
+}
+
+pub struct GqlBuilding(db_lib::models::Building);
+impl From<db_lib::models::Building> for GqlBuilding {
+    fn from(inner: db_lib::models::Building) -> Self {
+        GqlBuilding(inner)
+    }
+}
+
+#[juniper::object (Context = Context)]
+impl GqlBuilding {
+    fn id(&self) -> juniper::ID {
+        self.0.id.to_string().into()
+    }
+    fn x(&self) -> i32 {
+        self.0.x
+    }
+    fn y(&self) -> i32 {
+        self.0.y
+    }
+    fn building_range(&self) -> Option<f64> {
+        self.0.building_range.map(f64::from)
+    }
+    fn attack_power(&self) -> Option<f64> {
+        self.0.attack_power.map(f64::from)
+    }
+    fn attacks_per_cycle(&self) -> Option<i32> {
+        self.0.attacks_per_cycle
     }
 }

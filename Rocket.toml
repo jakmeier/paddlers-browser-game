@@ -1,2 +1,5 @@
+[global]
+port = 65432
+
 [global.databases]
 game_db = { url = "postgres://postgres@localhost" }

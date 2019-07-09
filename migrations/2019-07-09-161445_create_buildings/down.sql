@@ -1,0 +1,2 @@
+DROP TABLE buildings;
+DROP TYPE BUILDING_TYPE; 
