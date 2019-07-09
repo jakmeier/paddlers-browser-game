@@ -16,7 +16,7 @@ pub struct Renderable {
 }
 #[derive(Debug)]
 pub enum RenderType {
-    StaticImage(SpriteIndex)
+    StaticImage(SpriteIndex, SpriteIndex), // main, background
 }  
 
 pub const GREY: Color =    Color { r: 0.75, g: 0.75, b: 0.75, a: 1.0 };
@@ -29,8 +29,8 @@ impl Game<'_, '_> {
         let sprites = &mut self.sprites;
         for (pos, r) in (&pos_store, &rend_store).join() {
             match r.kind {
-                RenderType::StaticImage(i) => {
-                    draw_static_image(sprites, window, &pos.area, i, 0, FitStrategy::TopLeft)?;
+                RenderType::StaticImage(i, _) => {
+                    draw_static_image(sprites, window, &pos.area, i, pos.z, FitStrategy::TopLeft)?;
                 },
             }
         }
@@ -55,17 +55,14 @@ impl Game<'_, '_> {
         let img_area = img_bg_area.padded(0.8);
         match entity {
             Some(id) => {
-                // Background of image
-                draw_static_image(&mut self.sprites, window, &img_bg_area, SpriteIndex::Water, 15, FitStrategy::Center)?;
-
-                // Image
                 let e = self.world.entities().entity(id);
                 let r = self.world.read_storage::<Renderable>();
                 let sprites = &mut self.sprites;
                 let rd = r.get(e).expect("Selected item should have Renderable component");
                 match rd.kind {
-                    RenderType::StaticImage(i) => {
-                        draw_static_image(sprites, window, &img_area, i, 20, FitStrategy::Center)?;
+                    RenderType::StaticImage(main, background) => {
+                        draw_static_image(sprites, window, &img_bg_area, background, 15, FitStrategy::Center)?;
+                        draw_static_image(sprites, window, &img_area, main, 20, FitStrategy::Center)?;
                     },
                 }
             },

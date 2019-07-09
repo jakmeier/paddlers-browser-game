@@ -7,22 +7,33 @@ use crate::game::{
     sprites::SpriteIndex,
 };
 
-
+#[derive(Default, Component)]
+#[storage(NullStorage)]
+pub struct Attacker;
 
 pub fn insert_duck(world: &mut World, pos: impl Into<Vector>, speed: impl Into<Vector>, ul: f32) -> Entity {
     let pos = pos.into();
     world.create_entity()
-        .with(Position::from((pos, (0.6*ul,0.4*ul).into())))
+        .with(Position::new(pos, (0.6*ul,0.4*ul), 100))
         .with(Velocity::new(pos, speed))
         .with(
             Renderable {
-                kind: RenderType::StaticImage(SpriteIndex::Duck),
+                kind: RenderType::StaticImage(SpriteIndex::Duck, SpriteIndex::Water),
             }
         )
         .with(Clickable)
+        .with(Attacker)
         .build()
 }
 
+pub fn delete_all_attackers(world: &mut World) {
+    let attackers: Vec<Entity> = 
+        (&world.entities(), &world.read_storage::<Attacker>())
+        .join()
+        .map( |tuple| tuple.0 )
+        .collect();
+    world.delete_entities(&attackers).expect("Deleting old attacker generation failed");
+}
 
 
 use crate::net::graphql::attacks_query::{AttacksQueryAttacksUnits,AttacksQueryAttacks};

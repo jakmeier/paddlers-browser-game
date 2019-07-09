@@ -1,4 +1,5 @@
 mod attackers;
+mod defenders;
 mod input;
 mod movement;
 mod render;
@@ -13,6 +14,7 @@ use render::*;
 use specs::prelude::*;
 use sprites::*;
 use town::{Town, TOWN_RATIO};
+use attackers::{delete_all_attackers, Attacker};
 use std::sync::mpsc::{Receiver};
 use crate::net::NetMsg;
 
@@ -76,6 +78,8 @@ impl State for Game<'static, 'static> {
 
         let town = Town::new();
 
+        // defenders::insert_flowers(&mut world, (100,100), 50.0);
+
         Ok(Game {
             dispatcher: dispatcher,
             click_dispatcher: click_dispatcher,
@@ -101,9 +105,22 @@ impl State for Game<'static, 'static> {
                     match msg {
                         NetMsg::Attacks(response) => {
                             self.new_cycle();
-                            self.world.delete_all();
-                            for atk in response.data.unwrap().attacks {
-                                atk.create_entities(&mut self.world, self.unit_len.unwrap());
+                            delete_all_attackers(&mut self.world);
+                            if let Some(data) = response.data {
+                                for atk in data.attacks {
+                                    atk.create_entities(&mut self.world, self.unit_len.unwrap());
+                                }
+                            }
+                            else {
+                                println!("No data returned");
+                            }
+                        }
+                        NetMsg::Buildings(response) => {
+                            if let Some(data) = response.data {
+                                data.create_entities(&mut self.world, self.unit_len.unwrap());
+                            }
+                            else {
+                                println!("No buildings available");
                             }
                         }
                     }
@@ -169,6 +186,7 @@ fn init_world() -> World {
     world.register::<Velocity>();
     world.register::<Renderable>();
     world.register::<Clickable>();
+    world.register::<Attacker>();
 
     world
 }

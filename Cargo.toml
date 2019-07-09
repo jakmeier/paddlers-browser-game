@@ -1,6 +1,6 @@
 [package]
 name = "happy_town" # To be redefined (happy duck, happy-bird, ...)
-version = "0.0.0"
+version = "0.0.1"
 authors = ["Jakob Meier <inbox@jakobmeier.ch>"]
 edition = "2018"
 

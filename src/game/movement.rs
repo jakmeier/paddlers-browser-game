@@ -5,7 +5,8 @@ use specs::prelude::*;
 #[derive(Component, Debug)]
 #[storage(VecStorage)]
 pub struct Position {
-    pub area: Rectangle
+    pub area: Rectangle,
+    pub z: i32, 
 }
 
 #[derive(Component, Debug)]
@@ -33,10 +34,11 @@ impl<'a> System<'a> for MoveSystem {
 
 }
 
-impl From<(Vector, Vector)> for Position {
-    fn from(t: (Vector, Vector)) -> Self {
+impl Position {
+    pub fn new(pos: impl Into<Vector>, size: impl Into<Vector>, z: i32) -> Self {
         Position {
-            area: Rectangle::new(t.0, t.1),
+            area: Rectangle::new(pos.into(), size.into()),
+            z: z,
         }
     }
 }
