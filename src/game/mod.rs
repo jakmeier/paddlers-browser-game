@@ -5,9 +5,10 @@ mod movement;
 mod render;
 mod sprites;
 mod town;
+mod fight;
 
 use crate::game::input::Clickable;
-use input::{Click, ClickSystem, MenuBoxData};
+use input::{MouseState, MouseSystem, UiState};
 use movement::*;
 use quicksilver::prelude::*;
 use render::*;
@@ -15,6 +16,7 @@ use specs::prelude::*;
 use sprites::*;
 use town::{Town, TOWN_RATIO};
 use attackers::{delete_all_attackers, Attacker};
+use fight::*;
 use std::sync::mpsc::{Receiver};
 use crate::net::NetMsg;
 
@@ -31,7 +33,7 @@ use resources::*;
 
 struct Game<'a, 'b> {
     dispatcher: Dispatcher<'a, 'b>,
-    click_dispatcher: Dispatcher<'a, 'b>,
+    mouse_dispatcher: Dispatcher<'a, 'b>,
     pub world: World,
     town: Town,
     pub sprites: Asset<Sprites>,
@@ -47,8 +49,8 @@ impl Game<'static, 'static> {
     }
     fn with_menu_box_area(self, area: Rectangle) -> Self {
         {
-            let mut data = self.world.write_resource::<MenuBoxData>();
-            (*data).area = area;
+            let mut data = self.world.write_resource::<UiState>();
+            (*data).menu_box_area = area;
         } 
         self
     }
@@ -62,27 +64,25 @@ impl State for Game<'static, 'static> {
     fn new() -> Result<Self> {
         let mut world = init_world();
         world.insert(ClockTick(0));
-        world.insert(MenuBoxData::default());
+        world.insert(UiState::default());
         world.insert(Dt);
-        world.insert(Click::default());
+        world.insert(MouseState::default());
 
         let mut dispatcher = DispatcherBuilder::new()
             .with(MoveSystem, "update_atk_pos", &[])
             .build();
         dispatcher.setup(&mut world);
 
-        let mut click_dispatcher = DispatcherBuilder::new()
-            .with(ClickSystem, "click", &[])
+        let mut mouse_dispatcher = DispatcherBuilder::new()
+            .with(MouseSystem, "click", &[])
             .build();
-        click_dispatcher.setup(&mut world);
+        mouse_dispatcher.setup(&mut world);
 
         let town = Town::new();
 
-        // defenders::insert_flowers(&mut world, (100,100), 50.0);
-
         Ok(Game {
             dispatcher: dispatcher,
-            click_dispatcher: click_dispatcher,
+            mouse_dispatcher: mouse_dispatcher,
             world: world,
             town: town,
             sprites: Sprites::new(),
@@ -137,11 +137,17 @@ impl State for Game<'static, 'static> {
 
     fn draw(&mut self, window: &mut Window) -> Result<()> {
         let tick = self.world.read_resource::<ClockTick>().0;
-        // double borrow
-        let (asset, town, ul) = (&mut self.sprites, &self.town, self.unit_len.unwrap());
+        let ui_state = self.world.read_resource::<UiState>();
+        // multi borrow
+        let (asset, town, ul, hovered_entity) = (&mut self.sprites, &self.town, self.unit_len.unwrap(), ui_state.hovered_entity);
+        std::mem::drop(ui_state); // explicit lifetime end
         asset.execute(|sprites| town.render(window, sprites, tick, ul))?;
         self.render_entities(window)?;
         self.render_menu_box(window)?;
+        
+        if let Some(entity) = hovered_entity {
+            self.render_hovering(window, entity)?;
+        }
         Ok(())
     }
 
@@ -149,16 +155,20 @@ impl State for Game<'static, 'static> {
         // println!("Event: {:?}", event);
         match event {
             Event::MouseMoved(_position) => {
-                // TODO: Hoverable stuff
+                {
+                    let mut c = self.world.write_resource::<MouseState>();
+                    *c = MouseState(window.mouse().pos(), false);
+                }
+                self.mouse_dispatcher.dispatch(&mut self.world);
             }
             Event::MouseButton(button, state)
                 if *button == MouseButton::Left && *state == ButtonState::Pressed =>
             {
                 {
-                    let mut c = self.world.write_resource::<Click>();
-                    *c = Click(window.mouse().pos());
+                    let mut c = self.world.write_resource::<MouseState>();
+                    *c = MouseState(window.mouse().pos(), true);
                 }
-                self.click_dispatcher.dispatch(&mut self.world);
+                self.mouse_dispatcher.dispatch(&mut self.world);
             }
             _ => {}
         };
@@ -187,6 +197,8 @@ fn init_world() -> World {
     world.register::<Renderable>();
     world.register::<Clickable>();
     world.register::<Attacker>();
+    world.register::<Range>();
+    world.register::<Health>();
 
     world
 }

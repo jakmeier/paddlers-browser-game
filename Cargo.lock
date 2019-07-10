@@ -997,7 +997,7 @@ dependencies = [
 
 [[package]]
 name = "happy_town"
-version = "0.0.0"
+version = "0.0.1"
 dependencies = [
  "chrono 0.4.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures-preview 0.3.0-alpha.17 (registry+https://github.com/rust-lang/crates.io-index)",

@@ -5,16 +5,18 @@ use crate::game::{
     movement::{Position, Velocity},
     render::{RenderType, Renderable},
     sprites::SpriteIndex,
+    fight::Health,
+    render::Z_UNITS,
 };
 
 #[derive(Default, Component)]
 #[storage(NullStorage)]
 pub struct Attacker;
 
-pub fn insert_duck(world: &mut World, pos: impl Into<Vector>, speed: impl Into<Vector>, ul: f32) -> Entity {
+pub fn insert_duck(world: &mut World, pos: impl Into<Vector>, speed: impl Into<Vector>, hp: i64, ul: f32) -> Entity {
     let pos = pos.into();
     world.create_entity()
-        .with(Position::new(pos, (0.6*ul,0.4*ul), 100))
+        .with(Position::new(pos, (0.6*ul,0.4*ul), Z_UNITS))
         .with(Velocity::new(pos, speed))
         .with(
             Renderable {
@@ -23,6 +25,7 @@ pub fn insert_duck(world: &mut World, pos: impl Into<Vector>, speed: impl Into<V
         )
         .with(Clickable)
         .with(Attacker)
+        .with(Health::new_full_health(hp))
         .build()
 }
 
@@ -56,7 +59,8 @@ impl AttacksQueryAttacksUnits {
         let y = 300.0;
         let x = start_x + time_alive.num_milliseconds() as f32 * v;
         let pos = Vector::new(x,y) + attacker_position_rank_offset(pos_rank);
-        insert_duck(world, pos, (v as f32,0.0), ul)
+        let hp = self.hp;
+        insert_duck(world, pos, (v as f32,0.0), hp, ul)
     }
 }
 
