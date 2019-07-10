@@ -1,0 +1,11 @@
+[package]
+name = "game_master"
+version = "0.0.1"
+authors = ["Jakob Meier <inbox@jakobmeier.ch>"]
+edition = "2018"
+
+[dependencies]
+db_lib = { path = "../db_lib"}
+diesel = { version = "1.4", features = ["postgres", "chrono"] }
+chrono = "0.4"
+rand = "0.7"

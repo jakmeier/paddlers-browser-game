@@ -3,19 +3,19 @@ use crate::schema::*;
 use diesel::prelude::*;
 
 pub trait GameDB {
-    fn provide_connection(&self) -> &PgConnection;
-    
+    fn dbconn(&self) -> &PgConnection;
+
     fn units(&self) -> Vec<Unit> {
         let results = units::table
             .limit(500)
-            .load::<Unit>(self.provide_connection())
+            .load::<Unit>(self.dbconn())
             .expect("Error loading data");
         results
     }
     fn attacks(&self) -> Vec<Attack> {
         let results = attacks::table
             .limit(500)
-            .load::<Attack>(self.provide_connection())
+            .load::<Attack>(self.dbconn())
             .expect("Error loading data");
         results
     }
@@ -25,14 +25,14 @@ pub trait GameDB {
         .filter(attacks_to_units::attack_id.eq(atk.id))
         .select(UNIT_ALL_COLUMNS) 
         .limit(500)
-        .load::<Unit>(self.provide_connection())
+        .load::<Unit>(self.dbconn())
         .expect("Error loading data");
         results
     }
     fn buildings(&self) -> Vec<Building> {
         let results = buildings::table
             .limit(500)
-            .load::<Building>(self.provide_connection())
+            .load::<Building>(self.dbconn())
             .expect("Error loading data");
         results
     }

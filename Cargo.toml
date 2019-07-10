@@ -3,6 +3,7 @@
 members = [
     "db_interface",
     "db_lib",
+    "game_master",
 ]
 
 default-members = [

@@ -1,21 +1,37 @@
 use chrono::NaiveDateTime;
 
-#[derive(Debug, Queryable)]
+#[derive(Debug, Queryable, Identifiable)]
 pub struct Unit {
     pub id: i64,
     pub sprite: String,
     pub hp: i64,
     pub speed: f32,
 }
+#[derive(Insertable)]
+#[table_name = "units"]
+pub struct NewUnit<'a> {
+    pub sprite: &'a str,
+    pub hp: i64,
+    pub speed: f32,
+}
 
-#[derive(Debug, Queryable)]
+use super::schema::attacks;
+#[derive(Debug, Queryable, Identifiable)]
 pub struct Attack {
     pub id: i64,
     pub departure: NaiveDateTime,
     pub arrival: NaiveDateTime,
 }
+#[derive(Insertable)]
+#[table_name = "attacks"]
+pub struct NewAttack {
+    pub departure: NaiveDateTime,
+    pub arrival: NaiveDateTime,
+}
 
-#[derive(Debug, Queryable)]
+use super::schema::attacks_to_units;
+#[derive(Debug, Queryable,Insertable)]
+#[table_name = "attacks_to_units"]
 pub struct AttackToUnit {
     pub attack_id: i64,
     pub unit_id: i64,
@@ -45,7 +61,7 @@ pub const UNIT_ALL_COLUMNS: UNIT_ALL_COLUMNS_T = (
 //     RedFlowers,
 // }
 
-#[derive(Queryable)]
+#[derive(Queryable, Debug)]
 pub struct Building {
     pub id: i64,
     pub x: i32,
