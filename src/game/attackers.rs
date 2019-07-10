@@ -42,9 +42,10 @@ pub fn delete_all_attackers(world: &mut World) {
 use crate::net::graphql::attacks_query::{AttacksQueryAttacksUnits,AttacksQueryAttacks};
 impl AttacksQueryAttacks {
     pub fn create_entities(&self, world: &mut World, ul: f32) -> Vec<Entity> {
-        let ms_timestamp_now = stdweb::web::Date::now();
+        let ms_timestamp_now = crate::wasm_setup::local_now();
+        // let ms_timestamp_now = stdweb::web::Date::now();
         let now = chrono::NaiveDateTime::from_timestamp((ms_timestamp_now / 1000.0) as i64, (ms_timestamp_now % 1000.0) as u32 * 1000_000);
-        let time_alive = now - self.departure();
+        let time_alive = now - self.arrival();
         self.units
             .iter()
             .enumerate()
