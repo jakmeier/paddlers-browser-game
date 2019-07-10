@@ -1,4 +1,5 @@
-use chrono::NaiveDateTime;
+use chrono::{NaiveDateTime, Utc};
+use chrono::offset::TimeZone;
 use std::sync::Arc;
 use super::DbConn;
 use juniper;
@@ -97,11 +98,11 @@ impl GqlAttack {
             ctx.db.attack_units(&self.0).into_iter().map(|u| GqlUnit(u)).collect()
         )
     }
-    fn departure(&self) -> &NaiveDateTime {
-        &self.0.departure
+    fn departure(&self) -> FieldResult<NaiveDateTime> {
+        datetime(&self.0.departure)
     }
-    fn arrival(&self) -> &NaiveDateTime {
-        &self.0.arrival
+    fn arrival(&self) -> FieldResult<NaiveDateTime> {
+        datetime(&self.0.arrival)
     }
 }
 
@@ -132,4 +133,14 @@ impl GqlBuilding {
     fn attacks_per_cycle(&self) -> Option<i32> {
         self.0.attacks_per_cycle
     }
+}
+
+fn datetime(dt: &NaiveDateTime) -> FieldResult<NaiveDateTime> {
+    let date = Utc.from_local_datetime(dt);
+    if date.single().is_none() {
+        return Err("Datetime from DB is not unique".into());
+    }
+    Ok(
+        date.unwrap().naive_utc()
+    )
 }
