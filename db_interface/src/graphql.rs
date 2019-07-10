@@ -3,6 +3,7 @@ use std::sync::Arc;
 use super::DbConn;
 use juniper;
 use juniper::FieldResult;
+use db_lib::sql::GameDB;
 
 pub struct Mutation;
 pub struct Query;
