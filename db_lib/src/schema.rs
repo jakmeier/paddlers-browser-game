@@ -1,4 +1,8 @@
+#![allow(unused_imports)]
 table! {
+    use diesel::sql_types::*;
+    use crate::models::Building_type;
+
     attacks (id) {
         id -> Int8,
         departure -> Timestamp,
@@ -7,6 +11,9 @@ table! {
 }
 
 table! {
+    use diesel::sql_types::*;
+    use crate::models::Building_type;
+
     attacks_to_units (attack_id, unit_id) {
         attack_id -> Int8,
         unit_id -> Int8,
@@ -14,10 +21,14 @@ table! {
 }
 
 table! {
+    use diesel::sql_types::*;
+    use crate::models::Building_type;
+
     buildings (id) {
         id -> Int8,
         x -> Int4,
         y -> Int4,
+        building_type -> Building_type,
         building_range -> Nullable<Float4>,
         attack_power -> Nullable<Float4>,
         attacks_per_cycle -> Nullable<Int4>,
@@ -25,6 +36,9 @@ table! {
 }
 
 table! {
+    use diesel::sql_types::*;
+    use crate::models::Building_type;
+
     units (id) {
         id -> Int8,
         sprite -> Varchar,

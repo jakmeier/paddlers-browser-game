@@ -1,0 +1,12 @@
+diff --git a/db_lib/src/schema.rs b/db_lib/src/schema.rs
+index 7e1e215..1b3841d 100644
+--- a/db_lib/src/schema.rs
++++ b/db_lib/src/schema.rs
+@@ -1,6 +1,7 @@
++#![allow(unused_imports)]
+ table! {
+     use diesel::sql_types::*;
+     use crate::models::Building_type;
+ 
+     attacks (id) {
+         id -> Int8,

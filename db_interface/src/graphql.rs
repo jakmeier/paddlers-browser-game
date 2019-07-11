@@ -124,6 +124,9 @@ impl GqlBuilding {
     fn y(&self) -> i32 {
         self.0.y
     }
+    fn building_type(&self) -> &db_lib::models::BuildingType {
+        &self.0.building_type
+    }
     fn building_range(&self) -> Option<f64> {
         self.0.building_range.map(f64::from)
     }
