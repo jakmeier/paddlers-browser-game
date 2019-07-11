@@ -6,6 +6,11 @@ edition = "2018"
 
 [dependencies]
 db_lib = { path = "../db_lib"}
-diesel = { version = "1.4", features = ["postgres", "chrono"] }
+diesel = { version = "1.4", features = ["postgres", "chrono", "r2d2"] }
+r2d2 = "0.8"
 chrono = "0.4"
 rand = "0.7"
+actix = "0.8"
+actix-web = "1.0"
+futures = "0.1"
+serde = "1.0"

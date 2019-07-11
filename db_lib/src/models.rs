@@ -2,6 +2,7 @@ use chrono::NaiveDateTime;
 use ::diesel_derive_enum;
 use diesel_derive_enum::DbEnum;
 pub use resources::dsl;
+use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Queryable, Identifiable)]
 pub struct Unit {
@@ -55,10 +56,9 @@ pub const UNIT_ALL_COLUMNS: UNIT_ALL_COLUMNS_T = (
     units::speed,
 );
 
-#[derive(Debug, PartialEq, DbEnum, Clone)]
+#[derive(Debug, PartialEq, DbEnum, Clone, Copy, Serialize, Deserialize, juniper::GraphQLEnum)]
 #[allow(non_camel_case_types)]
 #[DieselType = "Building_type"]
-#[derive(juniper::GraphQLEnum)]
 pub enum BuildingType {
     BlueFlowers,
     RedFlowers,
@@ -67,6 +67,17 @@ pub enum BuildingType {
 #[derive(Queryable, Debug)]
 pub struct Building {
     pub id: i64,
+    pub x: i32,
+    pub y: i32,
+    pub building_type: BuildingType,
+    pub building_range: Option<f32>, 
+    pub attack_power: Option<f32>, 
+    pub attacks_per_cycle: Option<i32>,
+}
+use super::schema::buildings;
+#[derive(Insertable, Debug)]
+#[table_name = "buildings"]
+pub struct NewBuilding {
     pub x: i32,
     pub y: i32,
     pub building_type: BuildingType,

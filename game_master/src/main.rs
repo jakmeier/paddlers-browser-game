@@ -1,38 +1,50 @@
+#![feature(result_map_or_else)]
+
 mod db;
 mod town_defence;
 mod attack_spawn;
 mod resource_system;
+mod api;
+mod game_master;
+mod shop;
+mod buildings;
 
 use db::*;
-use db_lib::sql::GameDB;
+use game_master::GameMaster;
 
-use std::time::Duration;
-use std::thread;
+use actix_web::{web, App, HttpServer};
+use actix::prelude::*;
+
+type StringErr = Result<(),String>;
 
 fn main() {
 
-    let db = DB::new();
-    let mut t : u8 = 0;
+    let dbpool = DB::new_pool();
 
-    db.init_resources();
+    let pool_clone = dbpool.clone();
+    std::thread::spawn(move || {
+        println!("Starting Game Master...");
+        System::run(|| {
+            GameMaster::new(pool_clone).start();
+        }).unwrap();
+        println!("Game master system returned");
+    });
 
-    loop {
-        check_attacks(&db);
-        if t == 0 {
-            db.spawn_random_attack();
-        }
-        thread::sleep(Duration::from_millis(100));
-        t = t.wrapping_add(1);
-    }
+    HttpServer::new(move || {
+        App::new()
+            .data(dbpool.clone())
+            .route("/", web::get().to(api::index))
+            .service(
+                web::resource("/shop/building")
+                .data(web::Json::<api::BuildingPurchase>)
+                .route(web::post().to(api::purchase_building))
+            )
+    })
+    .disable_signals()
+    .bind("127.0.0.1:8088")
+    .unwrap()
+    .run()
+    .unwrap();
 
-}
-
-fn check_attacks(db: &DB) {
-    let attacks = db.attacks();
-    let now = chrono::Local::now().naive_local();
-    for atk in attacks.iter() {
-        if atk.arrival < now {
-            db.maybe_attack_now(atk, now -  atk.arrival);
-        }
-    }
+    println!("Web-Actix returned");
 }

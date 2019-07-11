@@ -1,16 +1,23 @@
 use diesel::PgConnection;
 use diesel::prelude::*;
+use diesel::r2d2::ConnectionManager;
 use db_lib::sql::GameDB;
 use db_lib::models::*;
 use db_lib::schema::*;
 use db_lib::models::dsl;
 
-pub (crate) struct DB (PgConnection);
+type Manager = ConnectionManager<PgConnection>;
+pub type Pool = r2d2::Pool<Manager>;
+pub (crate) struct DB (r2d2::PooledConnection<Manager>);
 
 impl DB {
-    pub fn new() -> Self {
-        let connection = db_lib::establish_connection();
-        DB(connection)
+
+    pub fn new_pool() -> Pool {
+        let url = db_lib::get_db_url();
+        let manager = diesel::r2d2::ConnectionManager::<PgConnection>::new(url);
+        r2d2::Pool::builder()
+            .build(manager)
+            .expect("Failed to create pool.")
     }
 
     pub fn delete_unit(&self, unit: &Unit) {
@@ -55,6 +62,18 @@ impl DB {
         diesel::update(target)
             .set(resources::amount.eq(resources::amount + plus))
             .get_result(self.dbconn())
+    }
+    pub fn insert_building(&self, new_building: &NewBuilding) -> Building {
+        diesel::insert_into(buildings::dsl::buildings)
+            .values(new_building)
+            .get_result(self.dbconn())
+            .expect("Inserting building")
+    }
+}
+
+impl From<&Pool> for DB {
+    fn from(pool: &Pool) -> Self {
+        DB(pool.get().expect("Coudln't get DB connection"))
     }
 }
 
