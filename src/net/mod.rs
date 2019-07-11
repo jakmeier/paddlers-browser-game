@@ -15,6 +15,7 @@ use std::sync::{
 };
 
 const GRAPH_QL_PATH: &'static str = "http://localhost:65432/graphql";
+const SHOP_PATH: &'static str = "http://localhost:8088/shop";
 
 struct NetState {
     interval_ms: u32,
