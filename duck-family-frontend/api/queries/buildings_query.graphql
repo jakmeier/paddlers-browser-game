@@ -1,0 +1,10 @@
+query BuildingsQuery {
+  buildings {
+    id
+    x
+    y
+    buildingRange
+    attackPower
+    attacksPerCycle
+  }
+}

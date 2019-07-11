@@ -1,0 +1,13 @@
+query AttacksQuery {
+  attacks {
+    id
+    units {
+      id
+      hp
+      sprite
+      speed
+    }
+    departure
+    arrival
+  }
+}
