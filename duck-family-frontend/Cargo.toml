@@ -6,6 +6,7 @@ edition = "2018"
 
 
 [dependencies]
+duck-family-api-lib = { path = "../duck-family-api-lib"}
 quicksilver = "0.3"
 stdweb = {version = "0.4.17", features = ["experimental_features_which_may_break_on_minor_version_bumps"] }
 specs = { version = "0.15", default-features = false } # parallel not supported in wasm

@@ -1,16 +1,10 @@
 use actix_web::{HttpResponse, Responder, web};
-use serde::Deserialize;
+use duck_family_api_lib::*;
 
 pub fn index() -> impl Responder {
     HttpResponse::Ok().body("Game Master OK")
 }
 
-#[derive(Deserialize)]
-pub struct BuildingPurchase {
-    building_type: duck_family_db_lib::models::BuildingType,
-    x: usize,
-    y: usize,
-}
 pub fn purchase_building(
     pool: web::Data<crate::db::Pool>, 
     body: web::Json<BuildingPurchase>) 

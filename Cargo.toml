@@ -3,6 +3,7 @@
 members = [
     "duck-family-db-interface",
     "duck-family-db-lib",
+    "duck-family-api-lib",
     "duck-family-game-master",
     "duck-family-frontend",
 ]
@@ -10,3 +11,7 @@ members = [
 default-members = [
     "duck-family-db-interface",
 ]
+
+
+[profile.dev]
+debug = true

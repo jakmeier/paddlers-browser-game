@@ -1,0 +1,9 @@
+[package]
+name = "duck-family-api-lib"
+version = "0.0.2"
+authors = ["Jakob Meier <inbox@jakobmeier.ch>"]
+edition = "2018"
+
+[dependencies]
+duck-family-db-lib = { path = "../duck-family-db-lib" }
+serde = { version = "1.0", features = [ "derive" ] }

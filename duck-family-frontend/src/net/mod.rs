@@ -1,5 +1,6 @@
 pub mod graphql;
 pub mod ajax;
+pub mod game_master_api;
 
 use graphql::*;
 

@@ -1,12 +1,12 @@
-// curl -d '{"building_type":"BlueFlowers", "x": 11, "y": 5}' -H "Content-Type: application/json" -X POST http://127.0.0.1:8088/shop/building
-// // XXX
+use duck_family_api_lib::*;
+use super::ajax;
+use super::SHOP_PATH;
+use futures::Future;
 
-// pub fn http_place_building(b: BuildingPurchase) -> impl Future<Output = ?> {
-//     let request_string = &serde_json::to_string(&request_body).unwrap();
-//     let promise = ajax::send("POST", format!("{}/building", SHOP_PATH), request_string);
-//     promise.map(|x| {
-//         let response: BuildingsResponse = 
-//             serde_json::from_str(&x.unwrap()).unwrap();
-//         response
-//     })
-// }
+pub type GameMasterApiResult = Result<String, stdweb::web::error::Error>;
+
+pub fn http_place_building(b: BuildingPurchase) -> impl Future<Output = GameMasterApiResult> {
+    let request_string = &serde_json::to_string(&b).unwrap();
+    let promise = ajax::send("POST", &format!("{}/building", SHOP_PATH), request_string);
+    promise
+}
