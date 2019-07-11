@@ -1,10 +1,10 @@
 use diesel::PgConnection;
 use diesel::prelude::*;
 use diesel::r2d2::ConnectionManager;
-use db_lib::sql::GameDB;
-use db_lib::models::*;
-use db_lib::schema::*;
-use db_lib::models::dsl;
+use duck_family_db_lib::sql::GameDB;
+use duck_family_db_lib::models::*;
+use duck_family_db_lib::schema::*;
+use duck_family_db_lib::models::dsl;
 
 type Manager = ConnectionManager<PgConnection>;
 pub type Pool = r2d2::Pool<Manager>;
@@ -13,7 +13,7 @@ pub (crate) struct DB (r2d2::PooledConnection<Manager>);
 impl DB {
 
     pub fn new_pool() -> Pool {
-        let url = db_lib::get_db_url();
+        let url = duck_family_db_lib::get_db_url();
         let manager = diesel::r2d2::ConnectionManager::<PgConnection>::new(url);
         r2d2::Pool::builder()
             .build(manager)

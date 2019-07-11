@@ -7,7 +7,7 @@ pub fn index() -> impl Responder {
 
 #[derive(Deserialize)]
 pub struct BuildingPurchase {
-    building_type: db_lib::models::BuildingType,
+    building_type: duck_family_db_lib::models::BuildingType,
     x: usize,
     y: usize,
 }

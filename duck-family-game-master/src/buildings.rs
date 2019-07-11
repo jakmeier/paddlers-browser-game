@@ -1,4 +1,4 @@
-use db_lib::models::*;
+use duck_family_db_lib::models::*;
 
 pub struct BuildingFactory;
 

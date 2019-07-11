@@ -1,11 +1,11 @@
 [package]
-name = "happy_town_backend_db_interface"
+name = "duck-family-db-interface"
 version = "0.0.2"
 authors = ["Jakob Meier <inbox@jakobmeier.ch>"]
 edition = "2018"
 
 [dependencies]
-db_lib = { path = "../db_lib"}
+duck-family-db-lib = { path = "../duck-family-db-lib"}
 
 rocket = "0.4"
 rocket_cors = "0.5"

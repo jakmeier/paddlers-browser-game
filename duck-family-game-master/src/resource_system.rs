@@ -1,5 +1,5 @@
-use db_lib::models::*;
-use db_lib::sql::GameDB;
+use duck_family_db_lib::models::*;
+use duck_family_db_lib::sql::GameDB;
 use crate::{
     db::DB,
     shop::Price,
@@ -17,7 +17,7 @@ impl DB {
     }
 
     pub fn init_resources(&self) {
-        use db_lib::strum::IntoEnumIterator;
+        use duck_family_db_lib::strum::IntoEnumIterator;
         for res in ResourceType::iter()
         {
             let entity = Resource {

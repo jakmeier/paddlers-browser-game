@@ -1,5 +1,5 @@
 use crate::db::DB;
-use db_lib::models::*;
+use duck_family_db_lib::models::*;
 use crate::buildings::BuildingFactory;
 use crate::StringErr;
 

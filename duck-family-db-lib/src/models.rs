@@ -2,7 +2,7 @@ use chrono::NaiveDateTime;
 use ::diesel_derive_enum;
 use diesel_derive_enum::DbEnum;
 pub use resources::dsl;
-use serde::{Serialize, Deserialize};
+use serde_derive::{Serialize, Deserialize};
 
 #[derive(Debug, Queryable, Identifiable)]
 pub struct Unit {

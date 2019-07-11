@@ -1,6 +1,6 @@
-use db_lib::models::*;
+use duck_family_db_lib::models::*;
 use crate::db::DB;
-use db_lib::sql::GameDB;
+use duck_family_db_lib::sql::GameDB;
 use chrono::Duration;
 
 impl DB {

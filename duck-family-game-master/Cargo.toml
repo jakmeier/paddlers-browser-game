@@ -1,11 +1,11 @@
 [package]
-name = "game_master"
+name = "duck-family-game-master"
 version = "0.0.2"
 authors = ["Jakob Meier <inbox@jakobmeier.ch>"]
 edition = "2018"
 
 [dependencies]
-db_lib = { path = "../db_lib"}
+duck-family-db-lib = { path = "../duck-family-db-lib"}
 diesel = { version = "1.4", features = ["postgres", "chrono", "r2d2"] }
 r2d2 = "0.8"
 chrono = "0.4"

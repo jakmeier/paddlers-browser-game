@@ -1,7 +1,7 @@
-diff --git a/db_lib/src/schema.rs b/db_lib/src/schema.rs
+diff --git a/duck_family_db_lib/src/schema.rs b/duck_family_db_lib/src/schema.rs
 index 80f627a..aca49ea 100644
---- a/db_lib/src/schema.rs
-+++ b/db_lib/src/schema.rs
+--- a/duck_family_db_lib/src/schema.rs
++++ b/duck_family_db_lib/src/schema.rs
 @@ -1,6 +1,8 @@
 +#![allow(unused_imports)]
 +

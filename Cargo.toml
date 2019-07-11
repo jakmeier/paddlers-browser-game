@@ -1,11 +1,12 @@
 [workspace]
 
 members = [
-    "db_interface",
-    "db_lib",
-    "game_master",
+    "duck-family-db-interface",
+    "duck-family-db-lib",
+    "duck-family-game-master",
+    "duck-family-frontend",
 ]
 
 default-members = [
-    "db_interface",
+    "duck-family-db-interface",
 ]
