@@ -3,5 +3,5 @@
 
 [print_schema]
 file = "db_lib/src/schema.rs"
-import_types = ["diesel::sql_types::*","crate::models::Building_type"]
+import_types = ["diesel::sql_types::*","crate::models::*"]
 patch_file = "db_lib/src/schema.patch"

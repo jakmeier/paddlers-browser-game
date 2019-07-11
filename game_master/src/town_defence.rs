@@ -25,9 +25,9 @@ impl DB {
         let ap = aura_def_pts(defenders);
         println!("Aura def = {}", ap);
 
-        for unit in attackers.iter().filter(|a| (a.hp as u32) < ap ) {
-            self.delete_unit(unit);
-        }
+        let defeated_units = attackers.iter().filter(|a| (a.hp as u32) <= ap );
+        self.collect_reward(defeated_units.clone());
+        defeated_units.for_each(|u| self.delete_unit(u));
 
         // TODO: Move survivors back
     }

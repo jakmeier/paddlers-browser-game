@@ -1,6 +1,6 @@
 [package]
 name = "db_lib"
-version = "0.0.1"
+version = "0.0.2"
 authors = ["jakmeier <jakmeier@student.ethz.ch>"]
 edition = "2018"
 
@@ -9,4 +9,8 @@ diesel = { version = "1.4", features = ["postgres", "chrono"] }
 diesel-derive-enum = { version = "0.4", features = ["postgres"] }
 dotenv = "0.14"
 chrono = "0.4"
+
+# For deriving
 juniper = "0.12"
+strum = "0.15.0"
+strum_macros = "0.15.0"

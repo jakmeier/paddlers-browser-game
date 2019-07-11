@@ -1,7 +1,8 @@
 #![allow(unused_imports)]
+
 table! {
     use diesel::sql_types::*;
-    use crate::models::Building_type;
+    use crate::models::*;
 
     attacks (id) {
         id -> Int8,
@@ -12,7 +13,7 @@ table! {
 
 table! {
     use diesel::sql_types::*;
-    use crate::models::Building_type;
+    use crate::models::*;
 
     attacks_to_units (attack_id, unit_id) {
         attack_id -> Int8,
@@ -22,7 +23,7 @@ table! {
 
 table! {
     use diesel::sql_types::*;
-    use crate::models::Building_type;
+    use crate::models::*;
 
     buildings (id) {
         id -> Int8,
@@ -37,7 +38,17 @@ table! {
 
 table! {
     use diesel::sql_types::*;
-    use crate::models::Building_type;
+    use crate::models::*;
+
+    resources (resource_type) {
+        resource_type -> Resource_type,
+        amount -> Int8,
+    }
+}
+
+table! {
+    use diesel::sql_types::*;
+    use crate::models::*;
 
     units (id) {
         id -> Int8,
@@ -54,5 +65,6 @@ allow_tables_to_appear_in_same_query!(
     attacks,
     attacks_to_units,
     buildings,
+    resources,
     units,
 );

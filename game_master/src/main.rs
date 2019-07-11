@@ -1,6 +1,7 @@
 mod db;
 mod town_defence;
 mod attack_spawn;
+mod resource_system;
 
 use db::*;
 use db_lib::sql::GameDB;
@@ -12,6 +13,8 @@ fn main() {
 
     let db = DB::new();
     let mut t : u8 = 0;
+
+    db.init_resources();
 
     loop {
         check_attacks(&db);

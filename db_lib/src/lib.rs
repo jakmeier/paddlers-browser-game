@@ -1,6 +1,7 @@
 #![feature(trivial_bounds)]
-#[macro_use]
-extern crate diesel;
+#[macro_use] extern crate diesel;
+pub extern crate strum;
+#[macro_use] extern crate strum_macros;
 extern crate diesel_derive_enum;
 extern crate dotenv;
 

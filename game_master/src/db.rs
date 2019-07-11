@@ -3,6 +3,7 @@ use diesel::prelude::*;
 use db_lib::sql::GameDB;
 use db_lib::models::*;
 use db_lib::schema::*;
+use db_lib::models::dsl;
 
 pub (crate) struct DB (PgConnection);
 
@@ -43,6 +44,17 @@ impl DB {
             .values(atu)
             .execute(self.dbconn())
             .expect("Inserting attack to unit");
+    }
+    pub fn insert_resource(&self, res: &Resource) -> QueryResult<usize> {
+        diesel::insert_into(dsl::resources)
+            .values(res)
+            .execute(self.dbconn())
+    }
+    pub fn add_resource(&self, rt: ResourceType, plus: i64) -> QueryResult<Resource> {
+        let target = resources::table.filter(resources::resource_type.eq(rt));
+        diesel::update(target)
+            .set(resources::amount.eq(resources::amount + plus))
+            .get_result(self.dbconn())
     }
 }
 

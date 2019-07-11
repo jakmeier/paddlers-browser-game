@@ -36,4 +36,11 @@ pub trait GameDB {
             .expect("Error loading data");
         results
     }
+    fn resource(&self, r: ResourceType) -> i64 {
+        resources::table
+        .find(r)
+        .first(self.dbconn())
+        .map(|res: Resource| res.amount)
+        .unwrap_or(0)
+    }
 }

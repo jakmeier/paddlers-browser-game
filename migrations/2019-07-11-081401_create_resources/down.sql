@@ -1,0 +1,2 @@
+DROP TABLE resources;
+DROP TYPE RESOURCE_TYPE; 

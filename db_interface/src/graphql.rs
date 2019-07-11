@@ -5,6 +5,7 @@ use super::DbConn;
 use juniper;
 use juniper::FieldResult;
 use db_lib::sql::GameDB;
+use db_lib::models::*;
 
 pub struct Mutation;
 pub struct Query;
@@ -46,6 +47,10 @@ impl Query {
         Ok(
             ctx.db.buildings().into_iter().map(GqlBuilding::from).collect()
         )
+    }
+    /// WIP for testing
+    fn village(ctx: &Context) -> FieldResult<GqlVillage> {
+        Ok(GqlVillage)
     }
 }
 
@@ -146,4 +151,20 @@ fn datetime(dt: &NaiveDateTime) -> FieldResult<NaiveDateTime> {
     Ok(
         date.unwrap().naive_utc()
     )
+}
+
+
+pub struct GqlVillage;
+#[juniper::object (Context = Context)]
+impl GqlVillage {
+    fn sticks(&self, ctx: &Context) -> i32 {
+        ctx.db.resource(ResourceType::Sticks) as i32
+    }
+    fn feathers(&self, ctx: &Context) -> i32 {
+        ctx.db.resource(ResourceType::Feathers) as i32
+    }
+    fn logs(&self, ctx: &Context) -> i32 {
+        ctx.db.resource(ResourceType::Logs) as i32
+    }
+
 }

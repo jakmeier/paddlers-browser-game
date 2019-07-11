@@ -17,11 +17,11 @@ impl DB {
 
 
         let mut rng = rand::thread_rng();
-        let n = rng.gen_range(1,8);
+        let n = rng.gen_range(2,5);
         for _ in 0 .. n {
             let unit = NewUnit {  
                 sprite: "Random test",
-                hp: rng.gen_range(3, 10), 
+                hp: rng.gen_range(3, 6), 
                 speed: 1.0,
             };
             let u = self.insert_unit(&unit);

@@ -1,4 +1,7 @@
 use chrono::NaiveDateTime;
+use ::diesel_derive_enum;
+use diesel_derive_enum::DbEnum;
+pub use resources::dsl;
 
 #[derive(Debug, Queryable, Identifiable)]
 pub struct Unit {
@@ -52,8 +55,6 @@ pub const UNIT_ALL_COLUMNS: UNIT_ALL_COLUMNS_T = (
     units::speed,
 );
 
-use ::diesel_derive_enum;
-use diesel_derive_enum::DbEnum;
 #[derive(Debug, PartialEq, DbEnum, Clone)]
 #[allow(non_camel_case_types)]
 #[DieselType = "Building_type"]
@@ -72,4 +73,22 @@ pub struct Building {
     pub building_range: Option<f32>, 
     pub attack_power: Option<f32>, 
     pub attacks_per_cycle: Option<i32>,
+}
+
+#[derive(Debug, PartialEq, Eq, Hash, DbEnum, Clone, Copy, juniper::GraphQLEnum, EnumIter, Display)]
+#[allow(non_camel_case_types)]
+#[DieselType = "Resource_type"]
+pub enum ResourceType {
+    Sticks,
+    Logs,
+    Feathers,
+}
+
+use super::schema::resources;
+#[derive(Identifiable, Insertable, Queryable, Debug)]
+#[table_name = "resources"]
+#[primary_key(resource_type)]
+pub struct Resource {
+    pub resource_type: ResourceType,
+    pub amount: i64,
 }
