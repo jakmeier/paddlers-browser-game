@@ -1,24 +1,22 @@
-mod attackers;
-mod defenders;
-mod input;
-mod movement;
-mod render;
-mod sprites;
-mod town;
-mod fight;
+pub (crate) mod attackers;
+pub (crate) mod defenders;
+pub (crate) mod movement;
+pub (crate) mod town;
+pub (crate) mod fight;
 
-use crate::game::input::Clickable;
-use input::{MouseState, MouseSystem, UiState};
+use crate::gui::input;
+use crate::gui::render::*;
+use crate::gui::sprites::*;
+use crate::net::{NetMsg};
+
+use input::{MouseState, MouseSystem, UiState, Clickable, DefaultShop, Grabbable};
 use movement::*;
 use quicksilver::prelude::*;
-use render::*;
 use specs::prelude::*;
-use sprites::*;
 use town::{Town, TOWN_RATIO};
 use attackers::{delete_all_attackers, Attacker};
 use fight::*;
 use std::sync::mpsc::{Receiver};
-use crate::net::NetMsg;
 
 const MENU_BOX_WIDTH: f32 = 300.0;
 const CYCLE_SECS: u32 = 10;
@@ -31,13 +29,13 @@ mod resources {
 }
 use resources::*;
 
-struct Game<'a, 'b> {
+pub(crate) struct Game<'a, 'b> {
     dispatcher: Dispatcher<'a, 'b>,
     mouse_dispatcher: Dispatcher<'a, 'b>,
     pub world: World,
-    town: Town,
+    pub town: Town,
     pub sprites: Asset<Sprites>,
-    unit_len: Option<f32>,
+    pub unit_len: Option<f32>,
     net: Option<Receiver<NetMsg>>,
     cycle_begin: f64,
 }
@@ -47,8 +45,9 @@ impl Game<'static, 'static> {
         self.unit_len = Some(ul);
         self
     }
-    fn with_menu_box_area(self, area: Rectangle) -> Self {
+    fn with_menu_box_area(mut self, area: Rectangle) -> Self {
         {
+            self.world.insert(DefaultShop::new(area));
             let mut data = self.world.write_resource::<UiState>();
             (*data).menu_box_area = area;
         } 
@@ -117,7 +116,7 @@ impl State for Game<'static, 'static> {
                         }
                         NetMsg::Buildings(response) => {
                             if let Some(data) = response.data {
-                                data.create_entities(&mut self.world, self.unit_len.unwrap());
+                                data.create_entities(self);
                             }
                             else {
                                 println!("No buildings available");
@@ -137,16 +136,21 @@ impl State for Game<'static, 'static> {
 
     fn draw(&mut self, window: &mut Window) -> Result<()> {
         let tick = self.world.read_resource::<ClockTick>().0;
-        let ui_state = self.world.read_resource::<UiState>();
         // multi borrow
-        let (asset, town, ul, hovered_entity) = (&mut self.sprites, &self.town, self.unit_len.unwrap(), ui_state.hovered_entity);
-        std::mem::drop(ui_state); // explicit lifetime end
+        let (asset, town, ul) = (&mut self.sprites, &self.town, self.unit_len.unwrap());
         asset.execute(|sprites| town.render(window, sprites, tick, ul))?;
         self.render_entities(window)?;
         self.render_menu_box(window)?;
         
+        let ui_state = self.world.read_resource::<UiState>();
+        let hovered_entity = ui_state.hovered_entity;
+        let grabbed_item = ui_state.grabbed_item.clone();
+        std::mem::drop(ui_state);
         if let Some(entity) = hovered_entity {
             self.render_hovering(window, entity)?;
+        }
+        if let Some(grabbed) = grabbed_item {
+            self.render_grabbed_item(window, &grabbed)?;
         }
         Ok(())
     }
@@ -161,6 +165,7 @@ impl State for Game<'static, 'static> {
                 }
                 self.mouse_dispatcher.dispatch(&mut self.world);
             }
+            // Left click
             Event::MouseButton(button, state)
                 if *button == MouseButton::Left && *state == ButtonState::Pressed =>
             {
@@ -168,9 +173,33 @@ impl State for Game<'static, 'static> {
                     let mut c = self.world.write_resource::<MouseState>();
                     *c = MouseState(window.mouse().pos(), true);
                 }
+                {
+                    let ui_state = self.world.read_resource::<UiState>();
+                    let maybe_grabbed = ui_state.grabbed_item.clone();
+                    std::mem::drop(ui_state);
+                    if let Some(Grabbable::NewBuilding(item)) = maybe_grabbed {
+                        if let Some(pos) = self.town.get_empty_lane(window.mouse().pos(), self.unit_len.unwrap()) {
+                            self.purchase_building(item, pos);
+                            let mut ui_state = self.world.write_resource::<UiState>();
+                            (*ui_state).grabbed_item = None;
+                        }
+                    }
+                }
                 self.mouse_dispatcher.dispatch(&mut self.world);
             }
-            _ => {}
+            Event::Key(key, state) 
+                if *key == Key::Escape && *state == ButtonState::Pressed =>
+                {
+                    let mut ui_state = self.world.write_resource::<UiState>();
+                    if (*ui_state).grabbed_item.is_some(){
+                        (*ui_state).grabbed_item = None;
+                    } else {
+                        (*ui_state).selected_entity = None;
+                    }
+                },
+            _evt => {
+                // println!("Event: {:#?}", _evt)
+            }
         };
 
         Ok(())

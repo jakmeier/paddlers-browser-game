@@ -1,8 +1,8 @@
 use duck_family_db_lib::models::*;
+use duck_family_api_lib::shop::*;
 use duck_family_db_lib::sql::GameDB;
 use crate::{
     db::DB,
-    shop::Price,
     StringErr
 };
 
@@ -39,12 +39,12 @@ impl DB {
 
     pub fn spend(&self, p: &Price) {
         for (res, n) in p.0.iter() {
-            self.add_resource(*res, -*n).expect("Unchecked spending resources");
+            self.add_resource((*res).into(), -*n).expect("Unchecked spending resources");
         }
     }
     pub fn can_afford(&self, p: &Price) -> StringErr {
         for (res, n) in p.0.iter() {
-            if self.resource(*res) < *n {
+            if self.resource((*res).into()) < *n {
                 return Err(format!("Not enough {}", res));
             }
         }

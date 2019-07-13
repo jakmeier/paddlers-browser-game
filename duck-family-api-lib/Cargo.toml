@@ -5,5 +5,8 @@ authors = ["Jakob Meier <inbox@jakobmeier.ch>"]
 edition = "2018"
 
 [dependencies]
-duck-family-db-lib = { path = "../duck-family-db-lib" }
+# Unfortunately, this brakes the linker :(
+# duck-family-db-lib = { path = "../duck-family-db-lib" }
 serde = { version = "1.0", features = [ "derive" ] }
+strum = "0.15"
+strum_macros = "0.15"

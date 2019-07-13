@@ -1,12 +1,14 @@
 use quicksilver::geom::Vector;
 use specs::prelude::*;
+use crate::gui::{
+    render::{RenderType, Renderable, },
+    z::Z_UNITS,
+    sprites::SpriteIndex
+};
 use crate::game::{
     input::Clickable,
     movement::{Position, Velocity},
-    render::{RenderType, Renderable},
-    sprites::SpriteIndex,
     fight::Health,
-    render::Z_UNITS,
 };
 
 #[derive(Default, Component)]

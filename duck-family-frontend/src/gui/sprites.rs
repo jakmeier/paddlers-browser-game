@@ -53,3 +53,17 @@ impl Index<SpriteIndex> for Sprites {
         &self.img[i]
     }
 }
+
+pub trait WithSprite {
+    fn sprite(&self) -> SpriteIndex;
+}
+
+use duck_family_api_lib::types::BuildingType;
+impl WithSprite for BuildingType {
+    fn sprite(&self) -> SpriteIndex {
+        match self {
+            BuildingType::BlueFlowers => SpriteIndex::Flowers,
+            BuildingType::RedFlowers => SpriteIndex::Flowers,
+        }
+    }
+}

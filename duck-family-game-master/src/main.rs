@@ -18,7 +18,7 @@ use actix_web::{
     web, App, HttpServer
 };
 use actix_cors::Cors;
-use duck_family_api_lib::BuildingPurchase;
+use duck_family_api_lib::shop::BuildingPurchase;
 
 type StringErr = Result<(),String>;
 

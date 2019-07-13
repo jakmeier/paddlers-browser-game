@@ -1,52 +1,83 @@
 use quicksilver::geom::Vector;
 use specs::prelude::*;
-use crate::game::{
-    input::Clickable,
-    movement::Position,
+use crate::gui::{
     render::{RenderType, Renderable},
     sprites::SpriteIndex,
-    fight::Range,
-    render::Z_UNITS
+    z::Z_UNITS
 };
+use crate::game::{
+    Game,
+    input::Clickable,
+    movement::Position,
+    fight::Range
+};
+use crate::net::game_master_api::http_place_building;
+use duck_family_api_lib::shop::*;
+use duck_family_api_lib::types::*;
 
+impl Game<'_,'_> {
 
-pub fn insert_flowers(world: &mut World, pos: (i32, i32), range: Option<f32>, ul: f32) -> Entity {
-    let pos: Vector = pos.into();
-    let builder = 
-        world.create_entity()
-        .with(Position::new(pos * ul , (ul, ul), Z_UNITS))
-        .with(
-            Renderable {
-                kind: RenderType::StaticImage(SpriteIndex::Flowers, SpriteIndex::Grass),
+    fn insert_flowers(&mut self, pos: (i32, i32), range: Option<f32>) -> Entity {
+        let pos: Vector = pos.into();
+        let ul = self.unit_len.unwrap();
+        let builder = 
+            self.world.create_entity()
+            .with(Position::new(pos * ul , (ul, ul), Z_UNITS))
+            .with(
+                Renderable {
+                    kind: RenderType::StaticImage(SpriteIndex::Flowers, SpriteIndex::Grass),
+                }
+            )
+            .with(Clickable);
+
+        let builder = 
+            if let Some(r) = range {
+                builder.with(Range::new(r))
             }
-        )
-        .with(Clickable);
+            else {
+                builder
+            };
 
-    let builder = 
-        if let Some(r) = range {
-            builder.with(Range::new(r))
-        }
-        else {
-            builder
+        builder.build()
+    }
+
+    pub fn purchase_building(&mut self, building_type: BuildingType, pos: (usize, usize)) {
+        let msg = BuildingPurchase {
+            building_type: building_type, 
+            x: pos.0,
+            y: pos.1,
         };
-
-    builder.build()
+        use futures_util::future::FutureExt;
+        stdweb::spawn_local(
+            http_place_building(msg).map( 
+                |r| {
+                    if r.is_err() {
+                        println!("Buying buidling failed: {:?}", r);
+                    }
+                }
+            )
+        );
+        // optimistically build
+        // TODO: Read values from lookup table
+        // TODO: Subtract resources
+        self.insert_flowers((pos.0 as i32, pos.1 as i32), Some(5.0));
+    }
 }
 
 use crate::net::graphql::buildings_query;
 impl buildings_query::ResponseData {
-    pub fn create_entities(&self, world: &mut World, ul: f32) -> Vec<Entity> {
+    pub (crate) fn create_entities(&self, game: &mut Game) -> Vec<Entity> {
         self.buildings
             .iter()
-            .map(|u|{u.create_entity(world, ul)})
+            .map(|u|{u.create_entity(game)})
             .collect()
     }
 }
 
 impl buildings_query::BuildingsQueryBuildings {
-    fn create_entity(&self, world: &mut World, ul: f32) -> Entity {
+    fn create_entity(&self, game: &mut Game) -> Entity {
         let coordinates = (self.x as i32,self.y as i32);
         let maybe_range = self.building_range.map(|f| f as f32);
-        insert_flowers(world, coordinates, maybe_range, ul)
+        game.insert_flowers(coordinates, maybe_range)
     }
 }

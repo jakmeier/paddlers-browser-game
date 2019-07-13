@@ -1,7 +1,7 @@
-use super::sprites::{Sprites, SpriteIndex};
 use quicksilver::prelude::*;
-use crate::game::{
-    render::{Z_TILE_SHADOW, Z_TEXTURE},
+use crate::gui::{
+    sprites::{Sprites, SpriteIndex},
+    z::{Z_TILE_SHADOW, Z_TEXTURE}
 };
 
 #[derive(Debug)]
@@ -93,6 +93,17 @@ impl Town {
                     self.shadow_tile(window, unit_length, (x,y));
                 }
             }
+        }
+    }
+
+    pub fn get_empty_lane(&self, pos: impl Into<Vector>, ul: f32) -> Option<(usize,usize)> {
+        let (x,y) = Self::find_tile(pos, ul);
+        let tile = self.map.get(x).and_then(|m| m.get(y));
+        if let Some(TileType::EMPTY) = tile {
+            Some((x,y))
+        }
+        else {
+            None
         }
     }
 

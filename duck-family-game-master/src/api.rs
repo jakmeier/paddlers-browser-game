@@ -1,5 +1,5 @@
 use actix_web::{HttpResponse, Responder, web};
-use duck_family_api_lib::*;
+use duck_family_api_lib::shop::BuildingPurchase;
 
 pub fn index() -> impl Responder {
     HttpResponse::Ok().body("Game Master OK")
@@ -11,7 +11,7 @@ pub fn purchase_building(
     -> impl Responder 
 {
     let db: crate::db::DB = pool.get_ref().into();
-    db.try_buy_building(body.building_type, (body.x, body.y))
+    db.try_buy_building(body.building_type.into(), (body.x, body.y))
         .map_or_else(
             |e| HttpResponse::from(&e),
             |_| HttpResponse::Ok().into(), 

@@ -19,5 +19,3 @@ chrono = "0.4"
 futures-preview = "0.3.0-alpha.15"
 futures-util-preview = "0.3.0-alpha.17"
 
-[profile.dev]
-debug = true

@@ -9,6 +9,7 @@ extern crate specs;
 extern crate specs_derive;
 
 mod game;
+mod gui;
 mod net;
 
 #[cfg(target_arch = "wasm32")]

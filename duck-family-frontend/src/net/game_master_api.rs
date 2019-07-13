@@ -1,4 +1,4 @@
-use duck_family_api_lib::*;
+use duck_family_api_lib::shop::*;
 use super::ajax;
 use super::SHOP_PATH;
 use futures::Future;

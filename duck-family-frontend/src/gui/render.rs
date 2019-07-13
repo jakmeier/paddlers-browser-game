@@ -1,13 +1,18 @@
 use quicksilver::prelude::*;
 use quicksilver::graphics::Color;
 use specs::prelude::*;
+use specs::world::Index;
 use crate::game::{
     Game,
-    sprites::{SpriteIndex, Sprites},
     movement::Position,
-    input::UiState,
     fight::{Health, Range},
     town::Town,
+};
+use crate::gui::{
+    sprites::{SpriteIndex, WithSprite},
+    z::*,
+    input::{UiState, DefaultShop, Grabbable},
+    utils::*
 };
 
 
@@ -51,27 +56,14 @@ impl Game<'_, '_> {
             Transform::IDENTITY, 
             Z_MENU_BOX
         );
-
-        // Image
-        let mut img_bg_area = data.menu_box_area.clone();
-        img_bg_area.size.y = img_bg_area.height() / 3.0;
-        let img_bg_area = img_bg_area.fit_square(FitStrategy::Center).padded(0.8);
-        let img_area = img_bg_area.padded(0.8);
+ 
+        std::mem::drop(data);
         match entity {
             Some(id) => {
-                let e = self.world.entities().entity(id);
-                let r = self.world.read_storage::<Renderable>();
-                let sprites = &mut self.sprites;
-                let rd = r.get(e).expect("Selected item should have Renderable component");
-                match rd.kind {
-                    RenderType::StaticImage(main, background) => {
-                        draw_static_image(sprites, window, &img_bg_area, background, Z_MENU_BOX + 1, FitStrategy::Center)?;
-                        draw_static_image(sprites, window, &img_area, main, Z_MENU_BOX + 2, FitStrategy::Center)?;
-                    },
-                }
+                self.render_entity_details(window, id)?;
             },
             None => {
-
+                self.render_shop(window)?;
             },
         }
         Ok(())
@@ -94,47 +86,48 @@ impl Game<'_, '_> {
         }
         Ok(())
     }
-}
 
-#[derive(Copy, Clone, Debug)]
-enum FitStrategy {
-    TopLeft,
-    Center
-}
+    pub fn render_entity_details(&mut self, window: &mut Window, id: Index) -> Result<()> {
+        let data = self.world.read_resource::<UiState>();
 
-fn draw_static_image(asset: &mut Asset<Sprites>, window: &mut Window, max_area: &Rectangle, i: SpriteIndex, z: i32, fit_strat: FitStrategy) -> Result<()> {
-    asset.execute( |sprites| {
-        let img = &sprites[i];
-        let mut area = *max_area;
-        let img_slope = img.area().height() / img.area().width();
-        if img_slope < area.height() / area.width() {
-            // high image
-            area.size.y = area.width() * img_slope;
-            match fit_strat {
-                FitStrategy::Center => {
-                    area = area.translate((0,(max_area.height() - area.height())/2.0));
-                },
-                FitStrategy::TopLeft => {},
-            }
-        } else {
-            area.size.x = area.height() / img_slope;
-            match fit_strat {
-                FitStrategy::Center => {
-                    area = area.translate(((max_area.width() - area.width())/2.0, 0.0));
-                },
-                FitStrategy::TopLeft => {},
+        let mut img_bg_area = data.menu_box_area.clone();
+        img_bg_area.size.y = img_bg_area.height() / 3.0;
+        let img_bg_area = img_bg_area.fit_square(FitStrategy::Center).padded(0.8);
+        let img_area = img_bg_area.padded(0.8);
+
+        let e = self.world.entities().entity(id);
+        let r = self.world.read_storage::<Renderable>();
+        let sprites = &mut self.sprites;
+        let rd = r.get(e).expect("Selected item should have Renderable component");
+        match rd.kind {
+            RenderType::StaticImage(main, background) => {
+                draw_static_image(sprites, window, &img_bg_area, background, Z_MENU_BOX + 1, FitStrategy::Center)?;
+                draw_static_image(sprites, window, &img_area, main, Z_MENU_BOX + 2, FitStrategy::Center)?;
+            },
+        }
+        Ok(())
+    }
+
+    pub fn render_shop(&mut self, window: &mut Window) -> Result<()> {
+        let shop = self.world.read_resource::<DefaultShop>();
+        let sprites = &mut self.sprites;
+        shop.ui.draw(window, sprites)
+    }
+
+    pub fn render_grabbed_item(&mut self, window: &mut Window, item: &Grabbable) -> Result<()> {
+        let mouse = window.mouse().pos();
+        let ul = self.unit_len.unwrap();
+        let center = mouse - (ul / 2.0, ul / 2.0).into();
+        let max_area = Rectangle::new(center, (ul, ul));
+        match item {
+            Grabbable::NewBuilding(building_type) => {
+                draw_static_image(&mut self.sprites, window, &max_area, building_type.sprite(), Z_GRABBED_ITEM, FitStrategy::TopLeft)?
             }
         }
-        
-        window.draw_ex(
-            &area,
-            Img(img),
-            Transform::IDENTITY, 
-            z
-        );
         Ok(())
-    })
+    }
 }
+
 
 trait Draw {
     fn draw(&self, window: &mut Window, area: &Rectangle) -> Result<()>;
@@ -195,38 +188,3 @@ fn draw_rect_z(window: &mut Window, area: &Rectangle, col: Color, z_shift: i32) 
         Z_HP_BAR + z_shift,
     );
 }
-
-trait JmrRectangle {
-    fn padded(&self, padding_factor: f32) -> Rectangle;
-    fn fit_square(&self, fit_strat: FitStrategy) -> Rectangle;
-}
-
-impl JmrRectangle for Rectangle{
-    fn padded(&self, padding_factor: f32) -> Rectangle {
-        Rectangle::new_sized(self.size() * padding_factor)
-            .with_center(self.center())
-    }
-    fn fit_square(&self, fit_strat: FitStrategy) -> Rectangle {
-        let s = self.width().min(self.height());
-        let mut rect = Rectangle::new(self.pos, (s,s));
-        match fit_strat {
-            FitStrategy::Center => {
-                rect = rect.translate(((self.width() - rect.width())/2.0, 0.0));
-                rect = rect.translate((0.0, (self.height() - rect.height())/2.0));
-            },
-            FitStrategy::TopLeft => {},
-        }
-        rect
-    }
-}
-
-// Background [0,99]
-pub const Z_TEXTURE: i32 = 0;
-pub const Z_TILE_SHADOW: i32 = 50;
-
-// Units [100,199]
-pub const Z_UNITS: i32 = 100;
-
-// UI [200,300]
-pub const Z_MENU_BOX: i32 = 220;
-pub const Z_HP_BAR: i32 = 250;

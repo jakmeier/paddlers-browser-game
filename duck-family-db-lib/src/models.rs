@@ -56,12 +56,27 @@ pub const UNIT_ALL_COLUMNS: UNIT_ALL_COLUMNS_T = (
     units::speed,
 );
 
-#[derive(Debug, PartialEq, DbEnum, Clone, Copy, Serialize, Deserialize, juniper::GraphQLEnum)]
-#[allow(non_camel_case_types)]
+#[derive(Debug, PartialEq, DbEnum, Clone, Copy, Serialize, Deserialize, juniper::GraphQLEnum, EnumIter, Display)]
 #[DieselType = "Building_type"]
 pub enum BuildingType {
     BlueFlowers,
     RedFlowers,
+}
+impl BuildingType {
+    pub fn all() -> BuildingTypeIter {
+        use strum::IntoEnumIterator;
+        BuildingType::iter()
+    }
+}
+impl From<duck_family_api_lib::types::BuildingType> for BuildingType {
+    fn from(input: duck_family_api_lib::types::BuildingType) -> Self {
+        match input {
+            duck_family_api_lib::types::BuildingType::BlueFlowers 
+                => BuildingType::BlueFlowers,
+            duck_family_api_lib::types::BuildingType::RedFlowers 
+                => BuildingType::RedFlowers,
+        }
+    }
 }
 
 #[derive(Queryable, Debug)]
@@ -93,6 +108,18 @@ pub enum ResourceType {
     Sticks,
     Logs,
     Feathers,
+}
+impl From<duck_family_api_lib::types::ResourceType> for ResourceType {
+    fn from(input: duck_family_api_lib::types::ResourceType) -> Self {
+        match input {
+            duck_family_api_lib::types::ResourceType::Sticks 
+                => ResourceType::Sticks,
+            duck_family_api_lib::types::ResourceType::Logs 
+                => ResourceType::Logs,
+            duck_family_api_lib::types::ResourceType::Feathers 
+                => ResourceType::Feathers,
+        }
+    }
 }
 
 use super::schema::resources;
