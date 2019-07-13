@@ -14,6 +14,7 @@ use crate::game::{
 use crate::net::game_master_api::http_place_building;
 use duck_family_api_lib::shop::*;
 use duck_family_api_lib::types::*;
+use duck_family_api_lib::attributes::Attributes;
 
 impl Game<'_,'_> {
 
@@ -58,9 +59,8 @@ impl Game<'_,'_> {
             )
         );
         // optimistically build
-        // TODO: Read values from lookup table
-        // TODO: Subtract resources
-        self.insert_flowers((pos.0 as i32, pos.1 as i32), Some(5.0));
+        self.resources.spend(&building_type.price());
+        self.insert_flowers((pos.0 as i32, pos.1 as i32), building_type.range());
     }
 }
 

@@ -3,3 +3,4 @@ pub extern crate strum;
 
 pub mod shop;
 pub mod types;
+pub mod attributes;

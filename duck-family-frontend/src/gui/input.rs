@@ -4,7 +4,9 @@ use specs::world::Index;
 use crate::gui::utils::*;
 use crate::gui::sprites::WithSprite;
 use crate::game::movement::Position;
+use crate::game::town_resources::TownResources;
 use duck_family_api_lib::types::*;
+use duck_family_api_lib::shop::*;
 
 #[derive(Default, Clone, Copy)]
 pub struct MouseState(pub Vector, pub bool);
@@ -33,15 +35,21 @@ impl<'a> System<'a> for MouseSystem {
         Read<'a, MouseState>,
         Write<'a, UiState>,
         Read<'a, DefaultShop>,
+        Read<'a, TownResources>,
         ReadStorage<'a, Position>,
         ReadStorage<'a, Clickable>,
      );
 
-    fn run(&mut self, (entities, mouse_state, mut ui_state, shop, position, clickable): Self::SystemData) {
+    fn run(&mut self, (entities, mouse_state, mut ui_state, shop, resis, position, clickable): Self::SystemData) {
         let MouseState(mouse_pos, clicking) = *mouse_state;
         if mouse_pos.overlaps_rectangle(&(*ui_state).menu_box_area) {
             if clicking && (*ui_state).selected_entity.is_none() {
-                (*ui_state).grabbed_item = shop.click(mouse_pos);
+                let maybe_grab = shop.click(mouse_pos);
+                if let Some(Grabbable::NewBuilding(b)) = maybe_grab {
+                    if (*resis).can_afford(&b.price()) {
+                        (*ui_state).grabbed_item = maybe_grab;
+                    }
+                }
             }
             return;
         }
@@ -93,9 +101,6 @@ impl DefaultShop {
     fn click(&self, mouse: impl Into<Vector>) -> Option<Grabbable> {
         let buy_this = self.ui.click(mouse);
         if let Some(building_type) = buy_this {
-            // TODO: Check resources
-            // let price = building_type.cost();
-            // println!("Trying to buy {:?}", buy_this);
             return Some(
                 Grabbable::NewBuilding(building_type)
             )

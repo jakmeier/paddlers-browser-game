@@ -71,6 +71,7 @@ impl State for Game<'static, 'static> {
         world.insert(UiState::default());
         world.insert(Dt);
         world.insert(MouseState::default());
+        world.insert(TownResources::default());
 
         let mut dispatcher = DispatcherBuilder::new()
             .with(MoveSystem, "update_atk_pos", &[])
@@ -105,6 +106,10 @@ impl State for Game<'static, 'static> {
         {
             let mut tick = self.world.write_resource::<ClockTick>();
             *tick = ClockTick(tick.0 + 1);
+        }
+        {
+            let mut res = self.world.write_resource::<TownResources>();
+            *res = self.resources;
         }
         {
             use std::sync::mpsc::TryRecvError;

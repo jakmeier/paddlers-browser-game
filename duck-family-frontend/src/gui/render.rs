@@ -142,7 +142,7 @@ impl Game<'_, '_> {
             let mut img_area = max_img_area.fit_into(&res_area, FitStrategy::TopLeft);
             img_area.size.y = res_area.height();
             img_area.pos.x = img_area.pos.x + res_area.width() - img_area.width();
-            let text_h = res_area.height().min(30.0);
+            let text_h = res_area.height().min(36.0);
             let text_area = Rectangle::new(  
                 (res_area.pos.x, res_area.pos.y + (res_area.height() - text_h)/2.0),
                 (res_area.size.x - img_area.width(), text_h)
