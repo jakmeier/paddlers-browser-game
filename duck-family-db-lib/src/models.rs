@@ -101,7 +101,7 @@ pub struct NewBuilding {
     pub attacks_per_cycle: Option<i32>,
 }
 
-#[derive(Debug, PartialEq, Eq, Hash, DbEnum, Clone, Copy, juniper::GraphQLEnum, EnumIter, Display)]
+#[derive(Debug, PartialEq, Eq, Hash, DbEnum, Clone, Copy, Serialize, Deserialize, juniper::GraphQLEnum, EnumIter, Display)]
 #[allow(non_camel_case_types)]
 #[DieselType = "Resource_type"]
 pub enum ResourceType {

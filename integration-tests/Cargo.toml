@@ -1,0 +1,13 @@
+[package]
+name = "integration-tests"
+version = "0.1.0"
+authors = ["Jakob Meier <inbox@jakobmeier.ch>"]
+workspace = ".."
+
+edition = "2018"
+
+[dependencies]
+duck-family-db-lib = { path = "../duck-family-db-lib" }
+duck-family-api-lib = { path = "../duck-family-api-lib" }
+serde = "1.0"
+serde_json = "1.0"

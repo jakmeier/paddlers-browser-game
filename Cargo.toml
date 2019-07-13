@@ -6,10 +6,12 @@ members = [
     "duck-family-api-lib",
     "duck-family-game-master",
     "duck-family-frontend",
+    "integration-tests",
 ]
 
 default-members = [
     "duck-family-db-interface",
+    "integration-tests",
 ]
 
 
