@@ -44,18 +44,60 @@ pub fn draw_static_image(asset: &mut Asset<Sprites>, window: &mut Window, max_ar
     })
 }
 
+pub fn write_text(asset: &mut Asset<Font>, window: &mut Window, max_area: &Rectangle, z: i32, fit_strat: FitStrategy, text: &str) -> Result<f32> {
+    println!("Max Area for text: {:?}", max_area);
+    let mut res = 0.0;
+    asset.execute(
+        |font| {
+            let style = FontStyle::new(max_area.height(), Color::BLACK);
+            let img = font.render(text, &style).unwrap();
+            let area = img.area().fit_into(max_area, fit_strat);
+            println!("Area for text: {:?}", area);
+            window.draw_ex(&area, Img(&img), Transform::IDENTITY, z);
+            res = area.width();
+            Ok(())
+        }
+    )?;
+    Ok(res)
+}
+
 
 pub trait JmrRectangle {
-    fn padded(&self, padding_factor: f32) -> Rectangle;
+    fn shrink_to_center(&self, shrink_to_center: f32) -> Rectangle;
+    fn padded(&self, padding: f32) -> Rectangle;
+    fn fit_into(self, frame: &Rectangle, fit_strat: FitStrategy) -> Rectangle;
     fn fit_square(&self, fit_strat: FitStrategy) -> Rectangle;
-    fn grid(&self, w: usize, h: usize) -> Grid ;
+    fn grid(&self, cols: usize, rows: usize) -> Grid ;
 }
 
 impl JmrRectangle for Rectangle{
-    fn padded(&self, padding_factor: f32) -> Rectangle {
-        Rectangle::new_sized(self.size() * padding_factor)
+    fn shrink_to_center(&self, shrink_to_center: f32) -> Rectangle {
+        Rectangle::new_sized(self.size() * shrink_to_center)
             .with_center(self.center())
     }
+    /// Padds constant pixels around the rectangle
+    fn padded(&self, padding: f32) -> Rectangle {
+        Rectangle::new_sized(self.size() - (2.0*padding, 2.0*padding).into() )
+            .with_center(self.center())
+    }
+    /// Shrinks and moves the rectangle to fit within the given frame, without changing proportions 
+    fn fit_into(mut self, frame: &Rectangle, fit_strat: FitStrategy) -> Rectangle {
+        println!("Before fit {:?}", self);
+        let stretch_factor = ( frame.width() / self.width() ).min( frame.height() / self.height() );
+        if stretch_factor < 1.0 {
+            self.size *= stretch_factor;
+        }
+        match fit_strat {
+            FitStrategy::TopLeft => self.pos = frame.pos,
+            FitStrategy::Center => { 
+                self.pos = frame.pos; 
+                self.pos = frame.pos + frame.center() - self.center() 
+            },
+        }
+        println!("After fit {:?}", self);
+        self
+    }
+    /// Finds the largest square that fits into the given rectangle 
     fn fit_square(&self, fit_strat: FitStrategy) -> Rectangle {
         let s = self.width().min(self.height());
         let mut rect = Rectangle::new(self.pos, (s,s));
@@ -68,14 +110,14 @@ impl JmrRectangle for Rectangle{
         }
         rect
     }
-    fn grid(&self, w: usize, h: usize) -> Grid {
-        let dx = self.width() / w as f32;
-        let dy = self.height() / h as f32;
+    fn grid(&self, cols: usize, rows: usize) -> Grid {
+        let dx = self.width() / cols as f32;
+        let dy = self.height() / rows as f32;
         Grid {
             base: Rectangle::new(self.pos, (dx,dy)),
             i: 0,
-            x: w,
-            y: h,
+            x: cols,
+            y: rows,
         }
     }
 }
@@ -96,7 +138,7 @@ impl Iterator for Grid {
             let w = self.base.width();
             let h = self.base.height();
             let mut r = self.base.clone();
-            r.pos.x = self.base.pos.x + w * (i % y) as f32;
+            r.pos.x = self.base.pos.x + w * (i % x) as f32;
             r.pos.y = self.base.pos.y + h * (i / x) as f32;
             self.i += 1;
             Some(r)
@@ -144,9 +186,9 @@ impl<T: Clone> UiBox<T> {
     }
 
 
-    pub fn draw(&self, window: &mut Window, sprites: &mut Asset<Sprites>) -> Result<()> {
-
-        let grid = self.area.grid(self.columns, self.rows);
+    pub fn draw(&mut self, window: &mut Window, sprites: &mut Asset<Sprites>, area: &Rectangle) -> Result<()> {
+        self.area = *area;
+        let grid = area.grid(self.columns, self.rows);
 
         for (el, draw_area) in self.elements.iter().zip(grid) {
             draw_static_image(

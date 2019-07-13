@@ -31,6 +31,16 @@ impl attacks_query::AttacksQueryAttacks {
 pub struct BuildingsQuery;
 pub type BuildingsResponse = Response<buildings_query::ResponseData>;
 
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "api/schema.json",
+    query_path = "api/queries/resources_query.graphql",
+)]
+pub struct ResourcesQuery;
+pub type ResourcesResponse = Response<resources_query::ResponseData>;
+
+
+
 fn f64_to_naive_dt(f: f64) -> chrono::NaiveDateTime {
     chrono::NaiveDateTime::from_timestamp(f as i64, ((f%1.0) * 1_000_000.0) as u32)
 }

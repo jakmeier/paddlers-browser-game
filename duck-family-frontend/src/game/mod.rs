@@ -2,6 +2,7 @@ pub (crate) mod attackers;
 pub (crate) mod defenders;
 pub (crate) mod movement;
 pub (crate) mod town;
+pub (crate) mod town_resources;
 pub (crate) mod fight;
 
 use crate::gui::input;
@@ -17,6 +18,7 @@ use town::{Town, TOWN_RATIO};
 use attackers::{delete_all_attackers, Attacker};
 use fight::*;
 use std::sync::mpsc::{Receiver};
+use town_resources::TownResources;
 
 const MENU_BOX_WIDTH: f32 = 300.0;
 const CYCLE_SECS: u32 = 10;
@@ -35,7 +37,10 @@ pub(crate) struct Game<'a, 'b> {
     pub world: World,
     pub town: Town,
     pub sprites: Asset<Sprites>,
+    pub font: Asset<Font>,
+    pub bold_font: Asset<Font>,
     pub unit_len: Option<f32>,
+    pub resources: TownResources,
     net: Option<Receiver<NetMsg>>,
     cycle_begin: f64,
 }
@@ -85,13 +90,18 @@ impl State for Game<'static, 'static> {
             world: world,
             town: town,
             sprites: Sprites::new(),
+            font: Asset::new(Font::load("fonts/Manjari-Regular.ttf")),
+            bold_font: Asset::new(Font::load("fonts/Manjari-Bold.ttf")),
             unit_len: None,
             net: None,
             cycle_begin: 0.0,
+            resources: TownResources::default(),
         })
     }
 
-    fn update(&mut self, _window: &mut Window) -> Result<()> {
+    fn update(&mut self, window: &mut Window) -> Result<()> {
+        window.set_draw_rate(33.3); // 33ms delay between frames  => 30 fps
+        window.set_max_updates(1); // 1 update per frame is enough
         {
             let mut tick = self.world.write_resource::<ClockTick>();
             *tick = ClockTick(tick.0 + 1);
@@ -120,6 +130,14 @@ impl State for Game<'static, 'static> {
                             }
                             else {
                                 println!("No buildings available");
+                            }
+                        }
+                        NetMsg::Resources(response) => {
+                            if let Some(data) = response.data {
+                                self.resources.update(data);
+                            }
+                            else {
+                                println!("No resources available");
                             }
                         }
                     }

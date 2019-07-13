@@ -30,6 +30,7 @@ static mut STATIC_NET_STATE: NetState = NetState {
 pub enum NetMsg {
     Attacks(AttacksResponse),
     Buildings(BuildingsResponse),
+    Resources(ResourcesResponse),
 }
 
 /// Sets up continuous networking with the help of JS setTimeout
@@ -37,16 +38,10 @@ pub fn init_net(chan: Sender<NetMsg>) {
     unsafe{
         STATIC_NET_STATE.chan = Some(Mutex::new(chan));
         STATIC_NET_STATE.work();
-        let buildings_fp = http_read_buildings();
 
         // requests done only once
-        let sender = STATIC_NET_STATE.chan.as_ref().unwrap().lock().unwrap().clone();
-        spawn_local(
-            buildings_fp.map(
-                move |response|
-                sender.send(NetMsg::Buildings(response)).expect("Transferring buildings data to game")
-            )
-        );
+        STATIC_NET_STATE.spawn_buildings_query();
+        
     }
 }
 impl NetState {
@@ -59,18 +54,40 @@ impl NetState {
     }
     // TODO: Eventually, networking should be smarter and use some kind of revision ids together with the requests
     fn work(&'static self){
+        self.spawn_attacks_query();
+        self.spawn_resource_query();
+        self.register_networking();
+    }
 
+    fn spawn_attacks_query(&self) {
         let fp = http_read_incoming_attacks();
-
         let sender = self.chan.as_ref().unwrap().lock().unwrap().clone();
         spawn_local(
             fp.map(
                 move |response|
                 sender.send(NetMsg::Attacks(response)).expect("Transferring data to game")
             )
+        );        
+    }
+    fn spawn_resource_query(&self) {
+        let res_fp = http_read_resources();
+        let sender = self.chan.as_ref().unwrap().lock().unwrap().clone();
+        spawn_local(
+            res_fp.map(
+                move |response|
+                sender.send(NetMsg::Resources(response)).expect("Transferring resource data to game")
+            )
         );
-
-        self.register_networking();
+    }
+    fn spawn_buildings_query(&self) {
+        let buildings_fp = http_read_buildings();
+        let sender = self.chan.as_ref().unwrap().lock().unwrap().clone();
+        spawn_local(
+            buildings_fp.map(
+                move |response|
+                sender.send(NetMsg::Buildings(response)).expect("Transferring buildings data to game")
+            )
+        );
     }
 }
 
@@ -91,6 +108,17 @@ pub fn http_read_buildings() -> impl Future<Output = BuildingsResponse> {
     let promise = ajax::send("POST", GRAPH_QL_PATH, request_string);
     promise.map(|x| {
         let response: BuildingsResponse = 
+            serde_json::from_str(&x.unwrap()).unwrap();
+        response
+    })
+}
+
+pub fn http_read_resources() -> impl Future<Output = ResourcesResponse> {
+    let request_body = ResourcesQuery::build_query(resources_query::Variables{});
+    let request_string = &serde_json::to_string(&request_body).unwrap();
+    let promise = ajax::send("POST", GRAPH_QL_PATH, request_string);
+    promise.map(|x| {
+        let response: ResourcesResponse = 
             serde_json::from_str(&x.unwrap()).unwrap();
         response
     })
