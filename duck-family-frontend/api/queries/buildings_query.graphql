@@ -3,6 +3,7 @@ query BuildingsQuery {
     id
     x
     y
+    buildingType
     buildingRange
     attackPower
     attacksPerCycle

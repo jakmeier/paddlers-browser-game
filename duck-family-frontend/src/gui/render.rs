@@ -83,8 +83,7 @@ impl Game<'_, '_> {
         let health_store = self.world.read_storage::<Health>();
 
         if let Some((range,p)) = (&range_store, &position_store).join().get(entity, &self.world.entities()) {
-            let ul = self.unit_len.unwrap();
-            range.draw(window, &self.town, &p.area, ul)?;
+            range.draw(window, &self.town, &p.area)?;
         }
 
         if let Some((health,p)) = (&health_store, &position_store).join().get(entity, &self.world.entities()) {
@@ -179,14 +178,12 @@ impl Draw for Health {
             },
             hp if hp < 50 => {
                 let mut lost_hp_area = max_area.clone();
-                let hp = max / 2;
                 lost_hp_area.size.x *= (max-hp) as f32 / max as f32;
                 draw_rect(window, &max_area, GREY);
                 draw_rect_z(window, &lost_hp_area, GREEN, 1);
             },
             _ => {
                 let mut lost_hp_area = max_area.clone();
-                let hp = max / 2;
                 lost_hp_area.size.x *= (max-hp) as f32 / max as f32;
                 draw_rect(window, &max_area, BLACK);
                 draw_rect_z(window, &lost_hp_area, GREEN, 1);
@@ -197,8 +194,9 @@ impl Draw for Health {
     }
 }
 impl Range {
-    fn draw(&self, window: &mut Window, town: &Town, area: &Rectangle, ul: f32) -> Result<()> {
-        town.shadow_rectified_circle(window, ul, area.center(), self.range);
+    fn draw(&self, window: &mut Window, town: &Town, area: &Rectangle) -> Result<()> {
+        // TODO Check if this aligns 100% with server. Also consider changing interface to TileIndex instead of center
+        town.shadow_rectified_circle(window, area.center(), self.range);
         Ok(())
     }
 }

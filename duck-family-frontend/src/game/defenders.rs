@@ -2,14 +2,14 @@ use quicksilver::geom::Vector;
 use specs::prelude::*;
 use crate::gui::{
     render::{RenderType, Renderable},
-    sprites::SpriteIndex,
+    sprites::{SpriteIndex,WithSprite},
     z::Z_UNITS
 };
 use crate::game::{
     Game,
     input::Clickable,
     movement::Position,
-    fight::Range
+    fight::{Range,Aura}
 };
 use crate::net::game_master_api::http_place_building;
 use duck_family_api_lib::shop::*;
@@ -17,27 +17,33 @@ use duck_family_api_lib::types::*;
 use duck_family_api_lib::attributes::Attributes;
 
 impl Game<'_,'_> {
+    fn insert_new_bulding(&mut self, pos: (i32, i32), bt: BuildingType) -> Entity {
+        self.insert_bulding(pos, bt, bt.attack_power(), bt.attacks_per_cycle(), bt.range())
+    }
 
-    fn insert_flowers(&mut self, pos: (i32, i32), range: Option<f32>) -> Entity {
-        let pos: Vector = pos.into();
+    fn insert_bulding(&mut self, pos: (i32, i32), bt: BuildingType, ap: Option<i64>, attacks_per_cycle: Option<i64>,  range: Option<f32>) -> Entity {
+        let posv: Vector = pos.into();
         let ul = self.unit_len.unwrap();
-        let builder = 
+        let mut builder = 
             self.world.create_entity()
-            .with(Position::new(pos * ul , (ul, ul), Z_UNITS))
+            .with(Position::new(posv * ul , (ul, ul), Z_UNITS))
             .with(
                 Renderable {
-                    kind: RenderType::StaticImage(SpriteIndex::Flowers, SpriteIndex::Grass),
+                    kind: RenderType::StaticImage(bt.sprite(), SpriteIndex::Grass),
                 }
             )
             .with(Clickable);
 
-        let builder = 
+        if let Some(r) = range {
+            builder = builder.with(Range::new(r));
+        }
+
+        // No (None) attacks per cycle && Some ap => Aura effect
+        if attacks_per_cycle.is_none() && ap.is_some() {
             if let Some(r) = range {
-                builder.with(Range::new(r))
+                builder = builder.with(Aura::new(r, ap.unwrap(), (pos.0 as usize, pos.1 as usize), &self.town))
             }
-            else {
-                builder
-            };
+        }
 
         builder.build()
     }
@@ -60,7 +66,7 @@ impl Game<'_,'_> {
         );
         // optimistically build
         self.resources.spend(&building_type.price());
-        self.insert_flowers((pos.0 as i32, pos.1 as i32), building_type.range());
+        self.insert_new_bulding((pos.0 as i32, pos.1 as i32), building_type);
     }
 }
 
@@ -78,6 +84,12 @@ impl buildings_query::BuildingsQueryBuildings {
     fn create_entity(&self, game: &mut Game) -> Entity {
         let coordinates = (self.x as i32,self.y as i32);
         let maybe_range = self.building_range.map(|f| f as f32);
-        game.insert_flowers(coordinates, maybe_range)
+        let maybe_ap = self.attack_power.map(|f| f as i64);
+        let bt = match self.building_type {
+            buildings_query::BuildingType::RED_FLOWERS => BuildingType::RedFlowers,
+            buildings_query::BuildingType::BLUE_FLOWERS => BuildingType::BlueFlowers,
+            _ => panic!("Unexpected BuildingType"),
+        };
+        game.insert_bulding(coordinates, bt, maybe_ap, self.attacks_per_cycle, maybe_range)
     }
 }

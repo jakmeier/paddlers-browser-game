@@ -24,8 +24,10 @@ const MENU_BOX_WIDTH: f32 = 300.0;
 const CYCLE_SECS: u32 = 10;
 
 mod resources {
+    #[derive(Default)]
     pub struct ClockTick(pub u32);
-    // pub struct UnitLength(pub f32);
+    #[derive(Default)]
+    pub struct UnitLength(pub f32);
     #[derive(Default)]
     pub struct Dt(pub f64);
 }
@@ -48,6 +50,8 @@ pub(crate) struct Game<'a, 'b> {
 impl Game<'static, 'static> {
     fn with_unit_length(mut self, ul: f32) -> Self {
         self.unit_len = Some(ul);
+        self.world.insert(UnitLength(ul));
+        self.town.update_ul(ul);
         self
     }
     fn with_menu_box_area(mut self, area: Rectangle) -> Self {
@@ -74,7 +78,8 @@ impl State for Game<'static, 'static> {
         world.insert(TownResources::default());
 
         let mut dispatcher = DispatcherBuilder::new()
-            .with(MoveSystem, "update_atk_pos", &[])
+            .with(MoveSystem, "m", &[])
+            .with(FightSystem, "f", &["m"])
             .build();
         dispatcher.setup(&mut world);
 
@@ -83,7 +88,7 @@ impl State for Game<'static, 'static> {
             .build();
         mouse_dispatcher.setup(&mut world);
 
-        let town = Town::new();
+        let town = Town::new(1.0);
 
         Ok(Game {
             dispatcher: dispatcher,
@@ -153,6 +158,7 @@ impl State for Game<'static, 'static> {
         }
         self.update_dt();
         self.dispatcher.dispatch(&mut self.world);
+        self.reaper();
         self.world.maintain();
         Ok(())
     }
@@ -201,7 +207,7 @@ impl State for Game<'static, 'static> {
                     let maybe_grabbed = ui_state.grabbed_item.clone();
                     std::mem::drop(ui_state);
                     if let Some(Grabbable::NewBuilding(item)) = maybe_grabbed {
-                        if let Some(pos) = self.town.get_empty_lane(window.mouse().pos(), self.unit_len.unwrap()) {
+                        if let Some(pos) = self.town.get_empty_tile(window.mouse().pos(), self.unit_len.unwrap()) {
                             self.purchase_building(item, pos);
                             let mut ui_state = self.world.write_resource::<UiState>();
                             (*ui_state).grabbed_item = None;
@@ -239,6 +245,19 @@ impl Game<'_,'_> {
             let mut dt = self.world.write_resource::<Dt>();
             *dt = Dt(t - self.cycle_begin);
         }
+    }
+    // TODO:  Keep track of deleted entities to make sure they are not inserted again with network update
+    //        or better: solve the problem by delta updates on units or something like that
+    fn reaper(&mut self) {
+        let h = self.world.read_storage::<Health>();
+        let mut dead = vec![];
+        for (entity, health) in (&self.world.entities(), &h).join() {
+            if health.hp <= 0 {
+                dead.push(entity);
+            }
+        }
+        std::mem::drop(h);
+        self.world.delete_entities(&dead).expect("Something bad happened when deleting dead entities");
     }
 }
 

@@ -11,8 +11,8 @@ impl BuildingFactory {
             y: pos.1 as i32,
             building_type: typ.into(),
             building_range: typ.range(), 
-            attack_power: typ.attack_power(), 
-            attacks_per_cycle: typ.attacks_per_cycle(),
+            attack_power: typ.attack_power().map(|i| i as f32), 
+            attacks_per_cycle: typ.attacks_per_cycle().map(|i| i as i32),
         }
     }
 }
