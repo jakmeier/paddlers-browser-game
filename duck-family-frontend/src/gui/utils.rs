@@ -45,14 +45,12 @@ pub fn draw_static_image(asset: &mut Asset<Sprites>, window: &mut Window, max_ar
 }
 
 pub fn write_text(asset: &mut Asset<Font>, window: &mut Window, max_area: &Rectangle, z: i32, fit_strat: FitStrategy, text: &str) -> Result<f32> {
-    println!("Max Area for text: {:?}", max_area);
     let mut res = 0.0;
     asset.execute(
         |font| {
             let style = FontStyle::new(max_area.height(), Color::BLACK);
             let img = font.render(text, &style).unwrap();
             let area = img.area().fit_into(max_area, fit_strat);
-            println!("Area for text: {:?}", area);
             window.draw_ex(&area, Img(&img), Transform::IDENTITY, z);
             res = area.width();
             Ok(())
@@ -82,7 +80,6 @@ impl JmrRectangle for Rectangle{
     }
     /// Shrinks and moves the rectangle to fit within the given frame, without changing proportions 
     fn fit_into(mut self, frame: &Rectangle, fit_strat: FitStrategy) -> Rectangle {
-        println!("Before fit {:?}", self);
         let stretch_factor = ( frame.width() / self.width() ).min( frame.height() / self.height() );
         if stretch_factor < 1.0 {
             self.size *= stretch_factor;
@@ -94,7 +91,6 @@ impl JmrRectangle for Rectangle{
                 self.pos = frame.pos + frame.center() - self.center() 
             },
         }
-        println!("After fit {:?}", self);
         self
     }
     /// Finds the largest square that fits into the given rectangle 

@@ -78,6 +78,16 @@ impl From<duck_family_api_lib::types::BuildingType> for BuildingType {
         }
     }
 }
+impl Into<duck_family_api_lib::types::BuildingType> for BuildingType {
+    fn into(self) -> duck_family_api_lib::types::BuildingType {
+        match self {
+            BuildingType::BlueFlowers 
+                => duck_family_api_lib::types::BuildingType::BlueFlowers,
+            BuildingType::RedFlowers 
+                => duck_family_api_lib::types::BuildingType::RedFlowers,
+        }
+    }
+}
 
 #[derive(Queryable, Debug)]
 pub struct Building {
@@ -118,6 +128,18 @@ impl From<duck_family_api_lib::types::ResourceType> for ResourceType {
                 => ResourceType::Logs,
             duck_family_api_lib::types::ResourceType::Feathers 
                 => ResourceType::Feathers,
+        }
+    }
+}
+impl Into<duck_family_api_lib::types::ResourceType> for ResourceType {
+    fn into(self) -> duck_family_api_lib::types::ResourceType {
+        match self {
+            ResourceType::Sticks 
+                => duck_family_api_lib::types::ResourceType::Sticks,
+            ResourceType::Logs 
+                => duck_family_api_lib::types::ResourceType::Logs,
+            ResourceType::Feathers 
+                => duck_family_api_lib::types::ResourceType::Feathers,
         }
     }
 }

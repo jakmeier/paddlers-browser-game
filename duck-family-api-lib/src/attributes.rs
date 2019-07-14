@@ -4,6 +4,7 @@ pub trait Attributes {
     fn range(&self) -> Option<f32>;
     fn attack_power(&self) -> Option<f32>;
     fn attacks_per_cycle(&self) -> Option<i32>;
+    fn size(&self) -> (usize,usize);
 }
 
 
@@ -26,5 +27,8 @@ impl Attributes for BuildingType {
             BuildingType::BlueFlowers => None,
             BuildingType::RedFlowers => None
         }
+    }
+    fn size(&self) -> (usize,usize) {
+        (1,1)
     }
 }
