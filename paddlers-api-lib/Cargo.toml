@@ -1,0 +1,12 @@
+[package]
+name = "paddlers-api-lib"
+version = "0.1.0"
+authors = ["Jakob Meier <inbox@jakobmeier.ch>"]
+edition = "2018"
+
+[dependencies]
+# Unfortunately, this brakes the linker :(
+# paddlers-db-lib = { path = "../paddlers-db-lib" }
+serde = { version = "1.0", features = [ "derive" ] }
+strum = "0.15"
+strum_macros = "0.15"

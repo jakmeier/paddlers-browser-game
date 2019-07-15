@@ -1,0 +1,21 @@
+[package]
+name = "paddlers-frontend" # To be redefined (happy duck, happy-bird, ...)
+version = "0.1.0"
+authors = ["Jakob Meier <inbox@jakobmeier.ch>"]
+edition = "2018"
+
+
+[dependencies]
+paddlers-api-lib = { path = "../paddlers-api-lib"}
+quicksilver = { version = "0.3", default-features = false, features = ["fonts"] }
+stdweb = {version = "0.4.17", features = ["experimental_features_which_may_break_on_minor_version_bumps"] }
+specs = { version = "0.15", default-features = false } # parallel not supported in wasm
+specs-derive = "0.4"
+graphql_client = "0.8"
+serde = { version = "1.0", features = ["derive"]}
+serde_json = "1.0"
+chrono = "0.4"
+
+futures-preview = "0.3.0-alpha.15"
+futures-util-preview = "0.3.0-alpha.17"
+

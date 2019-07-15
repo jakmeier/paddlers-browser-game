@@ -1,0 +1,13 @@
+diff --git a/paddlers_db_lib/src/schema.rs b/paddlers_db_lib/src/schema.rs
+index 80f627a..aca49ea 100644
+--- a/paddlers_db_lib/src/schema.rs
++++ b/paddlers_db_lib/src/schema.rs
+@@ -1,6 +1,8 @@
++#![allow(unused_imports)]
++
+ table! {
+     use diesel::sql_types::*;
+     use crate::models::*;
+ 
+     attacks (id) {
+         id -> Int8,

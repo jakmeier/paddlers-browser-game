@@ -7,7 +7,7 @@ workspace = ".."
 edition = "2018"
 
 [dependencies]
-duck-family-db-lib = { path = "../duck-family-db-lib" }
-duck-family-api-lib = { path = "../duck-family-api-lib" }
+paddlers-db-lib = { path = "../paddlers-db-lib" }
+paddlers-api-lib = { path = "../paddlers-api-lib" }
 serde = "1.0"
 serde_json = "1.0"

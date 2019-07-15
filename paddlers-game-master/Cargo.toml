@@ -1,0 +1,18 @@
+[package]
+name = "paddlers-game-master"
+version = "0.1.0"
+authors = ["Jakob Meier <inbox@jakobmeier.ch>"]
+edition = "2018"
+
+[dependencies]
+paddlers-db-lib = { path = "../paddlers-db-lib"}
+paddlers-api-lib = { path = "../paddlers-api-lib"}
+diesel = { version = "1.4", features = ["postgres", "chrono", "r2d2"] }
+r2d2 = "0.8"
+chrono = "0.4"
+rand = "0.7"
+actix = "0.8"
+actix-web = "1.0"
+actix-cors = "0.1.0"
+futures = "0.1"
+serde = "1.0"

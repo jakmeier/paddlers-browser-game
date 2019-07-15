@@ -1,16 +1,16 @@
 [workspace]
 
 members = [
-    "duck-family-db-interface",
-    "duck-family-db-lib",
-    "duck-family-api-lib",
-    "duck-family-game-master",
-    "duck-family-frontend",
+    "paddlers-db-interface",
+    "paddlers-db-lib",
+    "paddlers-api-lib",
+    "paddlers-game-master",
+    "paddlers-frontend",
     "integration-tests",
 ]
 
 default-members = [
-    "duck-family-db-interface",
+    "paddlers-db-interface",
     "integration-tests",
 ]
 

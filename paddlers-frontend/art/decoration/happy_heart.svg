@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="165.20982mm"
+   height="165.20982mm"
+   viewBox="0 0 165.20982 165.20982"
+   version="1.1"
+   id="svg8"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)"
+   sodipodi:docname="happy_heart.svg"
+   inkscape:export-filename="/home/jakmeier/fun/gamedev/paddlers-browser-game/paddlers-frontend/static/happy.png"
+   inkscape:export-xdpi="6.149755"
+   inkscape:export-ydpi="6.149755">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.5"
+     inkscape:cx="996.95444"
+     inkscape:cy="445.97974"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="3750"
+     inkscape:window-height="2049"
+     inkscape:window-x="90"
+     inkscape:window-y="55"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-19.585388,-61.922051)">
+    <path
+       style="opacity:1;fill:#ff1f1f;fill-opacity:1;stroke:#0dc639;stroke-width:0;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:markers stroke fill"
+       d="m 66.015607,61.973964 c -29.975926,-1.277099 -54.104013,35.42787 -44.154686,67.105216 4.565124,17.24702 17.921863,27.59806 28.539208,40.03021 17.658146,19.34082 35.316292,38.68166 52.974441,58.02248 23.09679,-25.454 46.19347,-50.90815 69.29034,-76.36207 19.29788,-21.88006 15.0327,-62.875137 -8.96989,-78.78763 C 144.80549,57.72913 117.02592,62.673283 102.98028,82.742667 94.455907,69.816918 80.360127,61.897157 66.015607,61.973964 Z"
+       id="path819"
+       inkscape:connector-curvature="0" />
+    <path
+       style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:50;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:markers stroke fill"
+       id="path840"
+       sodipodi:type="arc"
+       sodipodi:cx="63.048882"
+       sodipodi:cy="117.66382"
+       sodipodi:rx="0.14031649"
+       sodipodi:ry="0.058465209"
+       sodipodi:start="0.017453293"
+       sodipodi:end="6.0640069"
+       d="m 63.189177,117.66484 a 0.14031649,0.05846521 0 0 1 -0.134445,0.0574 0.14031649,0.05846521 0 0 1 -0.145454,-0.0525 0.14031649,0.05846521 0 0 1 0.117246,-0.0636 0.14031649,0.05846521 0 0 1 0.159317,0.045 l -0.136959,0.0127 z" />
+    <ellipse
+       style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:66.51309204;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:markers stroke fill"
+       id="path844"
+       cx="113.3232"
+       cy="-67.415176"
+       rx="19.831398"
+       ry="14.125195"
+       transform="rotate(89.842699)" />
+    <use
+       x="0"
+       y="0"
+       xlink:href="#path844"
+       id="use857"
+       transform="matrix(1,0,0,-1,68.100275,227.21075)"
+       width="100%"
+       height="100%" />
+    <path
+       style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 69.971162,153.36171 66.697108,0.23387 c 0,0 -3.25956,22.82518 -48.64305,26.05209 -8.831272,-0.004 -18.054058,-26.28596 -18.054058,-26.28596 z"
+       id="path861"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cccc" />
+  </g>
+</svg>
