@@ -76,14 +76,14 @@ impl<'a> System<'a> for FightSystem {
         // n can be arbitrarily large in late game
         // m will most likely remain limited by the map size
         // t is always smaller than the map lane size
-        for a in (&aura).join() { // m
-            for (id, p, mut h) in (&entities, &position, &mut health).join() { // n
+        for (id, a) in (&entities, &aura).join() { // m
+            for (p, mut h) in (&position, &mut health).join() { // n
                 let tile = Town::find_tile(p.area.pos, ul.0);
                 if a.affected_tiles.binary_search(&tile).is_ok() { // log t
                     match h.aura_effects.binary_search(&id.id()) { // log m
                         Ok(_) => {/* Aura already active*/},
                         Err(i) => { 
-                            (*h).hp = 0.max((*h).hp - a.effect);
+                            (*h).hp = 0.max(h.hp - a.effect);
                             (*h).aura_effects.insert(i, id.id()); // [Theoretically O(m) but not considered above]
                         }
                     }
