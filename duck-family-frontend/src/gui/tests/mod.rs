@@ -60,3 +60,15 @@ fn fit_square_in_rectangle() {
     assert_eq!(top_left, Rectangle::new((1000,1000),(100,100)), "Fitting rectangle at top left");
     assert_eq!(center, Rectangle::new((1000,1450),(100,100)), "Fitting rectangle in center");
 }
+
+
+#[test]
+fn cut_horizontal() {
+    let a = Rectangle::new( (100,100), (100,100) );
+    let h = 30.0;
+
+    let (b,c) = a.cut_horizontal(h);
+
+    assert_eq!(b, Rectangle::new((100,100),(100,30)));
+    assert_eq!(c, Rectangle::new((100,130),(100,70)));
+}
