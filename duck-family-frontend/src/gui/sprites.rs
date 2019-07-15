@@ -15,7 +15,8 @@ impl Sprites {
             Image::load("textures/grass.png"),
             Image::load("textures/water.png"),
             Image::load("ducks/yellow_sad.png"),
-            Image::load("deco/flowers.png"),
+            Image::load("deco/red_flowers.png"),
+            Image::load("deco/blue_flowers.png"),
             Image::load("resources/yellow_feather.png"),
             Image::load("resources/sticks.png"),
             Image::load("resources/logs.png"),
@@ -39,7 +40,8 @@ pub enum SpriteIndex {
     Grass,
     Water,
     Duck,
-    Flowers,
+    RedFlowers,
+    BlueFlowers,
     Feathers,
     Sticks,
     Logs,
@@ -54,10 +56,11 @@ impl Index<SpriteIndex> for Sprites {
             SpriteIndex::Grass => 0,
             SpriteIndex::Water => 1,
             SpriteIndex::Duck => 2,
-            SpriteIndex::Flowers => 3,
-            SpriteIndex::Feathers => 4,
-            SpriteIndex::Sticks => 5,
-            SpriteIndex::Logs => 6,
+            SpriteIndex::RedFlowers => 3,
+            SpriteIndex::BlueFlowers => 4,
+            SpriteIndex::Feathers => 5,
+            SpriteIndex::Sticks => 6,
+            SpriteIndex::Logs => 7,
         };
         &self.img[i]
     }
@@ -71,8 +74,8 @@ use duck_family_api_lib::types::BuildingType;
 impl WithSprite for BuildingType {
     fn sprite(&self) -> SpriteIndex {
         match self {
-            BuildingType::BlueFlowers => SpriteIndex::Flowers,
-            BuildingType::RedFlowers => SpriteIndex::Flowers,
+            BuildingType::BlueFlowers => SpriteIndex::BlueFlowers,
+            BuildingType::RedFlowers => SpriteIndex::RedFlowers,
         }
     }
 }
