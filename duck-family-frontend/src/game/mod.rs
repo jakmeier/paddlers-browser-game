@@ -158,7 +158,7 @@ impl State for Game<'static, 'static> {
         }
         self.update_dt();
         self.dispatcher.dispatch(&mut self.world);
-        self.reaper();
+        // self.reaper();
         self.world.maintain();
         Ok(())
     }

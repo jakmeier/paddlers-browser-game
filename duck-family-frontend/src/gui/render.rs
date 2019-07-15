@@ -5,30 +5,23 @@ use specs::world::Index;
 use crate::game::{
     Game,
     movement::Position,
-    fight::{Health, Range},
+    fight::{Health, Range, Aura},
     town::Town,
 };
 use crate::gui::{
-    sprites::{SpriteIndex, WithSprite},
+    sprites::{SpriteIndex, WithSprite, Sprites},
     z::*,
     input::{UiState, DefaultShop, Grabbable},
-    utils::*
+    utils::*,
+    gui_components::*,
 };
 
 
 #[derive(Component, Debug)]
 #[storage(VecStorage)]
 pub struct Renderable {
-    pub kind: RenderType,
+    pub kind: RenderVariant,
 }
-#[derive(Debug)]
-pub enum RenderType {
-    StaticImage(SpriteIndex, SpriteIndex), // main, background
-}  
-
-pub const BLACK: Color =    Color { r: 0.0, g: 0.0, b: 0.0, a: 1.0 };
-pub const GREEN: Color =    Color { r: 0.5, g: 1.0, b: 0.5, a: 1.0 };
-pub const GREY: Color =    Color { r: 0.75, g: 0.75, b: 0.75, a: 1.0 };
 
 impl Game<'_, '_> {
     pub fn render_entities(&mut self, window: &mut Window) -> Result<()> {
@@ -38,15 +31,16 @@ impl Game<'_, '_> {
         let sprites = &mut self.sprites;
         for (pos, r) in (&pos_store, &rend_store).join() {
             match r.kind {
-                RenderType::StaticImage(i, _) => {
+                RenderVariant::ImgWithImgBackground(i, _) => {
                     draw_static_image(sprites, window, &pos.area, i, pos.z, FitStrategy::TopLeft)?;
                 },
+                _ => { panic!("Not implemented")}
             }
         }
         Ok(())
     }
     pub fn render_menu_box(&mut self, window: &mut Window) -> Result<()> {
-        let resources_height = 100.0;
+        let resources_height = 50.0;
         let data = self.world.read_resource::<UiState>();
         let entity = (*data).selected_entity;
         let area = data.menu_box_area;
@@ -55,15 +49,17 @@ impl Game<'_, '_> {
         // Menu Box Background
         window.draw_ex(
             &area,
-            Col(GREY),
+            Col(LIME_GREEN),
             Transform::IDENTITY, 
             Z_MENU_BOX
         );
 
+        let area = area.padded(15.0);
         let resources_area = Rectangle::new( (area.pos.x, area.y()) , (area.width(), resources_height) );
         self.render_resources(window, &resources_area)?;
 
-        let menu_area = area.translate((0,resources_height));
+        let mut menu_area = area.translate((0,resources_height));
+        menu_area.size.y -= resources_height;
         match entity {
             Some(id) => {
                 self.render_entity_details(window, &menu_area, id)?;
@@ -87,7 +83,7 @@ impl Game<'_, '_> {
         }
 
         if let Some((health,p)) = (&health_store, &position_store).join().get(entity, &self.world.entities()) {
-            health.draw(window, &p.area)?;
+            render_health(&health, &mut self.sprites, window, &p.area)?;
         }
         Ok(())
     }
@@ -97,24 +93,57 @@ impl Game<'_, '_> {
         img_bg_area.size.y = img_bg_area.height() / 3.0;
         let img_bg_area = img_bg_area.fit_square(FitStrategy::Center).shrink_to_center(0.8);
         let img_area = img_bg_area.shrink_to_center(0.8);
+        let text_y = img_bg_area.y() + img_bg_area.height();
+        let text_area = Rectangle::new((area.x(), text_y), (area.width(), area.y() + area.height() - text_y) ).padded(20.0);
 
         let e = self.world.entities().entity(id);
         let r = self.world.read_storage::<Renderable>();
         let sprites = &mut self.sprites;
-        let rd = r.get(e).expect("Selected item should have Renderable component");
-        match rd.kind {
-            RenderType::StaticImage(main, background) => {
-                draw_static_image(sprites, window, &img_bg_area, background, Z_MENU_BOX + 1, FitStrategy::Center)?;
-                draw_static_image(sprites, window, &img_area, main, Z_MENU_BOX + 2, FitStrategy::Center)?;
-            },
+        if let Some(rd) = r.get(e) {
+            match rd.kind {
+                RenderVariant::ImgWithImgBackground(main, background) => {
+                    draw_static_image(sprites, window, &img_bg_area, background, Z_MENU_BOX + 1, FitStrategy::Center)?;
+                    draw_static_image(sprites, window, &img_area, main, Z_MENU_BOX + 2, FitStrategy::Center)?;
+                },
+                _ => { panic!("Not implemented") }
+            }
         }
+
+        let mut detail_table = vec![];
+
+        let health = self.world.read_storage::<Health>();
+        if let Some(health) = health.get(e) {
+            let health_text = format!("Well-being {}/{}", health.max_hp - health.hp, health.max_hp);
+            detail_table.push(
+                TableRow::TextWithImage(
+                    health_text,
+                    SpriteIndex::Heart,
+                )
+            );
+        }
+
+        let aura = self.world.read_storage::<Aura>();
+        if let Some(aura) = aura.get(e) {
+            let text = format!("+{} Ambience", aura.effect);
+            detail_table.push(
+                TableRow::TextWithImage(
+                    text,
+                    SpriteIndex::Ambience,
+                )
+            );
+        }
+
+        draw_table(window, &mut self.sprites, &detail_table, &text_area, &mut self.font, 40.0, Z_MENU_TEXT)?;
         Ok(())
     }
 
     pub fn render_shop(&mut self, window: &mut Window, area: &Rectangle) -> Result<()> {
         let mut shop = self.world.write_resource::<DefaultShop>();
         let sprites = &mut self.sprites;
-        (*shop).ui.draw(window, sprites, area)
+        let price_tag_h = 50.0;
+        let (shop_area, price_tag_area) = area.cut_horizontal(area.height() - price_tag_h);
+        (*shop).ui.draw(window, sprites, &shop_area)?;
+        (*shop).ui.draw_hover(window, sprites, &mut self.bold_font, &price_tag_area)
     }
 
     pub fn render_grabbed_item(&mut self, window: &mut Window, item: &Grabbable) -> Result<()> {
@@ -132,67 +161,52 @@ impl Game<'_, '_> {
 
     pub fn render_resources(&mut self, window: &mut Window, area: &Rectangle) -> Result<()> {
         let sprites = &mut self.sprites;
+        let font = &mut self.bold_font;
         let resis = self.resources.non_zero_resources();
-        let cols = 3;
-        let rows = (2 + resis.len()) / cols;
-        let grid = area.grid(cols, rows);
-        let max_img_area = Rectangle::new_sized((50,50));
-        for ((rt, n), res_area) in resis.iter().zip(grid) {
-            let mut img_area = max_img_area.fit_into(&res_area, FitStrategy::TopLeft);
-            img_area.size.y = res_area.height();
-            img_area.pos.x = img_area.pos.x + res_area.width() - img_area.width();
-            let text_h = res_area.height().min(36.0);
-            let text_area = Rectangle::new(  
-                (res_area.pos.x, res_area.pos.y + (res_area.height() - text_h)/2.0),
-                (res_area.size.x - img_area.width(), text_h)
-            );
-            draw_static_image(sprites, window, &img_area, rt.sprite(), Z_MENU_RESOURCES, FitStrategy::Center)?;
-            write_text(&mut self.bold_font, window, &text_area, Z_MENU_TEXT, FitStrategy::Center, &n.to_string())?;
-        }
+        draw_resources(window, sprites, &resis, area, font, Z_MENU_RESOURCES)?;
         Ok(())
     }
-
 }
 
+fn render_health(health: &Health, sprites: &mut Asset<Sprites>, window: &mut Window, area: &Rectangle) -> Result<()> {
+    let (max, hp) = (health.max_hp, health.hp);
+    let unit_pos = area.pos;
+    let w = area.width();
+    let h = 10.0;
+    let max_area = Rectangle::new((unit_pos.x,unit_pos.y-h),(w,h));
 
-trait Draw {
-    fn draw(&self, window: &mut Window, area: &Rectangle) -> Result<()>;
-}
-impl Draw for Health {
-    fn draw(&self, window: &mut Window, area: &Rectangle) -> Result<()> {
-        let (max, hp) = (self.max_hp, self.hp);
-        let unit_pos = area.pos;
-        let w = area.width();
-        let h = 10.0;
-        let max_area = Rectangle::new((unit_pos.x,unit_pos.y-h),(w,h));
-
-        match hp {
-            hp if hp < 10 => {
-                let d = w / hp as f32;
-                let mut hp_block = max_area.clone();
-                hp_block.size.x = d * 0.9;
-                for _ in 0..hp as usize {
-                    draw_rect(window, &hp_block, GREY);
-                    hp_block.pos.x += d;
-                }
-            },
-            hp if hp < 50 => {
-                let mut lost_hp_area = max_area.clone();
-                lost_hp_area.size.x *= (max-hp) as f32 / max as f32;
-                draw_rect(window, &max_area, GREY);
-                draw_rect_z(window, &lost_hp_area, GREEN, 1);
-            },
-            _ => {
-                let mut lost_hp_area = max_area.clone();
-                lost_hp_area.size.x *= (max-hp) as f32 / max as f32;
-                draw_rect(window, &max_area, BLACK);
-                draw_rect_z(window, &lost_hp_area, GREEN, 1);
+    match hp {
+        0 => {
+            let h = 20.0;
+            let max_area = Rectangle::new((unit_pos.x,unit_pos.y-h),(w,h));
+            draw_static_image(sprites, window, &max_area, SpriteIndex::Heart, Z_HP_BAR, FitStrategy::Center)?;
+        }
+        hp if hp < 10 => {
+            let d = w / hp as f32;
+            let mut hp_block = max_area.clone();
+            hp_block.size.x = d * 0.9;
+            for _ in 0..hp as usize {
+                draw_rect(window, &hp_block, GREY);
+                hp_block.pos.x += d;
             }
+        },
+        hp if hp < 50 => {
+            let mut lost_hp_area = max_area.clone();
+            lost_hp_area.size.x *= (max-hp) as f32 / max as f32;
+            draw_rect(window, &max_area, GREY);
+            draw_rect_z(window, &lost_hp_area, GREEN, 1);
+        },
+        _ => {
+            let mut lost_hp_area = max_area.clone();
+            lost_hp_area.size.x *= (max-hp) as f32 / max as f32;
+            draw_rect(window, &max_area, BLACK);
+            draw_rect_z(window, &lost_hp_area, GREEN, 1);
         }
-
-        Ok(())
     }
+
+    Ok(())
 }
+
 impl Range {
     fn draw(&self, window: &mut Window, town: &Town, area: &Rectangle) -> Result<()> {
         // TODO Check if this aligns 100% with server. Also consider changing interface to TileIndex instead of center

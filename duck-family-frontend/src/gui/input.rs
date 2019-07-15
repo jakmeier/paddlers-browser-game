@@ -1,8 +1,11 @@
 use quicksilver::geom::{Vector, Shape, Rectangle};
 use specs::prelude::*;
 use specs::world::Index;
-use crate::gui::utils::*;
-use crate::gui::sprites::WithSprite;
+use crate::gui::{
+    utils::*,
+    sprites::WithSprite,
+    gui_components::*,
+};
 use crate::game::movement::Position;
 use crate::game::town_resources::TownResources;
 use duck_family_api_lib::types::*;
@@ -80,14 +83,14 @@ pub struct DefaultShop {
 impl Default for DefaultShop {
     fn default() -> Self {
         DefaultShop {
-            ui : UiBox::new(Rectangle::default(), 3, 4)
+            ui : UiBox::new(Rectangle::default(), 3, 5)
         }
     }
 }
 impl DefaultShop {
     pub fn new(area: Rectangle) -> Self {
         let mut result = DefaultShop {
-            ui : UiBox::new(area, 3, 4)
+            ui : UiBox::new(area, 3, 5)
         };
         result.add_building(BuildingType::BlueFlowers);
         result.add_building(BuildingType::RedFlowers);
@@ -95,7 +98,7 @@ impl DefaultShop {
     }
 
     fn add_building(&mut self, b: BuildingType) {
-        self.ui.add(b.sprite(), b);
+        self.ui.add_with_background_color_and_cost(b.sprite(), WHITE, b, b.cost());
     }
 
     fn click(&self, mouse: impl Into<Vector>) -> Option<Grabbable> {

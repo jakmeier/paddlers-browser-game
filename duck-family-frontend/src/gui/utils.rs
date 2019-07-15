@@ -1,8 +1,24 @@
+//! Generic GUI Utilities
+//! Keep the dependencies to a minimum,
+//! no connection with game logic in here
+
 use quicksilver::prelude::*; 
-use crate::gui::{
-    sprites::{SpriteIndex, Sprites},
-    z::*
-};
+use crate::gui::sprites::{SpriteIndex, Sprites};
+
+
+pub const BLACK: Color =    Color { r: 0.0, g: 0.0, b: 0.0, a: 1.0 };
+pub const GREEN: Color =    Color { r: 0.5, g: 1.0, b: 0.5, a: 1.0 };
+pub const LIME_GREEN: Color =    Color { r: 0.6, g: 0.9, b: 0.25, a: 1.0 };
+pub const GREY: Color =    Color { r: 0.75, g: 0.75, b: 0.75, a: 1.0 };
+pub const WHITE: Color =    Color { r: 1.0, g: 1.0, b: 1.0, a: 1.0 };
+
+#[derive(Debug, Clone)]
+pub enum RenderVariant {
+    #[allow(dead_code)]
+    Img(SpriteIndex),
+    ImgWithImgBackground(SpriteIndex, SpriteIndex),
+    ImgWithColBackground(SpriteIndex, Color),
+}
 
 #[derive(Copy, Clone, Debug)]
 pub enum FitStrategy {
@@ -66,6 +82,7 @@ pub trait JmrRectangle {
     fn fit_into(self, frame: &Rectangle, fit_strat: FitStrategy) -> Rectangle;
     fn fit_square(&self, fit_strat: FitStrategy) -> Rectangle;
     fn grid(&self, cols: usize, rows: usize) -> Grid ;
+    fn cut_horizontal(&self, h: f32) -> (Rectangle, Rectangle);
 }
 
 impl JmrRectangle for Rectangle{
@@ -116,6 +133,14 @@ impl JmrRectangle for Rectangle{
             y: rows,
         }
     }
+    fn cut_horizontal(&self, h: f32) -> (Rectangle, Rectangle) {
+        let mut top = self.clone();
+        top.size.y = h;
+        let mut bottom = self.clone();
+        bottom.size.y -= h;
+        bottom.pos.y += h;
+        (top, bottom)
+    }
 }
 
 pub struct Grid {
@@ -142,72 +167,5 @@ impl Iterator for Grid {
         else {
             None
         }
-    }
-}
-
-
-
-
-
-#[derive(Clone)]
-struct UiElement<T: Clone> {
-    sprite: SpriteIndex,
-    on_click: T,
-}
-#[derive(Clone)]
-pub struct UiBox<T: Clone> {
-    area: Rectangle,
-    elements: Vec<UiElement<T>>,
-    columns: usize,
-    rows: usize,
-}
-
-impl<T: Clone> UiBox<T> {
-    pub fn new(area: Rectangle, columns: usize, rows: usize) -> Self {
-        UiBox {
-            area: area,
-            elements: vec![],
-            columns: columns,
-            rows: rows,
-        }
-    }
-
-    pub fn add(&mut self, i: SpriteIndex, on_click: T) {
-        self.elements.push(
-            UiElement { sprite: i, on_click: on_click }    
-        );
-        if self.columns * self.rows < self.elements.len() {
-            println!("Warning: Not all elements of the UI Area will be visible")
-        }
-    }
-
-
-    pub fn draw(&mut self, window: &mut Window, sprites: &mut Asset<Sprites>, area: &Rectangle) -> Result<()> {
-        self.area = *area;
-        let grid = area.grid(self.columns, self.rows);
-
-        for (el, draw_area) in self.elements.iter().zip(grid) {
-            draw_static_image(
-                sprites, 
-                window, 
-                &draw_area, 
-                el.sprite, 
-                Z_MENU_BOX_BUTTONS, 
-                FitStrategy::Center
-            )?;
-        }
-
-        Ok(())
-    }
-
-    pub fn click(&self, mouse: impl Into<Vector>) -> Option<T> {
-        let dx = self.area.width() / self.columns as f32;
-        let dy = self.area.height() / self.rows as f32;
-        let pos = mouse.into() - self.area.pos;
-        if pos.y < 0.0 || pos.x < 0.0 {
-            return None;
-        }
-        let i = (pos.y / dy) as usize * self.columns + (pos.x / dx) as usize;
-        self.elements.get(i).map(|el| el.on_click.clone())
     }
 }

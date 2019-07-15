@@ -1,9 +1,10 @@
 use quicksilver::geom::Vector;
 use specs::prelude::*;
 use crate::gui::{
-    render::{RenderType, Renderable, },
+    render::Renderable,
     z::Z_UNITS,
-    sprites::SpriteIndex
+    sprites::SpriteIndex,
+    utils::*,
 };
 use crate::game::{
     input::Clickable,
@@ -22,7 +23,7 @@ pub fn insert_duck(world: &mut World, pos: impl Into<Vector>, speed: impl Into<V
         .with(Velocity::new(pos, speed))
         .with(
             Renderable {
-                kind: RenderType::StaticImage(SpriteIndex::Duck, SpriteIndex::Water),
+                kind: RenderVariant::ImgWithImgBackground(SpriteIndex::Duck, SpriteIndex::Water),
             }
         )
         .with(Clickable)

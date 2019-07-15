@@ -1,9 +1,10 @@
 use quicksilver::geom::Vector;
 use specs::prelude::*;
 use crate::gui::{
-    render::{RenderType, Renderable},
+    render::Renderable,
     sprites::{SpriteIndex,WithSprite},
-    z::Z_UNITS
+    z::Z_UNITS,
+    utils::*,
 };
 use crate::game::{
     Game,
@@ -29,7 +30,7 @@ impl Game<'_,'_> {
             .with(Position::new(posv * ul , (ul, ul), Z_UNITS))
             .with(
                 Renderable {
-                    kind: RenderType::StaticImage(bt.sprite(), SpriteIndex::Grass),
+                    kind: RenderVariant::ImgWithImgBackground(bt.sprite(), SpriteIndex::Grass),
                 }
             )
             .with(Clickable);

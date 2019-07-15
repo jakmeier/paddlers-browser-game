@@ -11,13 +11,16 @@
    xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="210mm"
-   height="297mm"
-   viewBox="0 0 210 297"
+   width="851.51709mm"
+   height="852.53174mm"
+   viewBox="0 0 851.51709 852.53174"
    version="1.1"
    id="svg8"
    inkscape:version="0.92.3 (2405546, 2018-03-11)"
-   sodipodi:docname="flower.svg">
+   sodipodi:docname="flower_head.svg"
+   inkscape:export-filename="/home/jakmeier/fun/gamedev/duck-family-browser-game/duck-family-frontend/static/ambience.png"
+   inkscape:export-xdpi="1.1917444"
+   inkscape:export-ydpi="1.1917444">
   <defs
      id="defs2">
     <linearGradient
@@ -43,12 +46,12 @@
     <linearGradient
        inkscape:collect="always"
        xlink:href="#linearGradient2600"
-       id="linearGradient2602"
-       x1="83.673497"
-       y1="302.58709"
-       x2="538.11067"
-       y2="302.58709"
-       gradientUnits="userSpaceOnUse" />
+       id="linearGradient2302"
+       gradientUnits="userSpaceOnUse"
+       x1="83.6735"
+       y1="302.5871"
+       x2="278.52512"
+       y2="392.62354" />
   </defs>
   <sodipodi:namedview
      id="base"
@@ -57,9 +60,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.11313708"
-     inkscape:cx="-325.46909"
-     inkscape:cy="-1864.1754"
+     inkscape:zoom="0.15999999"
+     inkscape:cx="2394.344"
+     inkscape:cy="1521.3849"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -76,14 +79,15 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
   <g
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
-     id="layer1">
+     id="layer1"
+     transform="translate(328.3333,247.19796)">
     <use
        x="0"
        y="0"
@@ -93,7 +97,7 @@
        width="100%"
        height="100%" />
     <path
-       style="fill:#00c5ff;fill-opacity:1;stroke:url(#linearGradient2602);stroke-width:50;stroke-linecap:butt;stroke-linejoin:round;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none;paint-order:markers stroke fill"
+       style="fill:#00c5ff;fill-opacity:1;stroke:url(#linearGradient2302);stroke-width:20;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:markers stroke fill"
        d="m 109.25793,259.85118 c 8.07124,10.08766 170.89858,330.42049 347.10449,99.17528 C 673.7575,73.726348 197.64086,246.93763 200.09407,162.62578 c 20.23838,-3.26761 -101.667104,82.56695 -90.83614,97.2254 z"
        id="path824-3"
        inkscape:connector-curvature="0"
@@ -127,8 +131,8 @@
        style="opacity:1;fill:#000080;fill-opacity:1;stroke:none;stroke-width:0.26458332"
        id="path817"
        sodipodi:sides="5"
-       sodipodi:cx="77.949406"
-       sodipodi:cy="139.45913"
+       sodipodi:cx="77.949409"
+       sodipodi:cy="139.45914"
        sodipodi:r1="169.98679"
        sodipodi:r2="84.993393"
        sodipodi:arg1="0.77910894"
@@ -136,7 +140,7 @@
        inkscape:flatsided="false"
        inkscape:rounded="0"
        inkscape:randomized="0"
-       d="M 198.90179,258.89961 91.772994,223.32083 1.7311013,291.40082 2.4639101,178.52083 -90.108481,113.92378 17.473215,79.738884 50.302224,-28.26428 116.05856,63.488281 228.92039,61.33571 161.97835,152.2268 Z"
+       d="M 198.90179,258.89962 91.772998,223.32084 1.7311052,291.40083 2.463914,178.52084 -90.108477,113.92379 17.473219,79.738895 50.302228,-28.264268 116.05856,63.488293 228.9204,61.335722 161.97835,152.22681 Z"
        inkscape:transform-center-x="8.5434482"
        inkscape:transform-center-y="-7.8908572" />
     <path
