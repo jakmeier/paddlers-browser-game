@@ -36,10 +36,17 @@ impl Query {
             ctx.db.units().into_iter().map(|u| GqlUnit(u)).collect()
         )
     }
-    /// WIP for testing
-    fn attacks(ctx: &Context) -> FieldResult<Vec<GqlAttack>> {
+    /// WIP for testing (lacks village filter)
+    #[graphql(
+        arguments(
+            min_id(
+            description = "Response only contains attacks with id >= min_id",
+            )
+        )
+    )]
+    fn attacks(ctx: &Context, min_id: Option<i32>) -> FieldResult<Vec<GqlAttack>> {
         Ok(
-            ctx.db.attacks().into_iter().map(GqlAttack::from).collect()
+            ctx.db.attacks(min_id.map(i64::from)).into_iter().map(GqlAttack::from).collect()
         )
     }
     /// WIP for testing (should have at least a town filter)

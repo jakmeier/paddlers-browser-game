@@ -882,7 +882,7 @@ dependencies = [
 
 [[package]]
 name = "duck-family-db-interface"
-version = "0.0.2"
+version = "0.0.3"
 dependencies = [
  "chrono 0.4.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "diesel 1.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -915,7 +915,7 @@ dependencies = [
 
 [[package]]
 name = "duck-family-frontend"
-version = "0.0.2"
+version = "0.0.3"
 dependencies = [
  "chrono 0.4.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "duck-family-api-lib 0.0.2",

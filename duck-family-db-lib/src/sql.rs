@@ -12,8 +12,9 @@ pub trait GameDB {
             .expect("Error loading data");
         results
     }
-    fn attacks(&self) -> Vec<Attack> {
+    fn attacks(&self, min_id: Option<i64>) -> Vec<Attack> {
         let results = attacks::table
+            .filter(attacks::id.ge(min_id.unwrap_or(0)))
             .limit(500)
             .load::<Attack>(self.dbconn())
             .expect("Error loading data");

@@ -32,23 +32,11 @@ pub fn insert_duck(world: &mut World, pos: impl Into<Vector>, speed: impl Into<V
         .build()
 }
 
-pub fn delete_all_attackers(world: &mut World) {
-    let attackers: Vec<Entity> = 
-        (&world.entities(), &world.read_storage::<Attacker>())
-        .join()
-        .map( |tuple| tuple.0 )
-        .collect();
-    world.delete_entities(&attackers).expect("Deleting old attacker generation failed");
-}
-
-
 use crate::net::graphql::attacks_query::{AttacksQueryAttacksUnits,AttacksQueryAttacks};
 impl AttacksQueryAttacks {
-    pub fn create_entities(&self, world: &mut World, ul: f32) -> Vec<Entity> {
-        let ms_timestamp_now = crate::wasm_setup::local_now();
-        // let ms_timestamp_now = stdweb::web::Date::now();
-        let now = chrono::NaiveDateTime::from_timestamp((ms_timestamp_now / 1000.0) as i64, (ms_timestamp_now % 1000.0) as u32 * 1000_000);
-        let time_alive = now - self.arrival();
+    pub fn create_entities(&self, world: &mut World, ul: f32, time_zero: f64) -> Vec<Entity> {
+        let zero = chrono::NaiveDateTime::from_timestamp((time_zero / 1000.0) as i64, (time_zero % 1000.0) as u32 * 1000_000);
+        let time_alive = zero - self.arrival();
         self.units
             .iter()
             .enumerate()
@@ -57,6 +45,7 @@ impl AttacksQueryAttacks {
     }
 }
 impl AttacksQueryAttacksUnits {
+    // TODO: For entities already well into the map, compute the attacks so far.
     fn create_entity(&self, world: &mut World, time_alive: &chrono::Duration, pos_rank: usize, ul: f32) -> Entity {
         let v = -self.speed as f32 / (super::CYCLE_SECS * 1000) as f32 * ul;
         let start_x = 1000.0 - 30.0;

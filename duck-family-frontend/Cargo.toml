@@ -1,6 +1,6 @@
 [package]
 name = "duck-family-frontend" # To be redefined (happy duck, happy-bird, ...)
-version = "0.0.2"
+version = "0.0.3"
 authors = ["Jakob Meier <inbox@jakobmeier.ch>"]
 edition = "2018"
 

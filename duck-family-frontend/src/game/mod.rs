@@ -15,7 +15,7 @@ use movement::*;
 use quicksilver::prelude::*;
 use specs::prelude::*;
 use town::{Town, TOWN_RATIO};
-use attackers::{delete_all_attackers, Attacker};
+use attackers::{Attacker};
 use fight::*;
 use std::sync::mpsc::{Receiver};
 use town_resources::TownResources;
@@ -44,7 +44,7 @@ pub(crate) struct Game<'a, 'b> {
     pub unit_len: Option<f32>,
     pub resources: TownResources,
     net: Option<Receiver<NetMsg>>,
-    cycle_begin: f64,
+    time_zero: f64,
     total_updates: u64,
 }
 
@@ -101,7 +101,7 @@ impl State for Game<'static, 'static> {
             bold_font: Asset::new(Font::load("fonts/Manjari-Bold.ttf")),
             unit_len: None,
             net: None,
-            cycle_begin: 0.0,
+            time_zero: crate::wasm_setup::local_now(),
             resources: TownResources::default(),
             total_updates: 0,
         })
@@ -126,11 +126,9 @@ impl State for Game<'static, 'static> {
                     // println!("Received Network data!");
                     match msg {
                         NetMsg::Attacks(response) => {
-                            self.new_cycle();
-                            delete_all_attackers(&mut self.world);
                             if let Some(data) = response.data {
                                 for atk in data.attacks {
-                                    atk.create_entities(&mut self.world, self.unit_len.unwrap());
+                                    atk.create_entities(&mut self.world, self.unit_len.unwrap(), self.time_zero);
                                 }
                             }
                             else {
@@ -241,14 +239,11 @@ impl State for Game<'static, 'static> {
 }
 
 impl Game<'_,'_> {
-    fn new_cycle(&mut self) {
-        self.cycle_begin = stdweb::web::Date::now();
-    }
     fn update_dt(&mut self) {
-        if self.cycle_begin != 0.0 {
-            let t = stdweb::web::Date::now();
+        if self.time_zero != 0.0 {
+            let t = crate::wasm_setup::local_now();
             let mut dt = self.world.write_resource::<Dt>();
-            *dt = Dt(t - self.cycle_begin);
+            *dt = Dt(t - self.time_zero);
         }
     }
     /// Removes entites outside the map

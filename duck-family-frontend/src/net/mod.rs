@@ -14,6 +14,7 @@ use std::sync::{
     Mutex,
     mpsc::Sender,
 };
+use std::sync::atomic::{AtomicI64, Ordering};
 
 const GRAPH_QL_PATH: &'static str = "http://localhost:65432/graphql";
 const SHOP_PATH: &'static str = "http://localhost:8088/shop";
@@ -21,10 +22,12 @@ const SHOP_PATH: &'static str = "http://localhost:8088/shop";
 struct NetState {
     interval_ms: u32,
     chan: Option<Mutex<Sender<NetMsg>>>,
+    next_attack_id: AtomicI64,
 }
 static mut STATIC_NET_STATE: NetState = NetState {
     interval_ms: 5_000,
     chan: None,
+    next_attack_id: AtomicI64::new(0),
 };
 
 pub enum NetMsg {
@@ -52,20 +55,27 @@ impl NetState {
             ms
         );
     }
-    // TODO: Eventually, networking should be smarter and use some kind of revision ids together with the requests
     fn work(&'static self){
         self.spawn_attacks_query();
         self.spawn_resource_query();
         self.register_networking();
     }
 
-    fn spawn_attacks_query(&self) {
-        let fp = http_read_incoming_attacks();
+    fn spawn_attacks_query(&'static self) {
+        let fp = http_read_incoming_attacks(Some(self.next_attack_id.load(Ordering::Relaxed)));
         let sender = self.chan.as_ref().unwrap().lock().unwrap().clone();
         spawn_local(
             fp.map(
-                move |response|
-                sender.send(NetMsg::Attacks(response)).expect("Transferring data to game")
+                move |response| {
+                    if let Some(data) = &response.data {
+                        let max_id = data.attacks.iter()
+                            .map(|atk| atk.id.parse().unwrap())
+                            .fold(0, i64::max);
+                        let next = self.next_attack_id.load(Ordering::Relaxed).max(max_id + 1);
+                        self.next_attack_id.store(next, Ordering::Relaxed);
+                    }
+                    sender.send(NetMsg::Attacks(response)).expect("Transferring data to game")
+                }
             )
         );        
     }
@@ -91,8 +101,8 @@ impl NetState {
     }
 }
 
-pub fn http_read_incoming_attacks() -> impl Future<Output = AttacksResponse> {
-    let request_body = AttacksQuery::build_query(attacks_query::Variables{});
+pub fn http_read_incoming_attacks(min_attack_id: Option<i64>) -> impl Future<Output = AttacksResponse> {
+    let request_body = AttacksQuery::build_query(attacks_query::Variables{min_attack_id: min_attack_id});
     let request_string = &serde_json::to_string(&request_body).unwrap();
     let promise = ajax::send("POST", GRAPH_QL_PATH, request_string);
     promise.map(|x| {

@@ -1035,9 +1035,20 @@
               }
             },
             {
-              "args": [],
+              "args": [
+                {
+                  "defaultValue": null,
+                  "description": "Response only contains attacks with id >= min_id",
+                  "name": "minId",
+                  "type": {
+                    "kind": "SCALAR",
+                    "name": "Int",
+                    "ofType": null
+                  }
+                }
+              ],
               "deprecationReason": null,
-              "description": "WIP for testing",
+              "description": "WIP for testing (lacks village filter)",
               "isDeprecated": false,
               "name": "attacks",
               "type": {
