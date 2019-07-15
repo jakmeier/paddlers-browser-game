@@ -45,6 +45,7 @@ pub(crate) struct Game<'a, 'b> {
     pub resources: TownResources,
     net: Option<Receiver<NetMsg>>,
     cycle_begin: f64,
+    total_updates: u64,
 }
 
 impl Game<'static, 'static> {
@@ -79,7 +80,7 @@ impl State for Game<'static, 'static> {
 
         let mut dispatcher = DispatcherBuilder::new()
             .with(MoveSystem, "m", &[])
-            .with(FightSystem, "f", &["m"])
+            .with(FightSystem::default(), "f", &["m"])
             .build();
         dispatcher.setup(&mut world);
 
@@ -102,10 +103,12 @@ impl State for Game<'static, 'static> {
             net: None,
             cycle_begin: 0.0,
             resources: TownResources::default(),
+            total_updates: 0,
         })
     }
 
     fn update(&mut self, window: &mut Window) -> Result<()> {
+        self.total_updates += 1;
         window.set_draw_rate(33.3); // 33ms delay between frames  => 30 fps
         window.set_max_updates(1); // 1 update per frame is enough
         {
@@ -158,7 +161,9 @@ impl State for Game<'static, 'static> {
         }
         self.update_dt();
         self.dispatcher.dispatch(&mut self.world);
-        // self.reaper();
+        if self.total_updates % 300 == 15 {
+            self.reaper(&Rectangle::new_sized(window.screen_size()));
+        }
         self.world.maintain();
         Ok(())
     }
@@ -246,17 +251,16 @@ impl Game<'_,'_> {
             *dt = Dt(t - self.cycle_begin);
         }
     }
-    // TODO:  Keep track of deleted entities to make sure they are not inserted again with network update
-    //        or better: solve the problem by delta updates on units or something like that
-    fn reaper(&mut self) {
-        let h = self.world.read_storage::<Health>();
+    /// Removes entites outside the map
+    fn reaper(&mut self, map: &Rectangle) {
+        let p = self.world.read_storage::<Position>();
         let mut dead = vec![];
-        for (entity, health) in (&self.world.entities(), &h).join() {
-            if health.hp <= 0 {
+        for (entity, position) in (&self.world.entities(), &p).join() {
+            if !position.area.overlaps_rectangle(map)  {
                 dead.push(entity);
             }
         }
-        std::mem::drop(h);
+        std::mem::drop(p);
         self.world.delete_entities(&dead).expect("Something bad happened when deleting dead entities");
     }
 }

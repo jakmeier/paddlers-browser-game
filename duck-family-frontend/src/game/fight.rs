@@ -58,8 +58,10 @@ impl Health {
     }
 }
 
-
-pub struct FightSystem;
+#[derive(Default,Clone,Copy)]
+pub struct FightSystem {
+    counter: usize, 
+}
 
 impl<'a> System<'a> for FightSystem {
     type SystemData = (
@@ -71,6 +73,12 @@ impl<'a> System<'a> for FightSystem {
      );
 
     fn run(&mut self, (entities, aura, position, mut health, ul): Self::SystemData) {
+        // It's not necessary to recalculate every frame
+        self.counter = (self.counter + 1) % 30;
+        if self.counter != 1 {
+            return;
+        }
+
         // This algorithm runs in O(n*m*(log(m)+log(t))
         // n attacker, m defenders, t tiles
         // n can be arbitrarily large in late game
