@@ -61,6 +61,7 @@ pub const UNIT_ALL_COLUMNS: UNIT_ALL_COLUMNS_T = (
 pub enum BuildingType {
     BlueFlowers,
     RedFlowers,
+    Tree,
 }
 impl BuildingType {
     pub fn all() -> BuildingTypeIter {
@@ -75,6 +76,8 @@ impl From<paddlers_api_lib::types::BuildingType> for BuildingType {
                 => BuildingType::BlueFlowers,
             paddlers_api_lib::types::BuildingType::RedFlowers 
                 => BuildingType::RedFlowers,
+            paddlers_api_lib::types::BuildingType::Tree 
+                => BuildingType::Tree,
         }
     }
 }
@@ -85,6 +88,8 @@ impl Into<paddlers_api_lib::types::BuildingType> for BuildingType {
                 => paddlers_api_lib::types::BuildingType::BlueFlowers,
             BuildingType::RedFlowers 
                 => paddlers_api_lib::types::BuildingType::RedFlowers,
+            BuildingType::Tree 
+                => paddlers_api_lib::types::BuildingType::Tree,
         }
     }
 }
@@ -98,6 +103,7 @@ pub struct Building {
     pub building_range: Option<f32>, 
     pub attack_power: Option<f32>, 
     pub attacks_per_cycle: Option<i32>,
+    pub creation: NaiveDateTime,
 }
 use super::schema::buildings;
 #[derive(Insertable, Debug)]
@@ -109,6 +115,7 @@ pub struct NewBuilding {
     pub building_range: Option<f32>, 
     pub attack_power: Option<f32>, 
     pub attacks_per_cycle: Option<i32>,
+    pub creation: NaiveDateTime,
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, DbEnum, Clone, Copy, Serialize, Deserialize, juniper::GraphQLEnum, EnumIter, Display)]

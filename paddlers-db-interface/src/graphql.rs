@@ -148,6 +148,9 @@ impl GqlBuilding {
     fn attacks_per_cycle(&self) -> Option<i32> {
         self.0.attacks_per_cycle
     }
+    fn creation(&self) -> FieldResult<NaiveDateTime> {
+        datetime(&self.0.creation)
+    }
 }
 
 fn datetime(dt: &NaiveDateTime) -> FieldResult<NaiveDateTime> {

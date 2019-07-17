@@ -94,6 +94,7 @@ impl DefaultShop {
         };
         result.add_building(BuildingType::BlueFlowers);
         result.add_building(BuildingType::RedFlowers);
+        result.add_building(BuildingType::Tree);
         result
     }
 

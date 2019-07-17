@@ -22,6 +22,9 @@ impl Sprites {
             Image::load("resources/logs.png"),
             Image::load("happy.png"),
             Image::load("ambience.png"),
+            Image::load("plants/tree.png"),
+            Image::load("plants/sapling.png"),
+            Image::load("plants/young_tree.png"),
         ];
 
         Asset::new(
@@ -49,6 +52,9 @@ pub enum SpriteIndex {
     Logs,
     Heart,
     Ambience,
+    Tree,
+    Sapling, 
+    YoungTree,
 }
 
 impl Index<SpriteIndex> for Sprites {
@@ -67,6 +73,9 @@ impl Index<SpriteIndex> for Sprites {
             SpriteIndex::Logs => 7,
             SpriteIndex::Heart => 8,
             SpriteIndex::Ambience => 9,
+            SpriteIndex::Tree => 10,
+            SpriteIndex::Sapling => 11,
+            SpriteIndex::YoungTree => 12,
         };
         &self.img[i]
     }
@@ -82,6 +91,7 @@ impl WithSprite for BuildingType {
         match self {
             BuildingType::BlueFlowers => SpriteIndex::BlueFlowers,
             BuildingType::RedFlowers => SpriteIndex::RedFlowers,
+            BuildingType::Tree => SpriteIndex::Tree,
         }
     }
 }

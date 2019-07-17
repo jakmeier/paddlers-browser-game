@@ -16,6 +16,7 @@ pub enum ResourceType {
 pub enum BuildingType {
     BlueFlowers,
     RedFlowers,
+    Tree,
 }
 impl BuildingType {
     pub fn all() -> BuildingTypeIter {

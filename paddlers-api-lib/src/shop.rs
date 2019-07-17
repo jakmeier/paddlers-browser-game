@@ -16,6 +16,10 @@ impl Cost for BuildingType {
                     (ResourceType::Feathers, 50),
                     (ResourceType::Sticks, 5),
                 ],
+            BuildingType::Tree
+                => vec![
+                    (ResourceType::Sticks, 10),
+                ],
         }
     }
 }

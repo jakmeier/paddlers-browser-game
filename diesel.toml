@@ -2,6 +2,6 @@
 # see diesel.rs/guides/configuring-diesel-cli
 
 [print_schema]
-file = "paddlers_db_lib/src/schema.rs"
+file = "paddlers-db-lib/src/schema.rs"
 import_types = ["diesel::sql_types::*","crate::models::*"]
-patch_file = "paddlers_db_lib/src/schema.patch"
+patch_file = "paddlers-db-lib/src/schema.patch"

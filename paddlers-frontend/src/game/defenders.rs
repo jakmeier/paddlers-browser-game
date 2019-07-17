@@ -89,6 +89,7 @@ impl buildings_query::BuildingsQueryBuildings {
         let bt = match self.building_type {
             buildings_query::BuildingType::RED_FLOWERS => BuildingType::RedFlowers,
             buildings_query::BuildingType::BLUE_FLOWERS => BuildingType::BlueFlowers,
+            buildings_query::BuildingType::TREE => BuildingType::Tree,
             _ => panic!("Unexpected BuildingType"),
         };
         game.insert_bulding(coordinates, bt, maybe_ap, self.attacks_per_cycle, maybe_range)

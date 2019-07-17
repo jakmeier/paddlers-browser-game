@@ -33,6 +33,7 @@ table! {
         building_range -> Nullable<Float4>,
         attack_power -> Nullable<Float4>,
         attacks_per_cycle -> Nullable<Int4>,
+        creation -> Timestamp,
     }
 }
 
