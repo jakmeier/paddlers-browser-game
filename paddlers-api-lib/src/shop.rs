@@ -32,3 +32,9 @@ pub struct BuildingPurchase {
     pub x: usize,
     pub y: usize,
 }
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct BuildingDeletion {
+    pub x: usize,
+    pub y: usize,
+}

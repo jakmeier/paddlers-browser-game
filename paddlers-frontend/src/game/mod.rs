@@ -229,6 +229,19 @@ impl State for Game<'static, 'static> {
                         (*ui_state).selected_entity = None;
                     }
                 },
+            Event::Key(key, state) 
+                if *key == Key::Delete && *state == ButtonState::Pressed =>
+                {
+                    let ui_state = self.world.read_resource::<UiState>();
+                    if let Some(id) = ui_state.selected_entity {
+                        let e = self.world.entities().entity(id);
+                        std::mem::drop(ui_state);
+                        let mut ui_state = self.world.write_resource::<UiState>();
+                        (*ui_state).selected_entity = None;
+                        std::mem::drop(ui_state);
+                        self.delete_building(e);
+                    }
+                },
             _evt => {
                 // println!("Event: {:#?}", _evt)
             }

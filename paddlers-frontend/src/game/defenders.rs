@@ -1,4 +1,4 @@
-use quicksilver::geom::Vector;
+use quicksilver::geom::{Vector, Shape};
 use specs::prelude::*;
 use crate::gui::{
     render::Renderable,
@@ -12,7 +12,7 @@ use crate::game::{
     movement::Position,
     fight::{Range,Aura}
 };
-use crate::net::game_master_api::http_place_building;
+use crate::net::game_master_api::*;
 use paddlers_api_lib::shop::*;
 use paddlers_api_lib::types::*;
 use paddlers_api_lib::attributes::Attributes;
@@ -60,7 +60,7 @@ impl Game<'_,'_> {
             http_place_building(msg).map( 
                 |r| {
                     if r.is_err() {
-                        println!("Buying buidling failed: {:?}", r);
+                        println!("Buying building failed: {:?}", r);
                     }
                 }
             )
@@ -68,6 +68,30 @@ impl Game<'_,'_> {
         // optimistically build
         self.resources.spend(&building_type.price());
         self.insert_new_bulding((pos.0 as i32, pos.1 as i32), building_type);
+    }
+
+    pub fn delete_building(&mut self, entity: Entity) {
+        let pos_store = self.world.read_storage::<Position>();
+        let pos = pos_store.get(entity).unwrap();
+        let (x,y) = self.town.tile(pos.area.center());
+        std::mem::drop(pos_store);
+
+        let msg = BuildingDeletion { x: x, y: y };
+        use futures_util::future::FutureExt;
+        stdweb::spawn_local(
+            http_delete_building(msg).map( 
+                |r| {
+                    if r.is_err() {
+                        println!("Deleting building failed: {:?}", r);
+                    }
+                }
+            )
+        );
+        // optimistically delete
+        let result = self.world.delete_entity(entity);
+        if let Err(e) = result {
+            println!("Someting went wrong while deleting: {}", e);
+        }
     }
 }
 

@@ -18,7 +18,7 @@ use actix_web::{
     web, App, HttpServer
 };
 use actix_cors::Cors;
-use paddlers_api_lib::shop::BuildingPurchase;
+use paddlers_api_lib::shop::{BuildingPurchase, BuildingDeletion};
 
 type StringErr = Result<(),String>;
 
@@ -51,6 +51,11 @@ fn main() {
                 web::resource("/shop/building")
                 .data(web::Json::<BuildingPurchase>)
                 .route(web::post().to(api::purchase_building))
+            )
+            .service(
+                web::resource("/shop/building/delete")
+                .data(web::Json::<BuildingDeletion>)
+                .route(web::post().to(api::delete_building))
             )
     })
     .disable_signals()

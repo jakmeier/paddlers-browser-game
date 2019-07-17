@@ -37,6 +37,14 @@ pub trait GameDB {
             .expect("Error loading data");
         results
     }
+    fn find_building_by_coordinates(&self, x: i32, y: i32) -> Option<Building> {
+        let result = buildings::table
+            .filter(buildings::x.eq(x).and(buildings::y.eq(y)))
+            .first::<Building>(self.dbconn())
+            .optional()
+            .expect("Error loading data");
+        result
+    }
     fn resource(&self, r: ResourceType) -> i64 {
         resources::table
         .find(r)

@@ -69,6 +69,12 @@ impl DB {
             .get_result(self.dbconn())
             .expect("Inserting building")
     }
+    pub fn delete_building(&self, building: &Building) {
+        diesel::delete(buildings::table
+            .filter(buildings::id.eq(building.id)))
+            .execute(self.dbconn())
+            .expect("Deleting building");
+    }
 }
 
 impl From<&Pool> for DB {

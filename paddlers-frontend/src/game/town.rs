@@ -88,14 +88,14 @@ impl Town {
     }
 
     pub fn shadow_rectified_circle(&self, window: &mut Window, center: impl Into<Vector>, radius: f32){
-        let tile = Self::find_tile(center, self.ul);
+        let tile = self.tile(center);
         for (x,y) in self.tiles_in_rectified_circle(tile, radius) {
             self.shadow_tile(window, (x,y));
         }
     }
 
     pub fn get_empty_tile(&self, pos: impl Into<Vector>, ul: f32) -> Option<(usize,usize)> {
-        let (x,y) = Self::find_tile(pos, ul);
+        let (x,y) = self.tile(pos);
         let tile = self.map.get(x).and_then(|m| m.get(y));
         if let Some(TileType::EMPTY) = tile {
             Some((x,y))
@@ -124,6 +124,9 @@ impl Town {
         self.tiles_in_rectified_circle(pos, range).into_iter().filter( |(x,y)| self.map[*x][*y] == TileType::LANE ).collect()
     }
 
+    pub fn tile(&self, pos: impl Into<Vector>) -> (usize, usize) {
+        Self::find_tile(pos, self.ul)
+    }
     pub fn find_tile(pos: impl Into<Vector>, ul: f32) -> (usize, usize) {
         let v = pos.into();
         let x = (v.x / ul) as usize;
