@@ -1,10 +1,12 @@
 pub (crate) mod attackers;
 pub (crate) mod defenders;
+pub (crate) mod units;
 pub (crate) mod movement;
 pub (crate) mod town;
 pub (crate) mod town_resources;
 pub (crate) mod fight;
 
+use crate::game::units::Worker;
 use crate::gui::input;
 use crate::gui::render::*;
 use crate::gui::sprites::*;
@@ -90,6 +92,8 @@ impl State for Game<'static, 'static> {
         mouse_dispatcher.setup(&mut world);
 
         let town = Town::new(1.0);
+
+        units::insert_hero(&mut world, (5,5), 100.0);
 
         Ok(Game {
             dispatcher: dispatcher,
@@ -280,6 +284,7 @@ fn init_world() -> World {
     world.register::<Renderable>();
     world.register::<Clickable>();
     world.register::<Attacker>();
+    world.register::<Worker>();
     world.register::<Range>();
     world.register::<Health>();
 
