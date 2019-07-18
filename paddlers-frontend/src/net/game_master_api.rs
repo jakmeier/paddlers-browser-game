@@ -1,4 +1,4 @@
-use paddlers_api_lib::shop::*;
+use paddlers_shared_lib::api::shop::*;
 use super::ajax;
 use super::SHOP_PATH;
 use futures::Future;

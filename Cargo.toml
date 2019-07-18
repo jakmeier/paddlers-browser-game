@@ -2,8 +2,7 @@
 
 members = [
     "paddlers-db-interface",
-    "paddlers-db-lib",
-    "paddlers-api-lib",
+    "paddlers-shared-lib",
     "paddlers-game-master",
     "paddlers-frontend",
     "integration-tests",

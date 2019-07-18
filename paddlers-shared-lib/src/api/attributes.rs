@@ -1,4 +1,4 @@
-use crate::types::*;
+use crate::models::*;
 
 pub trait Attributes {
     fn range(&self) -> Option<f32>;

@@ -4,8 +4,8 @@ use std::sync::Arc;
 use super::DbConn;
 use juniper;
 use juniper::FieldResult;
-use paddlers_db_lib::sql::GameDB;
-use paddlers_db_lib::models::*;
+use paddlers_shared_lib::sql::GameDB;
+use paddlers_shared_lib::models::*;
 
 pub struct Mutation;
 pub struct Query;
@@ -73,7 +73,7 @@ impl Mutation {
     }
 }
 
-pub struct GqlUnit(paddlers_db_lib::models::Unit);
+pub struct GqlUnit(paddlers_shared_lib::models::Unit);
 
 #[juniper::object (Context = Context)]
 impl GqlUnit {
@@ -93,9 +93,9 @@ impl GqlUnit {
     }
 }
 
-pub struct GqlAttack(paddlers_db_lib::models::Attack);
-impl From<paddlers_db_lib::models::Attack> for GqlAttack {
-    fn from(inner: paddlers_db_lib::models::Attack) -> Self {
+pub struct GqlAttack(paddlers_shared_lib::models::Attack);
+impl From<paddlers_shared_lib::models::Attack> for GqlAttack {
+    fn from(inner: paddlers_shared_lib::models::Attack) -> Self {
         GqlAttack(inner)
     }
 }
@@ -118,9 +118,9 @@ impl GqlAttack {
     }
 }
 
-pub struct GqlBuilding(paddlers_db_lib::models::Building);
-impl From<paddlers_db_lib::models::Building> for GqlBuilding {
-    fn from(inner: paddlers_db_lib::models::Building) -> Self {
+pub struct GqlBuilding(paddlers_shared_lib::models::Building);
+impl From<paddlers_shared_lib::models::Building> for GqlBuilding {
+    fn from(inner: paddlers_shared_lib::models::Building) -> Self {
         GqlBuilding(inner)
     }
 }
@@ -136,7 +136,7 @@ impl GqlBuilding {
     fn y(&self) -> i32 {
         self.0.y
     }
-    fn building_type(&self) -> &paddlers_db_lib::models::BuildingType {
+    fn building_type(&self) -> &paddlers_shared_lib::models::BuildingType {
         &self.0.building_type
     }
     fn building_range(&self) -> Option<f64> {

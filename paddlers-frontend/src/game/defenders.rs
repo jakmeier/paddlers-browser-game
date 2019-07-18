@@ -13,9 +13,9 @@ use crate::game::{
     fight::{Range,Aura}
 };
 use crate::net::game_master_api::*;
-use paddlers_api_lib::shop::*;
-use paddlers_api_lib::types::*;
-use paddlers_api_lib::attributes::Attributes;
+use paddlers_shared_lib::api::shop::*;
+use paddlers_shared_lib::models::*;
+use paddlers_shared_lib::api::attributes::Attributes;
 
 impl Game<'_,'_> {
     fn insert_new_bulding(&mut self, pos: (i32, i32), bt: BuildingType) -> Entity {

@@ -1,4 +1,5 @@
-use crate::types::*;
+use crate::models::*;
+use serde::{Serialize, Deserialize};
 
 pub struct Price(pub Vec<(ResourceType, i64)>);
 pub trait Cost {
@@ -23,8 +24,6 @@ impl Cost for BuildingType {
         }
     }
 }
-
-use serde::{Serialize, Deserialize};
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct BuildingPurchase {

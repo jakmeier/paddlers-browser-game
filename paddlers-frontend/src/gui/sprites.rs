@@ -88,7 +88,7 @@ pub trait WithSprite {
     fn sprite(&self) -> SpriteIndex;
 }
 
-use paddlers_api_lib::types::BuildingType;
+use paddlers_shared_lib::models::BuildingType;
 impl WithSprite for BuildingType {
     fn sprite(&self) -> SpriteIndex {
         match self {
@@ -99,7 +99,7 @@ impl WithSprite for BuildingType {
     }
 }
 
-use paddlers_api_lib::types::ResourceType;
+use paddlers_shared_lib::models::ResourceType;
 impl WithSprite for ResourceType {
     fn sprite(&self) -> SpriteIndex {
         match self {

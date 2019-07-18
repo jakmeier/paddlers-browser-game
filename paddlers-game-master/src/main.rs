@@ -18,7 +18,7 @@ use actix_web::{
     web, App, HttpServer
 };
 use actix_cors::Cors;
-use paddlers_api_lib::shop::{BuildingPurchase, BuildingDeletion};
+use paddlers_shared_lib::api::shop::{BuildingPurchase, BuildingDeletion};
 
 type StringErr = Result<(),String>;
 

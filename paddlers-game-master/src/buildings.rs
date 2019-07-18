@@ -1,11 +1,12 @@
-use paddlers_db_lib::models::*;
-use paddlers_api_lib::types;
-use paddlers_api_lib::attributes::*;
+use paddlers_shared_lib::{
+    models::*,
+    api::attributes::*,
+};
 
 pub struct BuildingFactory;
 
 impl BuildingFactory {
-    pub fn new(typ: types::BuildingType, pos: (usize, usize)) -> NewBuilding {
+    pub fn new(typ: BuildingType, pos: (usize, usize)) -> NewBuilding {
         let now = chrono::Utc::now().naive_utc();
         NewBuilding {
             x: pos.0 as i32,

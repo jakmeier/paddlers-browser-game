@@ -1,6 +1,6 @@
 use actix_web::{HttpResponse, Responder, web};
-use paddlers_api_lib::shop::{BuildingPurchase, BuildingDeletion};
-use paddlers_db_lib::sql::GameDB;
+use paddlers_shared_lib::api::shop::{BuildingPurchase, BuildingDeletion};
+use paddlers_shared_lib::sql::GameDB;
 
 pub fn index() -> impl Responder {
     HttpResponse::Ok().body("Game Master OK")

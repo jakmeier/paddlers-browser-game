@@ -6,6 +6,7 @@
 pub extern crate strum;
 
 pub mod models;
+pub mod api;
 
 #[cfg(feature = "sql_db")]
 pub mod schema;

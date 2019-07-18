@@ -2,14 +2,14 @@
 
 #[test]
 fn test_building_type() {
-    use paddlers_db_lib::strum::IntoEnumIterator;
-    let mut db_data_iter = paddlers_db_lib::models::BuildingType::iter();
+    use paddlers_shared_lib::strum::IntoEnumIterator;
+    let mut db_data_iter = paddlers_shared_lib::models::BuildingType::iter();
     for browser_data in paddlers_api_lib::types::BuildingType::iter() {
 
         let msg = serde_json::to_string(&browser_data);
         assert!(msg.is_ok(), "Serialization failed");
 
-        let parsed = serde_json::from_str::<paddlers_db_lib::models::BuildingType>(&msg.unwrap());
+        let parsed = serde_json::from_str::<paddlers_shared_lib::models::BuildingType>(&msg.unwrap());
         assert!(parsed.is_ok(), "API and DB have diverged");
 
         let db_data = db_data_iter.next();
@@ -22,14 +22,14 @@ fn test_building_type() {
 #[test]
 fn test_resource_type() {
 
-    use paddlers_db_lib::strum::IntoEnumIterator;
-    let mut db_data_iter = paddlers_db_lib::models::ResourceType::iter();
+    use paddlers_shared_lib::strum::IntoEnumIterator;
+    let mut db_data_iter = paddlers_shared_lib::models::ResourceType::iter();
     for browser_data in paddlers_api_lib::types::ResourceType::iter() {
 
         let msg = serde_json::to_string(&browser_data);
         assert!(msg.is_ok(), "Serialization failed");
 
-        let parsed = serde_json::from_str::<paddlers_db_lib::models::ResourceType>(&msg.unwrap());
+        let parsed = serde_json::from_str::<paddlers_shared_lib::models::ResourceType>(&msg.unwrap());
         assert!(parsed.is_ok(), "API and DB have diverged");
 
         let db_data = db_data_iter.next();

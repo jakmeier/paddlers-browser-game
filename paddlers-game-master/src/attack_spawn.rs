@@ -1,4 +1,4 @@
-use paddlers_db_lib::models::*;
+use paddlers_shared_lib::models::*;
 use crate::db::DB;
 use rand::Rng;
 

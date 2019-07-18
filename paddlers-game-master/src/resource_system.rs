@@ -1,6 +1,8 @@
-use paddlers_db_lib::models::*;
-use paddlers_api_lib::shop::*;
-use paddlers_db_lib::sql::GameDB;
+use paddlers_shared_lib::{
+    models::*,
+    sql::GameDB,
+    api::shop::*,
+};
 use crate::{
     db::DB,
     StringErr
@@ -17,7 +19,7 @@ impl DB {
     }
 
     pub fn init_resources(&self) {
-        use paddlers_db_lib::strum::IntoEnumIterator;
+        use paddlers_shared_lib::strum::IntoEnumIterator;
         for res in ResourceType::iter()
         {
             let entity = Resource {

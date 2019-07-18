@@ -1,4 +1,4 @@
-use serde_derive::{Serialize, Deserialize};
+use serde::{Serialize, Deserialize};
 
 #[cfg(feature = "sql_db")]
 use ::diesel_derive_enum;
@@ -89,30 +89,6 @@ impl BuildingType {
         BuildingType::iter()
     }
 }
-impl From<paddlers_api_lib::types::BuildingType> for BuildingType {
-    fn from(input: paddlers_api_lib::types::BuildingType) -> Self {
-        match input {
-            paddlers_api_lib::types::BuildingType::BlueFlowers 
-                => BuildingType::BlueFlowers,
-            paddlers_api_lib::types::BuildingType::RedFlowers 
-                => BuildingType::RedFlowers,
-            paddlers_api_lib::types::BuildingType::Tree 
-                => BuildingType::Tree,
-        }
-    }
-}
-impl Into<paddlers_api_lib::types::BuildingType> for BuildingType {
-    fn into(self) -> paddlers_api_lib::types::BuildingType {
-        match self {
-            BuildingType::BlueFlowers 
-                => paddlers_api_lib::types::BuildingType::BlueFlowers,
-            BuildingType::RedFlowers 
-                => paddlers_api_lib::types::BuildingType::RedFlowers,
-            BuildingType::Tree 
-                => paddlers_api_lib::types::BuildingType::Tree,
-        }
-    }
-}
 
 #[cfg(feature = "sql_db")]
 #[derive(Queryable, Debug)]
@@ -150,30 +126,6 @@ pub enum ResourceType {
     Sticks,
     Logs,
     Feathers,
-}
-impl From<paddlers_api_lib::types::ResourceType> for ResourceType {
-    fn from(input: paddlers_api_lib::types::ResourceType) -> Self {
-        match input {
-            paddlers_api_lib::types::ResourceType::Sticks 
-                => ResourceType::Sticks,
-            paddlers_api_lib::types::ResourceType::Logs 
-                => ResourceType::Logs,
-            paddlers_api_lib::types::ResourceType::Feathers 
-                => ResourceType::Feathers,
-        }
-    }
-}
-impl Into<paddlers_api_lib::types::ResourceType> for ResourceType {
-    fn into(self) -> paddlers_api_lib::types::ResourceType {
-        match self {
-            ResourceType::Sticks 
-                => paddlers_api_lib::types::ResourceType::Sticks,
-            ResourceType::Logs 
-                => paddlers_api_lib::types::ResourceType::Logs,
-            ResourceType::Feathers 
-                => paddlers_api_lib::types::ResourceType::Feathers,
-        }
-    }
 }
 
 #[cfg(feature = "sql_db")]

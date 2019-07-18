@@ -1,6 +1,6 @@
-use paddlers_db_lib::models::*;
+use paddlers_shared_lib::models::*;
 use crate::db::DB;
-use paddlers_db_lib::sql::GameDB;
+use paddlers_shared_lib::sql::GameDB;
 use chrono::Duration;
 
 impl DB {

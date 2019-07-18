@@ -7,7 +7,7 @@ workspace = ".."
 edition = "2018"
 
 [dependencies]
-paddlers-db-lib = { path = "../paddlers-db-lib" }
-paddlers-api-lib = { path = "../paddlers-api-lib" }
+paddlers-shared-lib = { path = "../paddlers-shared-lib" }
+# paddlers-api-lib = { path = "../paddlers-api-lib" }
 serde = "1.0"
 serde_json = "1.0"

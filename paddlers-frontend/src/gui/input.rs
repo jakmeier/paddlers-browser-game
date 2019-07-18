@@ -8,8 +8,8 @@ use crate::gui::{
 };
 use crate::game::movement::Position;
 use crate::game::town_resources::TownResources;
-use paddlers_api_lib::types::*;
-use paddlers_api_lib::shop::*;
+use paddlers_shared_lib::models::*;
+use paddlers_shared_lib::api::shop::*;
 
 #[derive(Default, Clone, Copy)]
 pub struct MouseState(pub Vector, pub bool);

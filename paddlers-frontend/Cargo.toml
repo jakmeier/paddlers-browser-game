@@ -6,7 +6,8 @@ edition = "2018"
 
 
 [dependencies]
-paddlers-api-lib = { path = "../paddlers-api-lib"}
+# paddlers-api-lib = { path = "../paddlers-api-lib"}
+paddlers-shared-lib = { path = "../paddlers-shared-lib" }
 quicksilver = { version = "0.3", default-features = false, features = ["fonts"] }
 stdweb = {version = "0.4.17", features = ["experimental_features_which_may_break_on_minor_version_bumps"] }
 specs = { version = "0.15", default-features = false } # parallel not supported in wasm

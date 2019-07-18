@@ -1,5 +1,5 @@
-use paddlers_api_lib::types::*;
-use paddlers_api_lib::shop::*;
+use paddlers_shared_lib::models::*;
+use paddlers_shared_lib::api::shop::*;
 use crate::net::graphql::resources_query;
 
 #[derive(Default,Debug, Clone, Copy)]
@@ -30,7 +30,7 @@ impl TownResources {
         self.logs = data.village.logs;
     }
     pub fn non_zero_resources(&self) -> Vec<(ResourceType, i64)> {
-        use paddlers_api_lib::strum::IntoEnumIterator;
+        use paddlers_shared_lib::strum::IntoEnumIterator;
         ResourceType::iter()
             .map(|rt| (rt, self.read(rt)))
             .filter( |t| t.1 > 0 )

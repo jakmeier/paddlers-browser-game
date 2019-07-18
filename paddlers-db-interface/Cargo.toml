@@ -5,7 +5,7 @@ authors = ["Jakob Meier <inbox@jakobmeier.ch>"]
 edition = "2018"
 
 [dependencies]
-paddlers-db-lib = { path = "../paddlers-db-lib", features = ["graphql", "sql_db"] }
+paddlers-shared-lib = { path = "../paddlers-shared-lib", features = ["graphql", "sql_db"] }
 
 rocket = "0.4"
 rocket_cors = "0.5"

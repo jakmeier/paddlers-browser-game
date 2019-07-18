@@ -2,7 +2,7 @@ use actix::prelude::*;
 use std::time::Duration;
 use chrono::NaiveDateTime;
 use crate::db::*;
-use paddlers_db_lib::sql::GameDB;
+use paddlers_shared_lib::sql::GameDB;
 
 pub struct GameMaster {
     last_attack: NaiveDateTime,
