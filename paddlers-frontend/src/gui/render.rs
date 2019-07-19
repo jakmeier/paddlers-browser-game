@@ -79,7 +79,7 @@ impl Game<'_, '_> {
         let health_store = self.world.read_storage::<Health>();
 
         if let Some((range,p)) = (&range_store, &position_store).join().get(entity, &self.world.entities()) {
-            range.draw(window, &self.town, &p.area)?;
+            range.draw(window, &self.town(), &p.area)?;
         }
 
         if let Some((health,p)) = (&health_store, &position_store).join().get(entity, &self.world.entities()) {

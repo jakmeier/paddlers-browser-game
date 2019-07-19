@@ -1,18 +1,54 @@
+use std::collections::VecDeque;
 use paddlers_shared_lib::api::shop::*;
+use paddlers_shared_lib::models::*;
 use super::ajax;
 use super::SHOP_PATH;
-use futures::Future;
+use specs::prelude::*;
 
-pub type GameMasterApiResult = Result<String, stdweb::web::error::Error>;
-
-pub fn http_place_building(b: BuildingPurchase) -> impl Future<Output = GameMasterApiResult> {
-    let request_string = &serde_json::to_string(&b).unwrap();
-    let promise = ajax::send("POST", &format!("{}/building", SHOP_PATH), request_string);
-    promise
+#[derive(Default)]
+pub struct RestApiState {
+    pub queue: VecDeque<stdweb::PromiseFuture<std::string::String>>,
 }
 
-pub fn http_delete_building(b: BuildingDeletion) -> impl Future<Output = GameMasterApiResult> {
-    let request_string = &serde_json::to_string(&b).unwrap();
-    let promise = ajax::send("POST", &format!("{}/building/delete", SHOP_PATH), request_string);
-    promise
+impl RestApiState {
+    pub fn http_place_building(&mut self, pos: (usize, usize), building_type: BuildingType) {
+        let msg = BuildingPurchase {
+            building_type: building_type, 
+            x: pos.0,
+            y: pos.1,
+        };
+
+        let request_string = &serde_json::to_string(&msg).unwrap();
+        let promise = ajax::send("POST", &format!("{}/building", SHOP_PATH), request_string);
+        self.queue.push_back(promise);
+    }
+
+    pub fn http_delete_building(&mut self, idx: (usize, usize)) {
+        let msg = BuildingDeletion { x: idx.0, y: idx.1 };
+        let request_string = &serde_json::to_string(&msg).unwrap();
+        let promise = ajax::send("POST", &format!("{}/building/delete", SHOP_PATH), request_string);
+        self.queue.push_back(promise);
+    }
+}
+
+pub struct RestApiSystem;
+impl<'a> System<'a> for RestApiSystem {
+    type SystemData = (
+        Write<'a, RestApiState>,
+     );
+
+    fn run(&mut self, mut state: Self::SystemData) {
+        while let Some(promise) = (*state.0).queue.pop_front() {
+            use futures_util::future::FutureExt;
+            stdweb::spawn_local(
+                promise.map(
+                    |r| {
+                        if r.is_err() {
+                            println!("Rest API Error: {:?}", r);
+                        }
+                    }
+                )
+            );
+        }
+    }
 }

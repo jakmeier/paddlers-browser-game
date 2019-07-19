@@ -10,6 +10,11 @@ pub struct Town {
     map: TileMap,
     ul: f32,
 }
+impl Default for Town {
+    fn default() -> Self {
+        Town::new(50.0)
+    }
+}
 
 type TileMap = [[TileType; Y]; X];
 #[derive(PartialEq, Eq,Clone, Copy, Debug)]
@@ -40,6 +45,7 @@ impl Town {
         }
     }
 
+    #[allow(dead_code)]
     pub fn update_ul(&mut self, ul: f32) {
         self.ul = ul;
     }
@@ -96,10 +102,9 @@ impl Town {
         }
     }
 
-    pub fn get_empty_tile(&self, pos: impl Into<Vector>, ul: f32) -> Option<(usize,usize)> {
+    pub fn get_buildable_tile(&self, pos: impl Into<Vector>) -> Option<TileIndex> {
         let (x,y) = self.tile(pos);
-        let tile = self.map.get(x).and_then(|m| m.get(y));
-        if let Some(TileType::EMPTY) = tile {
+        if self.is_buildable((x,y)) {
             Some((x,y))
         }
         else {
@@ -135,6 +140,27 @@ impl Town {
         let y = (v.y / ul) as usize;
         (x,y)
     }
+    pub fn tile_area(&self, i: TileIndex) -> Rectangle {
+        Rectangle::new(Vector::from((i.0 as u32, i.1 as u32)) * self.ul, (self.ul, self.ul))
+    }
+    fn tile_type(&self, index: TileIndex) -> Option<&TileType> {
+        self.map.get(index.0).and_then(|m| m.get(index.1))
+    }
+    fn tile_type_mut(&mut self, index: TileIndex) -> Option<&mut TileType> {
+        self.map.get_mut(index.0).and_then(|m| m.get_mut(index.1))
+    }
+
+    pub fn make_room_for_building(&mut self, i: TileIndex) {
+        debug_assert!(self.is_buildable(i), "Cannot build here");
+        let tile = self.tile_type_mut(i);
+
+        debug_assert!(tile.is_some(), "Tile is outside of map");
+        *tile.unwrap() = TileType::BUILDING;
+    }
+    pub fn remove_building(&mut self, i: TileIndex) {
+        let tile = self.tile_type_mut(i);
+        *tile.unwrap() = TileType::EMPTY;
+    }
 
     #[inline]
     /// Range should be in unit lengths
@@ -166,13 +192,21 @@ impl Town {
     }
 
     fn is_buildable(&self, index: TileIndex) -> bool {
-        match self.map[index.0][index.1] {
+        let maybe_tile = self.tile_type(index);
+        if maybe_tile.is_none() {
+            return false;
+        }
+        match maybe_tile.unwrap() {
             TileType::EMPTY => true,
             TileType::BUILDING | TileType::LANE => false,
         }
     }
     fn is_walkable(&self, index: TileIndex) -> bool {
-        match self.map[index.0][index.1] {
+        let maybe_tile = self.tile_type(index);
+        if maybe_tile.is_none() {
+            return false;
+        }
+        match maybe_tile.unwrap() {
             TileType::EMPTY | TileType::LANE => true,
             TileType::BUILDING => false,
         }

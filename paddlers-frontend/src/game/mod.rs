@@ -10,9 +10,15 @@ use crate::game::units::Worker;
 use crate::gui::input;
 use crate::gui::render::*;
 use crate::gui::sprites::*;
-use crate::net::{NetMsg};
+use crate::net::{
+    NetMsg, 
+    game_master_api::{
+        RestApiSystem,
+        RestApiState,
+    }
+};
 
-use input::{MouseState, MouseSystem, UiState, Clickable, DefaultShop, Grabbable};
+use input::{MouseState, LeftClickSystem, RightClickSystem, HoverSystem, UiState, Clickable, DefaultShop};
 use movement::*;
 use quicksilver::prelude::*;
 use specs::prelude::*;
@@ -37,9 +43,9 @@ use resources::*;
 
 pub(crate) struct Game<'a, 'b> {
     dispatcher: Dispatcher<'a, 'b>,
-    mouse_dispatcher: Dispatcher<'a, 'b>,
+    click_dispatcher: Dispatcher<'a, 'b>,
+    hover_dispatcher: Dispatcher<'a, 'b>,
     pub world: World,
-    pub town: Town,
     pub sprites: Asset<Sprites>,
     pub font: Asset<Font>,
     pub bold_font: Asset<Font>,
@@ -51,10 +57,13 @@ pub(crate) struct Game<'a, 'b> {
 }
 
 impl Game<'static, 'static> {
+    fn with_town(mut self, town: Town) -> Self {
+        self.world.insert(town);
+        self
+    }
     fn with_unit_length(mut self, ul: f32) -> Self {
         self.unit_len = Some(ul);
         self.world.insert(UnitLength(ul));
-        self.town.update_ul(ul);
         self
     }
     fn with_menu_box_area(mut self, area: Rectangle) -> Self {
@@ -79,6 +88,7 @@ impl State for Game<'static, 'static> {
         world.insert(Dt);
         world.insert(MouseState::default());
         world.insert(TownResources::default());
+        world.insert(RestApiState::default());
 
         let mut dispatcher = DispatcherBuilder::new()
             .with(MoveSystem, "m", &[])
@@ -86,20 +96,26 @@ impl State for Game<'static, 'static> {
             .build();
         dispatcher.setup(&mut world);
 
-        let mut mouse_dispatcher = DispatcherBuilder::new()
-            .with(MouseSystem, "click", &[])
+        let mut click_dispatcher = DispatcherBuilder::new()
+            .with(LeftClickSystem, "lc", &[])
+            .with(RightClickSystem, "rc", &[])
+            .with(RestApiSystem, "rest", &["lc", "rc"])
             .build();
-        mouse_dispatcher.setup(&mut world);
+        click_dispatcher.setup(&mut world);
 
-        let town = Town::new(1.0);
+        let mut hover_dispatcher = DispatcherBuilder::new()
+            .with(HoverSystem, "hov", &[])
+            .build();
+        hover_dispatcher.setup(&mut world);
 
+        // XXX: Just for testing
         units::insert_hero(&mut world, (5,5), 100.0);
 
         Ok(Game {
             dispatcher: dispatcher,
-            mouse_dispatcher: mouse_dispatcher,
+            click_dispatcher: click_dispatcher,
+            hover_dispatcher: hover_dispatcher,
             world: world,
-            town: town,
             sprites: Sprites::new(),
             font: Asset::new(Font::load("fonts/Manjari-Regular.ttf")),
             bold_font: Asset::new(Font::load("fonts/Manjari-Bold.ttf")),
@@ -173,8 +189,10 @@ impl State for Game<'static, 'static> {
     fn draw(&mut self, window: &mut Window) -> Result<()> {
         let tick = self.world.read_resource::<ClockTick>().0;
         // multi borrow
-        let (asset, town, ul) = (&mut self.sprites, &self.town, self.unit_len.unwrap());
-        asset.execute(|sprites| town.render(window, sprites, tick, ul))?;
+        {
+            let (asset, town, ul) = (&mut self.sprites, &self.world.read_resource::<Town>(), self.unit_len.unwrap());
+            asset.execute(|sprites| town.render(window, sprites, tick, ul))?;
+        }
         self.render_entities(window)?;
         self.render_menu_box(window)?;
         
@@ -197,31 +215,31 @@ impl State for Game<'static, 'static> {
             Event::MouseMoved(_position) => {
                 {
                     let mut c = self.world.write_resource::<MouseState>();
-                    *c = MouseState(window.mouse().pos(), false);
+                    *c = MouseState(window.mouse().pos(), None);
                 }
-                self.mouse_dispatcher.dispatch(&mut self.world);
+                self.hover_dispatcher.dispatch(&mut self.world);
             }
-            // Left click
+
             Event::MouseButton(button, state)
-                if *button == MouseButton::Left && *state == ButtonState::Pressed =>
+                if *state == ButtonState::Pressed =>
             {
                 {
                     let mut c = self.world.write_resource::<MouseState>();
-                    *c = MouseState(window.mouse().pos(), true);
+                    *c = MouseState(window.mouse().pos(), Some(*button));
                 }
                 {
-                    let ui_state = self.world.read_resource::<UiState>();
-                    let maybe_grabbed = ui_state.grabbed_item.clone();
-                    std::mem::drop(ui_state);
-                    if let Some(Grabbable::NewBuilding(item)) = maybe_grabbed {
-                        if let Some(pos) = self.town.get_empty_tile(window.mouse().pos(), self.unit_len.unwrap()) {
-                            self.purchase_building(item, pos);
-                            let mut ui_state = self.world.write_resource::<UiState>();
-                            (*ui_state).grabbed_item = None;
-                        }
-                    }
+                    // let ui_state = self.world.read_resource::<UiState>();
+                    // let maybe_grabbed = ui_state.grabbed_item.clone();
+                    // std::mem::drop(ui_state);
+                    // if let Some(Grabbable::NewBuilding(item)) = maybe_grabbed {
+                    //     if let Some(pos) = self.town.get_empty_tile(window.mouse().pos(), self.unit_len.unwrap()) {
+                    //         self.purchase_building(item, pos);
+                    //         let mut ui_state = self.world.write_resource::<UiState>();
+                    //         (*ui_state).grabbed_item = None;
+                    //     }
+                    // }
                 }
-                self.mouse_dispatcher.dispatch(&mut self.world);
+                self.click_dispatcher.dispatch(&mut self.world);
             }
             Event::Key(key, state) 
                 if *key == Key::Escape && *state == ButtonState::Pressed =>
@@ -243,19 +261,39 @@ impl State for Game<'static, 'static> {
                         let mut ui_state = self.world.write_resource::<UiState>();
                         (*ui_state).selected_entity = None;
                         std::mem::drop(ui_state);
-                        self.delete_building(e);
+
+                        let pos_store = self.world.read_storage::<Position>();
+                        let pos = pos_store.get(e).unwrap();
+                        let tile_index = self.town().tile(pos.area.pos);
+                        std::mem::drop(pos_store);
+
+                        self.rest().http_delete_building(tile_index);
+                        self.town_mut().remove_building(tile_index);
+                        let result = self.world.delete_entity(e);
+                        if let Err(e) = result {
+                            println!("Someting went wrong while deleting: {}", e);
+                        }
                     }
                 },
             _evt => {
                 // println!("Event: {:#?}", _evt)
             }
         };
-
+        self.world.maintain();
         Ok(())
     }
 }
 
 impl Game<'_,'_> {
+    pub fn town(&self) -> specs::shred::Fetch<Town> {
+        self.world.read_resource()
+    }
+    pub fn rest(&mut self) -> specs::shred::FetchMut<RestApiState> {
+        self.world.write_resource()
+    }
+    pub fn town_mut(&mut self) -> specs::shred::FetchMut<Town> {
+        self.world.write_resource()
+    }
     fn update_dt(&mut self) {
         if self.time_zero != 0.0 {
             let t = crate::wasm_setup::local_now();
@@ -307,6 +345,7 @@ pub fn run(width: f32, height: f32, net_chan: Receiver<NetMsg>) {
         Settings::default(), 
         || Ok(
             Game::new().expect("Game initialization")
+                .with_town(Town::new(ul)) // TODO: Think of a better way to handle unit lengths in general
                 .with_unit_length(ul)
                 .with_menu_box_area(menu_box_area)
                 .with_network_chan(net_chan)

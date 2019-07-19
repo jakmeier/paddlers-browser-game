@@ -1,4 +1,6 @@
+use crate::net::game_master_api::RestApiState;
 use quicksilver::geom::{Vector, Shape, Rectangle};
+use quicksilver::prelude::MouseButton;
 use specs::prelude::*;
 use specs::world::Index;
 use crate::gui::{
@@ -8,11 +10,12 @@ use crate::gui::{
 };
 use crate::game::movement::Position;
 use crate::game::town_resources::TownResources;
+use crate::game::town::Town;
 use paddlers_shared_lib::models::*;
 use paddlers_shared_lib::api::shop::*;
 
 #[derive(Default, Clone, Copy)]
-pub struct MouseState(pub Vector, pub bool);
+pub struct MouseState(pub Vector, pub Option<MouseButton>);
 
 #[derive(Default, Clone)]
 pub struct UiState {
@@ -21,7 +24,9 @@ pub struct UiState {
     pub grabbed_item: Option<Grabbable>,
     pub menu_box_area: Rectangle,
 }
-pub struct MouseSystem;
+pub struct LeftClickSystem;
+pub struct RightClickSystem;
+pub struct HoverSystem;
 
 #[derive(Default, Debug, Component)]
 #[storage(NullStorage)]
@@ -32,47 +37,103 @@ pub enum Grabbable {
     NewBuilding(BuildingType),
 }
 
-impl<'a> System<'a> for MouseSystem {
+impl<'a> System<'a> for LeftClickSystem {
     type SystemData = (
         Entities<'a>,
         Read<'a, MouseState>,
         Write<'a, UiState>,
         Read<'a, DefaultShop>,
-        Read<'a, TownResources>,
+        Write<'a, TownResources>,
+        Write<'a, Town>,
+        Write<'a, RestApiState>,
+        Read<'a, LazyUpdate>,
         ReadStorage<'a, Position>,
         ReadStorage<'a, Clickable>,
      );
 
-    fn run(&mut self, (entities, mouse_state, mut ui_state, shop, resis, position, clickable): Self::SystemData) {
-        let MouseState(mouse_pos, clicking) = *mouse_state;
+    fn run(&mut self, (entities, mouse_state, mut ui_state, shop, mut resources, mut town, mut rest, lazy, position, clickable): Self::SystemData) {
+
+        let MouseState(mouse_pos, button) = *mouse_state;
+        if button != Some(MouseButton::Left) {
+            return;
+        }
+        
         if mouse_pos.overlaps_rectangle(&(*ui_state).menu_box_area) {
-            if clicking && (*ui_state).selected_entity.is_none() {
+            if (*ui_state).selected_entity.is_none() {
                 let maybe_grab = shop.click(mouse_pos);
                 if let Some(Grabbable::NewBuilding(b)) = maybe_grab {
-                    if (*resis).can_afford(&b.price()) {
+                    if (*resources).can_afford(&b.price()) {
                         (*ui_state).grabbed_item = maybe_grab;
                     }
                 }
             }
+        }
+        else {
+            (*ui_state).selected_entity = None;
+            for (e, pos, _) in (&entities, &position, &clickable).join() {
+                if mouse_pos.overlaps_rectangle(&pos.area) {
+                    (*ui_state).selected_entity = Some(e.id());
+                    break;
+                }
+            }
+            if let Some(grabbed) = &(*ui_state).grabbed_item {
+                match grabbed {
+                    Grabbable::NewBuilding(bt) => {
+                        if let Some(pos) = (*town).get_buildable_tile(mouse_pos) {
+                            rest.http_place_building(pos, *bt);
+                            resources.spend(&bt.price());
+                            town.insert_new_bulding(&entities, &lazy, pos, *bt);
+                            (*ui_state).grabbed_item = None;
+                        }
+                    },
+                }
+            }
+        }
+
+    }
+}
+
+impl<'a> System<'a> for RightClickSystem {
+    type SystemData = (
+        Read<'a, MouseState>,
+        Write<'a, UiState>,
+     );
+
+    fn run(&mut self, (mouse_state, mut ui_state): Self::SystemData) {
+
+        let MouseState(_position, button) = *mouse_state;
+        if button != Some(MouseButton::Right) {
             return;
         }
 
+        (*ui_state).grabbed_item = None;
+
+        // TODO
+        
+    }
+}
+
+impl<'a> System<'a> for HoverSystem {
+    type SystemData = (
+        Entities<'a>,
+        Read<'a, MouseState>,
+        Write<'a, UiState>,
+        ReadStorage<'a, Position>,
+     );
+
+    fn run(&mut self, (entities, mouse_state, mut ui_state, position): Self::SystemData) {
+
+        let MouseState(mouse_pos, _) = *mouse_state;
+        
         (*ui_state).hovered_entity = None;
-        if clicking {
-            (*ui_state).selected_entity = None;
-        }
 
         for (e, pos) in (&entities, &position).join() {
             if mouse_pos.overlaps_rectangle(&pos.area) {
                 (*ui_state).hovered_entity = Some(e.id());
-                let clickable: Option<&Clickable> = clickable.get(e);
-                if clicking && clickable.is_some() {
-                    (*ui_state).selected_entity = Some(e.id());
-                }
+                break;
             }
         }
     }
-
 }
 
 // TODO: Eventually, this should be split up between different buildings

@@ -9,7 +9,6 @@ use crate::gui::{
 use crate::game::{
     input::Clickable,
     movement::{Position, Velocity},
-    fight::Health,
 };
 
 #[derive(Default, Component)]

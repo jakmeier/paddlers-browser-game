@@ -1,5 +1,5 @@
-use quicksilver::geom::{Vector, Shape};
 use specs::prelude::*;
+use specs::world::EntitiesRes;
 use crate::gui::{
     render::Renderable,
     sprites::{SpriteIndex,WithSprite},
@@ -10,24 +10,33 @@ use crate::game::{
     Game,
     input::Clickable,
     movement::Position,
-    fight::{Range,Aura}
+    fight::{Range,Aura},
+    town::{Town, TileIndex},
 };
-use crate::net::game_master_api::*;
-use paddlers_shared_lib::api::shop::*;
 use paddlers_shared_lib::models::*;
 use paddlers_shared_lib::api::attributes::Attributes;
 
-impl Game<'_,'_> {
-    fn insert_new_bulding(&mut self, pos: (i32, i32), bt: BuildingType) -> Entity {
-        self.insert_bulding(pos, bt, bt.attack_power(), bt.attacks_per_cycle(), bt.range())
+impl Town {
+    pub fn insert_new_bulding(&mut self, entities: &EntitiesRes, lazy: &LazyUpdate, pos: TileIndex, bt: BuildingType) -> Entity {
+       self. insert_bulding(entities, lazy, pos, bt, bt.attack_power(), bt.attacks_per_cycle(), bt.range())
     }
 
-    fn insert_bulding(&mut self, pos: (i32, i32), bt: BuildingType, ap: Option<i64>, attacks_per_cycle: Option<i64>,  range: Option<f32>) -> Entity {
-        let posv: Vector = pos.into();
-        let ul = self.unit_len.unwrap();
+    fn insert_bulding(
+        &mut self, 
+        entities: &EntitiesRes, 
+        lazy: &LazyUpdate, 
+        tile_index: TileIndex, 
+        bt: BuildingType, 
+        ap: Option<i64>, 
+        attacks_per_cycle: Option<i64>,  
+        range: Option<f32>
+    ) -> Entity 
+    {
+        let area = self.tile_area(tile_index);
+        self.make_room_for_building(tile_index);
         let mut builder = 
-            self.world.create_entity()
-            .with(Position::new(posv * ul , (ul, ul), Z_UNITS))
+            lazy.create_entity(entities)
+            .with(Position::new(area.pos, area.size, Z_UNITS))
             .with(
                 Renderable {
                     kind: RenderVariant::ImgWithImgBackground(bt.sprite(), SpriteIndex::Grass),
@@ -42,56 +51,11 @@ impl Game<'_,'_> {
         // No (None) attacks per cycle && Some ap => Aura effect
         if attacks_per_cycle.is_none() && ap.is_some() {
             if let Some(r) = range {
-                builder = builder.with(Aura::new(r, ap.unwrap(), (pos.0 as usize, pos.1 as usize), &self.town))
+                builder = builder.with(Aura::new(r, ap.unwrap(), tile_index, self))
             }
         }
 
         builder.build()
-    }
-
-    pub fn purchase_building(&mut self, building_type: BuildingType, pos: (usize, usize)) {
-        let msg = BuildingPurchase {
-            building_type: building_type, 
-            x: pos.0,
-            y: pos.1,
-        };
-        use futures_util::future::FutureExt;
-        stdweb::spawn_local(
-            http_place_building(msg).map( 
-                |r| {
-                    if r.is_err() {
-                        println!("Buying building failed: {:?}", r);
-                    }
-                }
-            )
-        );
-        // optimistically build
-        self.resources.spend(&building_type.price());
-        self.insert_new_bulding((pos.0 as i32, pos.1 as i32), building_type);
-    }
-
-    pub fn delete_building(&mut self, entity: Entity) {
-        let pos_store = self.world.read_storage::<Position>();
-        let pos = pos_store.get(entity).unwrap();
-        let (x,y) = self.town.tile(pos.area.center());
-        std::mem::drop(pos_store);
-
-        let msg = BuildingDeletion { x: x, y: y };
-        use futures_util::future::FutureExt;
-        stdweb::spawn_local(
-            http_delete_building(msg).map( 
-                |r| {
-                    if r.is_err() {
-                        println!("Deleting building failed: {:?}", r);
-                    }
-                }
-            )
-        );
-        // optimistically delete
-        let result = self.world.delete_entity(entity);
-        if let Err(e) = result {
-            println!("Someting went wrong while deleting: {}", e);
-        }
     }
 }
 
@@ -107,7 +71,7 @@ impl buildings_query::ResponseData {
 
 impl buildings_query::BuildingsQueryBuildings {
     fn create_entity(&self, game: &mut Game) -> Entity {
-        let coordinates = (self.x as i32,self.y as i32);
+        let coordinates = (self.x as usize,self.y as usize);
         let maybe_range = self.building_range.map(|f| f as f32);
         let maybe_ap = self.attack_power.map(|f| f as i64);
         let bt = match self.building_type {
@@ -116,6 +80,10 @@ impl buildings_query::BuildingsQueryBuildings {
             buildings_query::BuildingType::TREE => BuildingType::Tree,
             _ => panic!("Unexpected BuildingType"),
         };
-        game.insert_bulding(coordinates, bt, maybe_ap, self.attacks_per_cycle, maybe_range)
+
+        let entities = game.world.entities();
+        let lazy = game.world.read_resource::<LazyUpdate>();
+        let mut town = game.world.write_resource::<Town>();
+        town.insert_bulding(&entities, &lazy, coordinates, bt, maybe_ap, self.attacks_per_cycle, maybe_range)
     }
 }
