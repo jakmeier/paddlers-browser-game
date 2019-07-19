@@ -1,7 +1,6 @@
 use quicksilver::prelude::*;
 use quicksilver::graphics::Color;
 use specs::prelude::*;
-use specs::world::Index;
 use crate::game::{
     Game,
     movement::Position,
@@ -71,9 +70,7 @@ impl Game<'_, '_> {
         Ok(())
     }
 
-    pub fn render_hovering(&mut self, window: &mut Window, id: specs::world::Index) -> Result<()> {
-        let entity = self.world.entities().entity(id);
-
+    pub fn render_hovering(&mut self, window: &mut Window, entity: Entity) -> Result<()> {
         let position_store = self.world.read_storage::<Position>();
         let range_store = self.world.read_storage::<Range>();
         let health_store = self.world.read_storage::<Health>();
@@ -88,7 +85,7 @@ impl Game<'_, '_> {
         Ok(())
     }
 
-    pub fn render_entity_details(&mut self, window: &mut Window, area: &Rectangle, id: Index) -> Result<()> {
+    pub fn render_entity_details(&mut self, window: &mut Window, area: &Rectangle, e: Entity) -> Result<()> {
         let mut img_bg_area = area.clone();
         img_bg_area.size.y = img_bg_area.height() / 3.0;
         let img_bg_area = img_bg_area.fit_square(FitStrategy::Center).shrink_to_center(0.8);
@@ -96,7 +93,6 @@ impl Game<'_, '_> {
         let text_y = img_bg_area.y() + img_bg_area.height();
         let text_area = Rectangle::new((area.x(), text_y), (area.width(), area.y() + area.height() - text_y) ).padded(20.0);
 
-        let e = self.world.entities().entity(id);
         let r = self.world.read_storage::<Renderable>();
         let sprites = &mut self.sprites;
         if let Some(rd) = r.get(e) {

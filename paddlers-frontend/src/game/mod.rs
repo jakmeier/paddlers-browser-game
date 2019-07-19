@@ -6,7 +6,7 @@ pub (crate) mod town;
 pub (crate) mod town_resources;
 pub (crate) mod fight;
 
-use crate::game::units::Worker;
+use crate::game::units::workers::Worker;
 use crate::gui::input;
 use crate::gui::render::*;
 use crate::gui::sprites::*;
@@ -27,17 +27,20 @@ use attackers::{Attacker};
 use fight::*;
 use std::sync::mpsc::{Receiver};
 use town_resources::TownResources;
+use units::worker_system::WorkerSystem;
 
 const MENU_BOX_WIDTH: f32 = 300.0;
 const CYCLE_SECS: u32 = 10;
 
 mod resources {
+    use crate::Timestamp;
+
     #[derive(Default)]
     pub struct ClockTick(pub u32);
     #[derive(Default)]
     pub struct UnitLength(pub f32);
     #[derive(Default)]
-    pub struct Dt(pub f64);
+    pub struct Now(pub Timestamp);
 }
 use resources::*;
 
@@ -85,14 +88,15 @@ impl State for Game<'static, 'static> {
         let mut world = init_world();
         world.insert(ClockTick(0));
         world.insert(UiState::default());
-        world.insert(Dt);
+        world.insert(Now);
         world.insert(MouseState::default());
         world.insert(TownResources::default());
         world.insert(RestApiState::default());
 
         let mut dispatcher = DispatcherBuilder::new()
-            .with(MoveSystem, "m", &[])
-            .with(FightSystem::default(), "f", &["m"])
+            .with(WorkerSystem, "work", &[])
+            .with(MoveSystem, "move", &["work"])
+            .with(FightSystem::default(), "fight", &["move"])
             .build();
         dispatcher.setup(&mut world);
 
@@ -109,7 +113,7 @@ impl State for Game<'static, 'static> {
         hover_dispatcher.setup(&mut world);
 
         // XXX: Just for testing
-        units::insert_hero(&mut world, (5,5), 100.0);
+        units::insert_hero(&mut world, (5,5), 100.0, crate::wasm_setup::local_now());
 
         Ok(Game {
             dispatcher: dispatcher,
@@ -148,7 +152,7 @@ impl State for Game<'static, 'static> {
                         NetMsg::Attacks(response) => {
                             if let Some(data) = response.data {
                                 for atk in data.attacks {
-                                    atk.create_entities(&mut self.world, self.unit_len.unwrap(), self.time_zero);
+                                    atk.create_entities(&mut self.world, self.unit_len.unwrap());
                                 }
                             }
                             else {
@@ -177,7 +181,7 @@ impl State for Game<'static, 'static> {
                 Err(TryRecvError::Empty) => {},
             }
         }
-        self.update_dt();
+        self.update_time_reference();
         self.dispatcher.dispatch(&mut self.world);
         if self.total_updates % 300 == 15 {
             self.reaper(&Rectangle::new_sized(window.screen_size()));
@@ -227,18 +231,6 @@ impl State for Game<'static, 'static> {
                     let mut c = self.world.write_resource::<MouseState>();
                     *c = MouseState(window.mouse().pos(), Some(*button));
                 }
-                {
-                    // let ui_state = self.world.read_resource::<UiState>();
-                    // let maybe_grabbed = ui_state.grabbed_item.clone();
-                    // std::mem::drop(ui_state);
-                    // if let Some(Grabbable::NewBuilding(item)) = maybe_grabbed {
-                    //     if let Some(pos) = self.town.get_empty_tile(window.mouse().pos(), self.unit_len.unwrap()) {
-                    //         self.purchase_building(item, pos);
-                    //         let mut ui_state = self.world.write_resource::<UiState>();
-                    //         (*ui_state).grabbed_item = None;
-                    //     }
-                    // }
-                }
                 self.click_dispatcher.dispatch(&mut self.world);
             }
             Event::Key(key, state) 
@@ -254,11 +246,8 @@ impl State for Game<'static, 'static> {
             Event::Key(key, state) 
                 if *key == Key::Delete && *state == ButtonState::Pressed =>
                 {
-                    let ui_state = self.world.read_resource::<UiState>();
-                    if let Some(id) = ui_state.selected_entity {
-                        let e = self.world.entities().entity(id);
-                        std::mem::drop(ui_state);
-                        let mut ui_state = self.world.write_resource::<UiState>();
+                    let mut ui_state = self.world.write_resource::<UiState>();
+                    if let Some(e) = ui_state.selected_entity {
                         (*ui_state).selected_entity = None;
                         std::mem::drop(ui_state);
 
@@ -294,11 +283,11 @@ impl Game<'_,'_> {
     pub fn town_mut(&mut self) -> specs::shred::FetchMut<Town> {
         self.world.write_resource()
     }
-    fn update_dt(&mut self) {
+    fn update_time_reference(&mut self) {
         if self.time_zero != 0.0 {
             let t = crate::wasm_setup::local_now();
-            let mut dt = self.world.write_resource::<Dt>();
-            *dt = Dt(t - self.time_zero);
+            let mut ts = self.world.write_resource::<Now>();
+            *ts = Now(t);
         }
     }
     /// Removes entites outside the map
@@ -318,7 +307,7 @@ impl Game<'_,'_> {
 fn init_world() -> World {
     let mut world = World::new();
     world.register::<Position>();
-    world.register::<Velocity>();
+    world.register::<Moving>();
     world.register::<Renderable>();
     world.register::<Clickable>();
     world.register::<Attacker>();
@@ -340,7 +329,7 @@ pub fn run(width: f32, height: f32, net_chan: Receiver<NetMsg>) {
     let ul = tw / town::X as f32;
     let menu_box_area = Rectangle::new((tw,0),(MENU_BOX_WIDTH, th));
     quicksilver::lifecycle::run_with::<Game, _>(
-        "Happy Town", 
+        "Paddlers", 
         Vector::new(tw + MENU_BOX_WIDTH, th), 
         Settings::default(), 
         || Ok(

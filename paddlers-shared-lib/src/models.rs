@@ -1,4 +1,5 @@
 use serde::{Serialize, Deserialize};
+use chrono::NaiveDateTime;
 
 #[cfg(feature = "sql_db")]
 use ::diesel_derive_enum;
@@ -6,8 +7,6 @@ use ::diesel_derive_enum;
 use diesel_derive_enum::DbEnum;
 #[cfg(feature = "sql_db")]
 pub use resources::dsl;
-#[cfg(feature = "sql_db")]
-use chrono::NaiveDateTime;
 
 #[cfg(feature = "sql_db")]
 #[derive(Debug, Queryable, Identifiable)]
@@ -138,4 +137,31 @@ use super::schema::resources;
 pub struct Resource {
     pub resource_type: ResourceType,
     pub amount: i64,
+}
+
+
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Serialize, Deserialize, EnumIter, Display)]
+#[cfg_attr(feature = "graphql", derive(juniper::GraphQLEnum))]
+// #[cfg_attr(feature = "sql_db", DieselType = "Task_type", derive(DbEnum))]
+pub enum TaskType {
+    Idle,
+    Walk,
+    Work, 
+    Defend,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Task {
+    pub id: i64,
+    pub unit_id: i64,
+    pub task_type: TaskType,
+    pub x: i32,
+    pub y: i32,
+    pub start_time: NaiveDateTime,
+}
+
+pub struct NewTask {
+    pub task_type: TaskType,
+    pub x: i32,
+    pub y: i32,
 }

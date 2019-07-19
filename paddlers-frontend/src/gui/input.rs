@@ -2,15 +2,17 @@ use crate::net::game_master_api::RestApiState;
 use quicksilver::geom::{Vector, Shape, Rectangle};
 use quicksilver::prelude::MouseButton;
 use specs::prelude::*;
-use specs::world::Index;
 use crate::gui::{
     utils::*,
     sprites::WithSprite,
     gui_components::*,
 };
-use crate::game::movement::Position;
-use crate::game::town_resources::TownResources;
-use crate::game::town::Town;
+use crate::game::{
+    movement::Position,
+    town_resources::TownResources,
+    town::Town,
+    units::workers::Worker,
+};
 use paddlers_shared_lib::models::*;
 use paddlers_shared_lib::api::shop::*;
 
@@ -19,8 +21,8 @@ pub struct MouseState(pub Vector, pub Option<MouseButton>);
 
 #[derive(Default, Clone)]
 pub struct UiState {
-    pub selected_entity: Option<Index>,
-    pub hovered_entity: Option<Index>,
+    pub selected_entity: Option<Entity>,
+    pub hovered_entity: Option<Entity>,
     pub grabbed_item: Option<Grabbable>,
     pub menu_box_area: Rectangle,
 }
@@ -72,7 +74,7 @@ impl<'a> System<'a> for LeftClickSystem {
             (*ui_state).selected_entity = None;
             for (e, pos, _) in (&entities, &position, &clickable).join() {
                 if mouse_pos.overlaps_rectangle(&pos.area) {
-                    (*ui_state).selected_entity = Some(e.id());
+                    (*ui_state).selected_entity = Some(e);
                     break;
                 }
             }
@@ -97,19 +99,37 @@ impl<'a> System<'a> for RightClickSystem {
     type SystemData = (
         Read<'a, MouseState>,
         Write<'a, UiState>,
+        Read<'a, Town>,
+        WriteStorage<'a, Worker>,
+        ReadStorage<'a, Position>,
      );
 
-    fn run(&mut self, (mouse_state, mut ui_state): Self::SystemData) {
+    fn run(&mut self, (mouse_state, mut ui_state, town, mut worker, position): Self::SystemData) {
 
-        let MouseState(_position, button) = *mouse_state;
+        let MouseState(mouse_pos, button) = *mouse_state;
         if button != Some(MouseButton::Right) {
             return;
         }
 
         (*ui_state).grabbed_item = None;
 
-        // TODO
-        
+
+        if mouse_pos.overlaps_rectangle(&(*ui_state).menu_box_area) {
+            // NOP
+        }
+        else {
+            if let Some((Some(w), Some(from))) = 
+                ui_state.selected_entity
+                .map(
+                    |selected| 
+                    (worker.get_mut(selected), position.get(selected))
+                ) 
+            {
+                let start = town.tile(from.area.pos);
+                let destination = town.tile(mouse_pos);
+                w.walk(start , destination , &town);
+            }
+        }
     }
 }
 
@@ -129,7 +149,7 @@ impl<'a> System<'a> for HoverSystem {
 
         for (e, pos) in (&entities, &position).join() {
             if mouse_pos.overlaps_rectangle(&pos.area) {
-                (*ui_state).hovered_entity = Some(e.id());
+                (*ui_state).hovered_entity = Some(e);
                 break;
             }
         }

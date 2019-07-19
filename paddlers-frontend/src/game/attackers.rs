@@ -1,5 +1,6 @@
 use quicksilver::geom::Vector;
 use specs::prelude::*;
+use crate::Timestamp;
 use crate::gui::{
     render::Renderable,
     z::Z_UNITS,
@@ -8,7 +9,7 @@ use crate::gui::{
 };
 use crate::game::{
     input::Clickable,
-    movement::{Position, Velocity},
+    movement::{Position, Moving},
     fight::Health,
 };
 
@@ -16,11 +17,12 @@ use crate::game::{
 #[storage(NullStorage)]
 pub struct Attacker;
 
-pub fn insert_duck(world: &mut World, pos: impl Into<Vector>, speed: impl Into<Vector>, hp: i64, ul: f32) -> Entity {
+pub fn insert_duck(world: &mut World, pos: impl Into<Vector>, birth_time: Timestamp, speed: impl Into<Vector>, hp: i64, ul: f32) -> Entity {
     let pos = pos.into();
+    let speed = speed.into();
     world.create_entity()
         .with(Position::new(pos, (0.6*ul,0.4*ul), Z_UNITS))
-        .with(Velocity::new(pos, speed))
+        .with(Moving::new(birth_time, pos, speed, speed.len()))
         .with(
             Renderable {
                 kind: RenderVariant::ImgWithImgBackground(SpriteIndex::Duck, SpriteIndex::Water),
@@ -34,26 +36,24 @@ pub fn insert_duck(world: &mut World, pos: impl Into<Vector>, speed: impl Into<V
 
 use crate::net::graphql::attacks_query::{AttacksQueryAttacksUnits,AttacksQueryAttacks};
 impl AttacksQueryAttacks {
-    pub fn create_entities(&self, world: &mut World, ul: f32, time_zero: f64) -> Vec<Entity> {
-        let zero = chrono::NaiveDateTime::from_timestamp((time_zero / 1000.0) as i64, (time_zero % 1000.0) as u32 * 1000_000);
-        let time_alive = zero - self.arrival();
+    pub fn create_entities(&self, world: &mut World, ul: f32) -> Vec<Entity> {
+        let birth_time = self.arrival * 1000.0;
         self.units
             .iter()
             .enumerate()
-            .map(|(i, u)|{u.create_entity(world, &time_alive, i, ul)})
+            .map(|(i, u)|{u.create_entity(world, birth_time, i, ul)})
             .collect()
     }
 }
 impl AttacksQueryAttacksUnits {
     // TODO: For entities already well into the map, compute the attacks so far.
-    fn create_entity(&self, world: &mut World, time_alive: &chrono::Duration, pos_rank: usize, ul: f32) -> Entity {
+    fn create_entity(&self, world: &mut World, birth: Timestamp, pos_rank: usize, ul: f32) -> Entity {
         let v = -self.speed as f32 / (super::CYCLE_SECS * 1000) as f32 * ul;
-        let start_x = 1000.0 - 30.0;
+        let x = 1000.0 - 30.0;
         let y = 300.0;
-        let x = start_x + time_alive.num_milliseconds() as f32 * v;
         let pos = Vector::new(x,y) + attacker_position_rank_offset(pos_rank);
         let hp = self.hp;
-        insert_duck(world, pos, (v as f32,0.0), hp, ul)
+        insert_duck(world, pos, birth, (v as f32,0.0), hp, ul)
     }
 }
 

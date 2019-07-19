@@ -27,3 +27,4 @@ pub fn main() {
 }
 
 
+pub type Timestamp = f64;
