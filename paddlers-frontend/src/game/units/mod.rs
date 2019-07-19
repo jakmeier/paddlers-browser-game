@@ -15,7 +15,7 @@ use crate::game::{
 pub mod workers;
 use workers::*; 
 pub mod worker_system;
-
+pub mod attackers;
 
 
 pub fn insert_hero(world: &mut World, pos: impl Into<Vector>, ul: f32, birth: Timestamp) -> Entity {

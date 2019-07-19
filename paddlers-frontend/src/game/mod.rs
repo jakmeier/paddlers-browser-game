@@ -1,5 +1,4 @@
-pub (crate) mod attackers;
-pub (crate) mod defenders;
+pub (crate) mod buildings;
 pub (crate) mod units;
 pub (crate) mod movement;
 pub (crate) mod town;
@@ -23,7 +22,7 @@ use movement::*;
 use quicksilver::prelude::*;
 use specs::prelude::*;
 use town::{Town, TOWN_RATIO};
-use attackers::{Attacker};
+use units::attackers::{Attacker};
 use fight::*;
 use std::sync::mpsc::{Receiver};
 use town_resources::TownResources;

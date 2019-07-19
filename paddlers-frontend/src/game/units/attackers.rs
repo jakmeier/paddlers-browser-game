@@ -48,7 +48,7 @@ impl AttacksQueryAttacks {
 impl AttacksQueryAttacksUnits {
     // TODO: For entities already well into the map, compute the attacks so far.
     fn create_entity(&self, world: &mut World, birth: Timestamp, pos_rank: usize, ul: f32) -> Entity {
-        let v = -self.speed as f32 / (super::CYCLE_SECS * 1000) as f32 * ul;
+        let v = -self.speed as f32 / (super::super::CYCLE_SECS * 1000) as f32 * ul;
         let x = 1000.0 - 30.0;
         let y = 300.0;
         let pos = Vector::new(x,y) + attacker_position_rank_offset(pos_rank);
