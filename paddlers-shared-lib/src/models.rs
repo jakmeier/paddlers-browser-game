@@ -142,15 +142,17 @@ pub struct Resource {
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Serialize, Deserialize, EnumIter, Display)]
 #[cfg_attr(feature = "graphql", derive(juniper::GraphQLEnum))]
-// #[cfg_attr(feature = "sql_db", DieselType = "Task_type", derive(DbEnum))]
+#[cfg_attr(feature = "sql_db", DieselType = "Task_type", derive(DbEnum))]
 pub enum TaskType {
     Idle,
     Walk,
-    Work, 
     Defend,
+    GatherSticks,
+    ChopTree, 
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "sql_db", derive(Queryable))]
 pub struct Task {
     pub id: i64,
     pub unit_id: i64,

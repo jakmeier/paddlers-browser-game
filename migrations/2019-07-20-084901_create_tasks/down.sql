@@ -1,0 +1,2 @@
+DROP TABLE tasks;
+DROP TYPE TASK_TYPE; 

@@ -91,6 +91,9 @@ impl GqlUnit {
     pub fn speed(&self) -> f64 {
         self.0.speed as f64
     }
+    pub fn tasks(&self, ctx: &Context) -> Vec<GqlTask> {
+        ctx.db.unit_tasks(&self.0).into_iter().map(|t| GqlTask(t)).collect()
+    }
 }
 
 pub struct GqlAttack(paddlers_shared_lib::models::Attack);
@@ -177,4 +180,25 @@ impl GqlVillage {
         ctx.db.resource(ResourceType::Logs) as i32
     }
 
+}
+
+
+pub struct GqlTask(paddlers_shared_lib::models::Task);
+#[juniper::object (Context = Context)]
+impl GqlTask {
+    fn id(&self) -> juniper::ID {
+        self.0.id.to_string().into()
+    }
+    fn x(&self) -> i32 {
+        self.0.x
+    }
+    fn y(&self) -> i32 {
+        self.0.y
+    }
+    fn task_type(&self) -> &paddlers_shared_lib::models::TaskType {
+        &self.0.task_type
+    }
+    fn start_time(&self) -> FieldResult<NaiveDateTime> {
+        datetime(&self.0.start_time)
+    }
 }

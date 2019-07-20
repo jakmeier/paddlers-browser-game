@@ -51,6 +51,20 @@ table! {
     use diesel::sql_types::*;
     use crate::models::*;
 
+    tasks (id) {
+        id -> Int8,
+        unit_id -> Int8,
+        task_type -> Task_type,
+        x -> Int4,
+        y -> Int4,
+        start_time -> Timestamp,
+    }
+}
+
+table! {
+    use diesel::sql_types::*;
+    use crate::models::*;
+
     units (id) {
         id -> Int8,
         sprite -> Varchar,
@@ -61,11 +75,13 @@ table! {
 
 joinable!(attacks_to_units -> attacks (attack_id));
 joinable!(attacks_to_units -> units (unit_id));
+joinable!(tasks -> units (unit_id));
 
 allow_tables_to_appear_in_same_query!(
     attacks,
     attacks_to_units,
     buildings,
     resources,
+    tasks,
     units,
 );

@@ -52,4 +52,12 @@ pub trait GameDB {
         .map(|res: Resource| res.amount)
         .unwrap_or(0)
     }
+    fn unit_tasks(&self, u: &Unit) -> Vec<Task> {
+        let results = tasks::table
+        .filter(tasks::unit_id.eq(u.id))
+        .limit(500)
+        .load::<Task>(self.dbconn())
+        .expect("Error loading data");
+        results
+    }
 }
