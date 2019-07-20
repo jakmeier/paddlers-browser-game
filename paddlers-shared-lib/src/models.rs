@@ -1,18 +1,50 @@
 use serde::{Serialize, Deserialize};
-use chrono::NaiveDateTime;
 
 #[cfg(feature = "sql_db")]
-use ::diesel_derive_enum;
-#[cfg(feature = "sql_db")]
-use diesel_derive_enum::DbEnum;
+use chrono::NaiveDateTime;
+
+// Reexport
 #[cfg(feature = "sql_db")]
 pub use resources::dsl;
+
+#[cfg(feature = "sql_db")]
+use ::diesel_derive_enum::DbEnum;
+
+#[cfg(feature = "sql_db")]
+use super::schema::{
+    units,
+    attacks,
+    attacks_to_units,
+    buildings,
+    resources,
+};
+
+#[derive(Debug, PartialEq, Clone, Copy, Serialize, Deserialize)]
+#[cfg_attr(feature = "enum_utils", derive(EnumIter, Display))]
+#[cfg_attr(feature = "graphql", derive(juniper::GraphQLEnum))]
+#[cfg_attr(feature = "sql_db", derive(DbEnum), DieselType = "Unit_type")]
+pub enum UnitType {
+    Basic,
+    Hero,
+}
+#[derive(Debug, PartialEq, Clone, Copy, Serialize, Deserialize)]
+#[cfg_attr(feature = "enum_utils", derive(EnumIter, Display))]
+#[cfg_attr(feature = "graphql", derive(juniper::GraphQLEnum))]
+#[cfg_attr(feature = "sql_db", derive(DbEnum), DieselType = "Unit_color")]
+pub enum UnitColor {
+    Yellow,
+    White,
+    Camo,
+}
+
 
 #[cfg(feature = "sql_db")]
 #[derive(Debug, Queryable, Identifiable)]
 pub struct Unit {
     pub id: i64,
-    pub sprite: String,
+    pub home: i64,
+    pub unit_type: UnitType,
+    pub color: Option<UnitColor>,
     pub hp: i64,
     pub speed: f32,
 }
@@ -20,14 +52,13 @@ pub struct Unit {
 #[cfg(feature = "sql_db")]
 #[derive(Insertable)]
 #[table_name = "units"]
-pub struct NewUnit<'a> {
-    pub sprite: &'a str,
+pub struct NewUnit {
+    pub home: i64,
+    pub unit_type: UnitType,
+    pub color: Option<UnitColor>,
     pub hp: i64,
     pub speed: f32,
 }
-
-#[cfg(feature = "sql_db")]
-use super::schema::attacks;
 
 #[cfg(feature = "sql_db")]
 #[derive(Debug, Queryable, Identifiable)]
@@ -46,9 +77,6 @@ pub struct NewAttack {
 }
 
 #[cfg(feature = "sql_db")]
-use super::schema::attacks_to_units;
-
-#[cfg(feature = "sql_db")]
 #[derive(Debug, Queryable,Insertable)]
 #[table_name = "attacks_to_units"]
 pub struct AttackToUnit {
@@ -56,37 +84,15 @@ pub struct AttackToUnit {
     pub unit_id: i64,
 }
 
-#[cfg(feature = "sql_db")]
-use super::schema::units;
-#[cfg(feature = "sql_db")]
-#[allow(non_camel_case_types)]
-pub type UNIT_ALL_COLUMNS_T =  (
-    units::id,
-    units::sprite,
-    units::hp,
-    units::speed,
-);
-#[cfg(feature = "sql_db")]
-pub const UNIT_ALL_COLUMNS: UNIT_ALL_COLUMNS_T = (
-    units::id,
-    units::sprite,
-    units::hp,
-    units::speed,
-);
 
-#[derive(Debug, PartialEq, Clone, Copy, Serialize, Deserialize, EnumIter, Display)]
+#[derive(Debug, PartialEq, Clone, Copy, Serialize, Deserialize)]
+#[cfg_attr(feature = "enum_utils", derive(EnumIter, Display))]
 #[cfg_attr(feature = "graphql", derive(juniper::GraphQLEnum))]
 #[cfg_attr(feature = "sql_db", derive(DbEnum), DieselType = "Building_type")]
 pub enum BuildingType {
     BlueFlowers,
     RedFlowers,
     Tree,
-}
-impl BuildingType {
-    pub fn all() -> BuildingTypeIter {
-        use strum::IntoEnumIterator;
-        BuildingType::iter()
-    }
 }
 
 #[cfg(feature = "sql_db")]
@@ -103,9 +109,6 @@ pub struct Building {
 }
 
 #[cfg(feature = "sql_db")]
-use super::schema::buildings;
-
-#[cfg(feature = "sql_db")]
 #[derive(Insertable, Debug)]
 #[table_name = "buildings"]
 pub struct NewBuilding {
@@ -118,7 +121,8 @@ pub struct NewBuilding {
     pub creation: NaiveDateTime,
 }
 
-#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Serialize, Deserialize, EnumIter, Display)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Serialize, Deserialize)]
+#[cfg_attr(feature = "enum_utils", derive(EnumIter, Display))]
 #[cfg_attr(feature = "graphql", derive(juniper::GraphQLEnum))]
 #[cfg_attr(feature = "sql_db", DieselType = "Resource_type", derive(DbEnum))]
 pub enum ResourceType {
@@ -126,9 +130,6 @@ pub enum ResourceType {
     Logs,
     Feathers,
 }
-
-#[cfg(feature = "sql_db")]
-use super::schema::resources;
 
 #[cfg(feature = "sql_db")]
 #[derive(Identifiable, Insertable, Queryable, Debug)]
@@ -140,7 +141,8 @@ pub struct Resource {
 }
 
 
-#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Serialize, Deserialize, EnumIter, Display)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Serialize, Deserialize)]
+#[cfg_attr(feature = "enum_utils", derive(EnumIter, Display))]
 #[cfg_attr(feature = "graphql", derive(juniper::GraphQLEnum))]
 #[cfg_attr(feature = "sql_db", DieselType = "Task_type", derive(DbEnum))]
 pub enum TaskType {
@@ -151,8 +153,8 @@ pub enum TaskType {
     ChopTree, 
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[cfg_attr(feature = "sql_db", derive(Queryable))]
+#[derive(Debug, Clone, Serialize, Deserialize, Queryable)]
+#[cfg(feature = "sql_db")]
 pub struct Task {
     pub id: i64,
     pub unit_id: i64,

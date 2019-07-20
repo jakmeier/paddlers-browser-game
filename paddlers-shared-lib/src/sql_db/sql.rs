@@ -5,8 +5,9 @@ use diesel::prelude::*;
 pub trait GameDB {
     fn dbconn(&self) -> &PgConnection;
 
-    fn units(&self) -> Vec<Unit> {
+    fn units(&self, village_id: i64) -> Vec<Unit> {
         let results = units::table
+            .filter(units::home.eq(village_id))
             .limit(500)
             .load::<Unit>(self.dbconn())
             .expect("Error loading data");
@@ -24,7 +25,7 @@ pub trait GameDB {
         let results = attacks_to_units::table
         .inner_join(units::table)
         .filter(attacks_to_units::attack_id.eq(atk.id))
-        .select(UNIT_ALL_COLUMNS) 
+        .select(units::all_columns) 
         .limit(500)
         .load::<Unit>(self.dbconn())
         .expect("Error loading data");

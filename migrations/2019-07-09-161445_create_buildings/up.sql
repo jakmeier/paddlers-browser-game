@@ -1,4 +1,4 @@
-CREATE TYPE BUILDING_TYPE AS ENUM ('blue_flowers', 'red_flowers');
+CREATE TYPE BUILDING_TYPE AS ENUM ('blue_flowers', 'red_flowers', 'tree');
 CREATE TABLE buildings (
     id BIGSERIAL PRIMARY KEY,
     x INT NOT NULL,
@@ -6,5 +6,6 @@ CREATE TABLE buildings (
     building_type BUILDING_TYPE NOT NULL,
     building_range REAL,
     attack_power REAL,
-    attacks_per_cycle INT
+    attacks_per_cycle INT,
+    creation TIMESTAMP NOT NULL
 )

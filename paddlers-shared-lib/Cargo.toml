@@ -8,15 +8,16 @@ edition = "2018"
 diesel = { version = "1.4", features = ["postgres", "chrono"], optional = true }
 diesel-derive-enum = { version = "0.4", features = ["postgres"], optional = true }
 dotenv = { version = "0.14", optional = true }
-chrono = { version = "0.4", features = ["serde"] }
+chrono = { version = "0.4", features = ["serde"], optional = true }
 
 # For deriving
 juniper = { version = "0.12", optional = true }
-strum = "0.15.0"
-strum_macros = "0.15.0"
+strum = { version = "0.15.0", optional = true }
+strum_macros = { version = "0.15.0", optional = true }
 serde = { version = "1.0", features = ["derive"] }
 
 [features]
-graphql = ["juniper"]
-sql_db = ["diesel", "diesel-derive-enum", "dotenv"]
+graphql = ["juniper", "chrono/serde"]
+sql_db = ["diesel", "diesel-derive-enum", "dotenv", "chrono/serde"]
+enum_utils = ["strum", "strum_macros"]
 default = []

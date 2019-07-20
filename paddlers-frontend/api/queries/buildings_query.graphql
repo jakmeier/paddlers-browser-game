@@ -1,11 +1,13 @@
 query BuildingsQuery {
-  buildings {
-    id
-    x
-    y
-    buildingType
-    buildingRange
-    attackPower
-    attacksPerCycle
+  village(villageId: 1) {
+    buildings {
+      id
+      x
+      y
+      buildingType
+      buildingRange
+      attackPower
+      attacksPerCycle
+    }
   }
 }

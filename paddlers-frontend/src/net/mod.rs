@@ -68,7 +68,7 @@ impl NetState {
             fp.map(
                 move |response| {
                     if let Some(data) = &response.data {
-                        let max_id = data.attacks.iter()
+                        let max_id = data.village.attacks.iter()
                             .map(|atk| atk.id.parse().unwrap())
                             .fold(0, i64::max);
                         let next = self.next_attack_id.load(Ordering::Relaxed).max(max_id + 1);

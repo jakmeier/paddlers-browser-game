@@ -12,7 +12,7 @@ pub struct AttacksQuery;
 pub type AttacksResponse = Response<attacks_query::ResponseData>;
 
 
-impl attacks_query::AttacksQueryAttacks {
+impl attacks_query::AttacksQueryVillageAttacks {
     #[allow(dead_code)]
     pub fn departure(&self) -> chrono::NaiveDateTime {
         f64_to_naive_dt(self.departure)

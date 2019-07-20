@@ -19,10 +19,12 @@ impl DB {
         let mut rng = rand::thread_rng();
         let n = rng.gen_range(2,5);
         for _ in 0 .. n {
-            let unit = NewUnit {  
-                sprite: "Random test",
+            let unit = NewUnit {
+                unit_type: UnitType::Basic,
+                color: Some(UnitColor::Yellow),
                 hp: rng.gen_range(3, 6), 
                 speed: 1.0,
+                home: 2 // for now, 1 = only visible town, 2 = homeless attacker
             };
             let u = self.insert_unit(&unit);
             let atu = AttackToUnit {

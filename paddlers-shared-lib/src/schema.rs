@@ -67,7 +67,9 @@ table! {
 
     units (id) {
         id -> Int8,
-        sprite -> Varchar,
+        home -> Int8,
+        unit_type -> Unit_type,
+        color -> Nullable<Unit_color>,
         hp -> Int8,
         speed -> Float4,
     }

@@ -1,5 +1,5 @@
 query ResourcesQuery{
-  village {
+  village(villageId: 1) {
     sticks
     feathers
     logs

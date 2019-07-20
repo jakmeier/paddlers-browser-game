@@ -1,0 +1,16 @@
+query VillageUnitsQuery{
+  village(villageId: 1) {
+    units {
+      id
+      unitType
+      unitColor
+      tasks {
+        id
+        x
+        y
+        taskType
+        startTime
+      }
+    }
+  }
+}

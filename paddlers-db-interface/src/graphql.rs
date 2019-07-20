@@ -30,34 +30,8 @@ pub fn new_schema() -> Schema {
     Context = Context,
 )]
 impl Query {
-    /// WIP for testing
-    fn units(ctx: &Context) -> FieldResult<Vec<GqlUnit>> {
-        Ok(
-            ctx.db.units().into_iter().map(|u| GqlUnit(u)).collect()
-        )
-    }
-    /// WIP for testing (lacks village filter)
-    #[graphql(
-        arguments(
-            min_id(
-            description = "Response only contains attacks with id >= min_id",
-            )
-        )
-    )]
-    fn attacks(ctx: &Context, min_id: Option<i32>) -> FieldResult<Vec<GqlAttack>> {
-        Ok(
-            ctx.db.attacks(min_id.map(i64::from)).into_iter().map(GqlAttack::from).collect()
-        )
-    }
-    /// WIP for testing (should have at least a town filter)
-    fn buildings(ctx: &Context) -> FieldResult<Vec<GqlBuilding>> {
-        Ok(
-            ctx.db.buildings().into_iter().map(GqlBuilding::from).collect()
-        )
-    }
-    /// WIP for testing
-    fn village(ctx: &Context) -> FieldResult<GqlVillage> {
-        Ok(GqlVillage)
+    fn village(ctx: &Context, village_id: i32) -> FieldResult<GqlVillage> {
+        Ok(GqlVillage{id: village_id as i64})
     }
 }
 
@@ -80,8 +54,11 @@ impl GqlUnit {
     pub fn id(&self) -> juniper::ID {
         self.0.id.to_string().into()
     }
-    pub fn sprite(&self) -> &str {
-        &self.0.sprite
+    pub fn unit_type(&self) -> &paddlers_shared_lib::models::UnitType {
+        &self.0.unit_type
+    }
+    pub fn color(&self) -> &Option<paddlers_shared_lib::models::UnitColor> {
+        &self.0.color
     }
     // TODO: Proper type handling
     pub fn hp(&self) -> i32 {
@@ -166,8 +143,10 @@ fn datetime(dt: &NaiveDateTime) -> FieldResult<NaiveDateTime> {
     )
 }
 
-
-pub struct GqlVillage;
+// TODO: Back this with DB (Only necessary once there is more than one village)
+pub struct GqlVillage{
+    id: i64,
+}
 #[juniper::object (Context = Context)]
 impl GqlVillage {
     fn sticks(&self, ctx: &Context) -> i32 {
@@ -179,7 +158,28 @@ impl GqlVillage {
     fn logs(&self, ctx: &Context) -> i32 {
         ctx.db.resource(ResourceType::Logs) as i32
     }
-
+    fn units(&self, ctx: &Context) -> Vec<GqlUnit> {
+        ctx.db.units(self.id).into_iter().map(|u| GqlUnit(u)).collect()
+    }
+    fn buildings(&self, ctx: &Context) -> FieldResult<Vec<GqlBuilding>> {
+        // TODO: Filter for village
+        Ok(
+            ctx.db.buildings().into_iter().map(GqlBuilding::from).collect()
+        )
+    }
+    #[graphql(
+        arguments(
+            min_id(
+            description = "Response only contains attacks with id >= min_id",
+            )
+        )
+    )]
+    fn attacks(&self, ctx: &Context, min_id: Option<i32>) -> FieldResult<Vec<GqlAttack>> {
+        // TODO: Filter for village
+        Ok(
+            ctx.db.attacks(min_id.map(i64::from)).into_iter().map(GqlAttack::from).collect()
+        )
+    }
 }
 
 

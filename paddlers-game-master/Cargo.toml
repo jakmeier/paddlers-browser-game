@@ -5,7 +5,7 @@ authors = ["Jakob Meier <inbox@jakobmeier.ch>"]
 edition = "2018"
 
 [dependencies]
-paddlers-shared-lib = { path = "../paddlers-shared-lib", features = ["sql_db"] }
+paddlers-shared-lib = { path = "../paddlers-shared-lib", features = ["sql_db", "enum_utils"] }
 diesel = { version = "1.4", features = ["postgres", "chrono", "r2d2"] }
 r2d2 = "0.8"
 chrono = "0.4"

@@ -1,13 +1,16 @@
 query AttacksQuery($min_attack_id: Int) {
-  attacks(minId: $min_attack_id) {
-    id
-    units {
+  village(villageId: 1) {
+    attacks(minId: $min_attack_id) {
       id
-      hp
-      sprite
-      speed
+      units {
+        id
+        unitType
+        color
+        hp
+        speed
+      }
+      departure
+      arrival
     }
-    departure
-    arrival
   }
 }

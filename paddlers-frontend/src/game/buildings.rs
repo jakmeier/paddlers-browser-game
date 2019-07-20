@@ -62,14 +62,14 @@ impl Town {
 use crate::net::graphql::buildings_query;
 impl buildings_query::ResponseData {
     pub (crate) fn create_entities(&self, game: &mut Game) -> Vec<Entity> {
-        self.buildings
+        self.village.buildings
             .iter()
             .map(|u|{u.create_entity(game)})
             .collect()
     }
 }
 
-impl buildings_query::BuildingsQueryBuildings {
+impl buildings_query::BuildingsQueryVillageBuildings {
     fn create_entity(&self, game: &mut Game) -> Entity {
         let coordinates = (self.x as usize,self.y as usize);
         let maybe_range = self.building_range.map(|f| f as f32);
