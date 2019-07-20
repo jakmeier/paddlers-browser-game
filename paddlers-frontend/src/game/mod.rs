@@ -5,6 +5,7 @@ pub (crate) mod town;
 pub (crate) mod town_resources;
 pub (crate) mod fight;
 
+use crate::game::units::worker_factory::create_worker_entities;
 use crate::game::units::workers::Worker;
 use crate::gui::input;
 use crate::gui::render::*;
@@ -111,9 +112,6 @@ impl State for Game<'static, 'static> {
             .build();
         hover_dispatcher.setup(&mut world);
 
-        // XXX: Just for testing
-        units::insert_hero(&mut world, (5,5), 100.0, crate::wasm_setup::local_now());
-
         Ok(Game {
             dispatcher: dispatcher,
             click_dispatcher: click_dispatcher,
@@ -173,6 +171,10 @@ impl State for Game<'static, 'static> {
                             else {
                                 println!("No resources available");
                             }
+                        }
+                        NetMsg::Workers(response) => {
+                            let now = self.world.read_resource::<Now>().0;
+                            create_worker_entities(&response, &mut self.world, now);
                         }
                     }
                 },

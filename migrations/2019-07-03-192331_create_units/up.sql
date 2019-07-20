@@ -4,6 +4,8 @@ CREATE TYPE UNIT_COLOR AS ENUM ('yellow', 'white', 'camo');
 CREATE TABLE units (
   id BIGSERIAL PRIMARY KEY,
   home BIGINT NOT NULL,
+  x INT NOT NULL,
+  y INT NOT NULL,
   unit_type UNIT_TYPE NOT NULL,
   color UNIT_COLOR,
   hp BIGINT NOT NULL,

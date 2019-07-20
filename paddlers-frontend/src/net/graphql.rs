@@ -39,6 +39,14 @@ pub type BuildingsResponse = Response<buildings_query::ResponseData>;
 pub struct ResourcesQuery;
 pub type ResourcesResponse = Response<resources_query::ResponseData>;
 
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "api/schema.json",
+    query_path = "api/queries/village_units_query.graphql",
+)]
+pub struct VillageUnitsQuery;
+pub type VillageUnitsResponse = Response<village_units_query::ResponseData>;
+pub type WorkerResponse = Vec<village_units_query::VillageUnitsQueryVillageUnits>;
 
 
 fn f64_to_naive_dt(f: f64) -> chrono::NaiveDateTime {

@@ -21,6 +21,8 @@ impl DB {
         for _ in 0 .. n {
             let unit = NewUnit {
                 unit_type: UnitType::Basic,
+                x: 0,
+                y: 0,
                 color: Some(UnitColor::Yellow),
                 hp: rng.gen_range(3, 6), 
                 speed: 1.0,

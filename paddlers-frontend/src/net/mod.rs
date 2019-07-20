@@ -34,6 +34,7 @@ pub enum NetMsg {
     Attacks(AttacksResponse),
     Buildings(BuildingsResponse),
     Resources(ResourcesResponse),
+    Workers(WorkerResponse)
 }
 
 /// Sets up continuous networking with the help of JS setTimeout
@@ -44,7 +45,7 @@ pub fn init_net(chan: Sender<NetMsg>) {
 
         // requests done only once
         STATIC_NET_STATE.spawn_buildings_query();
-        
+        STATIC_NET_STATE.spawn_workers_query();
     }
 }
 impl NetState {
@@ -99,6 +100,18 @@ impl NetState {
             )
         );
     }
+    fn spawn_workers_query(&self) {
+        let fp = http_read_workers();
+        let sender = self.chan.as_ref().unwrap().lock().unwrap().clone();
+        spawn_local(
+            fp.map(
+                move |response| {
+                    let workers = response.data.unwrap().village.units;
+                    sender.send(NetMsg::Workers(workers)).expect("Transferring data to game")
+                }
+            )
+        );
+    }
 }
 
 pub fn http_read_incoming_attacks(min_attack_id: Option<i64>) -> impl Future<Output = AttacksResponse> {
@@ -129,6 +142,17 @@ pub fn http_read_resources() -> impl Future<Output = ResourcesResponse> {
     let promise = ajax::send("POST", GRAPH_QL_PATH, request_string);
     promise.map(|x| {
         let response: ResourcesResponse = 
+            serde_json::from_str(&x.unwrap()).unwrap();
+        response
+    })
+}
+
+pub fn http_read_workers() -> impl Future<Output = VillageUnitsResponse> {
+    let request_body = VillageUnitsQuery::build_query(village_units_query::Variables{});
+    let request_string = &serde_json::to_string(&request_body).unwrap();
+    let promise = ajax::send("POST", GRAPH_QL_PATH, request_string);
+    promise.map(|x| {
+        let response: VillageUnitsResponse = 
             serde_json::from_str(&x.unwrap()).unwrap();
         response
     })

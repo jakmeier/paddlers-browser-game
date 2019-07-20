@@ -68,6 +68,8 @@ table! {
     units (id) {
         id -> Int8,
         home -> Int8,
+        x -> Int4,
+        y -> Int4,
         unit_type -> Unit_type,
         color -> Nullable<Unit_color>,
         hp -> Int8,

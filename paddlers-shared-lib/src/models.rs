@@ -43,6 +43,8 @@ pub enum UnitColor {
 pub struct Unit {
     pub id: i64,
     pub home: i64,
+    pub x: i32,
+    pub y: i32,
     pub unit_type: UnitType,
     pub color: Option<UnitColor>,
     pub hp: i64,
@@ -54,6 +56,8 @@ pub struct Unit {
 #[table_name = "units"]
 pub struct NewUnit {
     pub home: i64,
+    pub x: i32,
+    pub y: i32,
     pub unit_type: UnitType,
     pub color: Option<UnitColor>,
     pub hp: i64,

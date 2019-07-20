@@ -60,6 +60,12 @@ impl GqlUnit {
     pub fn color(&self) -> &Option<paddlers_shared_lib::models::UnitColor> {
         &self.0.color
     }
+    fn x(&self) -> i32 {
+        self.0.x
+    }
+    fn y(&self) -> i32 {
+        self.0.y
+    }
     // TODO: Proper type handling
     pub fn hp(&self) -> i32 {
         self.0.hp as i32

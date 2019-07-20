@@ -3,7 +3,10 @@ query VillageUnitsQuery{
     units {
       id
       unitType
-      unitColor
+      color
+      x
+      y
+      speed
       tasks {
         id
         x
