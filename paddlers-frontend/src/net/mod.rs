@@ -18,6 +18,7 @@ use std::sync::atomic::{AtomicI64, Ordering};
 
 const GRAPH_QL_PATH: &'static str = "http://localhost:65432/graphql";
 const SHOP_PATH: &'static str = "http://localhost:8088/shop";
+const WORKER_PATH: &'static str = "http://localhost:8088/worker";
 
 struct NetState {
     interval_ms: u32,

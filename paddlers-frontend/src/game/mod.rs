@@ -4,6 +4,7 @@ pub (crate) mod movement;
 pub (crate) mod town;
 pub (crate) mod town_resources;
 pub (crate) mod fight;
+pub (crate) mod components;
 
 use crate::game::units::worker_factory::create_worker_entities;
 use crate::game::units::workers::Worker;

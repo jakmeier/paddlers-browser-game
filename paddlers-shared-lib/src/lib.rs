@@ -9,6 +9,10 @@ pub extern crate strum;
 
 pub mod models;
 pub mod api;
+pub mod prelude;
+
+#[cfg(feature = "game_mechanics")] 
+pub mod game_mechanics;
 
 #[cfg(feature = "sql_db")]
 pub mod schema;

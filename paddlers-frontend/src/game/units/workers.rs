@@ -3,11 +3,10 @@ use quicksilver::geom::Vector;
 use specs::prelude::*;
 use crate::Timestamp;
 use crate::game::{
-    input::Clickable,
-    movement::{Position, Moving},
     town::{Town, TileIndex},
 };
 use paddlers_shared_lib::models::*;
+use paddlers_shared_lib::api::tasks::*;
 
 
 #[derive(Default, Component)]
@@ -24,42 +23,16 @@ pub struct WorkerTask {
 
 
 impl Worker {
-    pub fn walk(&mut self, from: TileIndex, to: TileIndex, town: &Town) {
+    pub fn walk(&mut self, from: TileIndex, to: TileIndex, town: &Town, netid: i64,) -> Result<TaskList, String> {
         if let Some((path, _dist)) = town.shortest_path(from, to) {
-            let mut current_direction = Vector::new(0,0);
-            let mut current = from;
-            for next in path {
-                let next_direction = direction_vector(current, next);
-                if next_direction != current_direction {
-                    // TODO: Prepare network package instead
-                    self.tasks.push_back(
-                        WorkerTask {
-                            task_type: TaskType::Walk, 
-                            position: current,
-                            start_time: crate::wasm_setup::local_now(), //XXX
-                        }
-                    )
-                }
-                current = next;
-                current_direction = next_direction;
-            }
-            self.tasks.push_back(
-                WorkerTask {
-                    task_type: TaskType::Walk, 
-                    position: to,
-                    start_time: crate::wasm_setup::local_now(),//XXXX
-                }
-            );
-            self.tasks.push_back(
-                WorkerTask {
-                    task_type: TaskType::Idle, 
-                    position: to,
-                    start_time: crate::wasm_setup::local_now() + 1000.0,//XXXX
-                }
-            );
+            let msg = TaskList {
+                unit_id: netid,
+                tasks: path_to_raw_tasks(&path, from),
+            };
+            Ok(msg)
         }
         else {
-            println!("Cannot walk from {:?} to {:?}", from, to);
+            Err(format!("Cannot walk from {:?} to {:?}", from, to))
         }
     }
 
@@ -71,6 +44,41 @@ impl Worker {
         }
         None
     }
+}
+
+fn path_to_raw_tasks(path: &[TileIndex], from: TileIndex) -> Vec<RawTask> {
+    let mut tasks = vec![];
+    let mut current_direction = Vector::new(0,0);
+    let mut current = from;
+    for next in path {
+        let next_direction = direction_vector(current, *next);
+        if next_direction != current_direction && current_direction != Vector::new(0,0) {
+            tasks.push(
+                RawTask {
+                    task_type: TaskType::Walk,
+                    x: current.0,
+                    y: current.1,
+                }
+            )
+        }
+        current = *next;
+        current_direction = next_direction;
+    }
+    tasks.push(
+        RawTask {
+            task_type: TaskType::Walk, 
+            x: current.0,
+            y: current.1,
+        }
+    );
+    tasks.push(
+        RawTask {
+            task_type: TaskType::Idle, 
+            x: current.0,
+            y: current.1,
+        }
+    );
+    tasks
 }
 
 fn direction_vector(a: TileIndex, b: TileIndex) -> Vector {

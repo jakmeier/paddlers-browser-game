@@ -75,6 +75,31 @@ impl DB {
             .execute(self.dbconn())
             .expect("Deleting building");
     }
+    pub fn insert_task(&self, task: &NewTask) -> Task {
+        diesel::insert_into(tasks::dsl::tasks)
+            .values(task)
+            .get_result(self.dbconn())
+            .expect("Inserting task")
+    }
+    pub fn insert_tasks(&self, tasks: &[NewTask]) -> Task {
+        diesel::insert_into(tasks::dsl::tasks)
+            .values(tasks)
+            .get_result(self.dbconn())
+            .expect("Inserting tasks")
+    }
+    pub fn delete_task(&self, task: &Task) {
+        diesel::delete(tasks::table
+            .filter(tasks::id.eq(task.id)))
+            .execute(self.dbconn())
+            .expect("Deleting task");
+    }
+    pub fn flush_task_queue(&self, unit_id: i64) {
+        diesel::delete(tasks::table
+            .filter(tasks::unit_id.eq(unit_id)))
+            .filter(tasks::start_time.gt(diesel::dsl::now))
+            .execute(self.dbconn())
+            .expect("Deleting task");
+    }
 }
 
 impl From<&Pool> for DB {

@@ -19,7 +19,7 @@ impl<'a> System<'a> for WorkerSystem {
      );
 
     fn run(&mut self, (mut workers, mut velocities, town, now): Self::SystemData) {
-        for (mut worker, mut mov) in (&mut workers, &mut velocities).join() {
+        for (worker, mut mov) in (&mut workers, &mut velocities).join() {
             if let Some(task) = worker.poll(now.0) {
                 match task.task_type {
                     TaskType::Walk => {

@@ -12,6 +12,7 @@ use crate::game::{
     town_resources::TownResources,
     town::Town,
     units::workers::Worker,
+    components::*,
 };
 use paddlers_shared_lib::models::*;
 use paddlers_shared_lib::api::shop::*;
@@ -100,11 +101,14 @@ impl<'a> System<'a> for RightClickSystem {
         Read<'a, MouseState>,
         Write<'a, UiState>,
         Read<'a, Town>,
+        Write<'a, RestApiState>,
+        Entities<'a>,
         WriteStorage<'a, Worker>,
         ReadStorage<'a, Position>,
+        ReadStorage<'a, NetObj>,
      );
 
-    fn run(&mut self, (mouse_state, mut ui_state, town, mut worker, position): Self::SystemData) {
+    fn run(&mut self, (mouse_state, mut ui_state, town, mut rest, entities, mut worker, position, netobj): Self::SystemData) {
 
         let MouseState(mouse_pos, button) = *mouse_state;
         if button != Some(MouseButton::Right) {
@@ -118,16 +122,24 @@ impl<'a> System<'a> for RightClickSystem {
             // NOP
         }
         else {
-            if let Some((Some(w), Some(from))) = 
+            if let Some((worker, from, netid)) = 
                 ui_state.selected_entity
-                .map(
+                .and_then(
                     |selected| 
-                    (worker.get_mut(selected), position.get(selected))
-                ) 
+                    (&mut worker, &position, &netobj).join().get(selected, &entities) 
+                )
             {
                 let start = town.tile(from.area.pos);
                 let destination = town.tile(mouse_pos);
-                w.walk(start , destination , &town);
+                let msg = worker.walk(start , destination , &town, netid.id);
+                match msg {
+                    Ok(msg) => {
+                        rest.http_overwrite_tasks(msg);
+                    }
+                    Err(e) => {
+                        println!("Walking didn't work: {}", e);
+                    }
+                }
             }
         }
     }

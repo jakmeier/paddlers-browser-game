@@ -5,6 +5,14 @@ use diesel::prelude::*;
 pub trait GameDB {
     fn dbconn(&self) -> &PgConnection;
 
+    fn unit(&self, unit_id: i64) -> Option<Unit> {
+        let results = units::table
+            .filter(units::id.eq(unit_id))
+            .get_result::<Unit>(self.dbconn())
+            .optional()
+            .expect("Error loading data");
+        results
+    }
     fn units(&self, village_id: i64) -> Vec<Unit> {
         let results = units::table
             .filter(units::home.eq(village_id))
@@ -53,9 +61,9 @@ pub trait GameDB {
         .map(|res: Resource| res.amount)
         .unwrap_or(0)
     }
-    fn unit_tasks(&self, u: &Unit) -> Vec<Task> {
+    fn unit_tasks(&self, unit_id: i64) -> Vec<Task> {
         let results = tasks::table
-        .filter(tasks::unit_id.eq(u.id))
+        .filter(tasks::unit_id.eq(unit_id))
         .limit(500)
         .load::<Task>(self.dbconn())
         .expect("Error loading data");

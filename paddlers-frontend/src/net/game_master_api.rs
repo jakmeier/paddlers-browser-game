@@ -1,8 +1,9 @@
 use std::collections::VecDeque;
 use paddlers_shared_lib::api::shop::*;
+use paddlers_shared_lib::api::tasks::TaskList;
 use paddlers_shared_lib::models::*;
 use super::ajax;
-use super::SHOP_PATH;
+use super::{SHOP_PATH, WORKER_PATH};
 use specs::prelude::*;
 
 #[derive(Default)]
@@ -27,6 +28,12 @@ impl RestApiState {
         let msg = BuildingDeletion { x: idx.0, y: idx.1 };
         let request_string = &serde_json::to_string(&msg).unwrap();
         let promise = ajax::send("POST", &format!("{}/building/delete", SHOP_PATH), request_string);
+        self.queue.push_back(promise);
+    }
+
+    pub fn http_overwrite_tasks(&mut self, msg: TaskList) {
+        let request_string = &serde_json::to_string(&msg).unwrap();
+        let promise = ajax::send("POST", &format!("{}/overwriteTasks", WORKER_PATH), request_string);
         self.queue.push_back(promise);
     }
 }

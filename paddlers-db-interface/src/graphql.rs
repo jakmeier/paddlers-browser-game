@@ -75,7 +75,7 @@ impl GqlUnit {
         self.0.speed as f64
     }
     pub fn tasks(&self, ctx: &Context) -> Vec<GqlTask> {
-        ctx.db.unit_tasks(&self.0).into_iter().map(|t| GqlTask(t)).collect()
+        ctx.db.unit_tasks(self.0.id).into_iter().map(|t| GqlTask(t)).collect()
     }
 }
 

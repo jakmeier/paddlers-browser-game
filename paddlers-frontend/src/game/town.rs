@@ -4,10 +4,13 @@ use crate::gui::{
     sprites::{Sprites, SpriteIndex},
     z::{Z_TILE_SHADOW, Z_TEXTURE}
 };
+pub use paddlers_shared_lib::game_mechanics::town::TileIndex;
+use paddlers_shared_lib::game_mechanics::town::*;
+use paddlers_shared_lib::game_mechanics::town::TownTileType as TileType;
 
 #[derive(Debug)]
 pub struct Town {
-    map: TileMap,
+    map: TownMap,
     ul: f32,
 }
 impl Default for Town {
@@ -16,29 +19,13 @@ impl Default for Town {
     }
 }
 
-type TileMap = [[TileType; Y]; X];
-#[derive(PartialEq, Eq,Clone, Copy, Debug)]
-enum TileType {
-    EMPTY,
-    BUILDING,
-    LANE,
-}
-pub type TileIndex = (usize,usize);
-
-pub const X: usize = 23;
-const Y: usize = 13;
+pub const X: usize = TOWN_X;
+const Y: usize = TOWN_Y;
 pub const TOWN_RATIO: f32 = X as f32 / Y as f32;
 
 impl Town {
     pub fn new(ul: f32) -> Self {
-        let mut map = [[TileType::EMPTY; Y]; X];
-        for x in 0..X {
-            for y in 0..Y {
-                if y == (Y - 1) / 2 {
-                    map[x][y] = TileType::LANE;
-                }
-            }
-        }
+        let map = TownMap::basic_map();
         Town {
             map: map,
             ul: ul,
@@ -54,7 +41,7 @@ impl Town {
         let d = unit_length;
         window.clear(Color::WHITE)?;
 
-        for (x, col) in self.map.iter().enumerate() {
+        for (x, col) in self.map.0.iter().enumerate() {
             for (y, tile) in col.iter().enumerate() {
                 match tile {
                     TileType::EMPTY | TileType::BUILDING => {
@@ -128,7 +115,7 @@ impl Town {
         tiles
     }
     pub fn lane_in_range(&self, pos: TileIndex, range: f32) -> Vec<TileIndex> {
-        self.tiles_in_rectified_circle(pos, range).into_iter().filter( |(x,y)| self.map[*x][*y] == TileType::LANE ).collect()
+        self.tiles_in_rectified_circle(pos, range).into_iter().filter( |xy| self.map[*xy] == TileType::LANE ).collect()
     }
 
     pub fn tile(&self, pos: impl Into<Vector>) -> (usize, usize) {
@@ -143,22 +130,17 @@ impl Town {
     pub fn tile_area(&self, i: TileIndex) -> Rectangle {
         Rectangle::new(Vector::from((i.0 as u32, i.1 as u32)) * self.ul, (self.ul, self.ul))
     }
-    fn tile_type(&self, index: TileIndex) -> Option<&TileType> {
-        self.map.get(index.0).and_then(|m| m.get(index.1))
-    }
-    fn tile_type_mut(&mut self, index: TileIndex) -> Option<&mut TileType> {
-        self.map.get_mut(index.0).and_then(|m| m.get_mut(index.1))
-    }
+    
 
     pub fn make_room_for_building(&mut self, i: TileIndex) {
         debug_assert!(self.is_buildable(i), "Cannot build here");
-        let tile = self.tile_type_mut(i);
+        let tile = self.map.tile_type_mut(i);
 
         debug_assert!(tile.is_some(), "Tile is outside of map");
         *tile.unwrap() = TileType::BUILDING;
     }
     pub fn remove_building(&mut self, i: TileIndex) {
-        let tile = self.tile_type_mut(i);
+        let tile = self.map.tile_type_mut(i);
         *tile.unwrap() = TileType::EMPTY;
     }
 
@@ -192,24 +174,18 @@ impl Town {
     }
 
     fn is_buildable(&self, index: TileIndex) -> bool {
-        let maybe_tile = self.tile_type(index);
+        let maybe_tile = self.map.tile_type(index);
         if maybe_tile.is_none() {
             return false;
         }
-        match maybe_tile.unwrap() {
-            TileType::EMPTY => true,
-            TileType::BUILDING | TileType::LANE => false,
-        }
+        maybe_tile.unwrap().is_buildable()
     }
     fn is_walkable(&self, index: TileIndex) -> bool {
-        let maybe_tile = self.tile_type(index);
+        let maybe_tile = self.map.tile_type(index);
         if maybe_tile.is_none() {
             return false;
         }
-        match maybe_tile.unwrap() {
-            TileType::EMPTY | TileType::LANE => true,
-            TileType::BUILDING => false,
-        }
+        maybe_tile.unwrap().is_walkable()
     }
 
     fn successors(&self, index: TileIndex) -> Vec<(TileIndex, u32)> {

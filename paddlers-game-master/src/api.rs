@@ -1,5 +1,8 @@
 use actix_web::{HttpResponse, Responder, web};
-use paddlers_shared_lib::api::shop::{BuildingPurchase, BuildingDeletion};
+use paddlers_shared_lib::api::{
+    shop::{BuildingPurchase, BuildingDeletion},
+    tasks::{TaskList},
+};
 use paddlers_shared_lib::sql::GameDB;
 
 pub fn index() -> impl Responder {
@@ -31,4 +34,24 @@ pub fn delete_building(
     } else {
         HttpResponse::BadRequest().body(format!("No building at {}|{}", body.x, body.y))
     }
+}
+
+pub fn overwrite_tasks(
+    pool: web::Data<crate::db::Pool>, 
+    body: web::Json<TaskList>
+)-> impl Responder 
+{
+    let db: crate::db::DB = pool.get_ref().into();
+    let village_id = 1; // TODO [user authentication]
+    match crate::worker_actions::validate_task_list(&db, &body.0, village_id) {
+        Ok(tasks) => {
+            db.flush_task_queue(body.unit_id);
+            crate::worker_actions::run_tasks(&db, &tasks);
+        }
+        Err(_) => { 
+            println!("Task creation failed. Body: {:?}", body.0); 
+            return HttpResponse::BadRequest().body("Couldn't create tasks");
+        }
+    }
+    HttpResponse::Ok().into()
 }

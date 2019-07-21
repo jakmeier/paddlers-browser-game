@@ -20,4 +20,6 @@ serde = { version = "1.0", features = ["derive"] }
 graphql = ["juniper", "chrono/serde"]
 sql_db = ["diesel", "diesel-derive-enum", "dotenv", "chrono/serde"]
 enum_utils = ["strum", "strum_macros"]
+game_mechanics = []
+
 default = []

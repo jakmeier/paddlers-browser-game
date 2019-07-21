@@ -8,6 +8,8 @@ mod api;
 mod game_master;
 mod shop;
 mod buildings;
+mod worker_actions;
+mod town_view;
 
 use db::*;
 use game_master::GameMaster;
@@ -18,7 +20,10 @@ use actix_web::{
     web, App, HttpServer
 };
 use actix_cors::Cors;
-use paddlers_shared_lib::api::shop::{BuildingPurchase, BuildingDeletion};
+use paddlers_shared_lib::api::{
+    shop::{BuildingPurchase, BuildingDeletion},
+    tasks::TaskList,
+};
 
 type StringErr = Result<(),String>;
 
@@ -56,6 +61,11 @@ fn main() {
                 web::resource("/shop/building/delete")
                 .data(web::Json::<BuildingDeletion>)
                 .route(web::post().to(api::delete_building))
+            )
+            .service(
+                web::resource("/worker/overwriteTasks")
+                .data(web::Json::<TaskList>)
+                .route(web::post().to(api::overwrite_tasks))
             )
     })
     .disable_signals()

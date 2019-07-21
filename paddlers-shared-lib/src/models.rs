@@ -17,6 +17,7 @@ use super::schema::{
     attacks_to_units,
     buildings,
     resources,
+    tasks,
 };
 
 #[derive(Debug, PartialEq, Clone, Copy, Serialize, Deserialize)]
@@ -168,8 +169,13 @@ pub struct Task {
     pub start_time: NaiveDateTime,
 }
 
+#[cfg(feature = "sql_db")]
+#[derive(Insertable)]
+#[table_name = "tasks"]
 pub struct NewTask {
+    pub unit_id: i64,
     pub task_type: TaskType,
     pub x: i32,
     pub y: i32,
+    pub start_time: Option<NaiveDateTime>,
 }
