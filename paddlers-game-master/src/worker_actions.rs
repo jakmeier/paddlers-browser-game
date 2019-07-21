@@ -9,8 +9,6 @@ use crate::db::DB;
 use crate::town_view::*;
 
 pub (crate) fn validate_task_list(db: &DB, tl: &TaskList, village_id: i64) -> Result<Vec<NewTask>, Box<dyn std::error::Error>> {
-    // TODO: Check time stamp computing 
-    // TODO: Check validity
 
     let unit_id = tl.unit_id;
 
@@ -71,5 +69,5 @@ fn worker_walk(town: &TownView, unit: &mut Unit, to: TileIndex) -> Result<Durati
     let seconds = distance / speed;
     unit.x = to.0 as i32;
     unit.y = to.1 as i32;
-    Ok(Duration::microseconds((seconds / 1000_000.0) as i64))
+    Ok(Duration::milliseconds((seconds * 1000.0) as i64))
 }
