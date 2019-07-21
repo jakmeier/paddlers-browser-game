@@ -49,8 +49,8 @@ pub fn with_basic_worker<B: Builder>( builder: B, color: UnitColor ) -> B
 {
     let sprite_index = match color {
         UnitColor::Yellow => SpriteIndex::Duck,
-        UnitColor::White => SpriteIndex::Duck, // TODO
-        UnitColor::Camo => SpriteIndex::Duck, // TODO
+        UnitColor::White => SpriteIndex::WhiteDuck,
+        UnitColor::Camo => SpriteIndex::CamoDuck,
     };
     builder.with(
         Renderable {

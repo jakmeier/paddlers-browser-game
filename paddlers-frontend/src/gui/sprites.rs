@@ -26,6 +26,8 @@ impl Sprites {
             Image::load("plants/sapling.png"),
             Image::load("plants/young_tree.png"),
             Image::load("ducks/roger.png"),
+            Image::load("ducks/camo_duck_sad.png"),
+            Image::load("ducks/white_duck_sad.png"),
         ];
 
         Asset::new(
@@ -57,6 +59,8 @@ pub enum SpriteIndex {
     Sapling, 
     YoungTree,
     Hero,
+    CamoDuck,
+    WhiteDuck,
 }
 
 impl Index<SpriteIndex> for Sprites {
@@ -79,6 +83,8 @@ impl Index<SpriteIndex> for Sprites {
             SpriteIndex::Sapling => 11,
             SpriteIndex::YoungTree => 12,
             SpriteIndex::Hero => 13,
+            SpriteIndex::CamoDuck => 14,
+            SpriteIndex::WhiteDuck => 15,
         };
         &self.img[i]
     }
