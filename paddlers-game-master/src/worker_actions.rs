@@ -41,6 +41,7 @@ pub (crate) fn validate_task_list(db: &DB, tl: &TaskList, village_id: i64) -> Re
     Ok(tasks)
 }
 pub (crate) fn run_tasks(db: &DB, tasks: &[NewTask]) {
+    // TODO! Actually run tasks when they are due
     db.insert_tasks(tasks);
 }
 

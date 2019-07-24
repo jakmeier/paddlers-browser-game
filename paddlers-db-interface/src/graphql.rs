@@ -33,6 +33,9 @@ impl Query {
     fn village(ctx: &Context, village_id: i32) -> FieldResult<GqlVillage> {
         Ok(GqlVillage{id: village_id as i64})
     }
+    fn unit(ctx: &Context, unit_id: i32) -> FieldResult<GqlUnit> {
+        Ok(GqlUnit(ctx.db.unit(unit_id as i64).ok_or("No such unit exists")?))
+    }
 }
 
 #[juniper::object(

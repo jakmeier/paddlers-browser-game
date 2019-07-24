@@ -14,9 +14,8 @@ use crate::game::{
     movement::{Position, Moving},
     town::Town,
     components::*,
+    units::workers::*,
 };
-
-use super::workers::*; 
 
 pub fn with_unit_base<B: Builder>(
     builder: B,
@@ -32,7 +31,6 @@ pub fn with_unit_base<B: Builder>(
         .with(Position::new(pos, size, Z_UNITS))
         .with(Moving::new(birth, pos, (0,0), speed))
         .with(Clickable)
-        .with(Worker::default())
         .with(NetObj{ id: netid })
 }
 
@@ -58,6 +56,14 @@ pub fn with_basic_worker<B: Builder>( builder: B, color: UnitColor ) -> B
         }
     )
 }
+pub fn with_worker<B: Builder, T: IntoIterator<Item: Into<WorkerTask>>>(builder: B, tasks: T ) -> B {
+    let worker_tasks = tasks.into_iter()
+        .map(|t| t.into())
+        .collect::<std::collections::VecDeque<_>>();
+    builder.with(Worker {
+        tasks: worker_tasks
+    })
+}
 
 use crate::net::graphql::WorkerResponse;
 pub fn create_worker_entities(response: &WorkerResponse, world: &mut World, now: Timestamp) -> Vec<Entity> {
@@ -78,6 +84,8 @@ impl VillageUnitsQueryVillageUnits {
         let speed = unit_speed_to_worker_tiles_per_second(self.speed as f32) / tile_area.width();
         let netid = self.id.parse().unwrap();
         let mut builder = with_unit_base(world.create_entity(), speed, tile_area, now, netid);
+        let tasks = &self.tasks;
+        builder = with_worker(builder, tasks);
         match self.unit_type {
             village_units_query::UnitType::HERO => {
                 builder = with_hero(builder);

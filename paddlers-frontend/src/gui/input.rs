@@ -131,7 +131,7 @@ impl<'a> System<'a> for RightClickSystem {
             {
                 let start = town.tile(from.area.pos);
                 let destination = town.tile(mouse_pos);
-                let msg = worker.walk(start , destination , &town, netid.id);
+                let msg = worker.new_walk_task(start , destination , &town, netid.id);
                 match msg {
                     Ok(msg) => {
                         rest.http_overwrite_tasks(msg);

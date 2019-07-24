@@ -1,5 +1,5 @@
 #![recursion_limit="512"]
-#![feature(is_sorted)]
+#![feature(is_sorted, associated_type_bounds)]
 #[macro_use]
 mod wasm_setup;
 extern crate quicksilver;

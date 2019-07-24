@@ -9,21 +9,21 @@ use paddlers_shared_lib::models::*;
 use paddlers_shared_lib::api::tasks::*;
 
 
-#[derive(Default, Component)]
+#[derive(Default, Component, Debug)]
 #[storage(VecStorage)]
 pub struct Worker {
-    tasks: VecDeque<WorkerTask>,
+    pub tasks: VecDeque<WorkerTask>,
 }
 
+#[derive(Debug)]
 pub struct WorkerTask {
     pub task_type: TaskType, 
     pub position: TileIndex,
     pub start_time: Timestamp,
 }
 
-
 impl Worker {
-    pub fn walk(&mut self, from: TileIndex, to: TileIndex, town: &Town, netid: i64,) -> Result<TaskList, String> {
+    pub fn new_walk_task(&mut self, from: TileIndex, to: TileIndex, town: &Town, netid: i64,) -> Result<TaskList, String> {
         if let Some((path, _dist)) = town.shortest_path(from, to) {
             let msg = TaskList {
                 unit_id: netid,

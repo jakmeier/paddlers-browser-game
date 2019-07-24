@@ -2,9 +2,10 @@ pub mod graphql;
 pub mod ajax;
 pub mod game_master_api;
 
-use graphql::*;
-
-use graphql_client::{GraphQLQuery};
+use graphql::{
+    GraphQlState,
+    query_types::*,
+};
 
 use stdweb::{spawn_local};
 
@@ -14,29 +15,35 @@ use std::sync::{
     Mutex,
     mpsc::Sender,
 };
-use std::sync::atomic::{AtomicI64, Ordering};
 
 const GRAPH_QL_PATH: &'static str = "http://localhost:65432/graphql";
 const SHOP_PATH: &'static str = "http://localhost:8088/shop";
 const WORKER_PATH: &'static str = "http://localhost:8088/worker";
 
+pub enum NetMsg {
+    Attacks(AttacksResponse),
+    Buildings(BuildingsResponse),
+    Error(String),
+    Resources(ResourcesResponse),
+    UpdateWorkerTasks(UnitTasksResponse),
+    Workers(WorkerResponse),
+}
+
+pub enum NetUpdateRequest {
+    UnitTasks(i64),
+}
+
 struct NetState {
     interval_ms: u32,
     chan: Option<Mutex<Sender<NetMsg>>>,
-    next_attack_id: AtomicI64,
+    gql_state: GraphQlState,
 }
 static mut STATIC_NET_STATE: NetState = NetState {
     interval_ms: 5_000,
     chan: None,
-    next_attack_id: AtomicI64::new(0),
+    gql_state: GraphQlState::new(),
 };
 
-pub enum NetMsg {
-    Attacks(AttacksResponse),
-    Buildings(BuildingsResponse),
-    Resources(ResourcesResponse),
-    Workers(WorkerResponse)
-}
 
 /// Sets up continuous networking with the help of JS setTimeout
 pub fn init_net(chan: Sender<NetMsg>) {
@@ -45,8 +52,13 @@ pub fn init_net(chan: Sender<NetMsg>) {
         STATIC_NET_STATE.work();
 
         // requests done only once
-        STATIC_NET_STATE.spawn_buildings_query();
-        STATIC_NET_STATE.spawn_workers_query();
+        STATIC_NET_STATE.spawn(STATIC_NET_STATE.gql_state.buildings_query());
+        STATIC_NET_STATE.spawn(STATIC_NET_STATE.gql_state.workers_query());
+    }
+}
+pub fn request_unit_tasks_update(unit_id: i64) {
+    unsafe{
+        STATIC_NET_STATE.spawn(STATIC_NET_STATE.gql_state.worker_tasks_query(unit_id));
     }
 }
 impl NetState {
@@ -57,104 +69,27 @@ impl NetState {
             ms
         );
     }
+    // For frequent updates
     fn work(&'static self){
-        self.spawn_attacks_query();
-        self.spawn_resource_query();
+        self.spawn(self.gql_state.attacks_query());
+        self.spawn(self.gql_state.resource_query());
         self.register_networking();
     }
 
-    fn spawn_attacks_query(&'static self) {
-        let fp = http_read_incoming_attacks(Some(self.next_attack_id.load(Ordering::Relaxed)));
-        let sender = self.chan.as_ref().unwrap().lock().unwrap().clone();
-        spawn_local(
-            fp.map(
-                move |response| {
-                    if let Some(data) = &response.data {
-                        let max_id = data.village.attacks.iter()
-                            .map(|atk| atk.id.parse().unwrap())
-                            .fold(0, i64::max);
-                        let next = self.next_attack_id.load(Ordering::Relaxed).max(max_id + 1);
-                        self.next_attack_id.store(next, Ordering::Relaxed);
-                    }
-                    sender.send(NetMsg::Attacks(response)).expect("Transferring data to game")
-                }
-            )
-        );        
+    fn get_channel(&self) -> Sender<NetMsg> {
+        match self.chan.as_ref().unwrap().lock(){
+            Ok(chan) => chan.clone(),
+            Err(e) => panic!("Could not get channel: {}.", e)
+        }
     }
-    fn spawn_resource_query(&self) {
-        let res_fp = http_read_resources();
-        let sender = self.chan.as_ref().unwrap().lock().unwrap().clone();
+
+    fn spawn<Q: Future<Output = NetMsg> + 'static >(&'static self, query: Q) {
+        let sender = self.get_channel();
         spawn_local(
-            res_fp.map(
-                move |response|
-                sender.send(NetMsg::Resources(response)).expect("Transferring resource data to game")
+            query.map(
+                move |msg|
+                sender.send(msg).expect("Transferring data to game")
             )
         );
     }
-    fn spawn_buildings_query(&self) {
-        let buildings_fp = http_read_buildings();
-        let sender = self.chan.as_ref().unwrap().lock().unwrap().clone();
-        spawn_local(
-            buildings_fp.map(
-                move |response|
-                sender.send(NetMsg::Buildings(response)).expect("Transferring buildings data to game")
-            )
-        );
-    }
-    fn spawn_workers_query(&self) {
-        let fp = http_read_workers();
-        let sender = self.chan.as_ref().unwrap().lock().unwrap().clone();
-        spawn_local(
-            fp.map(
-                move |response| {
-                    let workers = response.data.unwrap().village.units;
-                    sender.send(NetMsg::Workers(workers)).expect("Transferring data to game")
-                }
-            )
-        );
-    }
-}
-
-pub fn http_read_incoming_attacks(min_attack_id: Option<i64>) -> impl Future<Output = AttacksResponse> {
-    let request_body = AttacksQuery::build_query(attacks_query::Variables{min_attack_id: min_attack_id});
-    let request_string = &serde_json::to_string(&request_body).unwrap();
-    let promise = ajax::send("POST", GRAPH_QL_PATH, request_string);
-    promise.map(|x| {
-        let response: AttacksResponse = 
-            serde_json::from_str(&x.unwrap()).unwrap();
-        response
-    })
-}
-
-pub fn http_read_buildings() -> impl Future<Output = BuildingsResponse> {
-    let request_body = BuildingsQuery::build_query(buildings_query::Variables{});
-    let request_string = &serde_json::to_string(&request_body).unwrap();
-    let promise = ajax::send("POST", GRAPH_QL_PATH, request_string);
-    promise.map(|x| {
-        let response: BuildingsResponse = 
-            serde_json::from_str(&x.unwrap()).unwrap();
-        response
-    })
-}
-
-pub fn http_read_resources() -> impl Future<Output = ResourcesResponse> {
-    let request_body = ResourcesQuery::build_query(resources_query::Variables{});
-    let request_string = &serde_json::to_string(&request_body).unwrap();
-    let promise = ajax::send("POST", GRAPH_QL_PATH, request_string);
-    promise.map(|x| {
-        let response: ResourcesResponse = 
-            serde_json::from_str(&x.unwrap()).unwrap();
-        response
-    })
-}
-
-pub fn http_read_workers() -> impl Future<Output = VillageUnitsResponse> {
-    let request_body = VillageUnitsQuery::build_query(village_units_query::Variables{});
-    let request_string = &serde_json::to_string(&request_body).unwrap();
-    let promise = ajax::send("POST", GRAPH_QL_PATH, request_string);
-    promise.map(|x| {
-        let response: VillageUnitsResponse = 
-            serde_json::from_str(&x.unwrap()).unwrap();
-        response
-    })
 }

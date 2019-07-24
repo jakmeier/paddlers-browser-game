@@ -1,0 +1,14 @@
+query UnitTasksQuery($unitId: Int!){
+    unit(unitId: $unitId) {
+        id
+        x
+        y
+        tasks {
+            id
+            x
+            y
+            taskType
+            startTime
+        }
+    }
+}
