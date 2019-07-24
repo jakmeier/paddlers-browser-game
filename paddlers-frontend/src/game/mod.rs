@@ -6,6 +6,7 @@ pub (crate) mod town_resources;
 pub (crate) mod fight;
 pub (crate) mod components;
 
+use crate::Timestamp;
 use crate::game::units::worker_factory::create_worker_entities;
 use crate::game::units::workers::Worker;
 use crate::game::components::NetObj;
@@ -57,7 +58,7 @@ pub(crate) struct Game<'a, 'b> {
     pub unit_len: Option<f32>,
     pub resources: TownResources,
     net: Option<Receiver<NetMsg>>,
-    time_zero: f64,
+    time_zero: Timestamp,
     total_updates: u64,
 }
 
@@ -304,7 +305,7 @@ impl Game<'_,'_> {
         self.world.write_resource()
     }
     fn update_time_reference(&mut self) {
-        if self.time_zero != 0.0 {
+        if self.time_zero != 0 {
             let t = crate::wasm_setup::local_now();
             let mut ts = self.world.write_resource::<Now>();
             *ts = Now(t);

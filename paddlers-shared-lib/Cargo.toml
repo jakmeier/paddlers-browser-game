@@ -8,7 +8,7 @@ edition = "2018"
 diesel = { version = "1.4", features = ["postgres", "chrono"], optional = true }
 diesel-derive-enum = { version = "0.4", features = ["postgres"], optional = true }
 dotenv = { version = "0.14", optional = true }
-chrono = { version = "0.4", features = ["serde"], optional = true }
+chrono = { version = "0.4", features = ["serde"] }
 
 # For deriving
 juniper = { version = "0.13", optional = true }

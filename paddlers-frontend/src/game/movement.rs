@@ -15,6 +15,7 @@ pub struct Position {
 pub struct Moving {
     pub start_ts: Timestamp,
     pub start_pos: Vector,
+    // Speed: f32 in pixels per second
     pub momentum: Vector,
     pub max_speed: f32,
 }
@@ -47,14 +48,16 @@ impl Position {
 
 impl Moving {
     pub fn new (t0: Timestamp, start_pos: impl Into<Vector>, vel: impl Into<Vector>, max_speed: f32) -> Self {
+        let  v = vel.into();
+        let start = start_pos.into();
         Moving {
             start_ts: t0,
-            start_pos: start_pos.into(),
-            momentum: vel.into(),
+            start_pos: start,
+            momentum: v,
             max_speed: max_speed,
         }
     }
     pub fn position(&self, t: Timestamp) -> Vector {
-        self.start_pos + self.momentum * (t - self.start_ts) as f32
+        self.start_pos + self.momentum * (t - self.start_ts) as f32 / 1_000_000
     }
 }

@@ -12,6 +12,7 @@ use crate::game::{
     movement::{Position, Moving},
     fight::Health,
 };
+use paddlers_shared_lib::graphql_types::*;
 
 #[derive(Default, Component)]
 #[storage(NullStorage)]
@@ -37,7 +38,7 @@ pub fn insert_duck(world: &mut World, pos: impl Into<Vector>, birth_time: Timest
 use crate::net::graphql::attacks_query::{AttacksQueryVillageAttacksUnits,AttacksQueryVillageAttacks};
 impl AttacksQueryVillageAttacks {
     pub fn create_entities(&self, world: &mut World, ul: f32) -> Vec<Entity> {
-        let birth_time = self.arrival * 1000.0;
+        let birth_time = GqlTimestamp::from_string(&self.arrival).unwrap().0;
         self.units
             .iter()
             .enumerate()
@@ -48,7 +49,7 @@ impl AttacksQueryVillageAttacks {
 impl AttacksQueryVillageAttacksUnits {
     // TODO: For entities already well into the map, compute the attacks so far.
     fn create_entity(&self, world: &mut World, birth: Timestamp, pos_rank: usize, ul: f32) -> Entity {
-        let v = -self.speed as f32 / (super::super::CYCLE_SECS * 1000) as f32 * ul;
+        let v = -self.speed as f32 / super::super::CYCLE_SECS as f32 * ul;
         let x = 1000.0 - 30.0;
         let y = 300.0;
         let pos = Vector::new(x,y) + attacker_position_rank_offset(pos_rank);

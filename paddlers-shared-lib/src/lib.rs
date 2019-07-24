@@ -10,6 +10,7 @@ pub extern crate strum;
 pub mod models;
 pub mod api;
 pub mod prelude;
+pub mod graphql_types;
 
 #[cfg(feature = "game_mechanics")] 
 pub mod game_mechanics;

@@ -27,4 +27,5 @@ pub fn main() {
 }
 
 
-pub type Timestamp = f64;
+/// Micro second precision
+pub type Timestamp = i64;

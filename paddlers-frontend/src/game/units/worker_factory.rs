@@ -81,7 +81,7 @@ pub fn create_worker_entities(response: &WorkerResponse, world: &mut World, now:
 use crate::net::graphql::village_units_query::{self, VillageUnitsQueryVillageUnits};
 impl VillageUnitsQueryVillageUnits {
     fn create_entity(&self, world: &mut World, now: Timestamp, tile_area: Rectangle,) -> Entity {
-        let speed = unit_speed_to_worker_tiles_per_second(self.speed as f32) / tile_area.width();
+        let speed = unit_speed_to_worker_tiles_per_second(self.speed as f32) * tile_area.width();
         let netid = self.id.parse().unwrap();
         let mut builder = with_unit_base(world.create_entity(), speed, tile_area, now, netid);
         let tasks = &self.tasks;

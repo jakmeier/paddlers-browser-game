@@ -1,7 +1,12 @@
 use graphql_client::{GraphQLQuery, Response};
+use paddlers_shared_lib::graphql_types;
 
 pub use serde::Deserialize;
-type NaiveDateTime = f64;
+type GqlTimestamp = String;
+
+fn timestamp(s: &String) -> graphql_types::GqlTimestamp {
+    graphql_types::GqlTimestamp::from_string(s).unwrap()
+}
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -15,11 +20,11 @@ pub type AttacksResponse = Response<attacks_query::ResponseData>;
 impl attacks_query::AttacksQueryVillageAttacks {
     #[allow(dead_code)]
     pub fn departure(&self) -> chrono::NaiveDateTime {
-        f64_to_naive_dt(self.departure)
+        timestamp(&self.departure).to_chrono()
     }
     #[allow(dead_code)]
     pub fn arrival(&self) -> chrono::NaiveDateTime {
-        f64_to_naive_dt(self.arrival)
+        timestamp(&self.arrival).to_chrono()
     }
 }
 
@@ -56,7 +61,7 @@ impl Into<WorkerTask> for &VillageUnitsTask {
         WorkerTask {
             task_type: (&self.task_type).into(),
             position: (self.x as usize, self.y as usize),
-            start_time: self.start_time * 1000.0, // TODO!: Make sure this is more precise
+            start_time: timestamp(&self.start_time).0
         }
     }
 }
@@ -77,7 +82,7 @@ impl Into<WorkerTask> for &UnitTask {
         WorkerTask {
             task_type: (&self.task_type).into(),
             position: (self.x as usize, self.y as usize),
-            start_time: self.start_time * 1000.0, // TODO!: Make sure this is more precise
+            start_time: timestamp(&self.start_time).0
         }
     }
 }
@@ -116,9 +121,4 @@ impl Into<TaskType> for VillageUnitsTaskType {
     fn into(self) -> TaskType {
         (&self).into()
     }
-}
-
-
-fn f64_to_naive_dt(f: f64) -> chrono::NaiveDateTime {
-    chrono::NaiveDateTime::from_timestamp(f as i64, ((f%1.0) * 1_000_000.0) as u32)
 }

@@ -6,6 +6,7 @@ use juniper;
 use juniper::FieldResult;
 use paddlers_shared_lib::sql::GameDB;
 use paddlers_shared_lib::models::*;
+use paddlers_shared_lib::graphql_types::*;
 
 pub struct Mutation;
 pub struct Query;
@@ -99,10 +100,10 @@ impl GqlAttack {
             ctx.db.attack_units(&self.0).into_iter().map(|u| GqlUnit(u)).collect()
         )
     }
-    fn departure(&self) -> FieldResult<NaiveDateTime> {
+    fn departure(&self) -> FieldResult<GqlTimestamp> {
         datetime(&self.0.departure)
     }
-    fn arrival(&self) -> FieldResult<NaiveDateTime> {
+    fn arrival(&self) -> FieldResult<GqlTimestamp> {
         datetime(&self.0.arrival)
     }
 }
@@ -137,19 +138,13 @@ impl GqlBuilding {
     fn attacks_per_cycle(&self) -> Option<i32> {
         self.0.attacks_per_cycle
     }
-    fn creation(&self) -> FieldResult<NaiveDateTime> {
+    fn creation(&self) -> FieldResult<GqlTimestamp> {
         datetime(&self.0.creation)
     }
 }
 
-fn datetime(dt: &NaiveDateTime) -> FieldResult<NaiveDateTime> {
-    let date = Utc.from_local_datetime(dt);
-    if date.single().is_none() {
-        return Err("Datetime from DB is not unique".into());
-    }
-    Ok(
-        date.unwrap().naive_utc()
-    )
+fn datetime(dt: &NaiveDateTime) -> FieldResult<GqlTimestamp> {
+    Ok(GqlTimestamp::from_chrono(dt))
 }
 
 // TODO: Back this with DB (Only necessary once there is more than one village)
@@ -207,7 +202,7 @@ impl GqlTask {
     fn task_type(&self) -> &paddlers_shared_lib::models::TaskType {
         &self.0.task_type
     }
-    fn start_time(&self) -> FieldResult<NaiveDateTime> {
+    fn start_time(&self) -> FieldResult<GqlTimestamp> {
         datetime(&self.0.start_time)
     }
 }

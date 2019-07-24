@@ -70,5 +70,5 @@ fn worker_walk(town: &TownView, unit: &mut Unit, to: TileIndex) -> Result<Durati
     let seconds = distance / speed;
     unit.x = to.0 as i32;
     unit.y = to.1 as i32;
-    Ok(Duration::milliseconds((seconds * 1000.0) as i64))
+    Ok(Duration::microseconds((seconds * 1_000_000.0) as i64))
 }
