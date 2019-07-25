@@ -1,18 +1,16 @@
 #![feature(result_map_or_else)]
 
 mod db;
-mod town_defence;
-mod attack_spawn;
 mod resource_system;
 mod api;
 mod game_master;
-mod shop;
 mod buildings;
 mod worker_actions;
 mod town_view;
 
 use db::*;
 use game_master::GameMaster;
+use game_master::town_worker::TownWorker;
 
 use actix::prelude::*;
 use actix_web::{
@@ -27,18 +25,19 @@ use paddlers_shared_lib::api::{
 
 type StringErr = Result<(),String>;
 
+struct ActorAddresses {
+    game_master: Addr<GameMaster>,
+    town_worker: Addr<TownWorker>,
+}
+
 fn main() {
 
     let dbpool = DB::new_pool();
 
-    let pool_clone = dbpool.clone();
-    std::thread::spawn(move || {
-        println!("Starting Game Master...");
-        System::run(|| {
-            GameMaster::new(pool_clone).start();
-        }).unwrap();
-        println!("Game master system returned");
-    });
+    let sys = actix::System::new("background-worker-example");
+    let gm_actor = GameMaster::new(dbpool.clone()).start();
+    let town_worker_actor = TownWorker::new(dbpool.clone()).start();
+    // let town_worker_actor = SyncArbiter::start(1, move || TownWorker::new(dbpool.clone()));
 
     HttpServer::new(move || {
         App::new()
@@ -50,6 +49,7 @@ fn main() {
                     .allowed_header(header::CONTENT_TYPE)
                     .max_age(3600*24),
             )
+            .data(ActorAddresses { game_master: gm_actor.clone(), town_worker: town_worker_actor.clone() })
             .data(dbpool.clone())
             .route("/", web::get().to(api::index))
             .service(
@@ -71,8 +71,8 @@ fn main() {
     .disable_signals()
     .bind("127.0.0.1:8088")
     .unwrap()
-    .run()
-    .unwrap();
+    .start();
 
+    sys.run().unwrap();
     println!("Web-Actix returned");
 }

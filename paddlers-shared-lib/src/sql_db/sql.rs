@@ -69,4 +69,29 @@ pub trait GameDB {
         .expect("Error loading data");
         results
     }
+    fn past_unit_tasks(&self, unit_id: i64) -> Vec<Task> {
+        let results = tasks::table
+            .filter(tasks::unit_id.eq(unit_id))
+            .order(tasks::start_time.asc())
+            .limit(500)
+            .load::<Task>(self.dbconn())
+            .expect("Error loading data");
+        results
+    }
+    fn earliest_future_task(&self, unit_id: i64) -> Option<Task> {
+        tasks::table
+            .filter(tasks::unit_id.eq(unit_id))
+            .filter(tasks::start_time.ge(diesel::dsl::now))
+            .order(tasks::start_time.asc())
+            .first(self.dbconn())
+            .optional()
+            .expect("Error loading data")
+    }
+    fn task(&self, task_id: i64) -> Option<Task> {
+        tasks::table
+            .find(task_id)
+            .first(self.dbconn())
+            .optional()
+            .expect("Error loading task")
+    }
 }

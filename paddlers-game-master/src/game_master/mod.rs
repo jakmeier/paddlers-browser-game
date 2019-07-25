@@ -1,6 +1,12 @@
+mod town_defence;
+mod attack_spawn;
+mod event_queue;
+pub (super) mod event;
+pub (super) mod town_worker;
+
 use actix::prelude::*;
 use std::time::Duration;
-use chrono::NaiveDateTime;
+use chrono::{NaiveDateTime};
 use crate::db::*;
 use paddlers_shared_lib::sql::GameDB;
 
@@ -8,7 +14,6 @@ pub struct GameMaster {
     last_attack: NaiveDateTime,
     dbpool: Pool,
 }
-
 impl GameMaster {
     pub fn new(dbpool: Pool) -> Self {
         GameMaster {
@@ -18,7 +23,6 @@ impl GameMaster {
     }
 }
 
-// Provide Actor implementation for our actor
 impl Actor for GameMaster {
     type Context = Context<Self>;
 
@@ -52,6 +56,7 @@ impl GameMaster {
 }
 
 
+// TODO: Efficiently check only required attacks
 fn check_attacks(db: &DB) {
     let attacks = db.attacks(None);
     let now = chrono::Local::now().naive_local();

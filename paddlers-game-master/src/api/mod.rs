@@ -1,3 +1,5 @@
+mod shop;
+
 use actix_web::{HttpResponse, Responder, web};
 use paddlers_shared_lib::api::{
     shop::{BuildingPurchase, BuildingDeletion},
@@ -36,17 +38,17 @@ pub fn delete_building(
     }
 }
 
-pub fn overwrite_tasks(
+pub (super) fn overwrite_tasks(
     pool: web::Data<crate::db::Pool>, 
-    body: web::Json<TaskList>
+    body: web::Json<TaskList>,
+    addr: web::Data<crate::ActorAddresses>,
 )-> impl Responder 
 {
     let db: crate::db::DB = pool.get_ref().into();
     let village_id = 1; // TODO [user authentication]
     match crate::worker_actions::validate_task_list(&db, &body.0, village_id) {
         Ok(tasks) => {
-            db.flush_task_queue(body.unit_id);
-            crate::worker_actions::run_tasks(&db, &tasks);
+            crate::worker_actions::replace_unit_tasks(&db, &addr.town_worker, body.unit_id, &tasks);
         }
         Err(_) => { 
             println!("Task creation failed. Body: {:?}", body.0); 

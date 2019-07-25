@@ -3,12 +3,12 @@ use juniper::Value;
 use serde::{Serialize, Deserialize};
 #[derive(Serialize, Deserialize)]
 pub struct GqlTimestamp(pub i64);
-use chrono::offset::TimeZone;
 impl GqlTimestamp {
     pub fn from_string(s: &String) -> Option<GqlTimestamp> {
         s.parse::<i64>().ok().map(GqlTimestamp)
     }
     pub fn from_chrono(ndt: &chrono::NaiveDateTime) -> GqlTimestamp {
+        // use chrono::offset::TimeZone;
         // let date = chrono::Utc.from_local_datetime(ndt);
         //     if date.single().is_none() {
         //     // return Err("Datetime from DB is not unique".into());

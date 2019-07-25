@@ -40,6 +40,12 @@ impl DB {
             .get_result(self.dbconn())
             .expect("Inserting unit")
     }
+    pub fn update_unit(&self, u: &Unit) {
+        diesel::update(u)
+            .set(u)
+            .execute(self.dbconn())
+            .expect("Updating unit");
+    }
     pub fn insert_attack(&self, new_attack: &NewAttack) -> Attack {
         diesel::insert_into(attacks::dsl::attacks)
             .values(new_attack)
@@ -81,10 +87,10 @@ impl DB {
             .get_result(self.dbconn())
             .expect("Inserting task")
     }
-    pub fn insert_tasks(&self, tasks: &[NewTask]) -> Task {
+    pub fn insert_tasks(&self, tasks: &[NewTask]) -> Vec<Task> {
         diesel::insert_into(tasks::dsl::tasks)
             .values(tasks)
-            .get_result(self.dbconn())
+            .get_results(self.dbconn())
             .expect("Inserting tasks")
     }
     pub fn delete_task(&self, task: &Task) {
