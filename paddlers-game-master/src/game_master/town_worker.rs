@@ -3,7 +3,7 @@ use super::event::*;
 use crate::db::*;
 use actix::prelude::*;
 use chrono::prelude::*;
-
+use paddlers_shared_lib::sql_db::sql::GameDB;
 
 pub struct TownWorker {
     dbpool: Pool,
@@ -11,24 +11,36 @@ pub struct TownWorker {
 }
 
 impl TownWorker {
-    pub fn new(dbpool: Pool) -> Self {
+    pub fn new(dbpool: Pool) -> Self { 
         TownWorker {
             dbpool: dbpool,
             event_queue: EventQueue::new(), // TODO: Fill event queue with initial work
         }
+        .with_filled_event_queue()
     }
     fn db(&self) -> DB {
        (&self.dbpool).into()
     }
     fn work(&mut self, ctx: &mut Context<Self>) {
         while let Some(event) = self.event_queue.poll_event() {
-           event.run(&self.db())
+           let res = event.run(&self.db());
+           if let Some((next_event, time)) = res {
+               self.event_queue.add_event(next_event, time);
+           }
         }
-        if let Some(t) = self.event_queue.time_of_next_event() {
-            let duration = *t - chrono::Utc::now();
-            let duration : std::time::Duration = duration.to_std().unwrap();
-            ctx.run_later(duration, Self::work);
+        ctx.run_later(std::time::Duration::from_millis(100), Self::work);
+    }
+    fn with_filled_event_queue(mut self) -> Self {
+        let db = self.db();
+        // TODO [Village ids]
+        for village_id in &[1] {
+            for unit in db.units(*village_id) {
+                if let Some((event, time)) = Event::load_next_unit_task(&db, unit.id) {
+                    self.event_queue.add_event(event, time);
+                }
+            }
         }
+        self
     }
 }
 

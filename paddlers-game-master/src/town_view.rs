@@ -25,7 +25,10 @@ impl TownView {
         let mut dy = 0;
         let mut dx = 0;
         if x != end.0 {
-            debug_assert_eq!(y, end.1, "Path must be a straight line but was {:?}->{:?}", start, end);
+            if y != end.1 {
+                //println!("Path must be a straight line but was {:?}->{:?}", start, end);
+                return false;
+            } 
             dx = if end.0 < x { -1 } else { 1 };
         } else {
             dy = if end.1 < y { -1 } else { 1 };

@@ -5,7 +5,7 @@ use paddlers_shared_lib::game_mechanics::{
     worker::*,
 };
 use paddlers_shared_lib::prelude::*;
-use chrono::{NaiveDateTime, Duration, Utc};
+use chrono::{NaiveDateTime, DateTime, Duration, Utc};
 use chrono::offset::TimeZone;
 use crate::db::DB;
 use crate::town_view::*;
@@ -85,7 +85,7 @@ pub (crate) fn execute_task(
     task_id: i64, 
     task: Option<Task>, 
     town: Option<&TownView>
-) -> Result<(), Box<dyn std::error::Error>> 
+) -> Result<Option<(Event, DateTime<Utc>)>, Box<dyn std::error::Error>> 
 {
     let task = task.or_else(|| db.task(task_id)).ok_or("No task to execute found")?;
     let mut unit = db.unit(task.unit_id).ok_or("Task references non-existing unit")?;
@@ -98,7 +98,8 @@ pub (crate) fn execute_task(
     
     db.update_unit(&unit);
     db.delete_task(&task);
-    Ok(())
+
+    Ok(Event::load_next_unit_task(db, task.unit_id))
 }
 
 fn simulate_task<T: WorkerAction> (
@@ -117,7 +118,7 @@ fn simulate_task<T: WorkerAction> (
 fn worker_walk(town: &TownView, unit: &mut Unit, to: TileIndex) -> Result<Duration, String> {
     let from = (unit.x as usize, unit.y as usize);
     if !town.path_walkable(from, to) {
-        return Err("Cannot walk this way.".to_owned());
+        return Err(format!("Cannot walk this way. {:?} -> {:?}", from, to));
     }
     let speed = unit_speed_to_worker_tiles_per_second(unit.speed);
     let distance = distance2(from, to).sqrt();
@@ -126,22 +127,6 @@ fn worker_walk(town: &TownView, unit: &mut Unit, to: TileIndex) -> Result<Durati
     unit.y = to.1 as i32;
     Ok(Duration::microseconds((seconds * 1_000_000.0) as i64))
 }
-
-// fn earliest_future_task(tasks: &[Task], now: DateTime<Utc>) -> Option<&Task> {
-//     let now = now.naive_utc();
-//     let mut iter = tasks.iter().filter(|t| t.start_time >= now);
-
-//     let task = iter.next();
-//     task.map( 
-//         |task|
-//         iter.fold(
-//             task, 
-//             |a, b| 
-//                 if a.start_time <= b.start_time { a } 
-//                 else { b }
-//         )
-//     )
-// }
 
 impl WorkerAction for NewTask {
     fn x(&self) -> i32 {

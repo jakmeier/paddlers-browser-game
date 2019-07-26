@@ -88,6 +88,31 @@ pub trait GameDB {
             .optional()
             .expect("Error loading data")
     }
+    fn current_and_next_task(&self, unit_id: i64) -> (Option<Task>, Option<Task>) {
+        let mut results = tasks::table
+            .filter(tasks::unit_id.eq(unit_id))
+            .filter(tasks::start_time.le(diesel::dsl::now.at_time_zone("UTC")))
+            .order(tasks::start_time.asc())
+            .limit(2)
+            .load(self.dbconn())
+            .expect("Error loading data");
+        if results.len() == 1 {
+            (results.pop(), None)
+        } else {
+            let next = results.pop();
+            let current = results.pop();
+            (current, next)
+        }
+    }
+    fn current_task(&self, unit_id: i64) -> Option<Task> {
+        tasks::table
+            .filter(tasks::unit_id.eq(unit_id))
+            .filter(tasks::start_time.le(diesel::dsl::now.at_time_zone("UTC")))
+            .order(tasks::start_time.asc())
+            .first(self.dbconn())
+            .optional()
+            .expect("Error loading data")
+    }
     fn task(&self, task_id: i64) -> Option<Task> {
         tasks::table
             .find(task_id)
