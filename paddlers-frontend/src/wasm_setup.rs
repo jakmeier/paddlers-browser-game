@@ -25,10 +25,10 @@ pub fn setup_wasm() {
 }
 
 use crate::stdweb::unstable::TryInto;
-pub fn local_now() -> crate::Timestamp {
+pub fn utc_now() -> crate::Timestamp {
     let millis : f64 = js!(
         var date = new Date();
-        return date.getTime() - date.getTimezoneOffset()*60*1000;
+        return date.getTime();
     ).try_into().unwrap();
     millis as i64 * 1000
 }

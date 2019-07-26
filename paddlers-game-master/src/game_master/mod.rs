@@ -40,12 +40,12 @@ impl Actor for GameMaster {
 
 impl GameMaster {
     fn game_cycle(&mut self, ctx: &mut Context<Self>) {
-        println!("Cycle");
+        // println!("Cycle");
 
         let db: DB = (&self.dbpool).into();
         check_attacks(&db);
 
-        let now = chrono::Local::now().naive_local();
+        let now = chrono::Utc::now().naive_utc();
         if now - self.last_attack >= chrono::Duration::seconds(10) {
             self.last_attack = now;
             db.spawn_random_attack();
@@ -59,7 +59,7 @@ impl GameMaster {
 // TODO: Efficiently check only required attacks
 fn check_attacks(db: &DB) {
     let attacks = db.attacks(None);
-    let now = chrono::Local::now().naive_local();
+    let now = chrono::Utc::now().naive_utc();
     for atk in attacks.iter() {
         if atk.arrival < now {
             db.maybe_attack_now(atk, now -  atk.arrival);

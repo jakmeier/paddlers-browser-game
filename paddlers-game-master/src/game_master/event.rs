@@ -1,6 +1,6 @@
 use crate::db::*;
 
-#[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Ord)]
+#[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Ord, Debug)]
 pub enum Event {
     UnitTask{ task_id: i64 },
 }

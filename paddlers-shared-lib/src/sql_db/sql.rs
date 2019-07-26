@@ -72,6 +72,7 @@ pub trait GameDB {
     fn past_unit_tasks(&self, unit_id: i64) -> Vec<Task> {
         let results = tasks::table
             .filter(tasks::unit_id.eq(unit_id))
+            .filter(tasks::start_time.lt(diesel::dsl::now.at_time_zone("UTC")))
             .order(tasks::start_time.asc())
             .limit(500)
             .load::<Task>(self.dbconn())
@@ -81,7 +82,7 @@ pub trait GameDB {
     fn earliest_future_task(&self, unit_id: i64) -> Option<Task> {
         tasks::table
             .filter(tasks::unit_id.eq(unit_id))
-            .filter(tasks::start_time.ge(diesel::dsl::now))
+            .filter(tasks::start_time.ge(diesel::dsl::now.at_time_zone("UTC")))
             .order(tasks::start_time.asc())
             .first(self.dbconn())
             .optional()

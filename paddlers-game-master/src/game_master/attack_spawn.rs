@@ -4,8 +4,8 @@ use rand::Rng;
 
 impl DB {
     pub fn spawn_random_attack(&self) {
-        println!("Spawning attack");
-        let now = chrono::Local::now().naive_local();
+        // println!("Spawning attack");
+        let now = chrono::Utc::now().naive_utc();
         use std::ops::Add;
         let arrival = now.add(chrono::Duration::seconds(15));
         let new_attack = NewAttack {

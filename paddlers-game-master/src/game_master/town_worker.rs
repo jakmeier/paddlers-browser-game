@@ -45,6 +45,7 @@ impl Actor for TownWorker {
     }
 }
 
+#[derive(Debug)]
 pub struct TownWorkerEventMsg(pub Event, pub DateTime<Utc>);
 
 impl Message for TownWorkerEventMsg {

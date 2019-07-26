@@ -170,7 +170,7 @@ pub struct Task {
 }
 
 #[cfg(feature = "sql_db")]
-#[derive(Insertable)]
+#[derive(Insertable, Debug)]
 #[table_name = "tasks"]
 pub struct NewTask {
     pub unit_id: i64,

@@ -125,7 +125,7 @@ impl State for Game<'static, 'static> {
             bold_font: Asset::new(Font::load("fonts/Manjari-Bold.ttf")),
             unit_len: None,
             net: None,
-            time_zero: crate::wasm_setup::local_now(),
+            time_zero: crate::wasm_setup::utc_now(),
             resources: TownResources::default(),
             total_updates: 0,
         })
@@ -183,12 +183,14 @@ impl State for Game<'static, 'static> {
                             create_worker_entities(&response, &mut self.world, now);
                         }
                         NetMsg::UpdateWorkerTasks(unit) => {
+                            println!("New worker tasks");
                             let e = self.entity_by_net_id(unit.id.parse().unwrap());
                             if let Some(entity) = e {
                                 let workers = &mut self.world.write_storage::<Worker>();
                                 let worker = workers.get_mut(entity).unwrap();
                                 worker.tasks.clear();
                                 for task in unit.tasks {
+                                println!("Push task");
                                     worker.tasks.push_back((&task).into());
                                 }
                             }
@@ -306,7 +308,7 @@ impl Game<'_,'_> {
     }
     fn update_time_reference(&mut self) {
         if self.time_zero != 0 {
-            let t = crate::wasm_setup::local_now();
+            let t = crate::wasm_setup::utc_now();
             let mut ts = self.world.write_resource::<Now>();
             *ts = Now(t);
         }

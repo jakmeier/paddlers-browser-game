@@ -52,7 +52,7 @@ pub (crate) fn validate_task_list(db: &DB, tl: &TaskList, village_id: i64) -> Re
 }
 pub (crate) fn replace_unit_tasks(db: &DB, worker: &Addr<TownWorker>, unit_id: i64, tasks: &[NewTask]) {
     db.flush_task_queue(unit_id);
-    db.insert_tasks(tasks);
+    let _inserted = db.insert_tasks(tasks);
     let current_task = execute_unit_tasks(db, unit_id).expect("Unit has no current task");
     if let Some(next_task) = db.earliest_future_task(unit_id) {
         let event = Event::UnitTask{ task_id: current_task.id};
@@ -66,8 +66,9 @@ fn next_possible_interrupt(_current_tasks: &[Task]) -> Option<NaiveDateTime> {
     Some(now)
 }
 
+/// For the given unit, executes tasks on the DB that are due
 fn execute_unit_tasks(db: &DB, unit_id: i64) -> Option<Task> {
-    let mut tasks = db.unit_tasks(unit_id);
+    let mut tasks = db.past_unit_tasks(unit_id);
     let current_task = tasks.pop();
     let village_id = 1; // TODO: Village id
     let town = TownView::load_village(db, village_id);

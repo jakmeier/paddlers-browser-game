@@ -102,7 +102,7 @@ impl DB {
     pub fn flush_task_queue(&self, unit_id: i64) {
         diesel::delete(tasks::table
             .filter(tasks::unit_id.eq(unit_id)))
-            .filter(tasks::start_time.gt(diesel::dsl::now))
+            .filter(tasks::start_time.gt(diesel::dsl::now.at_time_zone("UTC")))
             .execute(self.dbconn())
             .expect("Deleting task");
     }
@@ -110,7 +110,7 @@ impl DB {
 
 impl From<&Pool> for DB {
     fn from(pool: &Pool) -> Self {
-        DB(pool.get().expect("Coudln't get DB connection"))
+        DB(pool.get().expect("Couldn't get DB connection"))
     }
 }
 

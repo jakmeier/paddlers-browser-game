@@ -7,7 +7,7 @@ pub struct EventQueue {
     queue: BinaryHeap<TimedEvent>,
 }
 
-#[derive(Copy, Clone, Eq, PartialEq)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
 struct TimedEvent {
     time: DateTime<Utc>,
     event: Event,
@@ -28,10 +28,15 @@ impl EventQueue {
         );
     }
     /// Returns the next event in the queue if it is due 
-    pub fn poll_event(&self) -> Option<&Event> {
-        self.queue.peek()
-            .filter(|te| te.time <= chrono::Utc::now())
-            .map(|te| &te.event)
+    pub fn poll_event(&mut self) -> Option<Event> {
+        let next = self.queue.peek();
+        if let Some(evt) = next {
+            if evt.time <= chrono::Utc::now() {
+                return self.queue.pop()
+                    .map(|te| te.event);
+            }
+        }
+        None
     }
     pub fn time_of_next_event(&self) -> Option<&DateTime<Utc>> {
         self.queue.peek().map(|te| &te.time)
