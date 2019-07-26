@@ -4,6 +4,7 @@
 
 use quicksilver::prelude::*; 
 use crate::gui::sprites::{SpriteIndex, Sprites};
+use crate::gui::animation::{AnimationState, Direction};
 
 
 pub const BLACK: Color =    Color { r: 0.0, g: 0.0, b: 0.0, a: 1.0 };
@@ -26,7 +27,23 @@ pub enum FitStrategy {
     Center
 }
 
+pub fn draw_animated_sprite(asset: &mut Asset<Sprites>, window: &mut Window, max_area: &Rectangle, i: SpriteIndex, z: i32, fit_strat: FitStrategy, animation_state: &AnimationState) -> Result<()> {
+    let transform = match animation_state.direction {
+        Direction::Undirected | Direction::West
+            => { Transform::IDENTITY },
+        Direction::East 
+            => { horizontal_flip() },
+        Direction::North  
+            => { Transform::IDENTITY },
+        Direction::South
+            => { Transform::IDENTITY },
+    };
+    draw_image(asset, window, max_area, i, z, fit_strat, transform)
+}
 pub fn draw_static_image(asset: &mut Asset<Sprites>, window: &mut Window, max_area: &Rectangle, i: SpriteIndex, z: i32, fit_strat: FitStrategy) -> Result<()> {
+    draw_image(asset, window, max_area, i, z, fit_strat, Transform::IDENTITY)
+}
+fn draw_image(asset: &mut Asset<Sprites>, window: &mut Window, max_area: &Rectangle, i: SpriteIndex, z: i32, fit_strat: FitStrategy, transform: Transform) -> Result<()> {
     asset.execute( |sprites| {
         let img = &sprites[i];
         let mut area = *max_area;
@@ -53,7 +70,7 @@ pub fn draw_static_image(asset: &mut Asset<Sprites>, window: &mut Window, max_ar
         window.draw_ex(
             &area,
             Img(img),
-            Transform::IDENTITY, 
+            transform, 
             z
         );
         Ok(())
@@ -168,4 +185,12 @@ impl Iterator for Grid {
             None
         }
     }
+}
+
+pub fn horizontal_flip() -> Transform {
+    Transform::from_array(
+        [[-1f32, 0f32, 0f32],
+         [0f32, 1f32, 0f32],
+         [0f32, 0f32, 1f32]]
+    )
 }

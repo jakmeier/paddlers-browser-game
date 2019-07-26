@@ -13,6 +13,7 @@ use crate::game::components::NetObj;
 use crate::gui::input;
 use crate::gui::render::*;
 use crate::gui::sprites::*;
+use crate::gui::animation::AnimationState;
 use crate::net::{
     NetMsg, 
     game_master_api::{
@@ -347,6 +348,7 @@ fn init_world() -> World {
     world.register::<Range>();
     world.register::<Health>();
     world.register::<NetObj>();
+    world.register::<AnimationState>();
 
     world
 }

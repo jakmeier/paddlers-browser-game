@@ -13,6 +13,7 @@ use crate::gui::{
     input::{UiState, DefaultShop, Grabbable},
     utils::*,
     gui_components::*,
+    animation::AnimationState,
 };
 
 
@@ -27,11 +28,17 @@ impl Game<'_, '_> {
         let world = &self.world;
         let pos_store = world.read_storage::<Position>();
         let rend_store = world.read_storage::<Renderable>();
+        let animation_store = world.read_storage::<AnimationState>();
         let sprites = &mut self.sprites;
-        for (pos, r) in (&pos_store, &rend_store).join() {
+        let entities = self.world.entities();
+        for (e, pos, r) in (&entities, &pos_store, &rend_store).join() {
             match r.kind {
                 RenderVariant::ImgWithImgBackground(i, _) => {
-                    draw_static_image(sprites, window, &pos.area, i, pos.z, FitStrategy::TopLeft)?;
+                    if let Some(animation) = animation_store.get(e) {
+                        draw_animated_sprite(sprites, window, &pos.area, i, pos.z, FitStrategy::TopLeft, animation)?;
+                    } else {
+                        draw_static_image(sprites, window, &pos.area, i, pos.z, FitStrategy::TopLeft)?;
+                    }
                 },
                 _ => { panic!("Not implemented")}
             }

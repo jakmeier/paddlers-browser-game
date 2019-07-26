@@ -5,6 +5,7 @@ use crate::game::{
     units::workers::Worker,
     town::Town,
 };
+use crate::gui::animation::*;
 use paddlers_shared_lib::models::*;
 use quicksilver::geom::about_equal;
 
@@ -14,12 +15,13 @@ impl<'a> System<'a> for WorkerSystem {
     type SystemData = (
         WriteStorage<'a, Worker>,
         WriteStorage<'a, Moving>,
+        WriteStorage<'a, AnimationState>,
         Read<'a, Town>,
         Read<'a, Now>,
      );
 
-    fn run(&mut self, (mut workers, mut velocities, town, now): Self::SystemData) {
-        for (worker, mut mov) in (&mut workers, &mut velocities).join() {
+    fn run(&mut self, (mut workers, mut velocities, mut animations, town, now): Self::SystemData) {
+        for (worker, mut mov, mut anim) in (&mut workers, &mut velocities, &mut animations).join() {
             if let Some(task) = worker.poll(now.0) {
                 match task.task_type {
                     TaskType::Walk => {
@@ -33,6 +35,9 @@ impl<'a> System<'a> for WorkerSystem {
                         mov.start_ts = task.start_time;
                         mov.start_pos = position_now;
                         mov.momentum = dir.normalize() * mov.max_speed;
+                        if let Some(dir) = Direction::from_vector(&mov.momentum) {
+                            anim.direction = dir;
+                        }
                     },
                     TaskType::Idle => {
                         mov.start_pos = mov.position(task.start_time);

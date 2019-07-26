@@ -8,6 +8,7 @@ use crate::gui::{
     z::Z_UNITS,
     sprites::SpriteIndex,
     utils::*,
+    animation::*,
 };
 use crate::game::{
     input::Clickable,
@@ -32,6 +33,7 @@ pub fn with_unit_base<B: Builder>(
         .with(Moving::new(birth, pos, (0,0), speed))
         .with(Clickable)
         .with(NetObj{ id: netid })
+        .with(AnimationState{ direction: Direction::Undirected })
 }
 
 pub fn with_hero<B: Builder>( builder: B ) -> B 
