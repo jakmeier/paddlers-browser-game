@@ -130,6 +130,21 @@ impl Town {
     pub fn tile_area(&self, i: TileIndex) -> Rectangle {
         Rectangle::new(Vector::from((i.0 as u32, i.1 as u32)) * self.ul, (self.ul, self.ul))
     }
+    pub fn next_tile_in_direction(&self, pos: impl Into<Vector>, dir: impl Into<Vector>) -> (usize, usize) {
+        let dir = dir.into();
+        let mut pos = pos.into();
+        if dir.x < 0.0 {
+            pos.x = (pos.x / self.ul).floor() * self.ul;       
+        } else if dir.x > 0.0 {
+            pos.x = (pos.x / self.ul).ceil() * self.ul;       
+        }
+        if dir.y < 0.0 {
+            pos.y = (pos.y / self.ul).floor() * self.ul;       
+        } else if dir.y > 0.0 {
+            pos.y = (pos.y / self.ul).ceil() * self.ul;       
+        }
+        Self::find_tile(pos, self.ul)
+    }
     
 
     pub fn make_room_for_building(&mut self, i: TileIndex) {

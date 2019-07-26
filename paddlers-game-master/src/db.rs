@@ -87,11 +87,18 @@ impl DB {
             .get_result(self.dbconn())
             .expect("Inserting task")
     }
+    
     pub fn insert_tasks(&self, tasks: &[NewTask]) -> Vec<Task> {
         diesel::insert_into(tasks::dsl::tasks)
             .values(tasks)
             .get_results(self.dbconn())
             .expect("Inserting tasks")
+    }
+    pub fn update_task(&self, t: &Task) {
+        diesel::update(t)
+            .set(t)
+            .execute(self.dbconn())
+            .expect("Updating task");
     }
     pub fn delete_task(&self, task: &Task) {
         diesel::delete(tasks::table

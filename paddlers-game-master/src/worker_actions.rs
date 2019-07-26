@@ -17,23 +17,25 @@ trait WorkerAction {
     fn y(&self) -> i32;
     fn task_type(&self) -> &TaskType;
 }
-
-pub (crate) fn validate_task_list(db: &DB, tl: &TaskList, village_id: i64) -> Result<Vec<NewTask>, Box<dyn std::error::Error>> {
+pub struct ValidatedTaskList {
+    pub new_tasks: Vec<NewTask>,
+    pub update_tasks: Vec<Task>,
+}
+pub (crate) fn validate_task_list(db: &DB, tl: &TaskList, village_id: i64) -> Result<ValidatedTaskList, Box<dyn std::error::Error>> {
 
     let unit_id = tl.unit_id;
 
-    // 1 get current task(s)
-    let current_tasks = db.unit_tasks(unit_id);
-
-    // 2 Load relevant data into memory 
+    // Load relevant data into memory 
     let town = TownView::load_village(db, village_id);
     let mut unit = db.unit(unit_id).ok_or("Unit does not exist")?;
 
-    // 3 check if user can interrupt current task
-    // & calculate earliest time when new tasks can be accepted
-    let mut timestamp = next_possible_interrupt(&current_tasks).ok_or("Cannot interrupt current task.")?;
+    // check timing and effect of current task interruption
+    let mut current_task = db.current_task(unit.id).expect("Must have a current task");
+    let mut timestamp = interrupt_task(&mut current_task, &unit).ok_or("Cannot interrupt current task.")?;
+    unit.x = current_task.x;
+    unit.y = current_task.y;
 
-    // 4 iterate tasks and match for task types
+    // iterate tasks and match for task types
     let mut tasks = vec![];
 
     for task in tl.tasks.iter() {
@@ -48,7 +50,11 @@ pub (crate) fn validate_task_list(db: &DB, tl: &TaskList, village_id: i64) -> Re
         tasks.push(new_task);
         timestamp += duration;
     }
-    Ok(tasks)
+    Ok( ValidatedTaskList {
+            new_tasks: tasks,
+            update_tasks: vec![current_task],
+        }
+    )
 }
 pub (crate) fn replace_unit_tasks(db: &DB, worker: &Addr<TownWorker>, unit_id: i64, tasks: &[NewTask]) {
     db.flush_task_queue(unit_id);
@@ -60,10 +66,33 @@ pub (crate) fn replace_unit_tasks(db: &DB, worker: &Addr<TownWorker>, unit_id: i
     }
 }
 
-fn next_possible_interrupt(_current_tasks: &[Task]) -> Option<NaiveDateTime> {
-    // TODO: Make sure the units are aligned in the tiles
-    let now = chrono::Utc::now().naive_utc();
-    Some(now)
+fn interrupt_task(current_task: &mut Task, unit: &Unit) -> Option<NaiveDateTime> {
+    match current_task.task_type {
+        TaskType::Idle 
+        | TaskType::ChopTree
+        | TaskType::Defend
+        | TaskType::GatherSticks
+        => 
+        {
+            let now = chrono::Utc::now().naive_utc();
+            Some(now)
+        },
+        TaskType::Walk => {
+            let speed = unit_speed_to_worker_tiles_per_second(unit.speed) as f64;
+            let time_so_far: Duration = Utc::now().naive_utc() - current_task.start_time;
+            let steps = (speed * time_so_far.num_microseconds().unwrap() as f64 / 1_000_000.0).ceil() as i32;
+            let total_time = steps as f64 / speed;
+            let moment = current_task.start_time + chrono::Duration::microseconds((total_time * 1_000_000.0) as i64);
+            let dx = current_task.x - unit.x;
+            let dy = current_task.y - unit.y;
+            let x = if dx == 0 { unit.x } else if dx < 0 { unit.x - steps } else { unit.x + steps};
+            let y = if dy == 0 { unit.y } else if dy < 0 { unit.y - steps } else { unit.y + steps};
+            // Walking must terminate earlier
+            current_task.x = x;
+            current_task.y = y;
+            Some(moment)
+        }
+    }
 }
 
 /// For the given unit, executes tasks on the DB that are due
@@ -87,19 +116,24 @@ pub (crate) fn execute_task(
     town: Option<&TownView>
 ) -> Result<Option<(Event, DateTime<Utc>)>, Box<dyn std::error::Error>> 
 {
-    let task = task.or_else(|| db.task(task_id)).ok_or("No task to execute found")?;
-    let mut unit = db.unit(task.unit_id).ok_or("Task references non-existing unit")?;
-    if let Some(town) = town {
-        crate::worker_actions::simulate_task(&task, &town, &mut unit)?;
-    } else {
-        let town = TownView::load_village(db, unit.home);
-        crate::worker_actions::simulate_task(&task, &town, &mut unit)?;
-    }
-    
-    db.update_unit(&unit);
-    db.delete_task(&task);
+    let task = task.or_else(|| db.task(task_id));
+    if let Some(task) = task {
+        let mut unit = db.unit(task.unit_id).ok_or("Task references non-existing unit")?;
+        if let Some(town) = town {
+            crate::worker_actions::simulate_task(&task, &town, &mut unit)?;
+        } else {
+            let town = TownView::load_village(db, unit.home);
+            crate::worker_actions::simulate_task(&task, &town, &mut unit)?;
+        }
+        
+        db.update_unit(&unit);
+        db.delete_task(&task);
 
-    Ok(Event::load_next_unit_task(db, task.unit_id))
+        Ok(Event::load_next_unit_task(db, task.unit_id))
+    } else {
+        // Already executed.
+        Ok(None)
+    }
 }
 
 fn simulate_task<T: WorkerAction> (

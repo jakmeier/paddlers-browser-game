@@ -158,7 +158,7 @@ pub enum TaskType {
     ChopTree, 
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Queryable)]
+#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Identifiable, AsChangeset)]
 #[cfg(feature = "sql_db")]
 pub struct Task {
     pub id: i64,

@@ -183,14 +183,12 @@ impl State for Game<'static, 'static> {
                             create_worker_entities(&response, &mut self.world, now);
                         }
                         NetMsg::UpdateWorkerTasks(unit) => {
-                            println!("New worker tasks");
                             let e = self.entity_by_net_id(unit.id.parse().unwrap());
                             if let Some(entity) = e {
                                 let workers = &mut self.world.write_storage::<Worker>();
                                 let worker = workers.get_mut(entity).unwrap();
                                 worker.tasks.clear();
                                 for task in unit.tasks {
-                                println!("Push task");
                                     worker.tasks.push_back((&task).into());
                                 }
                             }

@@ -8,7 +8,7 @@ use crate::gui::{
     gui_components::*,
 };
 use crate::game::{
-    movement::Position,
+    movement::*,
     town_resources::TownResources,
     town::Town,
     units::workers::Worker,
@@ -106,9 +106,10 @@ impl<'a> System<'a> for RightClickSystem {
         WriteStorage<'a, Worker>,
         ReadStorage<'a, Position>,
         ReadStorage<'a, NetObj>,
+        ReadStorage<'a, Moving>,
      );
 
-    fn run(&mut self, (mouse_state, mut ui_state, town, mut rest, entities, mut worker, position, netobj): Self::SystemData) {
+    fn run(&mut self, (mouse_state, mut ui_state, town, mut rest, entities, mut worker, position, netobj, moving): Self::SystemData) {
 
         let MouseState(mouse_pos, button) = *mouse_state;
         if button != Some(MouseButton::Right) {
@@ -122,14 +123,14 @@ impl<'a> System<'a> for RightClickSystem {
             // NOP
         }
         else {
-            if let Some((worker, from, netid)) = 
+            if let Some((worker, from, netid, movement)) = 
                 ui_state.selected_entity
                 .and_then(
                     |selected| 
-                    (&mut worker, &position, &netobj).join().get(selected, &entities) 
+                    (&mut worker, &position, &netobj, &moving).join().get(selected, &entities) 
                 )
             {
-                let start = town.tile(from.area.pos);
+                let start = town.next_tile_in_direction(from.area.pos, movement.momentum);
                 let destination = town.tile(mouse_pos);
                 let msg = worker.new_walk_task(start , destination , &town, netid.id);
                 match msg {

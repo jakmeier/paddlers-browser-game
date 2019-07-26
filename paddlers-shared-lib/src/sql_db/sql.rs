@@ -91,7 +91,6 @@ pub trait GameDB {
     fn current_and_next_task(&self, unit_id: i64) -> (Option<Task>, Option<Task>) {
         let mut results = tasks::table
             .filter(tasks::unit_id.eq(unit_id))
-            .filter(tasks::start_time.le(diesel::dsl::now.at_time_zone("UTC")))
             .order(tasks::start_time.asc())
             .limit(2)
             .load(self.dbconn())
