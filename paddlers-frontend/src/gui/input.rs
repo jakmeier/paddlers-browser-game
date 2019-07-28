@@ -130,9 +130,8 @@ impl<'a> System<'a> for RightClickSystem {
                     (&mut worker, &position, &netobj, &moving).join().get(selected, &entities) 
                 )
             {
-                let start = town.next_tile_in_direction(from.area.pos, movement.momentum);
-                let destination = town.tile(mouse_pos);
-                let msg = worker.new_walk_task(start , destination , &town, netid.id);
+                let start = town.next_tile_in_direction(from.area.pos, movement.momentum);                
+                let msg = worker.task_on_right_click(start , &mouse_pos , &town, netid.id);
                 match msg {
                     Ok(msg) => {
                         rest.http_overwrite_tasks(msg);

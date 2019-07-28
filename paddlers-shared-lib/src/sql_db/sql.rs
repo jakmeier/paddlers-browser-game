@@ -21,6 +21,17 @@ pub trait GameDB {
             .expect("Error loading data");
         results
     }
+    fn units_with_job(&self, village_id: i64, jobs: &[TaskType]) -> Vec<Unit> {
+        let results = units::table
+            .inner_join(tasks::table)
+            .filter(units::home.eq(village_id))
+            .filter(tasks::task_type.eq_any(jobs))
+            .select(units::all_columns)
+            .distinct()
+            .load::<Unit>(self.dbconn())
+            .expect("Error loading data");
+        results
+    }
     fn attacks(&self, min_id: Option<i64>) -> Vec<Attack> {
         let results = attacks::table
             .filter(attacks::id.ge(min_id.unwrap_or(0)))
@@ -33,7 +44,7 @@ pub trait GameDB {
         let results = attacks_to_units::table
         .inner_join(units::table)
         .filter(attacks_to_units::attack_id.eq(atk.id))
-        .select(units::all_columns) 
+        .select(units::all_columns)
         .limit(500)
         .load::<Unit>(self.dbconn())
         .expect("Error loading data");

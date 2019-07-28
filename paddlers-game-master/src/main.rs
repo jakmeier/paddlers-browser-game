@@ -9,8 +9,11 @@ mod worker_actions;
 mod town_view;
 
 use db::*;
-use game_master::GameMaster;
-use game_master::town_worker::TownWorker;
+use game_master::{
+    GameMaster,
+    town_worker::TownWorker,
+    economy_worker::EconomyWorker,
+};
 
 use actix::prelude::*;
 use actix_web::{
@@ -28,6 +31,7 @@ type StringErr = Result<(),String>;
 struct ActorAddresses {
     game_master: Addr<GameMaster>,
     town_worker: Addr<TownWorker>,
+    econ_worker: Addr<EconomyWorker>,
 }
 
 fn main() {
@@ -37,7 +41,7 @@ fn main() {
     let sys = actix::System::new("background-worker-example");
     let gm_actor = GameMaster::new(dbpool.clone()).start();
     let town_worker_actor = TownWorker::new(dbpool.clone()).start();
-    // let town_worker_actor = SyncArbiter::start(1, move || TownWorker::new(dbpool.clone()));
+    let econ_worker = EconomyWorker::new(dbpool.clone()).start();
 
     HttpServer::new(move || {
         App::new()
@@ -49,7 +53,12 @@ fn main() {
                     .allowed_header(header::CONTENT_TYPE)
                     .max_age(3600*24),
             )
-            .data(ActorAddresses { game_master: gm_actor.clone(), town_worker: town_worker_actor.clone() })
+            .data(
+                ActorAddresses {
+                    game_master: gm_actor.clone(),
+                    town_worker: town_worker_actor.clone(),
+                    econ_worker: econ_worker.clone(),
+                })
             .data(dbpool.clone())
             .route("/", web::get().to(api::index))
             .service(

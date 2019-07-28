@@ -1,3 +1,5 @@
+use crate::models::BuildingType;
+
 pub const TOWN_X: usize = 23;
 pub const TOWN_Y: usize = 13;
 pub const TOWN_LANE_Y: usize = 6;
@@ -9,7 +11,7 @@ pub type TileIndex = (usize, usize);
 #[derive(PartialEq, Eq,Clone, Copy, Debug)]
 pub enum TownTileType {
     EMPTY,
-    BUILDING,
+    BUILDING(BuildingType),
     LANE,
 }
 
@@ -40,7 +42,7 @@ impl TownTileType {
         match self {
             TownTileType::EMPTY 
                 => true,
-            TownTileType::BUILDING 
+            TownTileType::BUILDING(_)
             | TownTileType::LANE 
                 => false,
         }
@@ -50,8 +52,11 @@ impl TownTileType {
             TownTileType::EMPTY 
             | TownTileType::LANE 
                 => true,
-            TownTileType::BUILDING 
-                => false,
+            TownTileType::BUILDING(bt)
+                => match bt {
+                    BuildingType::BundlingStation => true,
+                    _ => false,
+                },
         }
     }
 }

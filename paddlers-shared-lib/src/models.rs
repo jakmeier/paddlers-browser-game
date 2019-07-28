@@ -90,7 +90,7 @@ pub struct AttackToUnit {
 }
 
 
-#[derive(Debug, PartialEq, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
 #[cfg_attr(feature = "enum_utils", derive(EnumIter, Display))]
 #[cfg_attr(feature = "graphql", derive(juniper::GraphQLEnum))]
 #[cfg_attr(feature = "sql_db", derive(DbEnum), DieselType = "Building_type")]

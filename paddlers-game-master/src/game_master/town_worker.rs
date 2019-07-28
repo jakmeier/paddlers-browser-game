@@ -5,6 +5,7 @@ use actix::prelude::*;
 use chrono::prelude::*;
 use paddlers_shared_lib::sql_db::sql::GameDB;
 
+/// Actor for moving around workers inside the town
 pub struct TownWorker {
     dbpool: Pool,
     event_queue: EventQueue,
@@ -14,7 +15,7 @@ impl TownWorker {
     pub fn new(dbpool: Pool) -> Self { 
         TownWorker {
             dbpool: dbpool,
-            event_queue: EventQueue::new(), // TODO: Fill event queue with initial work
+            event_queue: EventQueue::new(),
         }
         .with_filled_event_queue()
     }

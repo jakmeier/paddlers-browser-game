@@ -12,7 +12,7 @@ impl TownView {
 
         let buildings = db.buildings();
         for b in buildings {
-            map[(b.x as usize, b.y as usize)] = TownTileType::BUILDING;
+            map[(b.x as usize, b.y as usize)] = TownTileType::BUILDING(b.building_type);
         }
 
         TownView {

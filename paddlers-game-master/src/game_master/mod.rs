@@ -3,6 +3,7 @@ mod attack_spawn;
 mod event_queue;
 pub (super) mod event;
 pub (super) mod town_worker;
+pub (super) mod economy_worker;
 
 use actix::prelude::*;
 use std::time::Duration;

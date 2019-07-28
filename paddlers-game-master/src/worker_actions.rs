@@ -145,6 +145,7 @@ fn simulate_task<T: WorkerAction> (
     match task.task_type() {
         TaskType::Idle => Ok(Duration::milliseconds(0)),
         TaskType::Walk => Ok(worker_walk(town, unit, (task.x() as usize, task.y() as usize))?),
+        TaskType::GatherSticks => Ok(Duration::milliseconds(0)),
         _ => Err("Task not implemented".to_owned())
     }
 }

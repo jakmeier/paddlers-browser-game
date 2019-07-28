@@ -23,16 +23,22 @@ pub struct WorkerTask {
 }
 
 impl Worker {
-    pub fn new_walk_task(&mut self, from: TileIndex, to: TileIndex, town: &Town, netid: i64,) -> Result<TaskList, String> {
-        if let Some((path, _dist)) = town.shortest_path(from, to) {
-            let msg = TaskList {
-                unit_id: netid,
-                tasks: path_to_raw_tasks(&path, from),
-            };
-            Ok(msg)
-        }
-        else {
-            Err(format!("Cannot walk from {:?} to {:?}", from, to))
+    pub fn task_on_right_click(&mut self, from: TileIndex, click: &Vector, town: &Town, netid: i64,) -> Result<TaskList, String> {
+        let destination = town.tile(*click);
+        if let Some(job) = self.task_at_position(town, destination) {
+            if let Some((path, _dist)) = town.shortest_path(from, destination) {
+                let mut tasks = raw_walk_tasks(&path, from);
+                tasks.push( RawTask::new(job, destination) );
+                let msg = TaskList {
+                    unit_id: netid,
+                    tasks: tasks,
+                };
+                Ok(msg)
+            } else {
+                Err(format!("Cannot walk from {:?} to {:?}", from, destination))
+            }
+        } else {
+            Err(format!("No job to do at {:?}", destination))
         }
     }
 
@@ -44,40 +50,29 @@ impl Worker {
         }
         None
     }
+    fn task_at_position(&self, town: &Town, i: TileIndex) -> Option<TaskType> {
+        let jobs = town.available_tasks(i);
+        jobs.into_iter()
+            // .filter(
+            //     || TODO
+            // )
+            .next()
+    }
 }
 
-fn path_to_raw_tasks(path: &[TileIndex], from: TileIndex) -> Vec<RawTask> {
+fn raw_walk_tasks(path: &[TileIndex], from: TileIndex) -> Vec<RawTask> {
     let mut tasks = vec![];
     let mut current_direction = Vector::new(0,0);
     let mut current = from;
     for next in path {
         let next_direction = direction_vector(current, *next);
         if next_direction != current_direction && current_direction != Vector::new(0,0) {
-            tasks.push(
-                RawTask {
-                    task_type: TaskType::Walk,
-                    x: current.0,
-                    y: current.1,
-                }
-            )
+            tasks.push( RawTask::new(TaskType::Walk, current) );
         }
         current = *next;
         current_direction = next_direction;
     }
-    tasks.push(
-        RawTask {
-            task_type: TaskType::Walk, 
-            x: current.0,
-            y: current.1,
-        }
-    );
-    tasks.push(
-        RawTask {
-            task_type: TaskType::Idle, 
-            x: current.0,
-            y: current.1,
-        }
-    );
+    tasks.push( RawTask::new(TaskType::Walk, current) );
     tasks
 }
 

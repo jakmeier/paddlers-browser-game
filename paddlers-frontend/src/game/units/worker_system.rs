@@ -13,6 +13,7 @@ pub struct WorkerSystem;
 
 impl<'a> System<'a> for WorkerSystem {
     type SystemData = (
+        Entities<'a>,    
         WriteStorage<'a, Worker>,
         WriteStorage<'a, Moving>,
         WriteStorage<'a, AnimationState>,
@@ -20,8 +21,8 @@ impl<'a> System<'a> for WorkerSystem {
         Read<'a, Now>,
      );
 
-    fn run(&mut self, (mut workers, mut velocities, mut animations, town, now): Self::SystemData) {
-        for (worker, mut mov, mut anim) in (&mut workers, &mut velocities, &mut animations).join() {
+    fn run(&mut self, (entities, mut workers, mut velocities, mut animations, town, now): Self::SystemData) {
+        for (e, worker, mut mov, mut anim) in (&entities, &mut workers, &mut velocities, &mut animations).join() {
             if let Some(task) = worker.poll(now.0) {
                 match task.task_type {
                     TaskType::Walk => {
@@ -43,6 +44,10 @@ impl<'a> System<'a> for WorkerSystem {
                         mov.start_pos = mov.position(task.start_time);
                         mov.start_ts = task.start_time;
                         mov.momentum = (0.0,0.0).into();
+                    }
+                    TaskType::GatherSticks => {
+                        // TODO: Add worker to bundling station
+                        entities.delete(e).unwrap();
                     }
                     _ => {debug_assert!(false, "Unexpected task")},
                 }

@@ -3,7 +3,7 @@ use specs::world::EntitiesRes;
 use crate::gui::{
     render::Renderable,
     sprites::{SpriteIndex,WithSprite},
-    z::Z_UNITS,
+    z::Z_BUILDINGS,
     utils::*,
 };
 use crate::game::{
@@ -33,10 +33,10 @@ impl Town {
     ) -> Entity 
     {
         let area = self.tile_area(tile_index);
-        self.make_room_for_building(tile_index);
+        self.make_room_for_building(tile_index, bt);
         let mut builder = 
             lazy.create_entity(entities)
-            .with(Position::new(area.pos, area.size, Z_UNITS))
+            .with(Position::new(area.pos, area.size, Z_BUILDINGS))
             .with(
                 Renderable {
                     kind: RenderVariant::ImgWithImgBackground(bt.sprite(), SpriteIndex::Grass),

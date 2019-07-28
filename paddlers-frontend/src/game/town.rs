@@ -5,6 +5,7 @@ use crate::gui::{
     z::{Z_TILE_SHADOW, Z_TEXTURE}
 };
 pub use paddlers_shared_lib::game_mechanics::town::TileIndex;
+use paddlers_shared_lib::models::*;
 use paddlers_shared_lib::game_mechanics::town::*;
 use paddlers_shared_lib::game_mechanics::town::TownTileType as TileType;
 
@@ -44,7 +45,7 @@ impl Town {
         for (x, col) in self.map.0.iter().enumerate() {
             for (y, tile) in col.iter().enumerate() {
                 match tile {
-                    TileType::EMPTY | TileType::BUILDING => {
+                    TileType::EMPTY | TileType::BUILDING(_) => {
                         // println!("Empty {} {}", x, y);
                         window.draw_ex(
                             &Rectangle::new((d * x as f32, d * y as f32), (d, d)),
@@ -147,12 +148,12 @@ impl Town {
     }
     
 
-    pub fn make_room_for_building(&mut self, i: TileIndex) {
+    pub fn make_room_for_building(&mut self, i: TileIndex, bt: BuildingType) {
         debug_assert!(self.is_buildable(i), "Cannot build here");
         let tile = self.map.tile_type_mut(i);
 
         debug_assert!(tile.is_some(), "Tile is outside of map");
-        *tile.unwrap() = TileType::BUILDING;
+        *tile.unwrap() = TileType::BUILDING(bt);
     }
     pub fn remove_building(&mut self, i: TileIndex) {
         let tile = self.map.tile_type_mut(i);
@@ -179,6 +180,24 @@ impl Town {
             Transform::IDENTITY, 
             Z_TILE_SHADOW,
         );
+    }
+
+    pub fn available_tasks(&self, i: TileIndex) -> Vec<TaskType> {
+        match self.map[i] {
+            TileType::BUILDING(b) => {
+                match b {
+                    BuildingType::BundlingStation 
+                        => vec![TaskType::GatherSticks],
+                    _ => vec![],
+                }
+            }
+            TileType::EMPTY => {
+                vec![TaskType::Idle]
+            }
+            TileType::LANE => {
+                vec![]
+            }
+        }
     }
     
     pub fn shortest_path(&self, s: TileIndex, t: TileIndex) -> Option<(Vec<TileIndex>, u32)> {
