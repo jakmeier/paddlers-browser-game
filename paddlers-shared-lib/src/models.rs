@@ -98,6 +98,7 @@ pub enum BuildingType {
     BlueFlowers,
     RedFlowers,
     Tree,
+    BundlingStation,
 }
 
 #[cfg(feature = "sql_db")]

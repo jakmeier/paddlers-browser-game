@@ -21,6 +21,11 @@ impl Cost for BuildingType {
                 => vec![
                     (ResourceType::Sticks, 10),
                 ],
+            BuildingType::BundlingStation
+                => vec![
+                    (ResourceType::Feathers, 20),
+                    (ResourceType::Sticks, 5),
+                ],
         }
     }
 }

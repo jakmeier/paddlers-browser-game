@@ -28,6 +28,7 @@ impl Sprites {
             Image::load("ducks/roger.png"),
             Image::load("ducks/camo_duck_sad.png"),
             Image::load("ducks/white_duck_sad.png"),
+            Image::load("buildings/bundling_station.png"),
         ];
 
         Asset::new(
@@ -61,6 +62,7 @@ pub enum SpriteIndex {
     Hero,
     CamoDuck,
     WhiteDuck,
+    BundlingStation,
 }
 
 impl Index<SpriteIndex> for Sprites {
@@ -85,6 +87,7 @@ impl Index<SpriteIndex> for Sprites {
             SpriteIndex::Hero => 13,
             SpriteIndex::CamoDuck => 14,
             SpriteIndex::WhiteDuck => 15,
+            SpriteIndex::BundlingStation => 16,
         };
         &self.img[i]
     }
@@ -101,6 +104,7 @@ impl WithSprite for BuildingType {
             BuildingType::BlueFlowers => SpriteIndex::BlueFlowers,
             BuildingType::RedFlowers => SpriteIndex::RedFlowers,
             BuildingType::Tree => SpriteIndex::Tree,
+            BuildingType::BundlingStation => SpriteIndex::BundlingStation,
         }
     }
 }

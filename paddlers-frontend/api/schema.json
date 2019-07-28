@@ -232,6 +232,12 @@
               "description": null,
               "isDeprecated": false,
               "name": "TREE"
+            },
+            {
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
+              "name": "BUNDLING_STATION"
             }
           ],
           "fields": null,

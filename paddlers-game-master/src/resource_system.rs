@@ -56,6 +56,6 @@ impl DB {
 }
 fn reward_feathers(unit: &Unit) -> i64 {
     let f = (1.0 + unit.hp as f32 * unit.speed / 4.0).log2().ceil() as i64;
-    println!("{:#?} gives {} feathers", &unit, f);
+    // println!("{:#?} gives {} feathers", &unit, f);
     f
 }

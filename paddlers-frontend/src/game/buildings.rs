@@ -78,6 +78,7 @@ impl buildings_query::BuildingsQueryVillageBuildings {
             buildings_query::BuildingType::RED_FLOWERS => BuildingType::RedFlowers,
             buildings_query::BuildingType::BLUE_FLOWERS => BuildingType::BlueFlowers,
             buildings_query::BuildingType::TREE => BuildingType::Tree,
+            buildings_query::BuildingType::BUNDLING_STATION => BuildingType::BundlingStation,
             _ => panic!("Unexpected BuildingType"),
         };
 
