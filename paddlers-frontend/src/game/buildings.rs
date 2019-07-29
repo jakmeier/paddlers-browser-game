@@ -12,6 +12,7 @@ use crate::game::{
     movement::Position,
     fight::{Range,Aura},
     town::{Town, TileIndex},
+    components::*,
 };
 use paddlers_shared_lib::models::*;
 use paddlers_shared_lib::api::attributes::Attributes;
@@ -53,6 +54,15 @@ impl Town {
             if let Some(r) = range {
                 builder = builder.with(Aura::new(r, ap.unwrap(), tile_index, self))
             }
+        }
+
+        match bt {
+            BuildingType::BundlingStation => {
+                builder = builder.with(
+                    EntityContainer::new("Working")
+                );
+            },
+            _ => { }
         }
 
         builder.build()

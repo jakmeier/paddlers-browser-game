@@ -11,7 +11,7 @@ use crate::game::{
     movement::*,
     town_resources::TownResources,
     town::Town,
-    units::workers::Worker,
+    units::workers::*,
     components::*,
 };
 use paddlers_shared_lib::models::*;
@@ -52,17 +52,36 @@ impl<'a> System<'a> for LeftClickSystem {
         Read<'a, LazyUpdate>,
         ReadStorage<'a, Position>,
         ReadStorage<'a, Clickable>,
+        WriteStorage<'a, EntityContainer>,
+        WriteStorage<'a, Worker>,
      );
 
-    fn run(&mut self, (entities, mouse_state, mut ui_state, shop, mut resources, mut town, mut rest, lazy, position, clickable): Self::SystemData) {
+    fn run(&mut self, (entities, mouse_state, mut ui_state, shop, mut resources, mut town, mut rest, lazy, position, clickable, mut containers, mut workers): Self::SystemData) {
 
         let MouseState(mouse_pos, button) = *mouse_state;
         if button != Some(MouseButton::Left) {
             return;
         }
         
+        // Menu Box area
         if mouse_pos.overlaps_rectangle(&(*ui_state).menu_box_area) {
-            if (*ui_state).selected_entity.is_none() {
+            if let Some(entity) = (*ui_state).selected_entity {
+                if let Some(container) = containers.get_mut(entity) {
+                    let container_area = position.get(entity).unwrap().area;
+                    let worker_e = container.worker_to_release(&mouse_pos);
+                    if let Some(worker_e) = worker_e {
+                        move_worker_out_of_building(
+                            worker_e, 
+                            &mut workers,
+                            town.tile(container_area.pos), 
+                            &container_area, 
+                            &lazy,
+                            &mut rest,
+                        );
+                    }
+                }
+            }
+            else {
                 let maybe_grab = shop.click(mouse_pos);
                 if let Some(Grabbable::NewBuilding(b)) = maybe_grab {
                     if (*resources).can_afford(&b.price()) {
@@ -71,14 +90,19 @@ impl<'a> System<'a> for LeftClickSystem {
                 }
             }
         }
+        // Town area
         else {
             (*ui_state).selected_entity = None;
+            let mut top_hit: Option<(i32, Entity)> = None;
             for (e, pos, _) in (&entities, &position, &clickable).join() {
                 if mouse_pos.overlaps_rectangle(&pos.area) {
-                    (*ui_state).selected_entity = Some(e);
-                    break;
+                    if  top_hit.is_none() 
+                    ||  top_hit.unwrap().0 < pos.z {
+                        top_hit = Some((pos.z,e));
+                    }
                 }
             }
+            (*ui_state).selected_entity = top_hit.map(|tup| tup.1);
             if let Some(grabbed) = &(*ui_state).grabbed_item {
                 match grabbed {
                     Grabbable::NewBuilding(bt) => {
@@ -131,7 +155,7 @@ impl<'a> System<'a> for RightClickSystem {
                 )
             {
                 let start = town.next_tile_in_direction(from.area.pos, movement.momentum);                
-                let msg = worker.task_on_right_click(start , &mouse_pos , &town, netid.id);
+                let msg = worker.task_on_right_click(start, &mouse_pos, &town);
                 match msg {
                     Ok(msg) => {
                         rest.http_overwrite_tasks(msg);
@@ -176,14 +200,14 @@ pub struct DefaultShop {
 impl Default for DefaultShop {
     fn default() -> Self {
         DefaultShop {
-            ui : UiBox::new(Rectangle::default(), 3, 5)
+            ui : UiBox::new(3, 5, 5.0, 10.0)
         }
     }
 }
 impl DefaultShop {
     pub fn new(area: Rectangle) -> Self {
         let mut result = DefaultShop {
-            ui : UiBox::new(area, 3, 5)
+            ui : UiBox::new(3, 5, 5.0, 10.0)
         };
         result.add_building(BuildingType::BlueFlowers);
         result.add_building(BuildingType::RedFlowers);

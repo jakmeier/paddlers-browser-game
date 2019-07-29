@@ -58,12 +58,13 @@ pub fn with_basic_worker<B: Builder>( builder: B, color: UnitColor ) -> B
         }
     )
 }
-pub fn with_worker<B: Builder, T: IntoIterator<Item: Into<WorkerTask>>>(builder: B, tasks: T ) -> B {
+pub fn with_worker<B: Builder, T: IntoIterator<Item: Into<WorkerTask>>>(builder: B, tasks: T, netid: i64) -> B {
     let worker_tasks = tasks.into_iter()
         .map(|t| t.into())
         .collect::<std::collections::VecDeque<_>>();
     builder.with(Worker {
-        tasks: worker_tasks
+        tasks: worker_tasks,
+        netid: netid,
     })
 }
 
@@ -87,7 +88,7 @@ impl VillageUnitsQueryVillageUnits {
         let netid = self.id.parse().unwrap();
         let mut builder = with_unit_base(world.create_entity(), speed, tile_area, now, netid);
         let tasks = &self.tasks;
-        builder = with_worker(builder, tasks);
+        builder = with_worker(builder, tasks, netid);
         match self.unit_type {
             village_units_query::UnitType::HERO => {
                 builder = with_hero(builder);

@@ -8,21 +8,23 @@ use crate::gui::{
     z::*,
 };
 
-pub enum TableRow {
+pub enum TableRow<'a> {
     TextWithImage(String, SpriteIndex),
+    UiBoxWithEntities(&'a mut UiBox<specs::Entity>),
 }
 
 pub fn draw_table(
     window: &mut Window, 
     sprites: &mut Asset<Sprites>, 
-    table: &[TableRow], 
+    table: &mut [TableRow], 
     max_area: &Rectangle, 
     font: &mut Asset<Font>, 
     max_row_height: f32, 
     z: i32
 ) -> Result<()> 
 {
-    let row_height = max_row_height.min( max_area.height() / table.len() as f32);
+    let total_rows = row_count(table);
+    let row_height = max_row_height.min( max_area.height() / total_rows as f32);
     let font_h = row_height* 0.9;
     let img_s = row_height;
     let margin = 10.0;
@@ -38,11 +40,30 @@ pub fn draw_table(
                 write_text(font, window, &text_area, z, FitStrategy::Center, text)?;
                 let symbol = Rectangle::new(line.pos + (text_area.width(), 0.0).into(), (img_s, img_s));
                 draw_static_image(sprites, window, &symbol, *img, z, FitStrategy::Center)?;
+                line.pos.y += row_height;
+            }
+            TableRow::UiBoxWithEntities(uib) => {
+                let mut area = line.clone();
+                area.size.y = area.size.y * (uib.rows * 2) as f32;
+                uib.draw(window, sprites, &area)?;
+                line.pos.y += area.size.y;
             }
         }
-        line.pos.y += row_height;
     }
     Ok(())
+}
+
+fn row_count(table: &[TableRow]) -> usize {
+    table.iter()
+        .fold(
+            0, 
+            |acc, row| {
+                acc + match row {
+                    TableRow::TextWithImage(_,_) => 1,
+                    TableRow::UiBoxWithEntities(uib) => 2 * uib.rows,
+                }
+            }
+        )
 }
 
 pub fn draw_resources(
@@ -75,14 +96,14 @@ pub fn draw_resources(
 }
 
 
-#[derive(Clone)]
-struct UiElement<T: Clone> {
+#[derive(Clone, Debug)]
+struct UiElement<T: Clone + std::fmt::Debug> {
     display: RenderVariant,
     hover_display: Option<Vec<(ResourceType, i64)>>, 
     on_click: T,
 }
-#[derive(Clone)]
-pub struct UiBox<T: Clone> {
+#[derive(Clone, Debug)]
+pub struct UiBox<T: Clone + std::fmt::Debug> {
     area: Rectangle,
     elements: Vec<UiElement<T>>,
     columns: usize,
@@ -91,15 +112,15 @@ pub struct UiBox<T: Clone> {
     margin: f32,
 }
 
-impl<T: Clone> UiBox<T> {
-    pub fn new(area: Rectangle, columns: usize, rows: usize) -> Self {
+impl<T: Clone + std::fmt::Debug> UiBox<T> {
+    pub fn new(columns: usize, rows: usize, padding: f32, margin: f32) -> Self {
         UiBox {
-            area: area,
+            area: Rectangle::default(),
             elements: vec![],
             columns: columns,
             rows: rows,
-            padding: 5.0,
-            margin: 10.0,
+            padding: padding,
+            margin: margin,
         }
     }
 
@@ -114,11 +135,10 @@ impl<T: Clone> UiBox<T> {
         );
     }
 
-    #[allow(dead_code)]
-    pub fn add_with_background_color(&mut self, i: SpriteIndex, col: Color, on_click: T) {
+    pub fn add_with_render_variant(&mut self, rv: RenderVariant, on_click: T) {
         self.add_el(
             UiElement { 
-                display: RenderVariant::ImgWithColBackground(i, col),
+                display: rv,
                 hover_display: None,
                 on_click: on_click,
             }    
@@ -187,19 +207,36 @@ impl<T: Clone> UiBox<T> {
         Ok(())
     }
 
-    fn find_element_under_mouse(&self, mouse: impl Into<Vector>) -> Option<&UiElement<T>> {
-              let dx = self.area.width() / self.columns as f32;
+    fn element_index_under_mouse(&self, mouse: impl Into<Vector>) -> Option<usize> {
+        let dx = self.area.width() / self.columns as f32;
         let dy = self.area.height() / self.rows as f32;
         let pos = mouse.into() - self.area.pos;
         if pos.y < 0.0 || pos.x < 0.0 {
             return None;
         }
         let i = (pos.y / dy) as usize * self.columns + (pos.x / dx) as usize;
-        return self.elements.get(i);
+        Some(i)
+    }
+    fn find_element_under_mouse(&self, mouse: impl Into<Vector>) -> Option<UiElement<T>> {
+        self.element_index_under_mouse(mouse)
+            .and_then(|i| self.elements.get(i)) 
+            .map(UiElement::clone)
+    }
+    fn remove_element_under_mouse(&mut self, mouse: impl Into<Vector>) -> Option<UiElement<T>> {
+        self.element_index_under_mouse(mouse)
+            .map(|i| self.elements.remove(i)) 
     }
 
     pub fn click(&self, mouse: impl Into<Vector>) -> Option<T> {
         if let Some(el) = self.find_element_under_mouse(mouse) {
+            Some(el.on_click.clone())
+        }
+        else {
+            None
+        }
+    }
+    pub fn click_and_remove(&mut self, mouse: impl Into<Vector>) -> Option<T> {
+        if let Some(el) = self.remove_element_under_mouse(mouse) {
             Some(el.on_click.clone())
         }
         else {

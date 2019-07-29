@@ -1,10 +1,15 @@
 use std::collections::VecDeque;
-use quicksilver::geom::Vector;
+use quicksilver::geom::*;
 use specs::prelude::*;
 use crate::Timestamp;
 use crate::game::{
     town::{Town, TileIndex},
+    movement::Position,
+    components::*,
 };
+use crate::gui::render::Renderable;
+use crate::gui::z::*;
+use crate::net::game_master_api::RestApiState;
 use paddlers_shared_lib::models::*;
 use paddlers_shared_lib::api::tasks::*;
 
@@ -13,6 +18,7 @@ use paddlers_shared_lib::api::tasks::*;
 #[storage(VecStorage)]
 pub struct Worker {
     pub tasks: VecDeque<WorkerTask>,
+    pub netid: i64,
 }
 
 #[derive(Debug)]
@@ -23,14 +29,14 @@ pub struct WorkerTask {
 }
 
 impl Worker {
-    pub fn task_on_right_click(&mut self, from: TileIndex, click: &Vector, town: &Town, netid: i64,) -> Result<TaskList, String> {
+    pub fn task_on_right_click(&mut self, from: TileIndex, click: &Vector, town: &Town) -> Result<TaskList, String> {
         let destination = town.tile(*click);
         if let Some(job) = self.task_at_position(town, destination) {
             if let Some((path, _dist)) = town.shortest_path(from, destination) {
                 let mut tasks = raw_walk_tasks(&path, from);
                 tasks.push( RawTask::new(job, destination) );
                 let msg = TaskList {
-                    unit_id: netid,
+                    unit_id: self.netid,
                     tasks: tasks,
                 };
                 Ok(msg)
@@ -40,6 +46,15 @@ impl Worker {
         } else {
             Err(format!("No job to do at {:?}", destination))
         }
+    }
+    fn go_idle(&mut self, idx: TileIndex) -> Result<TaskList, String> {
+        let tasks = vec![
+            RawTask::new(TaskType::Idle, idx)
+        ];
+        Ok( TaskList {
+            unit_id: self.netid,
+            tasks: tasks,
+        })
     }
 
     pub fn poll(&mut self, t: Timestamp) -> Option<WorkerTask> {
@@ -80,4 +95,50 @@ fn direction_vector(a: TileIndex, b: TileIndex) -> Vector {
     let a = Vector::new(a.0 as u32, a.1 as u32);
     let b = Vector::new(b.0 as u32, b.1 as u32);
     a - b
+}
+
+pub fn move_worker_into_building<'a>(
+    containers: &mut WriteStorage<'a, EntityContainer>, 
+    positions: &mut WriteStorage<'a, Position>, 
+    lazy: &Read<'a, LazyUpdate>,
+    rend: &ReadStorage<'a, Renderable>,
+    worker_e: Entity, 
+    building_pos: Vector,
+){
+    let renderable = rend.get(worker_e).unwrap();
+    for (p, c) in (positions, containers).join() {
+         if building_pos.overlaps_rectangle(&p.area) {
+            c.add_entity(worker_e, &renderable);
+            break;
+        }
+    }
+    lazy.remove::<Position>(worker_e);
+}
+
+pub fn move_worker_out_of_building<'a>(
+    worker_e: Entity,
+    workers: &mut WriteStorage<'a, Worker>,
+    tile: TileIndex,
+    release_area: &Rectangle,
+    lazy: &Read<'a, LazyUpdate>,
+    rest: &mut Write<'a, RestApiState>,
+
+) {
+    let worker = workers.get_mut(worker_e).unwrap();
+    let http_msg = worker.go_idle(tile);
+     match http_msg {
+        Ok(msg) => {
+            rest.http_overwrite_tasks(msg);
+        }
+        Err(e) => {
+            println!("Failure on moving out of building: {}", e);
+        }
+    }
+    lazy.insert(worker_e, 
+        Position::new(
+            release_area.pos, 
+            release_area.size, 
+            Z_UNITS
+        )
+    );
 }

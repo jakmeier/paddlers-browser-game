@@ -1,11 +1,13 @@
 use specs::prelude::*;
 use crate::game::{
     Now,
-    movement::Moving,
-    units::workers::Worker,
+    movement::{Moving, Position},
+    units::workers::*,
     town::Town,
+    components::*,
 };
 use crate::gui::animation::*;
+use crate::gui::render::Renderable;
 use paddlers_shared_lib::models::*;
 use quicksilver::geom::about_equal;
 
@@ -14,14 +16,18 @@ pub struct WorkerSystem;
 impl<'a> System<'a> for WorkerSystem {
     type SystemData = (
         Entities<'a>,    
+        Read<'a, LazyUpdate>,
         WriteStorage<'a, Worker>,
         WriteStorage<'a, Moving>,
         WriteStorage<'a, AnimationState>,
+        WriteStorage<'a, Position>,
+        WriteStorage<'a, EntityContainer>,
+        ReadStorage<'a, Renderable>,
         Read<'a, Town>,
         Read<'a, Now>,
      );
 
-    fn run(&mut self, (entities, mut workers, mut velocities, mut animations, town, now): Self::SystemData) {
+    fn run(&mut self, (entities, lazy, mut workers, mut velocities, mut animations, mut pos, mut container, rend, town, now): Self::SystemData) {
         for (e, worker, mut mov, mut anim) in (&entities, &mut workers, &mut velocities, &mut animations).join() {
             if let Some(task) = worker.poll(now.0) {
                 match task.task_type {
@@ -46,8 +52,9 @@ impl<'a> System<'a> for WorkerSystem {
                         mov.momentum = (0.0,0.0).into();
                     }
                     TaskType::GatherSticks => {
-                        // TODO: Add worker to bundling station
-                        entities.delete(e).unwrap();
+                        mov.momentum = (0.0,0.0).into();
+                        let building_pos = town.tile_area(task.position);
+                        move_worker_into_building(&mut container, &mut pos, &lazy, &rend, e, building_pos.pos);               
                     }
                     _ => {debug_assert!(false, "Unexpected task")},
                 }

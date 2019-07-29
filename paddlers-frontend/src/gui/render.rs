@@ -6,6 +6,7 @@ use crate::game::{
     movement::Position,
     fight::{Health, Range, Aura},
     town::Town,
+    components::EntityContainer,
 };
 use crate::gui::{
     sprites::{SpriteIndex, WithSprite, Sprites},
@@ -136,7 +137,15 @@ impl Game<'_, '_> {
             );
         }
 
-        draw_table(window, &mut self.sprites, &detail_table, &text_area, &mut self.font, 40.0, Z_MENU_TEXT)?;
+        let mut container = self.world.write_storage::<EntityContainer>();
+        if let Some(c) = container.get_mut(e) {
+            println!("Entities inside: {}", c.children.len());
+            detail_table.push(
+                TableRow::UiBoxWithEntities(&mut c.ui)
+            );
+        }
+
+        draw_table(window, &mut self.sprites, &mut detail_table, &text_area, &mut self.font, 40.0, Z_MENU_TEXT)?;
         Ok(())
     }
 

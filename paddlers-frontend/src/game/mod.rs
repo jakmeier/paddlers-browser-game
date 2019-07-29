@@ -9,7 +9,7 @@ pub (crate) mod components;
 use crate::Timestamp;
 use crate::game::units::worker_factory::create_worker_entities;
 use crate::game::units::workers::Worker;
-use crate::game::components::NetObj;
+use crate::game::components::*;
 use crate::gui::input;
 use crate::gui::render::*;
 use crate::gui::sprites::*;
@@ -349,6 +349,7 @@ fn init_world() -> World {
     world.register::<Health>();
     world.register::<NetObj>();
     world.register::<AnimationState>();
+    world.register::<EntityContainer>();
 
     world
 }
