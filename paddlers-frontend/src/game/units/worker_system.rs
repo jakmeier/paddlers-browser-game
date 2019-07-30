@@ -47,12 +47,10 @@ impl<'a> System<'a> for WorkerSystem {
                         }
                     },
                     TaskType::Idle => {
-                        mov.start_pos = mov.position(task.start_time);
-                        mov.start_ts = task.start_time;
-                        mov.momentum = (0.0,0.0).into();
+                        mov.stand_still(task.start_time);
                     }
                     TaskType::GatherSticks => {
-                        mov.momentum = (0.0,0.0).into();
+                        mov.stand_still(task.start_time);
                         let building_pos = town.tile_area(task.position);
                         move_worker_into_building(&mut container, &mut pos, &lazy, &rend, e, building_pos.pos);               
                     }

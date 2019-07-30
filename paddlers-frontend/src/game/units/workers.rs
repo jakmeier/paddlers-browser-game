@@ -119,14 +119,14 @@ pub fn move_worker_out_of_building<'a>(
     worker_e: Entity,
     workers: &mut WriteStorage<'a, Worker>,
     tile: TileIndex,
-    release_area: &Rectangle,
+    size: Vector,
     lazy: &Read<'a, LazyUpdate>,
     rest: &mut Write<'a, RestApiState>,
 
 ) {
     let worker = workers.get_mut(worker_e).unwrap();
     let http_msg = worker.go_idle(tile);
-     match http_msg {
+    match http_msg {
         Ok(msg) => {
             rest.http_overwrite_tasks(msg);
         }
@@ -136,8 +136,8 @@ pub fn move_worker_out_of_building<'a>(
     }
     lazy.insert(worker_e, 
         Position::new(
-            release_area.pos, 
-            release_area.size, 
+            (0.0,0.0), // the MoveSystem will overwrite this before first use
+            size, 
             Z_UNITS
         )
     );

@@ -26,6 +26,7 @@ pub trait GameDB {
             .inner_join(tasks::table)
             .filter(units::home.eq(village_id))
             .filter(tasks::task_type.eq_any(jobs))
+            .filter(tasks::start_time.lt(diesel::dsl::now.at_time_zone("UTC")))
             .select(units::all_columns)
             .distinct()
             .load::<Unit>(self.dbconn())

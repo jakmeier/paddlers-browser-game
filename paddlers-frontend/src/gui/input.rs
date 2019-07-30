@@ -74,7 +74,7 @@ impl<'a> System<'a> for LeftClickSystem {
                             worker_e, 
                             &mut workers,
                             town.tile(container_area.pos), 
-                            &container_area, 
+                            container_area.size(),
                             &lazy,
                             &mut rest,
                         );

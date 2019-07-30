@@ -139,7 +139,6 @@ impl Game<'_, '_> {
 
         let mut container = self.world.write_storage::<EntityContainer>();
         if let Some(c) = container.get_mut(e) {
-            println!("Entities inside: {}", c.children.len());
             detail_table.push(
                 TableRow::UiBoxWithEntities(&mut c.ui)
             );
