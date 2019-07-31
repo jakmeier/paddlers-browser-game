@@ -34,7 +34,6 @@ impl Town {
     ) -> Entity 
     {
         let area = self.tile_area(tile_index);
-        self.make_room_for_building(tile_index, bt);
         let mut builder = 
             lazy.create_entity(entities)
             .with(Position::new(area.pos, area.size, Z_BUILDINGS))
@@ -59,11 +58,13 @@ impl Town {
         match bt {
             BuildingType::BundlingStation => {
                 builder = builder.with(
-                    EntityContainer::new("Working")
+                    EntityContainer::new("Working", bt.capacity())
                 );
             },
             _ => { }
         }
+
+        self.place_building(tile_index, bt, builder.entity);
 
         builder.build()
     }

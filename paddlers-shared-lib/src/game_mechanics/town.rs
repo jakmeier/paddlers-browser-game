@@ -17,7 +17,7 @@ pub enum TownTileType {
     LANE,
 }
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct TownState<I: Eq + std::hash::Hash + Clone + std::fmt::Debug> {
     pub tiles: HashMap<TileIndex, TileState<I>>,
 }
@@ -71,6 +71,14 @@ impl TownTileType {
                     BuildingType::BundlingStation => true,
                     _ => false,
                 },
+        }
+    }
+}
+
+impl<I: Eq + std::hash::Hash + Clone + std::fmt::Debug> TownState<I> {
+    pub fn new() -> Self {
+        TownState {
+            tiles: HashMap::new(),
         }
     }
 }

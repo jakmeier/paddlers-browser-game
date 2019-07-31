@@ -29,9 +29,27 @@ pub struct WorkerTask {
 }
 
 impl Worker {
-    pub fn task_on_right_click(&mut self, from: TileIndex, click: &Vector, town: &Town) -> Result<TaskList, String> {
+    pub fn task_on_right_click<'a>(&mut self, from: TileIndex, click: &Vector, town: &Town, containers: &ReadStorage<'a, EntityContainer>) -> Result<TaskList, String> {
         let destination = town.tile(*click);
         if let Some(job) = self.task_at_position(town, destination) {
+            // Check with stateful tiles for validity
+            if let Some(tile_state) = town.tile_state(destination) {
+                match job {
+                    TaskType::GatherSticks => {
+                        if let Some(container) = containers.get(tile_state.entity) {
+                            if !container.can_add_entity() {
+                                return Err("Cannot add entity".to_owned());
+                            }
+                        }
+                        else {
+                            return Err("Cannot gather resources here.".to_owned());
+                        }
+                    }
+                    TaskType::Idle | TaskType::Walk => {},
+                    TaskType::ChopTree | TaskType::Defend  => { panic!("NIY") },
+                }
+
+            }
             if let Some((path, _dist)) = town.shortest_path(from, destination) {
                 let mut tasks = raw_walk_tasks(&path, from);
                 tasks.push( RawTask::new(job, destination) );
@@ -99,30 +117,27 @@ fn direction_vector(a: TileIndex, b: TileIndex) -> Vector {
 
 pub fn move_worker_into_building<'a>(
     containers: &mut WriteStorage<'a, EntityContainer>, 
-    positions: &mut WriteStorage<'a, Position>, 
+    town: &Write<'a, Town>,
     lazy: &Read<'a, LazyUpdate>,
     rend: &ReadStorage<'a, Renderable>,
     worker_e: Entity, 
-    building_pos: Vector,
+    building_pos: TileIndex,
 ){
     let renderable = rend.get(worker_e).unwrap();
-    for (p, c) in (positions, containers).join() {
-         if building_pos.overlaps_rectangle(&p.area) {
-            c.add_entity(worker_e, &renderable);
-            break;
-        }
-    }
+    let tile_state = (*town).tile_state(building_pos).unwrap();
+    let c = containers.get_mut(tile_state.entity).unwrap();
+    c.add_entity_unchecked(worker_e, &renderable);
     lazy.remove::<Position>(worker_e);
 }
 
 pub fn move_worker_out_of_building<'a>(
+    town: &mut Write<'a, Town>,
     worker_e: Entity,
     workers: &mut WriteStorage<'a, Worker>,
     tile: TileIndex,
     size: Vector,
     lazy: &Read<'a, LazyUpdate>,
     rest: &mut Write<'a, RestApiState>,
-
 ) {
     let worker = workers.get_mut(worker_e).unwrap();
     let http_msg = worker.go_idle(tile);
@@ -141,4 +156,5 @@ pub fn move_worker_out_of_building<'a>(
             Z_UNITS
         )
     );
+    town.remove_entity_from_building(&tile).unwrap();
 }

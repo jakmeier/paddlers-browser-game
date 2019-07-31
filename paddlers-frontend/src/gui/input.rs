@@ -69,11 +69,13 @@ impl<'a> System<'a> for LeftClickSystem {
                 if let Some(container) = containers.get_mut(entity) {
                     let container_area = position.get(entity).unwrap().area;
                     let worker_e = container.worker_to_release(&mouse_pos);
+                    let tile =  town.tile(container_area.pos);
                     if let Some(worker_e) = worker_e {
                         move_worker_out_of_building(
+                            &mut town,
                             worker_e, 
                             &mut workers,
-                            town.tile(container_area.pos), 
+                            tile, 
                             container_area.size(),
                             &lazy,
                             &mut rest,
@@ -129,11 +131,11 @@ impl<'a> System<'a> for RightClickSystem {
         Entities<'a>,
         WriteStorage<'a, Worker>,
         ReadStorage<'a, Position>,
-        ReadStorage<'a, NetObj>,
         ReadStorage<'a, Moving>,
+        ReadStorage<'a, EntityContainer>,
      );
 
-    fn run(&mut self, (mouse_state, mut ui_state, town, mut rest, entities, mut worker, position, netobj, moving): Self::SystemData) {
+    fn run(&mut self, (mouse_state, mut ui_state, town, mut rest, entities, mut worker, position, moving, containers): Self::SystemData) {
 
         let MouseState(mouse_pos, button) = *mouse_state;
         if button != Some(MouseButton::Right) {
@@ -147,15 +149,15 @@ impl<'a> System<'a> for RightClickSystem {
             // NOP
         }
         else {
-            if let Some((worker, from, netid, movement)) = 
+            if let Some((worker, from, movement)) = 
                 ui_state.selected_entity
                 .and_then(
                     |selected| 
-                    (&mut worker, &position, &netobj, &moving).join().get(selected, &entities) 
+                    (&mut worker, &position, &moving).join().get(selected, &entities) 
                 )
             {
                 let start = town.next_tile_in_direction(from.area.pos, movement.momentum);                
-                let msg = worker.task_on_right_click(start, &mouse_pos, &town);
+                let msg = worker.task_on_right_click(start, &mouse_pos, &town, &containers);
                 match msg {
                     Ok(msg) => {
                         rest.http_overwrite_tasks(msg);
@@ -205,7 +207,7 @@ impl Default for DefaultShop {
     }
 }
 impl DefaultShop {
-    pub fn new(area: Rectangle) -> Self {
+    pub fn new() -> Self {
         let mut result = DefaultShop {
             ui : UiBox::new(3, 5, 5.0, 10.0)
         };

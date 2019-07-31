@@ -10,7 +10,7 @@ pub struct TownView {
 impl TownView {
     pub (crate) fn load_village(db: &DB, _village_id: i64) -> Self {
         let mut map = TownMap::basic_map();
-        let mut state = TownState::default();
+        let mut state = TownState::new();
         let village_id = 1;
 
         let buildings = db.buildings();

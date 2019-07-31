@@ -18,17 +18,22 @@ pub struct EntityContainer {
     pub title: &'static str, 
     pub children: Vec<Entity>,
     pub ui: UiBox<Entity>,
+    pub capacity: usize,
 }
 
 impl EntityContainer {
-    pub fn new(display_message: &'static str) -> Self {
+    pub fn new(display_message: &'static str, capacity: usize) -> Self {
         EntityContainer {
             title: display_message,
             children: vec![],
             ui: UiBox::new(3,3, 0.0, 1.0),
+            capacity: capacity,
         }
     }
-    pub fn add_entity(&mut self, e: Entity, rend: &Renderable) {
+    pub fn can_add_entity(&self) -> bool {
+        self.children.len() < self.capacity
+    }
+    pub fn add_entity_unchecked(&mut self, e: Entity, rend: &Renderable) {
         self.children.push(e);
         let style = match rend.kind {
             RenderVariant::ImgWithImgBackground(img, _) 

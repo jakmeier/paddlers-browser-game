@@ -75,7 +75,7 @@ impl Game<'static, 'static> {
     }
     fn with_menu_box_area(mut self, area: Rectangle) -> Self {
         {
-            self.world.insert(DefaultShop::new(area));
+            self.world.insert(DefaultShop::new());
             let mut data = self.world.write_resource::<UiState>();
             (*data).menu_box_area = area;
         } 

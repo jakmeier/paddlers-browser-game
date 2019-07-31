@@ -8,10 +8,13 @@ pub use paddlers_shared_lib::game_mechanics::town::TileIndex;
 use paddlers_shared_lib::models::*;
 use paddlers_shared_lib::game_mechanics::town::*;
 use paddlers_shared_lib::game_mechanics::town::TownTileType as TileType;
+use paddlers_shared_lib::game_mechanics::town::TileState as TileStateEx;
+pub type TileState = TileStateEx<specs::Entity>;
 
 #[derive(Debug)]
 pub struct Town {
     map: TownMap,
+    state: TownState<specs::Entity>,
     ul: f32,
 }
 impl Default for Town {
@@ -29,6 +32,7 @@ impl Town {
         let map = TownMap::basic_map();
         Town {
             map: map,
+            state: TownState::new(),
             ul: ul,
         }
     }
@@ -147,17 +151,23 @@ impl Town {
         Self::find_tile(pos, self.ul)
     }
     
+    pub fn tile_state(&self, i: TileIndex) -> Option<&TileState> {
+        self.state.tiles.get(&i)
+    }
 
-    pub fn make_room_for_building(&mut self, i: TileIndex, bt: BuildingType) {
+    pub fn place_building(&mut self, i: TileIndex, bt: BuildingType, id: specs::Entity) {
         debug_assert!(self.is_buildable(i), "Cannot build here");
         let tile = self.map.tile_type_mut(i);
 
         debug_assert!(tile.is_some(), "Tile is outside of map");
         *tile.unwrap() = TileType::BUILDING(bt);
+        let state = TileState::new_building(id, bt.capacity(), 0);
+        self.state.tiles.insert(i, state);
     }
     pub fn remove_building(&mut self, i: TileIndex) {
         let tile = self.map.tile_type_mut(i);
         *tile.unwrap() = TileType::EMPTY;
+        self.state.tiles.remove(&i);
     }
 
     #[inline]
@@ -242,5 +252,14 @@ impl Town {
             .filter( |idx| self.is_walkable(*idx))
             .map(    |idx| (idx, 1))
             .collect()
+    }
+
+    pub fn add_entity_to_building(&mut self, i: &TileIndex) -> std::result::Result<(), String>{
+        let s = self.state.tiles.get_mut(i).ok_or("No such state".to_owned())?;
+        s.try_add_entity()
+    }
+    pub fn remove_entity_from_building(&mut self, i: &TileIndex) -> std::result::Result<(), String>{
+        let s = self.state.tiles.get_mut(i).ok_or("No such state".to_owned())?;
+        s.try_remove_entity()
     }
 }

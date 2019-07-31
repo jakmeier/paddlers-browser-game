@@ -1,7 +1,7 @@
 use specs::prelude::*;
 use crate::game::{
     Now,
-    movement::{Moving, Position},
+    movement::Moving,
     units::workers::*,
     town::Town,
     components::*,
@@ -20,14 +20,13 @@ impl<'a> System<'a> for WorkerSystem {
         WriteStorage<'a, Worker>,
         WriteStorage<'a, Moving>,
         WriteStorage<'a, AnimationState>,
-        WriteStorage<'a, Position>,
         WriteStorage<'a, EntityContainer>,
         ReadStorage<'a, Renderable>,
-        Read<'a, Town>,
+        Write<'a, Town>,
         Read<'a, Now>,
      );
 
-    fn run(&mut self, (entities, lazy, mut workers, mut velocities, mut animations, mut pos, mut container, rend, town, now): Self::SystemData) {
+    fn run(&mut self, (entities, lazy, mut workers, mut velocities, mut animations, mut container, rend, mut town, now): Self::SystemData) {
         for (e, worker, mut mov, mut anim) in (&entities, &mut workers, &mut velocities, &mut animations).join() {
             if let Some(task) = worker.poll(now.0) {
                 match task.task_type {
@@ -51,8 +50,8 @@ impl<'a> System<'a> for WorkerSystem {
                     }
                     TaskType::GatherSticks => {
                         mov.stand_still(task.start_time);
-                        let building_pos = town.tile_area(task.position);
-                        move_worker_into_building(&mut container, &mut pos, &lazy, &rend, e, building_pos.pos);               
+                        move_worker_into_building(&mut container, &mut town, &lazy, &rend, e, task.position);
+                        town.add_entity_to_building(&task.position).expect("Task has conflict");
                     }
                     _ => {debug_assert!(false, "Unexpected task")},
                 }
