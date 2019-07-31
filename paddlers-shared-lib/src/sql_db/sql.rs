@@ -33,6 +33,17 @@ pub trait GameDB {
             .expect("Error loading data");
         results
     }
+    fn count_units_at_pos_doing_job(&self, village_id: i64, x: i32, y: i32, job: TaskType ) -> usize {
+        units::table
+            .inner_join(tasks::table)
+            .filter(tasks::task_type.eq(job))
+            .filter(units::home.eq(village_id))
+            .filter(tasks::x.eq(x))
+            .filter(tasks::y.eq(y))
+            .select(diesel::dsl::count(units::id))
+            .first::<i64>(self.dbconn())
+            .expect("Error loading data") as usize
+    }
     fn attacks(&self, min_id: Option<i64>) -> Vec<Attack> {
         let results = attacks::table
             .filter(attacks::id.ge(min_id.unwrap_or(0)))

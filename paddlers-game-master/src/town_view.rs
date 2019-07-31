@@ -3,20 +3,32 @@ use paddlers_shared_lib::prelude::*;
 use crate::db::{DB};
 
 pub struct TownView {
-    map: TownMap,
+    pub map: TownMap,
+    pub state: TownState<i64>,
 }
 
 impl TownView {
     pub (crate) fn load_village(db: &DB, _village_id: i64) -> Self {
         let mut map = TownMap::basic_map();
+        let mut state = TownState::default();
+        let village_id = 1;
 
         let buildings = db.buildings();
         for b in buildings {
-            map[(b.x as usize, b.y as usize)] = TownTileType::BUILDING(b.building_type);
+            let idx = (b.x as usize, b.y as usize);
+            map[idx] = TownTileType::BUILDING(b.building_type);
+            let capacity = b.building_type.capacity();
+            let task_type = match b.building_type {
+                BuildingType::BundlingStation => TaskType::GatherSticks,
+                _ => TaskType::Idle,
+            };
+            let entity_count = db.count_units_at_pos_doing_job(village_id, b.x, b.y, task_type);
+            state.tiles.insert(idx, TileState::new_building(b.id, capacity, entity_count));
         }
 
         TownView {
             map: map,
+            state: state,
         }
     }
 

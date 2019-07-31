@@ -1,4 +1,6 @@
+use std::collections::HashMap;
 use crate::models::BuildingType;
+use crate::game_mechanics::building::*;
 
 pub const TOWN_X: usize = 23;
 pub const TOWN_Y: usize = 13;
@@ -13,6 +15,18 @@ pub enum TownTileType {
     EMPTY,
     BUILDING(BuildingType),
     LANE,
+}
+
+#[derive(Default)]
+pub struct TownState<I: Eq + std::hash::Hash + Clone + std::fmt::Debug> {
+    pub tiles: HashMap<TileIndex, TileState<I>>,
+}
+// Note: So far, this has only one use-case which is buildings. 
+// Likely, refactoring will become necessary to facilitate other states.
+#[derive(PartialEq, Eq, Clone, Debug, Hash)]
+pub struct TileState<I: Eq + std::hash::Hash + Clone + std::fmt::Debug> {
+    pub entity: I,
+    pub building_state: BuildingState,
 }
 
 impl TownMap {
@@ -57,6 +71,34 @@ impl TownTileType {
                     BuildingType::BundlingStation => true,
                     _ => false,
                 },
+        }
+    }
+}
+
+impl<I: Eq + std::hash::Hash + Clone + std::fmt::Debug> TileState<I> {
+    pub fn new_building(e: I, capacity: usize, count: usize) -> Self {
+        TileState {
+            entity: e,
+            building_state: BuildingState {
+                capacity: capacity,
+                entity_count: count,
+            }
+        }   
+    }
+    pub fn try_add_entity(&mut self) -> Result<(), String> {
+        if self.building_state.capacity > self.building_state.entity_count {
+            self.building_state.entity_count += 1;
+            Ok(())
+        } else {
+            Err("No space in building".to_owned())
+        }
+    }
+    pub fn try_remove_entity(&mut self) -> Result<(), String> {
+        if 0 < self.building_state.entity_count {
+            self.building_state.entity_count -= 1;
+            Ok(())
+        } else {
+            Err("No entity to remove".to_owned())
         }
     }
 }

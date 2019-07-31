@@ -1,6 +1,6 @@
 use crate::db::*;
 use chrono::prelude::*;
-use crate::worker_actions::execute_task;
+use crate::worker_actions::finish_task;
 use paddlers_shared_lib::sql_db::sql::GameDB;
 
 #[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Ord, Debug)]
@@ -12,7 +12,7 @@ impl Event {
     pub (super) fn run(&self, db: &DB) -> Option<(Event, DateTime<Utc>)> {
         match self {
             Event::UnitTask{ task_id } => {
-                execute_task(db, *task_id, None, None).expect("Task execution failed.")
+                finish_task(db, *task_id, None, None).expect("Task execution failed.")
             }
         }
     }

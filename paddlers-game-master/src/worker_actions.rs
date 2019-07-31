@@ -26,7 +26,7 @@ pub (crate) fn validate_task_list(db: &DB, tl: &TaskList, village_id: i64) -> Re
     let unit_id = tl.unit_id;
 
     // Load relevant data into memory 
-    let town = TownView::load_village(db, village_id);
+    let mut town = TownView::load_village(db, village_id);
     let mut unit = db.unit(unit_id).ok_or("Unit does not exist")?;
 
     // check timing and effect of current task interruption
@@ -46,7 +46,8 @@ pub (crate) fn validate_task_list(db: &DB, tl: &TaskList, village_id: i64) -> Re
             y: task.y as i32,
             start_time: Some(timestamp),
         };
-        let duration = simulate_task(&new_task, &town, &mut unit)?;
+        simulate_begin_task(&new_task, &mut town, &mut unit)?;
+        let duration = simulate_finish_task(&new_task, &mut town, &mut unit)?;
         tasks.push(new_task);
         timestamp += duration;
     }
@@ -100,30 +101,30 @@ fn execute_unit_tasks(db: &DB, unit_id: i64) -> Option<Task> {
     let mut tasks = db.past_unit_tasks(unit_id);
     let current_task = tasks.pop();
     let village_id = 1; // TODO: Village id
-    let town = TownView::load_village(db, village_id);
+    let mut town = TownView::load_village(db, village_id);
     for task in tasks {
-        execute_task(db, task.id, Some(task), Some(&town)).map_err(
+        finish_task(db, task.id, Some(task), Some(&mut town)).map_err(
             |e| println!("Executing task failed: {}", e)
         ).unwrap();
     }
     current_task
 }
 
-pub (crate) fn execute_task(
+pub (crate) fn finish_task(
     db: &DB, 
     task_id: i64, 
     task: Option<Task>, 
-    town: Option<&TownView>
+    town: Option<&mut TownView>
 ) -> Result<Option<(Event, DateTime<Utc>)>, Box<dyn std::error::Error>> 
 {
     let task = task.or_else(|| db.task(task_id));
     if let Some(task) = task {
         let mut unit = db.unit(task.unit_id).ok_or("Task references non-existing unit")?;
         if let Some(town) = town {
-            crate::worker_actions::simulate_task(&task, &town, &mut unit)?;
+            crate::worker_actions::simulate_finish_task(&task, town, &mut unit)?;
         } else {
-            let town = TownView::load_village(db, unit.home);
-            crate::worker_actions::simulate_task(&task, &town, &mut unit)?;
+            let mut town = TownView::load_village(db, unit.home);
+            crate::worker_actions::simulate_finish_task(&task, &mut town, &mut unit)?;
         }
         
         db.update_unit(&unit);
@@ -136,16 +137,29 @@ pub (crate) fn execute_task(
     }
 }
 
-fn simulate_task<T: WorkerAction> (
+fn simulate_finish_task<T: WorkerAction> (
     task: &T, 
-    town: &TownView, 
+    town: &mut TownView, 
     unit: &mut Unit
 ) -> Result<Duration, String> 
 {
     match task.task_type() {
         TaskType::Idle => Ok(Duration::milliseconds(0)),
         TaskType::Walk => Ok(worker_walk(town, unit, (task.x() as usize, task.y() as usize))?),
-        TaskType::GatherSticks => Ok(Duration::milliseconds(0)),
+        TaskType::GatherSticks => worker_out_of_building(town, unit, (task.x() as usize, task.y() as usize)),
+        _ => Err("Task not implemented".to_owned())
+    }
+}
+fn simulate_begin_task<T: WorkerAction> (
+    task: &T, 
+    town: &mut TownView, 
+    unit: &mut Unit
+) -> Result<(), String> 
+{
+    match task.task_type() {
+        TaskType::Idle | TaskType::Walk 
+            => Ok(()),
+        TaskType::GatherSticks => worker_into_building(town, unit, (task.x() as usize, task.y() as usize)),
         _ => Err("Task not implemented".to_owned())
     }
 }
@@ -161,6 +175,17 @@ fn worker_walk(town: &TownView, unit: &mut Unit, to: TileIndex) -> Result<Durati
     unit.x = to.0 as i32;
     unit.y = to.1 as i32;
     Ok(Duration::microseconds((seconds * 1_000_000.0) as i64))
+}
+
+fn worker_out_of_building(town: &mut TownView, _unit: &mut Unit, to: TileIndex) -> Result<Duration, String> {
+    let tile_state = town.state.tiles.get_mut(&to).ok_or("No building found")?; 
+    tile_state.try_remove_entity()?;
+    Ok(Duration::milliseconds(0))
+}
+fn worker_into_building(town: &mut TownView, _unit: &mut Unit, to: TileIndex) -> Result<(), String> {
+    let tile_state = town.state.tiles.get_mut(&to).ok_or("No building found")?; 
+    tile_state.try_add_entity()?;
+    Ok(())
 }
 
 impl WorkerAction for NewTask {
