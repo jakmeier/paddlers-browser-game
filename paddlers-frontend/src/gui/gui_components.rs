@@ -33,12 +33,14 @@ pub fn draw_table(
     for row in table {
         match row {
             TableRow::TextWithImage(text, img) => {
+                let symbol = Rectangle::new(line.pos, (img_s, img_s));
                 let mut text_area = line.clone();
-                text_area.size.x -= img_s - margin;
+                let shift_x = img_s + margin;
+                text_area.size.x -= shift_x;
+                text_area.pos.x += shift_x;
                 text_area.size.y = font_h;
                 text_area.pos.y += 2.0*(row_height - font_h); // something is fishy here, should be /2.0 but right now looks better with *2.0
                 write_text(font, window, &text_area, z, FitStrategy::Center, text)?;
-                let symbol = Rectangle::new(line.pos + (text_area.width(), 0.0).into(), (img_s, img_s));
                 draw_static_image(sprites, window, &symbol, *img, z, FitStrategy::Center)?;
                 line.pos.y += row_height;
             }
@@ -166,7 +168,6 @@ impl<T: Clone + std::fmt::Debug> UiBox<T> {
     pub fn draw(&mut self, window: &mut Window, sprites: &mut Asset<Sprites>, area: &Rectangle) -> Result<()> {
         self.area = *area;
         let grid = area.grid(self.columns, self.rows);
-        let now = crate::wasm_setup::utc_now(); // TODO: Check efficiency
 
         for (el, draw_area) in self.elements.iter().zip(grid) {
             let img = 
@@ -193,17 +194,6 @@ impl<T: Clone + std::fmt::Debug> UiBox<T> {
                         FitStrategy::Center
                     )?;
                     img
-                }
-                RenderVariant::DynImgWithImgBackground(img, bkg) => {
-                    draw_static_image(
-                        sprites, 
-                        window, 
-                        &draw_area, 
-                        bkg, 
-                        Z_MENU_BOX_BUTTONS-1, 
-                        FitStrategy::Center
-                    )?;
-                    img.sprite(now)
                 }
             };
             draw_static_image(

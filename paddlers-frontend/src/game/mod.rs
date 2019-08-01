@@ -5,6 +5,7 @@ pub (crate) mod town;
 pub (crate) mod town_resources;
 pub (crate) mod fight;
 pub (crate) mod components;
+pub (crate) mod forestry;
 
 use crate::Timestamp;
 use crate::game::units::worker_factory::create_worker_entities;
@@ -29,6 +30,7 @@ use specs::prelude::*;
 use town::{Town, TOWN_RATIO};
 use units::attackers::{Attacker};
 use fight::*;
+use forestry::*;
 use std::sync::mpsc::{Receiver};
 use town_resources::TownResources;
 use units::worker_system::WorkerSystem;
@@ -101,6 +103,7 @@ impl State for Game<'static, 'static> {
             .with(WorkerSystem, "work", &[])
             .with(MoveSystem, "move", &["work"])
             .with(FightSystem::default(), "fight", &["move"])
+            .with(ForestrySystem, "forest", &[])
             .build();
         dispatcher.setup(&mut world);
 
@@ -350,6 +353,7 @@ fn init_world() -> World {
     world.register::<NetObj>();
     world.register::<AnimationState>();
     world.register::<EntityContainer>();
+    world.register::<ForestComponent>();
 
     world
 }

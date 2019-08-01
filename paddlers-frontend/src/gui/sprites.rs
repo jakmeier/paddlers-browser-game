@@ -1,8 +1,6 @@
 use quicksilver::prelude::*;
 use quicksilver::graphics::Image;
 use std::ops::Index;
-use paddlers_shared_lib::game_mechanics::forestry::tree_size;
-use crate::Timestamp;
 
 /// Store of the sprites.
 /// Cannot easily be in a component because Image is thread local.
@@ -11,31 +9,6 @@ pub struct Sprites {
     img: Vec<Image>,
 }
 
-#[derive(Clone, Copy, Debug)]
-pub struct DynamicSprite {
-    sprite_fn: fn(t: chrono::Duration) -> SpriteIndex,
-    root: Timestamp,
-}
-impl DynamicSprite {
-    pub fn sprite(&self, now: Timestamp) -> SpriteIndex {
-        let f = self.sprite_fn;
-        let t = chrono::Duration::microseconds(now - self.root);
-        f(t)
-    }
-    pub fn new_tree(planted: crate::Timestamp) -> Self {
-        DynamicSprite {
-            sprite_fn: Self::tree_sprite,
-            root: planted,
-        }
-    }
-    fn tree_sprite(t: chrono::Duration) -> SpriteIndex {
-        match tree_size(t) {
-            s if s <= 2 => SpriteIndex::Sapling,
-            s if s <= 9 => SpriteIndex::YoungTree,
-            _ => SpriteIndex::Tree,
-        }
-    }
-} 
 
 impl Sprites {
     pub fn new()-> Asset<Self> {
@@ -131,7 +104,7 @@ impl WithSprite for BuildingType {
         match self {
             BuildingType::BlueFlowers => SpriteIndex::BlueFlowers,
             BuildingType::RedFlowers => SpriteIndex::RedFlowers,
-            BuildingType::Tree => SpriteIndex::Tree,
+            BuildingType::Tree => SpriteIndex::Sapling,
             BuildingType::BundlingStation => SpriteIndex::BundlingStation,
         }
     }
@@ -145,5 +118,13 @@ impl WithSprite for ResourceType {
             ResourceType::Sticks => SpriteIndex::Sticks,
             ResourceType::Logs => SpriteIndex::Logs,
         }
+    }
+}
+
+pub fn tree_sprite(score: usize) -> SpriteIndex {
+    match score {
+        s if s <= 2 => SpriteIndex::Sapling,
+        s if s <= 9 => SpriteIndex::YoungTree,
+        _ => SpriteIndex::Tree,
     }
 }

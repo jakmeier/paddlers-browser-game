@@ -3,7 +3,7 @@
 //! no connection with game logic in here
 
 use quicksilver::prelude::*; 
-use crate::gui::sprites::{SpriteIndex, Sprites, DynamicSprite};
+use crate::gui::sprites::{SpriteIndex, Sprites};
 use crate::gui::animation::{AnimationState, Direction};
 
 
@@ -18,7 +18,6 @@ pub enum RenderVariant {
     #[allow(dead_code)]
     Img(SpriteIndex),
     ImgWithImgBackground(SpriteIndex, SpriteIndex),
-    DynImgWithImgBackground(DynamicSprite, SpriteIndex),
     ImgWithColBackground(SpriteIndex, Color),
 }
 

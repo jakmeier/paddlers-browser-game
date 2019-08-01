@@ -2,7 +2,7 @@ use specs::prelude::*;
 use specs::world::EntitiesRes;
 use crate::gui::{
     render::Renderable,
-    sprites::{SpriteIndex,WithSprite, DynamicSprite},
+    sprites::{SpriteIndex,WithSprite},
     z::Z_BUILDINGS,
     utils::*,
 };
@@ -13,6 +13,7 @@ use crate::game::{
     fight::{Range,Aura},
     town::{Town, TileIndex},
     components::*,
+    forestry::ForestComponent,
 };
 use paddlers_shared_lib::{
     models::*,
@@ -42,13 +43,7 @@ impl Town {
             lazy.create_entity(entities)
             .with(Position::new(area.pos, area.size, Z_BUILDINGS))
             .with(Renderable {
-                kind: match bt {
-                    BuildingType::Tree => {
-                        let dynsp = DynamicSprite::new_tree(created);
-                        RenderVariant::DynImgWithImgBackground(dynsp, SpriteIndex::Grass)
-                    },
-                    _ => RenderVariant::ImgWithImgBackground(bt.sprite(), SpriteIndex::Grass),
-                }
+                kind: RenderVariant::ImgWithImgBackground(bt.sprite(), SpriteIndex::Grass)
             })
             .with(Clickable);
 
@@ -69,6 +64,9 @@ impl Town {
                     EntityContainer::new("Working", bt.capacity())
                 );
             },
+            BuildingType::Tree => {
+                builder = builder.with(ForestComponent::new(created));
+            }
             _ => { }
         }
 

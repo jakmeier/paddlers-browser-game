@@ -29,7 +29,6 @@ impl Game<'_, '_> {
         let animation_store = world.read_storage::<AnimationState>();
         let sprites = &mut self.sprites;
         let entities = self.world.entities();
-        let now = crate::wasm_setup::utc_now();
         for (e, pos, r) in (&entities, &pos_store, &rend_store).join() {
             match r.kind {
                 RenderVariant::ImgWithImgBackground(i, _) => {
@@ -39,14 +38,6 @@ impl Game<'_, '_> {
                         draw_static_image(sprites, window, &pos.area, i, pos.z, FitStrategy::TopLeft)?;
                     }
                 },
-                RenderVariant::DynImgWithImgBackground(di, _) => {
-                    let i = di.sprite(now);
-                    if let Some(animation) = animation_store.get(e) {
-                        draw_animated_sprite(sprites, window, &pos.area, i, pos.z, FitStrategy::TopLeft, animation)?;
-                    } else {
-                        draw_static_image(sprites, window, &pos.area, i, pos.z, FitStrategy::TopLeft)?;
-                    }
-                }
                 _ => { panic!("Not implemented")}
             }
         }

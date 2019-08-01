@@ -4,6 +4,7 @@ use crate::game::{
     Game,
     fight::{Health, Aura},
     components::EntityContainer,
+    forestry::ForestComponent,
 };
 use crate::gui::{
     sprites::{SpriteIndex, WithSprite},
@@ -13,7 +14,6 @@ use crate::gui::{
     gui_components::*,
     render::Renderable,
 };
-
 
 
 impl Game<'_, '_> {
@@ -71,12 +71,6 @@ impl Game<'_, '_> {
                     draw_static_image(sprites, window, &area, background, Z_MENU_BOX + 1, FitStrategy::Center)?;
                     draw_static_image(sprites, window, &inner_area, main, Z_MENU_BOX + 2, FitStrategy::Center)?;
                 },
-                RenderVariant::DynImgWithImgBackground(dyn_img, background) => {
-                    draw_static_image(sprites, window, &area, background, Z_MENU_BOX + 1, FitStrategy::Center)?;
-                    let now = crate::wasm_setup::utc_now();
-                    let img = dyn_img.sprite(now);
-                    draw_static_image(sprites, window, &inner_area, img, Z_MENU_BOX + 2, FitStrategy::Center)?;
-                }
                 _ => { panic!("Not implemented") }
             }
         }
@@ -94,6 +88,11 @@ impl Game<'_, '_> {
         let aura = self.world.read_storage::<Aura>();
         if let Some(aura) = aura.get(e) {
             table.push(aura_details(aura));
+        }
+        
+        let forest = self.world.read_storage::<ForestComponent>();
+        if let Some(forest) = forest.get(e) {
+            table.push(forestry_details(forest));
         }
 
         let mut container = self.world.write_storage::<EntityContainer>();
@@ -149,5 +148,12 @@ fn health_details(health: &Health) -> TableRow {
     TableRow::TextWithImage(
         health_text,
         SpriteIndex::Heart,
+    )
+}
+fn forestry_details(forest: &ForestComponent) -> TableRow {
+    let text = format!("+{} Forest flora", forest.score);
+    TableRow::TextWithImage(
+        text,
+        SpriteIndex::Tree,
     )
 }
