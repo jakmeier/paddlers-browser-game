@@ -52,4 +52,7 @@ impl EntityContainer {
         }
         None
     }
+    pub fn count(&self) -> usize {
+        self.children.len()
+    }
 }

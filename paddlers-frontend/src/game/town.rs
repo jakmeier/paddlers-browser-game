@@ -42,6 +42,18 @@ impl Town {
         self.ul = ul;
     }
 
+    pub fn forest_size(&self) -> usize {
+        self.state.forest_size
+    }
+    pub fn update_forest_size(&mut self, new_score: usize) {
+        self.state.forest_size = new_score;
+    }
+
+    #[allow(dead_code)]
+    pub fn grow_forest(&mut self, add_score: usize) {
+        self.state.forest_size += add_score;
+    }
+
     pub fn render(&self, window: &mut Window, sprites: &Sprites, tick: u32, unit_length: f32) -> Result<()> {
         let d = unit_length;
         window.clear(Color::WHITE)?;

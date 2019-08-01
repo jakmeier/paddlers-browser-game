@@ -18,9 +18,13 @@ pub enum TownTileType {
 }
 
 #[derive(Default, Debug)]
+/// State which is required for validation of actions to enable both frontend and backend to share validation code.
+/// The frontend may have this state duplicated in components.
+/// State that is only used by the frontend does not belong in here. 
 pub struct TownState<I: Eq + std::hash::Hash + Clone + Copy + std::fmt::Debug> {
     tiles: HashMap<TileIndex, TileState<I>>,
     entity_locations: HashMap<I, TileIndex>,
+    pub forest_size: usize,
 }
 // Note: So far, this has only one use-case which is buildings. 
 // Likely, refactoring will become necessary to facilitate other states.
@@ -81,6 +85,7 @@ impl<I: Eq + std::hash::Hash + Clone + Copy + std::fmt::Debug> TownState<I> {
         TownState {
             tiles: HashMap::new(),
             entity_locations: HashMap::new(),
+            forest_size: 0,
         }
     }
     pub fn insert(&mut self, tile: TileIndex, state: TileState<I>) {

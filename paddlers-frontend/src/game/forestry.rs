@@ -3,6 +3,7 @@ use crate::Timestamp;
 use crate::gui::sprites::*;
 use crate::gui::render::Renderable;
 use crate::gui::utils::RenderVariant;
+use crate::game::town::Town;
 use paddlers_shared_lib::game_mechanics::forestry::tree_size;
 
 #[derive(Component, Debug, Clone)]
@@ -19,10 +20,12 @@ impl<'a> System<'a> for ForestrySystem {
     type SystemData = (
         WriteStorage<'a, ForestComponent>,
         WriteStorage<'a, Renderable>,
+        Write<'a, Town>,
      );
 
-    fn run(&mut self, (mut forest, mut rend): Self::SystemData) {
+    fn run(&mut self, (mut forest, mut rend, mut town): Self::SystemData) {
         let now = crate::wasm_setup::utc_now();
+        let mut total = 0;
         for (tree, r) in (&mut forest, &mut rend).join() {
             let before = tree.score;
             let t = chrono::Duration::microseconds(now - tree.planted);
@@ -32,7 +35,9 @@ impl<'a> System<'a> for ForestrySystem {
                     *img = tree_sprite(tree.score);
                 }
             }
+            total += tree.score;
         }
+        town.update_forest_size(total);
     }
 }
 

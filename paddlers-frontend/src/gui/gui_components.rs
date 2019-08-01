@@ -9,6 +9,7 @@ use crate::gui::{
 };
 
 pub enum TableRow<'a> {
+    Text(String),
     TextWithImage(String, SpriteIndex),
     UiBoxWithEntities(&'a mut UiBox<specs::Entity>),
 }
@@ -26,12 +27,18 @@ pub fn draw_table(
     let total_rows = row_count(table);
     let row_height = max_row_height.min( max_area.height() / total_rows as f32);
     let font_h = row_height* 0.9;
-    let img_s = row_height;
+    let img_s = row_height * 0.95;
     let margin = 10.0;
 
     let mut line = Rectangle::new(max_area.pos, (max_area.width(), row_height));
     for row in table {
         match row {
+            TableRow::Text(text) => {
+                let mut text_area = line.clone();
+                text_area.size.y = font_h;
+                write_text(font, window, &text_area, z, FitStrategy::Center, text)?;
+                line.pos.y += row_height;
+            }
             TableRow::TextWithImage(text, img) => {
                 let symbol = Rectangle::new(line.pos, (img_s, img_s));
                 let mut text_area = line.clone();
@@ -39,7 +46,7 @@ pub fn draw_table(
                 text_area.size.x -= shift_x;
                 text_area.pos.x += shift_x;
                 text_area.size.y = font_h;
-                text_area.pos.y += 2.0*(row_height - font_h); // something is fishy here, should be /2.0 but right now looks better with *2.0
+                text_area.pos.y += row_height - font_h; // something is fishy here, should be /2.0 but right now looks better without
                 write_text(font, window, &text_area, z, FitStrategy::Center, text)?;
                 draw_static_image(sprites, window, &symbol, *img, z, FitStrategy::Center)?;
                 line.pos.y += row_height;
@@ -61,6 +68,7 @@ fn row_count(table: &[TableRow]) -> usize {
             0, 
             |acc, row| {
                 acc + match row {
+                    TableRow::Text(_) => 1,
                     TableRow::TextWithImage(_,_) => 1,
                     TableRow::UiBoxWithEntities(uib) => 2 * uib.rows,
                 }

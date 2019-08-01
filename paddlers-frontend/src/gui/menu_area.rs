@@ -92,11 +92,15 @@ impl Game<'_, '_> {
         
         let forest = self.world.read_storage::<ForestComponent>();
         if let Some(forest) = forest.get(e) {
-            table.push(forestry_details(forest));
+            table.push(tree_details(forest));
         }
 
         let mut container = self.world.write_storage::<EntityContainer>();
         if let Some(c) = container.get_mut(e) {
+            table.push(forest_details(self.town().forest_size()));
+            table.push(
+                TableRow::Text(format!("{}/{} occupied", c.count(), c.capacity))
+            );
             table.push(
                 TableRow::UiBoxWithEntities(&mut c.ui)
             );
@@ -150,8 +154,15 @@ fn health_details(health: &Health) -> TableRow {
         SpriteIndex::Heart,
     )
 }
-fn forestry_details(forest: &ForestComponent) -> TableRow {
+fn tree_details(forest: &ForestComponent) -> TableRow {
     let text = format!("+{} Forest flora", forest.score);
+    TableRow::TextWithImage(
+        text,
+        SpriteIndex::Tree,
+    )
+}
+fn forest_details<'a>(forest_size: usize) -> TableRow<'a> {
+    let text = format!("{} Forest flora", forest_size);
     TableRow::TextWithImage(
         text,
         SpriteIndex::Tree,
