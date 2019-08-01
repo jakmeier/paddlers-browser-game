@@ -2,7 +2,7 @@ use specs::prelude::*;
 use specs::world::EntitiesRes;
 use crate::gui::{
     render::Renderable,
-    sprites::{SpriteIndex,WithSprite},
+    sprites::{SpriteIndex,WithSprite, DynamicSprite},
     z::Z_BUILDINGS,
     utils::*,
 };
@@ -14,12 +14,15 @@ use crate::game::{
     town::{Town, TileIndex},
     components::*,
 };
-use paddlers_shared_lib::models::*;
-use paddlers_shared_lib::api::attributes::Attributes;
+use paddlers_shared_lib::{
+    models::*,
+    api::attributes::Attributes,
+    graphql_types::*,
+};
 
 impl Town {
     pub fn insert_new_bulding(&mut self, entities: &EntitiesRes, lazy: &LazyUpdate, pos: TileIndex, bt: BuildingType) -> Entity {
-       self. insert_bulding(entities, lazy, pos, bt, bt.attack_power(), bt.attacks_per_cycle(), bt.range())
+       self. insert_bulding(entities, lazy, pos, bt, bt.attack_power(), bt.attacks_per_cycle(), bt.range(), crate::wasm_setup::utc_now())
     }
 
     fn insert_bulding(
@@ -30,18 +33,23 @@ impl Town {
         bt: BuildingType, 
         ap: Option<i64>, 
         attacks_per_cycle: Option<i64>,  
-        range: Option<f32>
+        range: Option<f32>,
+        created: crate::Timestamp,
     ) -> Entity 
     {
         let area = self.tile_area(tile_index);
         let mut builder = 
             lazy.create_entity(entities)
             .with(Position::new(area.pos, area.size, Z_BUILDINGS))
-            .with(
-                Renderable {
-                    kind: RenderVariant::ImgWithImgBackground(bt.sprite(), SpriteIndex::Grass),
+            .with(Renderable {
+                kind: match bt {
+                    BuildingType::Tree => {
+                        let dynsp = DynamicSprite::new_tree(created);
+                        RenderVariant::DynImgWithImgBackground(dynsp, SpriteIndex::Grass)
+                    },
+                    _ => RenderVariant::ImgWithImgBackground(bt.sprite(), SpriteIndex::Grass),
                 }
-            )
+            })
             .with(Clickable);
 
         if let Some(r) = range {
@@ -92,10 +100,11 @@ impl buildings_query::BuildingsQueryVillageBuildings {
             buildings_query::BuildingType::BUNDLING_STATION => BuildingType::BundlingStation,
             _ => panic!("Unexpected BuildingType"),
         };
+        let created = GqlTimestamp::from_string(&self.creation).unwrap().0;
 
         let entities = game.world.entities();
         let lazy = game.world.read_resource::<LazyUpdate>();
         let mut town = game.world.write_resource::<Town>();
-        town.insert_bulding(&entities, &lazy, coordinates, bt, maybe_ap, self.attacks_per_cycle, maybe_range)
+        town.insert_bulding(&entities, &lazy, coordinates, bt, maybe_ap, self.attacks_per_cycle, maybe_range, created)
     }
 }

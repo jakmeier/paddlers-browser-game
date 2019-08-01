@@ -41,7 +41,8 @@ impl EntityContainer {
             | RenderVariant::Img(img)
             => {
                 RenderVariant::ImgWithColBackground(img, GREY)
-            }
+            },
+            RenderVariant::DynImgWithImgBackground(_,_) => {panic!("NIY")}
         };
         self.ui.add_with_render_variant(style, e);
     }

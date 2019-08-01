@@ -32,6 +32,7 @@ impl Game<'_, '_> {
         let animation_store = world.read_storage::<AnimationState>();
         let sprites = &mut self.sprites;
         let entities = self.world.entities();
+        let now = crate::wasm_setup::utc_now();
         for (e, pos, r) in (&entities, &pos_store, &rend_store).join() {
             match r.kind {
                 RenderVariant::ImgWithImgBackground(i, _) => {
@@ -41,6 +42,14 @@ impl Game<'_, '_> {
                         draw_static_image(sprites, window, &pos.area, i, pos.z, FitStrategy::TopLeft)?;
                     }
                 },
+                RenderVariant::DynImgWithImgBackground(di, _) => {
+                    let i = di.sprite(now);
+                    if let Some(animation) = animation_store.get(e) {
+                        draw_animated_sprite(sprites, window, &pos.area, i, pos.z, FitStrategy::TopLeft, animation)?;
+                    } else {
+                        draw_static_image(sprites, window, &pos.area, i, pos.z, FitStrategy::TopLeft)?;
+                    }
+                }
                 _ => { panic!("Not implemented")}
             }
         }
@@ -109,6 +118,12 @@ impl Game<'_, '_> {
                     draw_static_image(sprites, window, &img_bg_area, background, Z_MENU_BOX + 1, FitStrategy::Center)?;
                     draw_static_image(sprites, window, &img_area, main, Z_MENU_BOX + 2, FitStrategy::Center)?;
                 },
+                RenderVariant::DynImgWithImgBackground(dynImg, background) => {
+                    draw_static_image(sprites, window, &img_bg_area, background, Z_MENU_BOX + 1, FitStrategy::Center)?;
+                    let now = crate::wasm_setup::utc_now();
+                    let img = dynImg.sprite(now);
+                    draw_static_image(sprites, window, &img_area, img, Z_MENU_BOX + 2, FitStrategy::Center)?;
+                }
                 _ => { panic!("Not implemented") }
             }
         }

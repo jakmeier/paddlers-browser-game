@@ -8,6 +8,7 @@ query BuildingsQuery {
       buildingRange
       attackPower
       attacksPerCycle
+      creation
     }
   }
 }
