@@ -18,13 +18,14 @@ pub enum TownTileType {
 }
 
 #[derive(Default, Debug)]
-pub struct TownState<I: Eq + std::hash::Hash + Clone + std::fmt::Debug> {
-    pub tiles: HashMap<TileIndex, TileState<I>>,
+pub struct TownState<I: Eq + std::hash::Hash + Clone + Copy + std::fmt::Debug> {
+    tiles: HashMap<TileIndex, TileState<I>>,
+    entity_locations: HashMap<I, TileIndex>,
 }
 // Note: So far, this has only one use-case which is buildings. 
 // Likely, refactoring will become necessary to facilitate other states.
 #[derive(PartialEq, Eq, Clone, Debug, Hash)]
-pub struct TileState<I: Eq + std::hash::Hash + Clone + std::fmt::Debug> {
+pub struct TileState<I: Eq + std::hash::Hash + Clone + Copy + std::fmt::Debug> {
     pub entity: I,
     pub building_state: BuildingState,
 }
@@ -75,15 +76,31 @@ impl TownTileType {
     }
 }
 
-impl<I: Eq + std::hash::Hash + Clone + std::fmt::Debug> TownState<I> {
+impl<I: Eq + std::hash::Hash + Clone + Copy + std::fmt::Debug> TownState<I> {
     pub fn new() -> Self {
         TownState {
             tiles: HashMap::new(),
+            entity_locations: HashMap::new(),
         }
+    }
+    pub fn insert(&mut self, tile: TileIndex, state: TileState<I>) {
+        let e = state.entity;
+        self.tiles.insert(tile, state);
+        self.entity_locations.insert(e, tile);
+    }
+    pub fn remove(&mut self, tile: &TileIndex) {
+        let state = self.tiles.remove(tile);
+        self.entity_locations.remove(&state.unwrap().entity);
+    }
+    pub fn get(&self, tile: &TileIndex) -> Option<&TileState<I>> {
+        self.tiles.get(tile)
+    }
+    pub fn get_mut(&mut self, tile: &TileIndex) -> Option<&mut TileState<I>> {
+        self.tiles.get_mut(tile)
     }
 }
 
-impl<I: Eq + std::hash::Hash + Clone + std::fmt::Debug> TileState<I> {
+impl<I: Eq + std::hash::Hash + Clone + Copy + std::fmt::Debug> TileState<I> {
     pub fn new_building(e: I, capacity: usize, count: usize) -> Self {
         TileState {
             entity: e,

@@ -152,7 +152,7 @@ impl Town {
     }
     
     pub fn tile_state(&self, i: TileIndex) -> Option<&TileState> {
-        self.state.tiles.get(&i)
+        self.state.get(&i)
     }
 
     pub fn place_building(&mut self, i: TileIndex, bt: BuildingType, id: specs::Entity) {
@@ -162,12 +162,12 @@ impl Town {
         debug_assert!(tile.is_some(), "Tile is outside of map");
         *tile.unwrap() = TileType::BUILDING(bt);
         let state = TileState::new_building(id, bt.capacity(), 0);
-        self.state.tiles.insert(i, state);
+        self.state.insert(i, state);
     }
     pub fn remove_building(&mut self, i: TileIndex) {
         let tile = self.map.tile_type_mut(i);
         *tile.unwrap() = TileType::EMPTY;
-        self.state.tiles.remove(&i);
+        self.state.remove(&i);
     }
 
     #[inline]
@@ -255,11 +255,11 @@ impl Town {
     }
 
     pub fn add_entity_to_building(&mut self, i: &TileIndex) -> std::result::Result<(), String>{
-        let s = self.state.tiles.get_mut(i).ok_or("No such state".to_owned())?;
+        let s = self.state.get_mut(i).ok_or("No such state".to_owned())?;
         s.try_add_entity()
     }
     pub fn remove_entity_from_building(&mut self, i: &TileIndex) -> std::result::Result<(), String>{
-        let s = self.state.tiles.get_mut(i).ok_or("No such state".to_owned())?;
+        let s = self.state.get_mut(i).ok_or("No such state".to_owned())?;
         s.try_remove_entity()
     }
 }
