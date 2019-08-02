@@ -148,8 +148,10 @@ fn simulate_finish_task<T: WorkerAction> (
         TaskType::Walk => Ok(worker_walk(town, unit, (task.x() as usize, task.y() as usize))?),
         TaskType::GatherSticks 
         | TaskType::ChopTree 
-            => 
-            worker_out_of_building(town, unit, (task.x() as usize, task.y() as usize)),
+            => {
+                town.state.register_task_end(*task.task_type())?;
+                worker_out_of_building(town, unit, (task.x() as usize, task.y() as usize))
+            },
         _ => Err("Task not implemented".to_owned())
     }
 }
@@ -164,8 +166,10 @@ fn simulate_begin_task<T: WorkerAction> (
             => Ok(()),
         TaskType::GatherSticks 
         | TaskType::ChopTree 
-            => 
-            worker_into_building(town, unit, (task.x() as usize, task.y() as usize)),
+            => {
+                town.state.register_task_begin(*task.task_type())?;
+                worker_into_building(town, unit, (task.x() as usize, task.y() as usize))
+            },
         _ => Err("Task not implemented".to_owned())
     }
 }

@@ -1,4 +1,5 @@
 use paddlers_shared_lib::game_mechanics::town::*;
+use paddlers_shared_lib::game_mechanics::forestry::tree_size;
 use paddlers_shared_lib::prelude::*;
 use crate::db::{DB};
 
@@ -12,6 +13,7 @@ impl TownView {
         let mut map = TownMap::basic_map();
         let mut state = TownState::new();
         let village_id = 1;
+        let now = chrono::Utc::now().naive_utc();
 
         let buildings = db.buildings();
         for b in buildings {
@@ -25,6 +27,19 @@ impl TownView {
             };
             let entity_count = db.count_units_at_pos_doing_job(village_id, b.x, b.y, task_type);
             state.insert(idx, TileState::new_building(b.id, capacity, entity_count));
+            let forest_supply = match b.building_type {
+                BuildingType::Tree => tree_size(now - b.creation), 
+                _ => 0, 
+            };
+            state.forest_size += forest_supply;
+        }
+
+        let units = db.units(village_id);
+        for unit in units {
+            let tasks = db.unit_tasks(unit.id);
+            for task in tasks {
+                state.register_task_begin(task.task_type).expect("Current DB state invalid");
+            }
         }
 
         TownView {

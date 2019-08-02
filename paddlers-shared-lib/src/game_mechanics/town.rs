@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use crate::models::BuildingType;
 use crate::game_mechanics::building::*;
+use crate::models::*;
 
 pub const TOWN_X: usize = 23;
 pub const TOWN_Y: usize = 13;
@@ -25,6 +26,7 @@ pub struct TownState<I: Eq + std::hash::Hash + Clone + Copy + std::fmt::Debug> {
     tiles: HashMap<TileIndex, TileState<I>>,
     entity_locations: HashMap<I, TileIndex>,
     pub forest_size: usize,
+    forest_usage: usize,
 }
 // Note: So far, this has only one use-case which is buildings. 
 // Likely, refactoring will become necessary to facilitate other states.
@@ -88,6 +90,7 @@ impl<I: Eq + std::hash::Hash + Clone + Copy + std::fmt::Debug> TownState<I> {
             tiles: HashMap::new(),
             entity_locations: HashMap::new(),
             forest_size: 0,
+            forest_usage: 0,
         }
     }
     pub fn insert(&mut self, tile: TileIndex, state: TileState<I>) {
@@ -104,6 +107,29 @@ impl<I: Eq + std::hash::Hash + Clone + Copy + std::fmt::Debug> TownState<I> {
     }
     pub fn get_mut(&mut self, tile: &TileIndex) -> Option<&mut TileState<I>> {
         self.tiles.get_mut(tile)
+    }
+    pub fn has_supply_for_additional_worker(&self, task: TaskType) -> bool {
+        let supply = self.forest_size - self.forest_usage;
+        let required = task.required_forest_size();
+        supply >= required 
+    }
+    pub fn register_task_begin(&mut self, task: TaskType) -> Result<(), String> {
+        if self.has_supply_for_additional_worker(task) {
+            let required = task.required_forest_size();
+            self.forest_usage += required;
+            Ok(())
+        } else {
+            Err("Not enough supplies".to_owned())
+        }
+    }
+    pub fn register_task_end(&mut self, task: TaskType) -> Result<(), String>  {
+        let required = task.required_forest_size();
+        if self.forest_usage >= required {
+            self.forest_usage -= required;
+            Ok(())
+        } else {
+            Err("Invalid forest usage state".to_owned())
+        }
     }
 }
 
