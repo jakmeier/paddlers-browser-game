@@ -238,6 +238,12 @@
               "description": null,
               "isDeprecated": false,
               "name": "BUNDLING_STATION"
+            },
+            {
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
+              "name": "SAW_MILL"
             }
           ],
           "fields": null,

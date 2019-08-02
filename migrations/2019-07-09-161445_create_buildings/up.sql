@@ -1,4 +1,4 @@
-CREATE TYPE BUILDING_TYPE AS ENUM ('blue_flowers', 'red_flowers', 'tree', 'bundling_station');
+CREATE TYPE BUILDING_TYPE AS ENUM ('blue_flowers', 'red_flowers', 'tree', 'bundling_station', 'saw_mill');
 CREATE TABLE buildings (
     id BIGSERIAL PRIMARY KEY,
     x INT NOT NULL,

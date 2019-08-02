@@ -35,7 +35,9 @@ impl Worker {
             // Check with stateful tiles for validity
             if let Some(tile_state) = town.tile_state(destination) {
                 match job {
-                    TaskType::GatherSticks => {
+                    TaskType::GatherSticks
+                    | TaskType::ChopTree
+                        => {
                         if let Some(container) = containers.get(tile_state.entity) {
                             if !container.can_add_entity() {
                                 return Err("Cannot add entity".to_owned());
@@ -46,7 +48,7 @@ impl Worker {
                         }
                     }
                     TaskType::Idle | TaskType::Walk => {},
-                    TaskType::ChopTree | TaskType::Defend  => { panic!("NIY") },
+                    TaskType::Defend  => { panic!("NIY") },
                 }
 
             }

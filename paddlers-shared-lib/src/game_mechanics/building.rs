@@ -21,6 +21,7 @@ impl BuildingType {
     pub fn capacity(&self) -> usize {
         match self {
             BuildingType::BundlingStation => 2,
+            BuildingType::SawMill => 1,
             _ => 0,
         }
     }

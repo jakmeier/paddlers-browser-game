@@ -59,7 +59,9 @@ impl Town {
         }
 
         match bt {
-            BuildingType::BundlingStation => {
+            BuildingType::BundlingStation 
+            | BuildingType::SawMill 
+            => {
                 builder = builder.with(
                     EntityContainer::new("Working", bt.capacity())
                 );
@@ -96,6 +98,7 @@ impl buildings_query::BuildingsQueryVillageBuildings {
             buildings_query::BuildingType::BLUE_FLOWERS => BuildingType::BlueFlowers,
             buildings_query::BuildingType::TREE => BuildingType::Tree,
             buildings_query::BuildingType::BUNDLING_STATION => BuildingType::BundlingStation,
+            buildings_query::BuildingType::SAW_MILL => BuildingType::SawMill,
             _ => panic!("Unexpected BuildingType"),
         };
         let created = GqlTimestamp::from_string(&self.creation).unwrap().0;

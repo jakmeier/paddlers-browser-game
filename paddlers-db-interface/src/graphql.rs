@@ -1,5 +1,4 @@
-use chrono::{NaiveDateTime, Utc};
-use chrono::offset::TimeZone;
+use chrono::{NaiveDateTime};
 use std::sync::Arc;
 use super::DbConn;
 use juniper;

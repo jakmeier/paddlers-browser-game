@@ -1,8 +1,5 @@
-use super::event_queue::*;
-use super::event::*;
 use crate::db::*;
 use actix::prelude::*;
-use chrono::prelude::*;
 use paddlers_shared_lib::models::*;
 use paddlers_shared_lib::sql_db::sql::GameDB;
 
@@ -22,10 +19,15 @@ impl EconomyWorker {
     }
     fn work(&mut self, ctx: &mut Context<Self>) {
         let db = &self.db();
+        let village_id = 1; // TODO village id
 
-        let n = db.units_with_job(1, &[TaskType::GatherSticks]).len();
+        let n = db.units_with_job(village_id, &[TaskType::GatherSticks]).len();
         let new_sticks = n as i64;
         db.add_resource(ResourceType::Sticks, new_sticks).expect("Adding resources");
+
+        let n = db.units_with_job(village_id, &[TaskType::ChopTree]).len();
+        let new_logs = n as i64;
+        db.add_resource(ResourceType::Logs, new_logs).expect("Adding logs");
 
          // TODO: Exact econ calculations: Extra DB table for timestamp of last update instead of wait constant time
         ctx.run_later(std::time::Duration::from_millis(5000), Self::work);

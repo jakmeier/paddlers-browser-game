@@ -73,7 +73,9 @@ impl TownTileType {
                 => true,
             TownTileType::BUILDING(bt)
                 => match bt {
-                    BuildingType::BundlingStation => true,
+                    BuildingType::BundlingStation 
+                    | BuildingType::SawMill 
+                        => true,
                     _ => false,
                 },
         }

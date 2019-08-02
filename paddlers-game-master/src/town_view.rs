@@ -20,10 +20,11 @@ impl TownView {
             let capacity = b.building_type.capacity();
             let task_type = match b.building_type {
                 BuildingType::BundlingStation => TaskType::GatherSticks,
+                BuildingType::SawMill => TaskType::ChopTree,
                 _ => TaskType::Idle,
             };
             let entity_count = db.count_units_at_pos_doing_job(village_id, b.x, b.y, task_type);
-            state.tiles.insert(idx, TileState::new_building(b.id, capacity, entity_count));
+            state.insert(idx, TileState::new_building(b.id, capacity, entity_count));
         }
 
         TownView {

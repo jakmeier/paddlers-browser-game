@@ -16,6 +16,7 @@ impl Attributes for BuildingType {
             BuildingType::RedFlowers => Some(1.0),
             BuildingType::Tree => None,
             BuildingType::BundlingStation => None,
+            BuildingType::SawMill => None,
         }
     }
     fn attack_power(&self) -> Option<i64> {
@@ -24,6 +25,7 @@ impl Attributes for BuildingType {
             BuildingType::RedFlowers => Some(3),
             BuildingType::Tree => None,
             BuildingType::BundlingStation => None,
+            BuildingType::SawMill => None,
         }
     }
     fn attacks_per_cycle(&self) -> Option<i64>{
@@ -32,6 +34,7 @@ impl Attributes for BuildingType {
             BuildingType::RedFlowers => None,
             BuildingType::Tree => None,
             BuildingType::BundlingStation => None,
+            BuildingType::SawMill => None,
         }
     }
     fn size(&self) -> (usize,usize) {

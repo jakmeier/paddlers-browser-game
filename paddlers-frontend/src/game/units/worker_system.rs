@@ -48,7 +48,9 @@ impl<'a> System<'a> for WorkerSystem {
                     TaskType::Idle => {
                         mov.stand_still(task.start_time);
                     }
-                    TaskType::GatherSticks => {
+                    TaskType::GatherSticks 
+                    | TaskType::ChopTree 
+                    => {
                         mov.stand_still(task.start_time);
                         move_worker_into_building(&mut container, &mut town, &lazy, &rend, e, task.position);
                         town.add_entity_to_building(&task.position).expect("Task has conflict");

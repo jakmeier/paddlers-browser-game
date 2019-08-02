@@ -210,6 +210,8 @@ impl Town {
                 match b {
                     BuildingType::BundlingStation 
                         => vec![TaskType::GatherSticks],
+                    BuildingType::SawMill 
+                        => vec![TaskType::ChopTree],
                     _ => vec![],
                 }
             }
