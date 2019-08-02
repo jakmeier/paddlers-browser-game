@@ -48,11 +48,26 @@ impl Town {
     pub fn update_forest_size(&mut self, new_score: usize) {
         self.state.forest_size = new_score;
     }
+    pub fn forest_usage(&self) -> usize {
+        self.state.forest_usage()
+    }
+    pub fn forest_size_free(&self) -> usize {
+        self.state.forest_size - self.state.forest_usage()
+    }
 
     #[allow(dead_code)]
     pub fn grow_forest(&mut self, add_score: usize) {
         self.state.forest_size += add_score;
     }
+    /// Call this when a worker begins a task which has an effect on the Town's state
+    pub fn add_stateful_task(&mut self, task: TaskType) -> std::result::Result<(), String> {
+        self.state.register_task_begin(task)
+    }
+    /// Call this when a worker ends a task which has an effect on the Town's state
+    pub fn remove_stateful_task(&mut self, task: TaskType) -> std::result::Result<(), String> {
+        self.state.register_task_end(task)
+    }
+
 
     pub fn render(&self, window: &mut Window, sprites: &Sprites, tick: u32, unit_length: f32) -> Result<()> {
         let d = unit_length;

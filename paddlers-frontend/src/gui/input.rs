@@ -73,7 +73,8 @@ impl<'a> System<'a> for LeftClickSystem {
                     if let Some(worker_e) = worker_e {
                         move_worker_out_of_building(
                             &mut town,
-                            worker_e, 
+                            worker_e,
+                            container.task,
                             &mut workers,
                             tile, 
                             container_area.size(),

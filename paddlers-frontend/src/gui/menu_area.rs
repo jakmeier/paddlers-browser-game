@@ -7,9 +7,9 @@ use crate::game::{
     forestry::ForestComponent,
 };
 use crate::gui::{
-    sprites::{SpriteIndex, WithSprite},
+    sprites::{SpriteIndex},
     z::*,
-    input::{UiState, DefaultShop, Grabbable},
+    input::{UiState, DefaultShop},
     utils::*,
     gui_components::*,
     render::Renderable,
@@ -97,7 +97,6 @@ impl Game<'_, '_> {
 
         let mut container = self.world.write_storage::<EntityContainer>();
         if let Some(c) = container.get_mut(e) {
-            table.push(forest_details(self.town().forest_size()));
             table.push(
                 TableRow::Text(format!("{}/{} occupied", c.count(), c.capacity))
             );
@@ -110,25 +109,21 @@ impl Game<'_, '_> {
     }
 
     pub fn render_shop(&mut self, window: &mut Window, area: &Rectangle) -> Result<()> {
+        let mut table = vec![];
+        table.push(forest_details(self.town().forest_size(), self.town().forest_usage()));
+
         let mut shop = self.world.write_resource::<DefaultShop>();
         let sprites = &mut self.sprites;
         let price_tag_h = 50.0;
-        let (shop_area, price_tag_area) = area.cut_horizontal(area.height() - price_tag_h);
-        (*shop).ui.draw(window, sprites, &shop_area)?;
-        (*shop).ui.draw_hover(window, sprites, &mut self.bold_font, &price_tag_area)
-    }
 
-    pub fn render_grabbed_item(&mut self, window: &mut Window, item: &Grabbable) -> Result<()> {
-        let mouse = window.mouse().pos();
-        let ul = self.unit_len.unwrap();
-        let center = mouse - (ul / 2.0, ul / 2.0).into();
-        let max_area = Rectangle::new(center, (ul, ul));
-        match item {
-            Grabbable::NewBuilding(building_type) => {
-                draw_static_image(&mut self.sprites, window, &max_area, building_type.sprite(), Z_GRABBED_ITEM, FitStrategy::TopLeft)?
-            }
-        }
-        Ok(())
+
+        table.push(
+            TableRow::UiBoxWithBuildings(&mut (*shop).ui)
+        );
+
+        let (shop_area, price_tag_area) = area.cut_horizontal(area.height() - price_tag_h);
+        draw_table(window, sprites, &mut table, &shop_area, &mut self.font, 60.0, Z_MENU_TEXT)?;
+        (*shop).ui.draw_hover(window, sprites, &mut self.bold_font, &price_tag_area)
     }
 
     pub fn render_resources(&mut self, window: &mut Window, area: &Rectangle) -> Result<()> {
@@ -161,8 +156,8 @@ fn tree_details(forest: &ForestComponent) -> TableRow {
         SpriteIndex::Tree,
     )
 }
-fn forest_details<'a>(forest_size: usize) -> TableRow<'a> {
-    let text = format!("{} Forest flora", forest_size);
+fn forest_details<'a>(forest_size: usize, forest_usage: usize) -> TableRow<'a> {
+    let text = format!("Forest flora: {} (used {})", forest_size, forest_usage);
     TableRow::TextWithImage(
         text,
         SpriteIndex::Tree,

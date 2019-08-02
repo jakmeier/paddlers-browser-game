@@ -3,6 +3,7 @@ use quicksilver::geom::*;
 use crate::gui::render::Renderable;
 use crate::gui::gui_components::UiBox;
 use crate::gui::utils::*;
+use paddlers_shared_lib::models::*;
 
 #[derive(Component, Debug, Clone, Copy)]
 #[storage(VecStorage)]
@@ -15,19 +16,19 @@ pub struct NetObj {
 #[storage(VecStorage)]
 /// Entitiy that can contain other entities (E.g. House has units inside)
 pub struct EntityContainer {
-    pub title: &'static str, 
     pub children: Vec<Entity>,
     pub ui: UiBox<Entity>,
     pub capacity: usize,
+    pub task: TaskType,
 }
 
 impl EntityContainer {
-    pub fn new(display_message: &'static str, capacity: usize) -> Self {
+    pub fn new(capacity: usize, task: TaskType) -> Self {
         EntityContainer {
-            title: display_message,
             children: vec![],
             ui: UiBox::new(3,3, 0.0, 1.0),
             capacity: capacity,
+            task: task,
         }
     }
     pub fn can_add_entity(&self) -> bool {

@@ -1,6 +1,6 @@
 //! High-level GUI components that may be related to game logic as far as necessary
 
-use paddlers_shared_lib::models::ResourceType;
+use paddlers_shared_lib::models::*;
 use quicksilver::prelude::*; 
 use crate::gui::{
     sprites::{SpriteIndex, Sprites, WithSprite},
@@ -12,6 +12,7 @@ pub enum TableRow<'a> {
     Text(String),
     TextWithImage(String, SpriteIndex),
     UiBoxWithEntities(&'a mut UiBox<specs::Entity>),
+    UiBoxWithBuildings(&'a mut UiBox<BuildingType>),
 }
 
 pub fn draw_table(
@@ -57,6 +58,12 @@ pub fn draw_table(
                 uib.draw(window, sprites, &area)?;
                 line.pos.y += area.size.y;
             }
+            TableRow::UiBoxWithBuildings(uib) => {
+                let mut area = line.clone();
+                area.size.y = area.size.y * (uib.rows * 2) as f32;
+                uib.draw(window, sprites, &area)?;
+                line.pos.y += area.size.y;
+            }
         }
     }
     Ok(())
@@ -71,6 +78,7 @@ fn row_count(table: &[TableRow]) -> usize {
                     TableRow::Text(_) => 1,
                     TableRow::TextWithImage(_,_) => 1,
                     TableRow::UiBoxWithEntities(uib) => 2 * uib.rows,
+                    TableRow::UiBoxWithBuildings(uib) => 2 * uib.rows,
                 }
             }
         )

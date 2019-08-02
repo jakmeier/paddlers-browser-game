@@ -59,11 +59,14 @@ impl Town {
         }
 
         match bt {
-            BuildingType::BundlingStation 
-            | BuildingType::SawMill 
-            => {
+            BuildingType::BundlingStation => {
                 builder = builder.with(
-                    EntityContainer::new("Working", bt.capacity())
+                    EntityContainer::new(bt.capacity(), TaskType::GatherSticks)
+                );
+            },
+            BuildingType::SawMill => {
+                builder = builder.with(
+                    EntityContainer::new(bt.capacity(), TaskType::ChopTree)
                 );
             },
             BuildingType::Tree => {

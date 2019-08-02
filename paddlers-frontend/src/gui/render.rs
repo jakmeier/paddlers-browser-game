@@ -8,10 +8,11 @@ use crate::game::{
     town::Town,
 };
 use crate::gui::{
-    sprites::{SpriteIndex, Sprites},
+    sprites::{SpriteIndex, Sprites, WithSprite},
     z::*,
     utils::*,
     animation::AnimationState,
+    input::Grabbable,
 };
 
 
@@ -55,6 +56,19 @@ impl Game<'_, '_> {
 
         if let Some((health,p)) = (&health_store, &position_store).join().get(entity, &self.world.entities()) {
             render_health(&health, &mut self.sprites, window, &p.area)?;
+        }
+        Ok(())
+    }
+
+    pub fn render_grabbed_item(&mut self, window: &mut Window, item: &Grabbable) -> Result<()> {
+        let mouse = window.mouse().pos();
+        let ul = self.unit_len.unwrap();
+        let center = mouse - (ul / 2.0, ul / 2.0).into();
+        let max_area = Rectangle::new(center, (ul, ul));
+        match item {
+            Grabbable::NewBuilding(building_type) => {
+                draw_static_image(&mut self.sprites, window, &max_area, building_type.sprite(), Z_GRABBED_ITEM, FitStrategy::TopLeft)?
+            }
         }
         Ok(())
     }

@@ -52,6 +52,11 @@ impl Worker {
                 }
 
             }
+            // Check global supply constraints
+            let forest_requirement = job.required_forest_size();
+            if town.forest_size_free() < forest_requirement {
+                return Err(format!("Missing {} forest flora size.", forest_requirement - town.forest_size_free()));
+            }
             if let Some((path, _dist)) = town.shortest_path(from, destination) {
                 let mut tasks = raw_walk_tasks(&path, from);
                 tasks.push( RawTask::new(job, destination) );
@@ -119,7 +124,7 @@ fn direction_vector(a: TileIndex, b: TileIndex) -> Vector {
 
 pub fn move_worker_into_building<'a>(
     containers: &mut WriteStorage<'a, EntityContainer>, 
-    town: &Write<'a, Town>,
+    town: &mut Write<'a, Town>,
     lazy: &Read<'a, LazyUpdate>,
     rend: &ReadStorage<'a, Renderable>,
     worker_e: Entity, 
@@ -129,12 +134,15 @@ pub fn move_worker_into_building<'a>(
     let tile_state = (*town).tile_state(building_pos).unwrap();
     let c = containers.get_mut(tile_state.entity).unwrap();
     c.add_entity_unchecked(worker_e, &renderable);
+    town.add_entity_to_building(&building_pos).expect("Task has conflict");
+    town.add_stateful_task(c.task).expect("Task has conflict in town state");
     lazy.remove::<Position>(worker_e);
 }
 
 pub fn move_worker_out_of_building<'a>(
     town: &mut Write<'a, Town>,
     worker_e: Entity,
+    task: TaskType,
     workers: &mut WriteStorage<'a, Worker>,
     tile: TileIndex,
     size: Vector,
@@ -159,4 +167,5 @@ pub fn move_worker_out_of_building<'a>(
         )
     );
     town.remove_entity_from_building(&tile).unwrap();
+    town.remove_stateful_task(task).expect("Task has conflict in town state");
 }

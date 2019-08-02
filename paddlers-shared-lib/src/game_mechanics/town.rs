@@ -93,6 +93,10 @@ impl<I: Eq + std::hash::Hash + Clone + Copy + std::fmt::Debug> TownState<I> {
             forest_usage: 0,
         }
     }
+    pub fn forest_usage(&self) -> usize {
+        self.forest_usage
+    }
+
     pub fn insert(&mut self, tile: TileIndex, state: TileState<I>) {
         let e = state.entity;
         self.tiles.insert(tile, state);
