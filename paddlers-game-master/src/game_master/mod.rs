@@ -47,7 +47,7 @@ impl GameMaster {
         check_attacks(&db);
 
         let now = chrono::Utc::now().naive_utc();
-        if now - self.last_attack >= chrono::Duration::seconds(10) {
+        if now - self.last_attack >= chrono::Duration::seconds(40) {
             self.last_attack = now;
             db.spawn_random_attack();
         }

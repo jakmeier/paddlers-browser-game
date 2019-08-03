@@ -23,3 +23,5 @@ pub mod sql_db;
 
 #[cfg(feature = "sql_db")]
 pub use sql_db::*; 
+
+pub const CYCLE_SECS: u32 = 10;

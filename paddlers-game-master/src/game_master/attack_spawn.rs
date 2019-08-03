@@ -25,7 +25,7 @@ impl DB {
                 y: 0,
                 color: Some(UnitColor::Yellow),
                 hp: rng.gen_range(3, 6), 
-                speed: 1.0,
+                speed: 0.1,
                 home: 2 // for now, 1 = only visible town, 2 = homeless attacker
             };
             let u = self.insert_unit(&unit);

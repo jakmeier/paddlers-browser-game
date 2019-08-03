@@ -3,9 +3,9 @@ use crate::models::BuildingType;
 use crate::game_mechanics::building::*;
 use crate::models::*;
 
-pub const TOWN_X: usize = 23;
-pub const TOWN_Y: usize = 13;
-pub const TOWN_LANE_Y: usize = 6;
+pub const TOWN_X: usize = 10;
+pub const TOWN_Y: usize = 7;
+pub const TOWN_LANE_Y: usize = 3;
 
 #[derive(Debug)]
 pub struct TownMap(pub [[TownTileType; TOWN_Y]; TOWN_X]);

@@ -1,4 +1,5 @@
 use paddlers_shared_lib::models::*;
+use paddlers_shared_lib::game_mechanics::town::*;
 use crate::db::DB;
 use paddlers_shared_lib::sql::GameDB;
 use chrono::Duration;
@@ -8,9 +9,9 @@ impl DB {
 
         let off = self.attack_units(atk);
 
-        let cycle_secs = 10;
-        let cycles = cycles_to_complete(&off).ceil();
-        if time_into_fight > Duration::seconds(cycles as i64 * cycle_secs) {
+        let seconds = seconds_to_complete(&off).ceil();
+        if time_into_fight > Duration::milliseconds((seconds * 1_000.0) as i64){
+            println!("{:?} > {}s", time_into_fight, seconds);
             let def = self.buildings();
             self.execute_fight(&def, &off);
             self.delete_attack(atk);
@@ -55,10 +56,9 @@ fn tiles_in_range(b: &Building) -> usize {
     if b.building_range.is_none() {
         return 0;
     }
-    // Map is a straight horizontal line with y = 6 and x \in [0,23]
     let mut n = 0;
-    let y = 6;
-    for x in 0 .. 23 {
+    let y = TOWN_LANE_Y;
+    for x in 0 .. TOWN_X {
         let dx = diff(b.x, x);
         let dy = diff(b.y, y);
         let range = b.building_range.expect("No range");
@@ -69,14 +69,14 @@ fn tiles_in_range(b: &Building) -> usize {
     }
     n
 }
-fn cycles_to_complete(units: &[Unit]) -> f32 {
+fn seconds_to_complete(units: &[Unit]) -> f32 {
     let slowest_speed =
         units.iter()
         .map(|u| u.speed)
-        .fold(0.0, f32::max);
-    let map_len = 23.0;
+        .fold(std::f32::MAX, f32::min);
+    let map_len = TOWN_X as f32;
     
-    slowest_speed * map_len
+    map_len / slowest_speed
 }
 
 // Simple helpers

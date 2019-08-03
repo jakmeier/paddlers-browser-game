@@ -49,7 +49,7 @@ pub struct Unit {
     pub unit_type: UnitType,
     pub color: Option<UnitColor>,
     pub hp: i64,
-    pub speed: f32,
+    pub speed: f32, // in unit lengths per second
 }
 
 #[cfg(feature = "sql_db")]

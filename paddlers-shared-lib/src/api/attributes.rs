@@ -12,7 +12,7 @@ impl Attributes for BuildingType {
 
     fn range(&self) -> Option<f32> {
         match self {
-            BuildingType::BlueFlowers => Some(5.0),
+            BuildingType::BlueFlowers => Some(2.0),
             BuildingType::RedFlowers => Some(1.0),
             BuildingType::Tree => None,
             BuildingType::BundlingStation => None,

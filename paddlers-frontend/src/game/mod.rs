@@ -36,7 +36,6 @@ use town_resources::TownResources;
 use units::worker_system::WorkerSystem;
 
 const MENU_BOX_WIDTH: f32 = 300.0;
-const CYCLE_SECS: u32 = 10;
 
 mod resources {
     use crate::Timestamp;
@@ -278,10 +277,11 @@ impl State for Game<'static, 'static> {
 
                         let pos_store = self.world.read_storage::<Position>();
                         let pos = pos_store.get(e).unwrap();
-                        let tile_index = self.town().tile(pos.area.pos);
+                        let tile_index = self.town().tile(pos.area.center());
                         std::mem::drop(pos_store);
 
                         self.rest().http_delete_building(tile_index);
+                        println!("Tile: {:?}", tile_index );
                         self.town_mut().remove_building(tile_index);
                         let result = self.world.delete_entity(e);
                         if let Err(e) = result {
