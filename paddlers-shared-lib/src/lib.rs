@@ -8,6 +8,7 @@
 pub extern crate strum;
 
 pub mod models;
+pub mod display;
 pub mod api;
 pub mod prelude;
 pub mod graphql_types;

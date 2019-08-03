@@ -1,7 +1,6 @@
 use crate::db::*;
 use actix::prelude::*;
-use paddlers_shared_lib::models::*;
-use paddlers_shared_lib::sql_db::sql::GameDB;
+use paddlers_shared_lib::prelude::*;
 
 /// Actor for calculating gathered resources by workers
 pub struct EconomyWorker {

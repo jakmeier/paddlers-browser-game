@@ -3,7 +3,7 @@ use quicksilver::geom::*;
 use crate::gui::render::Renderable;
 use crate::gui::gui_components::UiBox;
 use crate::gui::utils::*;
-use paddlers_shared_lib::models::*;
+use crate::prelude::*;
 
 #[derive(Component, Debug, Clone, Copy)]
 #[storage(VecStorage)]

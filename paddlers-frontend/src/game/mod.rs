@@ -7,7 +7,7 @@ pub (crate) mod fight;
 pub (crate) mod components;
 pub (crate) mod forestry;
 
-use crate::Timestamp;
+use crate::prelude::Timestamp;
 use crate::game::units::worker_factory::create_worker_entities;
 use crate::game::units::workers::Worker;
 use crate::game::components::*;

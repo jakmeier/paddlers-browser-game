@@ -1,8 +1,7 @@
 use quicksilver::geom::{Rectangle};
 use specs::prelude::*;
-use paddlers_shared_lib::models::*;
+use crate::prelude::*;
 use paddlers_shared_lib::game_mechanics::worker::*;
-use crate::Timestamp;
 use crate::gui::{
     render::Renderable,
     z::Z_UNITS,

@@ -1,6 +1,6 @@
 //! High-level GUI components that may be related to game logic as far as necessary
 
-use paddlers_shared_lib::models::*;
+use crate::prelude::*;
 use quicksilver::prelude::*; 
 use crate::gui::{
     sprites::{SpriteIndex, Sprites, WithSprite},

@@ -8,7 +8,7 @@ use crate::game::{
 };
 use crate::gui::animation::*;
 use crate::gui::render::Renderable;
-use paddlers_shared_lib::models::*;
+use crate::prelude::*;
 use quicksilver::geom::about_equal;
 
 pub struct WorkerSystem;

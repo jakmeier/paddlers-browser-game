@@ -1,7 +1,6 @@
-use paddlers_shared_lib::models::*;
+use paddlers_shared_lib::prelude::*;
 use paddlers_shared_lib::game_mechanics::town::*;
 use crate::db::DB;
-use paddlers_shared_lib::sql::GameDB;
 use chrono::Duration;
 
 impl DB {
@@ -11,7 +10,6 @@ impl DB {
 
         let seconds = seconds_to_complete(&off).ceil();
         if time_into_fight > Duration::milliseconds((seconds * 1_000.0) as i64){
-            println!("{:?} > {}s", time_into_fight, seconds);
             let def = self.buildings();
             self.execute_fight(&def, &off);
             self.delete_attack(atk);

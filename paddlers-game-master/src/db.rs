@@ -1,11 +1,9 @@
 use diesel::PgConnection;
 use diesel::prelude::*;
 use diesel::r2d2::ConnectionManager;
-use paddlers_shared_lib::sql::GameDB;
-use paddlers_shared_lib::models::*;
+use paddlers_shared_lib::prelude::*;
 use paddlers_shared_lib::schema::*;
 use paddlers_shared_lib::models::dsl;
-
 type Manager = ConnectionManager<PgConnection>;
 pub type Pool = r2d2::Pool<Manager>;
 pub (crate) struct DB (r2d2::PooledConnection<Manager>);

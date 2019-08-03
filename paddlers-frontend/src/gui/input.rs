@@ -14,7 +14,7 @@ use crate::game::{
     units::workers::*,
     components::*,
 };
-use paddlers_shared_lib::models::*;
+use crate::prelude::*;
 use paddlers_shared_lib::api::shop::*;
 
 #[derive(Default, Clone, Copy)]
@@ -160,11 +160,12 @@ impl<'a> System<'a> for RightClickSystem {
                 let start = town.next_tile_in_direction(from.area.pos, movement.momentum);                
                 let msg = worker.task_on_right_click(start, &mouse_pos, &town, &containers);
                 match msg {
-                    Ok(msg) => {
+                    Ok(Some(msg)) => {
                         rest.http_overwrite_tasks(msg);
                     }
+                    Ok(None) => { },
                     Err(e) => {
-                        println!("Walking didn't work: {}", e);
+                        println!("CLick didn't work: {}", e);
                     }
                 }
             }

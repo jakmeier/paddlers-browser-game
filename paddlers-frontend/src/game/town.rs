@@ -5,9 +5,9 @@ use crate::gui::{
     z::{Z_TILE_SHADOW, Z_TEXTURE}
 };
 pub use paddlers_shared_lib::game_mechanics::town::TileIndex;
-use paddlers_shared_lib::models::*;
+use crate::prelude::*;
 use paddlers_shared_lib::game_mechanics::town::*;
-use paddlers_shared_lib::game_mechanics::town::TownTileType as TileType;
+pub (crate) use paddlers_shared_lib::game_mechanics::town::TownTileType as TileType;
 use paddlers_shared_lib::game_mechanics::town::TileState as TileStateEx;
 pub type TileState = TileStateEx<specs::Entity>;
 
@@ -195,6 +195,14 @@ impl Town {
         let tile = self.map.tile_type_mut(i);
         *tile.unwrap() = TileType::EMPTY;
         self.state.remove(&i);
+    }
+    pub fn building_type(&self, i: TileIndex) -> PadlResult<BuildingType> {
+        match self.map.tile_type(i) {
+            Some(TileType::BUILDING(b)) => Ok(*b),
+            Some(t) => PadlErrorCode::UnexpectedTileType("Some Building", *t).dev(),
+            None => PadlErrorCode::MapOverflow(i).dev(),
+        }
+        
     }
 
     #[inline]

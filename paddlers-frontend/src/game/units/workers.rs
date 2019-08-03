@@ -1,7 +1,7 @@
 use std::collections::VecDeque;
 use quicksilver::geom::*;
 use specs::prelude::*;
-use crate::Timestamp;
+use crate::prelude::*;
 use crate::game::{
     town::{Town, TileIndex},
     movement::Position,
@@ -10,7 +10,6 @@ use crate::game::{
 use crate::gui::render::Renderable;
 use crate::gui::z::*;
 use crate::net::game_master_api::RestApiState;
-use paddlers_shared_lib::models::*;
 use paddlers_shared_lib::api::tasks::*;
 
 
@@ -29,7 +28,7 @@ pub struct WorkerTask {
 }
 
 impl Worker {
-    pub fn task_on_right_click<'a>(&mut self, from: TileIndex, click: &Vector, town: &Town, containers: &ReadStorage<'a, EntityContainer>) -> Result<TaskList, String> {
+    pub fn task_on_right_click<'a>(&mut self, from: TileIndex, click: &Vector, town: &Town, containers: &ReadStorage<'a, EntityContainer>) -> PadlResult<Option<TaskList>> {
         let destination = town.tile(*click);
         if let Some(job) = self.task_at_position(town, destination) {
             // Check with stateful tiles for validity
@@ -40,11 +39,11 @@ impl Worker {
                         => {
                         if let Some(container) = containers.get(tile_state.entity) {
                             if !container.can_add_entity() {
-                                return Err("Cannot add entity".to_owned());
+                                return PadlErrorCode::BuildingFull(town.building_type(destination)?).usr();
                             }
                         }
                         else {
-                            return Err("Cannot gather resources here.".to_owned());
+                            return PadlErrorCode::DevMsg("Cannot gather resources here.").usr();
                         }
                     }
                     TaskType::Idle | TaskType::Walk => {},
@@ -55,7 +54,7 @@ impl Worker {
             // Check global supply constraints
             let forest_requirement = job.required_forest_size();
             if town.forest_size_free() < forest_requirement {
-                return Err(format!("Missing {} forest flora size.", forest_requirement - town.forest_size_free()));
+                return PadlErrorCode::ForestTooSmall(forest_requirement - town.forest_size_free()).usr();
             }
             if let Some((path, _dist)) = town.shortest_path(from, destination) {
                 let mut tasks = raw_walk_tasks(&path, from);
@@ -64,12 +63,13 @@ impl Worker {
                     unit_id: self.netid,
                     tasks: tasks,
                 };
-                Ok(msg)
+                Ok(Some(msg))
             } else {
-                Err(format!("Cannot walk from {:?} to {:?}", from, destination))
+                PadlErrorCode::PathBlocked.usr()
             }
         } else {
-            Err(format!("No job to do at {:?}", destination))
+            // Nothing to do here
+            Ok(None)
         }
     }
     fn go_idle(&mut self, idx: TileIndex) -> Result<TaskList, String> {

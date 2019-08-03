@@ -1,5 +1,5 @@
 use specs::prelude::*;
-use crate::Timestamp;
+use crate::prelude::Timestamp;
 use crate::gui::sprites::*;
 use crate::gui::render::Renderable;
 use crate::gui::utils::RenderVariant;

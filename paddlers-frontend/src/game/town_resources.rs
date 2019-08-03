@@ -1,4 +1,4 @@
-use paddlers_shared_lib::models::*;
+use crate::prelude::*;
 use paddlers_shared_lib::api::shop::*;
 use crate::net::graphql::resources_query;
 

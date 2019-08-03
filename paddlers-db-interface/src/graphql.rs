@@ -3,8 +3,7 @@ use std::sync::Arc;
 use super::DbConn;
 use juniper;
 use juniper::FieldResult;
-use paddlers_shared_lib::sql::GameDB;
-use paddlers_shared_lib::models::*;
+use paddlers_shared_lib::prelude::*;
 use paddlers_shared_lib::graphql_types::*;
 
 pub struct Mutation;

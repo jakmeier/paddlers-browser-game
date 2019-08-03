@@ -1,7 +1,7 @@
 use std::collections::VecDeque;
 use paddlers_shared_lib::api::shop::*;
 use paddlers_shared_lib::api::tasks::TaskList;
-use paddlers_shared_lib::models::*;
+use crate::prelude::*;
 use super::ajax;
 use super::{SHOP_PATH, WORKER_PATH, NetUpdateRequest};
 use specs::prelude::*;
