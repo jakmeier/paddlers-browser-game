@@ -8,11 +8,11 @@ pub type PadlResult<R> = Result<R, PadlError>;
 pub struct PadlError {
     pub err: PadlErrorCode,
     pub cause: Option<Box<PadlError>>,
-    channel: ErrorChannel,
+    pub (super) channel: ErrorChannel,
 }
 
 #[derive(Debug, Clone, Copy)]
-enum ErrorChannel {
+pub (super) enum ErrorChannel {
     UserFacing,
     Technical
 }
@@ -60,6 +60,7 @@ pub enum PadlErrorCode {
     DevMsg(&'static str),
     MapOverflow(TileIndex),
     UnexpectedTileType(&'static str, TileType),
+    RestAPI(String),
 }
 
 impl fmt::Display for PadlErrorCode {
@@ -81,6 +82,8 @@ impl fmt::Display for PadlErrorCode {
                 write!(f, "Index is outside the map: {:?}", i),
             PadlErrorCode::UnexpectedTileType(expected, was) =>
                 write!(f, "Unexpected tile type: Expected {} but was {:?}", expected, was),
+            PadlErrorCode::RestAPI(msg) =>
+                write!(f, "A REST API error occured: {}", msg),
         }
     }
 }

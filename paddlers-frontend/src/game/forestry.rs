@@ -1,5 +1,5 @@
 use specs::prelude::*;
-use crate::prelude::Timestamp;
+use crate::prelude::*;
 use crate::gui::sprites::*;
 use crate::gui::render::Renderable;
 use crate::gui::utils::RenderVariant;
@@ -24,7 +24,7 @@ impl<'a> System<'a> for ForestrySystem {
      );
 
     fn run(&mut self, (mut forest, mut rend, mut town): Self::SystemData) {
-        let now = crate::wasm_setup::utc_now();
+        let now = utc_now();
         let mut total = 0;
         for (tree, r) in (&mut forest, &mut rend).join() {
             let before = tree.score;

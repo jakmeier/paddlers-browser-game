@@ -15,6 +15,7 @@ use crate::game::{
     components::*,
 };
 use crate::prelude::*;
+use crate::logging::ErrorQueue;
 use paddlers_shared_lib::api::shop::*;
 
 #[derive(Default, Clone, Copy)]
@@ -129,6 +130,7 @@ impl<'a> System<'a> for RightClickSystem {
         Write<'a, UiState>,
         Read<'a, Town>,
         Write<'a, RestApiState>,
+        Write<'a, ErrorQueue>,
         Entities<'a>,
         WriteStorage<'a, Worker>,
         ReadStorage<'a, Position>,
@@ -136,7 +138,7 @@ impl<'a> System<'a> for RightClickSystem {
         ReadStorage<'a, EntityContainer>,
      );
 
-    fn run(&mut self, (mouse_state, mut ui_state, town, mut rest, entities, mut worker, position, moving, containers): Self::SystemData) {
+    fn run(&mut self, (mouse_state, mut ui_state, town, mut rest, mut errq, entities, mut worker, position, moving, containers): Self::SystemData) {
 
         let MouseState(mouse_pos, button) = *mouse_state;
         if button != Some(MouseButton::Right) {
@@ -165,7 +167,7 @@ impl<'a> System<'a> for RightClickSystem {
                     }
                     Ok(None) => { },
                     Err(e) => {
-                        println!("CLick didn't work: {}", e);
+                        errq.push(e);
                     }
                 }
             }

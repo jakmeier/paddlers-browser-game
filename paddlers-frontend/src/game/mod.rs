@@ -7,7 +7,7 @@ pub (crate) mod fight;
 pub (crate) mod components;
 pub (crate) mod forestry;
 
-use crate::prelude::Timestamp;
+use crate::prelude::*;
 use crate::game::units::worker_factory::create_worker_entities;
 use crate::game::units::workers::Worker;
 use crate::game::components::*;
@@ -21,6 +21,10 @@ use crate::net::{
         RestApiSystem,
         RestApiState,
     }
+};
+use crate::logging::{
+    ErrorQueue,
+    text_to_user::TextBoard,
 };
 
 use input::{MouseState, LeftClickSystem, RightClickSystem, HoverSystem, UiState, Clickable, DefaultShop};
@@ -37,8 +41,8 @@ use units::worker_system::WorkerSystem;
 
 const MENU_BOX_WIDTH: f32 = 300.0;
 
-mod resources {
-    use crate::Timestamp;
+pub(super) mod resources {
+    use crate::prelude::*;
 
     #[derive(Default)]
     pub struct ClockTick(pub u32);
@@ -94,9 +98,11 @@ impl State for Game<'static, 'static> {
         world.insert(ClockTick(0));
         world.insert(UiState::default());
         world.insert(Now);
+        world.insert(ErrorQueue::default());
         world.insert(MouseState::default());
         world.insert(TownResources::default());
         world.insert(RestApiState::default());
+        world.insert(TextBoard::default());
 
         let mut dispatcher = DispatcherBuilder::new()
             .with(WorkerSystem, "work", &[])
@@ -128,7 +134,7 @@ impl State for Game<'static, 'static> {
             bold_font: Asset::new(Font::load("fonts/Manjari-Bold.ttf")),
             unit_len: None,
             net: None,
-            time_zero: crate::wasm_setup::utc_now(),
+            time_zero: utc_now(),
             resources: TownResources::default(),
             total_updates: 0,
         })
@@ -141,6 +147,11 @@ impl State for Game<'static, 'static> {
         {
             let mut tick = self.world.write_resource::<ClockTick>();
             *tick = ClockTick(tick.0 + 1);
+        }
+        {
+            let mut q = self.world.write_resource::<ErrorQueue>();
+            let mut t = self.world.write_resource::<TextBoard>();
+            q.run(&mut t);
         }
         {
             let mut res = self.world.write_resource::<TownResources>();
@@ -221,6 +232,7 @@ impl State for Game<'static, 'static> {
             let (asset, town, ul) = (&mut self.sprites, &self.world.read_resource::<Town>(), self.unit_len.unwrap());
             asset.execute(|sprites| town.render(window, sprites, tick, ul))?;
         }
+        self.render_text_messages(window)?;
         self.render_entities(window)?;
         self.render_menu_box(window)?;
         
@@ -310,7 +322,7 @@ impl Game<'_,'_> {
     }
     fn update_time_reference(&mut self) {
         if self.time_zero != 0 {
-            let t = crate::wasm_setup::utc_now();
+            let t = utc_now();
             let mut ts = self.world.write_resource::<Now>();
             *ts = Now(t);
         }

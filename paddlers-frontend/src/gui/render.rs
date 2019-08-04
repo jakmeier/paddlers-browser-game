@@ -14,6 +14,7 @@ use crate::gui::{
     animation::AnimationState,
     input::Grabbable,
 };
+use crate::logging::text_to_user::TextBoard;
 
 
 #[derive(Component, Debug)]
@@ -73,6 +74,17 @@ impl Game<'_, '_> {
         Ok(())
     }
 
+    pub fn render_text_messages(&mut self, window: &mut Window) -> Result<()> {
+        let screen = window.screen_size();
+        let w = 300.0;
+        let h = screen.y;
+        let x = (screen.x - w) / 2.0;
+        let y = 0.0;
+        let area = Rectangle::new((x,y),(w,h));
+        let mut tb = self.world.write_resource::<TextBoard>();
+        tb.draw(&mut self.bold_font, window, &area);
+        Ok(())
+    }
 }
 
 fn render_health(health: &Health, sprites: &mut Asset<Sprites>, window: &mut Window, area: &Rectangle) -> Result<()> {

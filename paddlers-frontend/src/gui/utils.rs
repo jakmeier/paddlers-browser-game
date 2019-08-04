@@ -77,11 +77,24 @@ fn draw_image(asset: &mut Asset<Sprites>, window: &mut Window, max_area: &Rectan
     })
 }
 
+#[inline]
 pub fn write_text(asset: &mut Asset<Font>, window: &mut Window, max_area: &Rectangle, z: i32, fit_strat: FitStrategy, text: &str) -> Result<f32> {
+    write_text_col(asset, window, max_area, z, fit_strat, text, Color::BLACK)
+}
+pub fn write_text_col(
+    asset: &mut Asset<Font>, 
+    window: &mut Window, 
+    max_area: &Rectangle, 
+    z: i32, 
+    fit_strat: FitStrategy, 
+    text: &str,
+    col: Color,
+) -> Result<f32> 
+{
     let mut res = 0.0;
     asset.execute(
         |font| {
-            let style = FontStyle::new(max_area.height(), Color::BLACK);
+            let style = FontStyle::new(max_area.height(), col);
             let img = font.render(text, &style).unwrap();
             let area = img.area().fit_into(max_area, fit_strat);
             window.draw_ex(&area, Img(&img), Transform::IDENTITY, z);

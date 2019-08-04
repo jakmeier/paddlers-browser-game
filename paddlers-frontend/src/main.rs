@@ -12,8 +12,8 @@ extern crate specs_derive;
 mod game;
 mod gui;
 mod net;
-mod error;
 mod prelude;
+mod logging;
 
 #[cfg(target_arch = "wasm32")]
 use wasm_setup::setup_wasm;
