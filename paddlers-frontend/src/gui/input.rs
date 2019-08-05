@@ -130,7 +130,7 @@ impl<'a> System<'a> for RightClickSystem {
         Write<'a, UiState>,
         Read<'a, Town>,
         Write<'a, RestApiState>,
-        Write<'a, ErrorQueue>,
+        WriteExpect<'a, ErrorQueue>,
         Entities<'a>,
         WriteStorage<'a, Worker>,
         ReadStorage<'a, Position>,

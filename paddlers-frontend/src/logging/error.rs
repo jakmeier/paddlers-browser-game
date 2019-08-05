@@ -7,7 +7,6 @@ pub type PadlResult<R> = Result<R, PadlError>;
 #[derive(Debug, Clone)]
 pub struct PadlError {
     pub err: PadlErrorCode,
-    pub cause: Option<Box<PadlError>>,
     pub (super) channel: ErrorChannel,
 }
 
@@ -21,7 +20,6 @@ impl PadlError {
     fn new(err: PadlErrorCode, chan: ErrorChannel) -> PadlError {
         PadlError {
             err: err,
-            cause: None,
             channel: chan,
         }
     }

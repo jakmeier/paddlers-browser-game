@@ -24,6 +24,7 @@ use crate::net::{
 };
 use crate::logging::{
     ErrorQueue,
+    AsyncErr,
     text_to_user::TextBoard,
 };
 
@@ -35,7 +36,7 @@ use town::{Town, TOWN_RATIO};
 use units::attackers::{Attacker};
 use fight::*;
 use forestry::*;
-use std::sync::mpsc::{Receiver};
+use std::sync::mpsc::{Receiver, channel};
 use town_resources::TownResources;
 use units::worker_system::WorkerSystem;
 
@@ -66,6 +67,7 @@ pub(crate) struct Game<'a, 'b> {
     net: Option<Receiver<NetMsg>>,
     time_zero: Timestamp,
     total_updates: u64,
+    async_err_receiver: Receiver<PadlError>,
 }
 
 impl Game<'static, 'static> {
@@ -95,10 +97,12 @@ impl Game<'static, 'static> {
 impl State for Game<'static, 'static> {
     fn new() -> Result<Self> {
         let mut world = init_world();
+        let (err_send, err_recv) = channel();
         world.insert(ClockTick(0));
         world.insert(UiState::default());
         world.insert(Now);
         world.insert(ErrorQueue::default());
+        world.insert(AsyncErr::new(err_send));
         world.insert(MouseState::default());
         world.insert(TownResources::default());
         world.insert(RestApiState::default());
@@ -137,6 +141,7 @@ impl State for Game<'static, 'static> {
             time_zero: utc_now(),
             resources: TownResources::default(),
             total_updates: 0,
+            async_err_receiver: err_recv,
         })
     }
 
@@ -151,6 +156,7 @@ impl State for Game<'static, 'static> {
         {
             let mut q = self.world.write_resource::<ErrorQueue>();
             let mut t = self.world.write_resource::<TextBoard>();
+            q.pull_async(&mut self.async_err_receiver, &mut t);
             q.run(&mut t);
         }
         {

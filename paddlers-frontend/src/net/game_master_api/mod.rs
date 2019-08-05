@@ -2,6 +2,7 @@ use std::collections::VecDeque;
 use paddlers_shared_lib::api::shop::*;
 use paddlers_shared_lib::api::tasks::TaskList;
 use crate::prelude::*;
+use crate::logging::AsyncErr;
 use super::ajax;
 use super::{SHOP_PATH, WORKER_PATH, NetUpdateRequest};
 use specs::prelude::*;
@@ -44,15 +45,21 @@ pub struct RestApiSystem;
 impl<'a> System<'a> for RestApiSystem {
     type SystemData = (
         Write<'a, RestApiState>,
+        ReadExpect<'a, AsyncErr>,
      );
 
-    fn run(&mut self, mut state: Self::SystemData) {
-        while let Some((promise, afterwards)) = (*state.0).queue.pop_front() {
+    fn run(&mut self, (mut state, error): Self::SystemData) {
+        while let Some((promise, afterwards)) = (*state).queue.pop_front() {
+            let error_chan = error.clone_sender();
             stdweb::spawn_local(
                 promise.map(
-                    |r| {
+                    move |r| {
                         if r.is_err() {
-                            println!("Rest API Error: {:?}", r);
+                            let err: PadlResult<()> = 
+                            PadlErrorCode::RestAPI(
+                                format!("Rest API Error: {}", r.unwrap_err())
+                            ).dev();
+                            error_chan.send(err.unwrap_err()).expect("sending over mpsc");
                         }
                         else {
                             if let Some(req) = afterwards {
