@@ -4,7 +4,7 @@ use crate::game::town::{TileType, TileIndex};
 
 pub type PadlResult<R> = Result<R, PadlError>;
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct PadlError {
     pub err: PadlErrorCode,
     pub (super) channel: ErrorChannel,
@@ -23,11 +23,11 @@ impl PadlError {
             channel: chan,
         }
     }
-    pub fn user_err<R>(err: PadlErrorCode) -> Result<R,PadlError> {
-        Err(PadlError::new(err, ErrorChannel::UserFacing))
+    pub fn user_err(err: PadlErrorCode) -> PadlError {
+        PadlError::new(err, ErrorChannel::UserFacing)
     }
-    pub fn dev_err<R>(err: PadlErrorCode) -> Result<R,PadlError> {
-        Err(PadlError::new(err, ErrorChannel::Technical))
+    pub fn dev_err(err: PadlErrorCode) -> PadlError {
+        PadlError::new(err, ErrorChannel::Technical)
     }
 }
 
@@ -40,14 +40,14 @@ impl fmt::Display for PadlError {
 
 impl PadlErrorCode {
     pub fn usr<R>(self) -> PadlResult<R> {
-        PadlError::user_err(self)
+        Err(PadlError::user_err(self))
     }
     pub fn dev<R>(self) -> PadlResult<R> {
-        PadlError::dev_err(self)
+        Err(PadlError::dev_err(self))
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub enum PadlErrorCode {
     TestError,
     // User
@@ -59,6 +59,10 @@ pub enum PadlErrorCode {
     MapOverflow(TileIndex),
     UnexpectedTileType(&'static str, TileType),
     RestAPI(String),
+    EmptyGraphQLData(&'static str),
+    StdWebGenericError(stdweb::web::error::Error),
+    StdWebConversion(stdweb::private::ConversionError),
+    JsonParseError(serde_json::error::Error),
 }
 
 impl fmt::Display for PadlErrorCode {
@@ -81,7 +85,33 @@ impl fmt::Display for PadlErrorCode {
             PadlErrorCode::UnexpectedTileType(expected, was) =>
                 write!(f, "Unexpected tile type: Expected {} but was {:?}", expected, was),
             PadlErrorCode::RestAPI(msg) =>
-                write!(f, "A REST API error occured: {}", msg),
+                write!(f, "A REST API error occurred: {}", msg),
+            PadlErrorCode::EmptyGraphQLData(data_set) =>
+                write!(f, "GraphQL query result has no data for: {}", data_set),
+            PadlErrorCode::StdWebGenericError(cause) =>
+                write!(f, "A web error ocurred: {}", cause),
+            PadlErrorCode::StdWebConversion(cause) =>
+                write!(f, "A conversion error in the web std library occurred: {}", cause),
+            PadlErrorCode::JsonParseError(cause) =>
+                write!(f, "Error while parsing JSON data: {}", cause),
         }
+    }
+}
+
+impl From<stdweb::private::ConversionError> for PadlError {
+    fn from(error: stdweb::private::ConversionError) -> Self {
+        PadlError::dev_err(PadlErrorCode::StdWebConversion(error))
+    }
+}
+
+impl From<serde_json::error::Error> for PadlError {
+    fn from(error: serde_json::error::Error) -> Self {
+        PadlError::dev_err(PadlErrorCode::JsonParseError(error))
+    }
+}
+
+impl From<stdweb::web::error::Error> for PadlError {
+    fn from(error: stdweb::web::error::Error) -> Self {
+        PadlError::dev_err(PadlErrorCode::StdWebGenericError(error))
     }
 }

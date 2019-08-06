@@ -147,7 +147,7 @@ pub fn move_worker_out_of_building<'a>(
     tile: TileIndex,
     size: Vector,
     lazy: &Read<'a, LazyUpdate>,
-    rest: &mut Write<'a, RestApiState>,
+    rest: &mut WriteExpect<'a, RestApiState>,
 ) {
     let worker = workers.get_mut(worker_e).unwrap();
     let http_msg = worker.go_idle(tile);

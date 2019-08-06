@@ -10,11 +10,13 @@ use graphql::{
 use stdweb::{spawn_local};
 
 use futures::Future;
-use futures_util::future::FutureExt;
+use futures::future::TryFutureExt;
 use std::sync::{
     Mutex,
     mpsc::Sender,
 };
+
+use crate::prelude::*;
 
 const GRAPH_QL_PATH: &'static str = "http://localhost:65432/graphql";
 const SHOP_PATH: &'static str = "http://localhost:8088/shop";
@@ -23,7 +25,7 @@ const WORKER_PATH: &'static str = "http://localhost:8088/worker";
 pub enum NetMsg {
     Attacks(AttacksResponse),
     Buildings(BuildingsResponse),
-    Error(String),
+    Error(PadlError),
     Resources(ResourcesResponse),
     UpdateWorkerTasks(UnitTasksResponse),
     Workers(WorkerResponse),
@@ -83,13 +85,28 @@ impl NetState {
         }
     }
 
-    fn spawn<Q: Future<Output = NetMsg> + 'static >(&'static self, query: Q) {
+    fn spawn<Q: Future<Output = PadlResult<NetMsg>> + 'static >(&'static self, maybe_query: PadlResult<Q>) {
+        match maybe_query {
+            Ok(query) => {
+
+                let sender = self.get_channel();
+                let sender2 = self.get_channel();
+                spawn_local(
+                    query.map_ok(
+                        move |msg| sender.send(msg).expect("Transferring data to game")
+                    )
+                    .unwrap_or_else(
+                        move |e| sender2.send(NetMsg::Error(e)).expect("Transferring data to game")
+                    )
+                );
+            },
+            Err(e) => {
+                self.net_msg_to_game_thread(NetMsg::Error(e));
+            }
+        }
+    }
+    fn net_msg_to_game_thread(&self, msg: NetMsg) {
         let sender = self.get_channel();
-        spawn_local(
-            query.map(
-                move |msg|
-                sender.send(msg).expect("Transferring data to game")
-            )
-        );
+        sender.send(msg).expect("Transferring data to game");
     }
 }

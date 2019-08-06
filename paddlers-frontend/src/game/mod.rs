@@ -98,6 +98,7 @@ impl State for Game<'static, 'static> {
     fn new() -> Result<Self> {
         let mut world = init_world();
         let (err_send, err_recv) = channel();
+        let err_send_clone = err_send.clone();
         world.insert(ClockTick(0));
         world.insert(UiState::default());
         world.insert(Now);
@@ -105,7 +106,7 @@ impl State for Game<'static, 'static> {
         world.insert(AsyncErr::new(err_send));
         world.insert(MouseState::default());
         world.insert(TownResources::default());
-        world.insert(RestApiState::default());
+        world.insert(RestApiState::new(err_send_clone));
         world.insert(TextBoard::default());
 
         let mut dispatcher = DispatcherBuilder::new()

@@ -29,6 +29,6 @@ pub fn utc_now() -> crate::Timestamp {
     let millis : f64 = js!(
         var date = new Date();
         return date.getTime();
-    ).try_into().unwrap();
+    ).try_into().expect("Reading time");
     millis as i64 * 1000
 }
