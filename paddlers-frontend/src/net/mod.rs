@@ -18,9 +18,14 @@ use std::sync::{
 
 use crate::prelude::*;
 
-const GRAPH_QL_PATH: &'static str = "http://localhost:65432/graphql";
-const SHOP_PATH: &'static str = "http://localhost:8088/shop";
-const WORKER_PATH: &'static str = "http://localhost:8088/worker";
+// TODO: Better constant handling: How to read uri at compile time (from TOML file)?
+const GRAPH_QL_PATH: &'static str = "http://192.168.1.115:65432/graphql";
+const SHOP_PATH: &'static str = "http://192.168.1.115:8088/shop";
+const WORKER_PATH: &'static str = "http://192.168.1.115:8088/worker";
+
+// const GRAPH_QL_PATH: &'static str = "http://localhost:65432/graphql";
+// const SHOP_PATH: &'static str = "http://localhost:8088/shop";
+// const WORKER_PATH: &'static str = "http://localhost:8088/worker";
 
 pub enum NetMsg {
     Attacks(AttacksResponse),

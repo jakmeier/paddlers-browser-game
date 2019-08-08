@@ -25,18 +25,39 @@ use paddlers_shared_lib::api::{
     shop::{BuildingPurchase, BuildingDeletion},
     tasks::TaskList,
 };
+use paddlers_shared_lib::config::Config;
+use std::io::{self, Read};
+use std::fs::File;
 
 type StringErr = Result<(),String>;
 
 struct ActorAddresses {
-    game_master: Addr<GameMaster>,
+    _game_master: Addr<GameMaster>,
     town_worker: Addr<TownWorker>,
-    econ_worker: Addr<EconomyWorker>,
+    _econ_worker: Addr<EconomyWorker>,
 }
 
 fn main() {
 
     let dbpool = DB::new_pool();
+
+    let config  = File::open("Paddlers.toml")
+        .and_then(|mut file| {
+        let mut buffer = String::new();
+        file.read_to_string(&mut buffer)?;
+            Ok(buffer)
+        })
+        .and_then(|buffer| {
+            toml::from_str::<Config>(&buffer)
+            .map_err(|err| io::Error::new(io::ErrorKind::Other, err))
+        })
+        .map_err(|err| {
+            println!("Can't read config file: {}", err);
+        })
+        .unwrap_or(
+            Config::default()
+        );
+    let origin = "http://".to_owned() + &config.frontend_base_url;
 
     let sys = actix::System::new("background-worker-example");
     let gm_actor = GameMaster::new(dbpool.clone()).start();
@@ -47,7 +68,7 @@ fn main() {
         App::new()
             .wrap(
                 Cors::new()
-                    .allowed_origin("http://127.0.0.1:8000")
+                    .allowed_origin(&origin)
                     .allowed_methods(vec!["POST"])
                     .allowed_headers(vec![header::AUTHORIZATION, header::ACCEPT])
                     .allowed_header(header::CONTENT_TYPE)
@@ -55,9 +76,9 @@ fn main() {
             )
             .data(
                 ActorAddresses {
-                    game_master: gm_actor.clone(),
+                    _game_master: gm_actor.clone(),
                     town_worker: town_worker_actor.clone(),
-                    econ_worker: econ_worker.clone(),
+                    _econ_worker: econ_worker.clone(),
                 })
             .data(dbpool.clone())
             .route("/", web::get().to(api::index))
@@ -78,7 +99,7 @@ fn main() {
             )
     })
     .disable_signals()
-    .bind("127.0.0.1:8088")
+    .bind(&config.game_master_base_url)
     .unwrap()
     .start();
 
