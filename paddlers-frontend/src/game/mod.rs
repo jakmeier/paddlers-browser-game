@@ -17,10 +17,7 @@ use crate::gui::sprites::*;
 use crate::gui::animation::AnimationState;
 use crate::net::{
     NetMsg, 
-    game_master_api::{
-        RestApiSystem,
-        RestApiState,
-    }
+    game_master_api::RestApiState,
 };
 use crate::logging::{
     ErrorQueue,
@@ -28,7 +25,7 @@ use crate::logging::{
     text_to_user::TextBoard,
 };
 
-use input::{MouseState, LeftClickSystem, RightClickSystem, HoverSystem, UiState, Clickable, DefaultShop};
+use input::{UiState, Clickable, DefaultShop, pointer::PointerManager};
 use movement::*;
 use quicksilver::prelude::*;
 use specs::prelude::*;
@@ -56,8 +53,7 @@ use resources::*;
 
 pub(crate) struct Game<'a, 'b> {
     dispatcher: Dispatcher<'a, 'b>,
-    click_dispatcher: Dispatcher<'a, 'b>,
-    hover_dispatcher: Dispatcher<'a, 'b>,
+    pointer_manager: PointerManager<'a, 'b>,
     pub world: World,
     pub sprites: Asset<Sprites>,
     pub font: Asset<Font>,
@@ -104,7 +100,6 @@ impl State for Game<'static, 'static> {
         world.insert(Now);
         world.insert(ErrorQueue::default());
         world.insert(AsyncErr::new(err_send));
-        world.insert(MouseState::default());
         world.insert(TownResources::default());
         world.insert(RestApiState::new(err_send_clone));
         world.insert(TextBoard::default());
@@ -117,22 +112,11 @@ impl State for Game<'static, 'static> {
             .build();
         dispatcher.setup(&mut world);
 
-        let mut click_dispatcher = DispatcherBuilder::new()
-            .with(LeftClickSystem, "lc", &[])
-            .with(RightClickSystem, "rc", &[])
-            .with(RestApiSystem, "rest", &["lc", "rc"])
-            .build();
-        click_dispatcher.setup(&mut world);
-
-        let mut hover_dispatcher = DispatcherBuilder::new()
-            .with(HoverSystem, "hov", &[])
-            .build();
-        hover_dispatcher.setup(&mut world);
+        let pm = PointerManager::init(&mut world);
 
         Ok(Game {
             dispatcher: dispatcher,
-            click_dispatcher: click_dispatcher,
-            hover_dispatcher: hover_dispatcher,
+            pointer_manager: pm,
             world: world,
             sprites: Sprites::new(),
             font: Asset::new(Font::load("fonts/Manjari-Regular.ttf")),
@@ -150,6 +134,13 @@ impl State for Game<'static, 'static> {
         self.total_updates += 1;
         window.set_draw_rate(33.3); // 33ms delay between frames  => 30 fps
         window.set_max_updates(1); // 1 update per frame is enough
+        // window.set_fullscreen(true);
+        self.update_time_reference();
+        {
+            let now = self.world.read_resource::<Now>().0;
+            self.pointer_manager.run(&mut self.world, now)
+        }
+
         {
             let mut tick = self.world.write_resource::<ClockTick>();
             *tick = ClockTick(tick.0 + 1);
@@ -258,23 +249,19 @@ impl State for Game<'static, 'static> {
 
     fn event(&mut self, event: &Event, window: &mut Window) -> Result<()> {
         // println!("Event: {:?}", event);
+        // {
+        //     let mut t = self.world.write_resource::<TextBoard>();
+        //     t.display_debug_message(format!("{:?}", event));
+        // }
         match event {
-            Event::MouseMoved(_position) => {
-                {
-                    let mut c = self.world.write_resource::<MouseState>();
-                    *c = MouseState(window.mouse().pos(), None);
-                }
-                self.hover_dispatcher.dispatch(&mut self.world);
-            }
-
+            Event::MouseMoved(pos) => {
+                self.pointer_manager.move_pointer(&mut self.world, &pos);
+            },
             Event::MouseButton(button, state)
-                if *state == ButtonState::Pressed =>
-            {
-                {
-                    let mut c = self.world.write_resource::<MouseState>();
-                    *c = MouseState(window.mouse().pos(), Some(*button));
-                }
-                self.click_dispatcher.dispatch(&mut self.world);
+            => {
+                let now = self.world.read_resource::<Now>().0;
+                let pos = &window.mouse().pos();
+                self.pointer_manager.button_event(now, pos, *button, *state);  
             }
             Event::Key(key, state) 
                 if *key == Key::Escape && *state == ButtonState::Pressed =>

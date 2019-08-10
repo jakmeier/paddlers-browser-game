@@ -115,6 +115,10 @@ pub trait JmrRectangle {
     fn cut_horizontal(&self, h: f32) -> (Rectangle, Rectangle);
 }
 
+pub trait JmrVector {
+    fn distance_2(&self, other: &Vector) -> f32;
+}
+
 impl JmrRectangle for Rectangle{
     fn shrink_to_center(&self, shrink_to_center: f32) -> Rectangle {
         Rectangle::new_sized(self.size() * shrink_to_center)
@@ -170,6 +174,14 @@ impl JmrRectangle for Rectangle{
         bottom.size.y -= h;
         bottom.pos.y += h;
         (top, bottom)
+    }
+}
+
+impl JmrVector for Vector {
+    fn distance_2(&self, other: &Vector) -> f32 {
+        let x = self.x - other.x;
+        let y = self.y - other.y;
+        x*x + y*y
     }
 }
 

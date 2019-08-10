@@ -18,6 +18,8 @@ use crate::prelude::*;
 use crate::logging::ErrorQueue;
 use paddlers_shared_lib::api::shop::*;
 
+pub mod pointer;
+
 #[derive(Default, Clone, Copy)]
 pub struct MouseState(pub Vector, pub Option<MouseButton>);
 
