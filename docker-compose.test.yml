@@ -20,6 +20,7 @@ services:
       - RUST_BACKTRACE=1
       - DATABASE_URL=postgresql://postgres:password@db:5432
       - DATABASE_INIT=1
+      - INSERT_TEST_DATA=1
       - RUST_LOG=actix_web=debug
 #
   db-interface:

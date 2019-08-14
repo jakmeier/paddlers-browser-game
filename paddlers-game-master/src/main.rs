@@ -30,10 +30,6 @@ use paddlers_shared_lib::{
     config::{
         Config,
     },
-    sql_db::{
-        initiliaze_db_if_env_set,
-        sql::GameDB,
-    }
 };
 
 type StringErr = Result<(),String>;
@@ -50,7 +46,7 @@ fn main() {
 
     let dbpool: Pool = DB::new_pool();
     let conn: DB = (&dbpool.clone()).into();
-    initiliaze_db_if_env_set(conn.dbconn()).expect("DB initialization failed.");
+    conn.db_scripts_by_env().expect("DB initialization failed.");
     println!("DB successfully migrated");
 
     let config = Config::from_env()

@@ -29,8 +29,6 @@ impl Actor for GameMaster {
 
     fn started(&mut self, ctx: &mut Context<Self>) {
        println!("Game Master is alive");
-       let db: DB = (&self.dbpool).into();
-       db.init_resources();
        self.game_cycle(ctx);
     }
 

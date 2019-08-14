@@ -1,9 +1,13 @@
+use dotenv::dotenv;
+use std::env;
 use diesel::PgConnection;
-use diesel::prelude::*;
 use diesel::r2d2::ConnectionManager;
-use paddlers_shared_lib::prelude::*;
-use paddlers_shared_lib::schema::*;
-use paddlers_shared_lib::models::dsl;
+use paddlers_shared_lib::{
+    prelude::*,
+    sql_db::run_db_migrations,
+};
+pub mod diesel_queries;
+pub use diesel_queries::*;
 type Manager = ConnectionManager<PgConnection>;
 pub type Pool = r2d2::Pool<Manager>;
 pub (crate) struct DB (r2d2::PooledConnection<Manager>);
@@ -18,99 +22,52 @@ impl DB {
             .expect("Failed to create pool.")
     }
 
-    pub fn delete_unit(&self, unit: &Unit) {
-        let result = diesel::delete(unit).execute(self.dbconn());
-        if result.is_err() {
-            println!("Couldn't delete unit {:?}", unit);
+    pub fn db_scripts_by_env(&self) -> Result<(), Box<dyn std::error::Error>> {
+        dotenv().ok();
+        if env::var("DATABASE_INIT").is_ok() {
+            run_db_migrations(self.dbconn())?;
+            self.init_resources();
+        }
+        if env::var("INSERT_TEST_DATA").is_ok() {
+            self.insert_test_data();
+        }
+        Ok(())
+    }
+
+    fn insert_test_data(&self) {
+        if self.units(1).len() == 0 {
+            self.insert_startkit();
         }
     }
 
-    pub fn delete_attack(&self, atk: &Attack) {
-        let result = diesel::delete(atk).execute(self.dbconn());
-        if result.is_err() {
-            println!("Couldn't delete attack {:?}", atk);
-        }
+    fn insert_startkit(&self) {
+            // Our brave Hero
+            let (x,y) = (0,0);
+            let unit = NewUnit {
+                unit_type: UnitType::Hero,
+                x: x,
+                y: y,
+                color: None,
+                hp: 10, 
+                speed: 0.5,
+                home: 1
+            };
+            let unit = self.insert_unit(&unit);
+            let task = NewTask {
+                unit_id: unit.id,
+                task_type: TaskType::Idle,
+                x: x,
+                y: y,
+                start_time: None,
+            };
+            self.insert_task(&task);
+
+            // Some cash
+            self.add_resource(ResourceType::Feathers, 50).expect("Adding resources");
+            self.add_resource(ResourceType::Sticks, 50).expect("Adding resources");
+            self.add_resource(ResourceType::Logs, 50).expect("Adding resources");
     }
 
-    pub fn insert_unit(&self, u: &NewUnit) -> Unit {
-        diesel::insert_into(units::dsl::units)
-            .values(u)
-            .get_result(self.dbconn())
-            .expect("Inserting unit")
-    }
-    pub fn update_unit(&self, u: &Unit) {
-        diesel::update(u)
-            .set(u)
-            .execute(self.dbconn())
-            .expect("Updating unit");
-    }
-    pub fn insert_attack(&self, new_attack: &NewAttack) -> Attack {
-        diesel::insert_into(attacks::dsl::attacks)
-            .values(new_attack)
-            .get_result(self.dbconn())
-            .expect("Inserting attack")
-    }
-    pub fn insert_attack_to_unit(&self, atu: &AttackToUnit) {
-        diesel::insert_into(attacks_to_units::dsl::attacks_to_units)
-            .values(atu)
-            .execute(self.dbconn())
-            .expect("Inserting attack to unit");
-    }
-    pub fn insert_resource(&self, res: &Resource) -> QueryResult<usize> {
-        diesel::insert_into(dsl::resources)
-            .values(res)
-            .execute(self.dbconn())
-    }
-    pub fn add_resource(&self, rt: ResourceType, plus: i64) -> QueryResult<Resource> {
-        let target = resources::table.filter(resources::resource_type.eq(rt));
-        diesel::update(target)
-            .set(resources::amount.eq(resources::amount + plus))
-            .get_result(self.dbconn())
-    }
-    pub fn insert_building(&self, new_building: &NewBuilding) -> Building {
-        diesel::insert_into(buildings::dsl::buildings)
-            .values(new_building)
-            .get_result(self.dbconn())
-            .expect("Inserting building")
-    }
-    pub fn delete_building(&self, building: &Building) {
-        diesel::delete(buildings::table
-            .filter(buildings::id.eq(building.id)))
-            .execute(self.dbconn())
-            .expect("Deleting building");
-    }
-    pub fn insert_task(&self, task: &NewTask) -> Task {
-        diesel::insert_into(tasks::dsl::tasks)
-            .values(task)
-            .get_result(self.dbconn())
-            .expect("Inserting task")
-    }
-    
-    pub fn insert_tasks(&self, tasks: &[NewTask]) -> Vec<Task> {
-        diesel::insert_into(tasks::dsl::tasks)
-            .values(tasks)
-            .get_results(self.dbconn())
-            .expect("Inserting tasks")
-    }
-    pub fn update_task(&self, t: &Task) {
-        diesel::update(t)
-            .set(t)
-            .execute(self.dbconn())
-            .expect("Updating task");
-    }
-    pub fn delete_task(&self, task: &Task) {
-        diesel::delete(tasks::table
-            .filter(tasks::id.eq(task.id)))
-            .execute(self.dbconn())
-            .expect("Deleting task");
-    }
-    pub fn flush_task_queue(&self, unit_id: i64) {
-        diesel::delete(tasks::table
-            .filter(tasks::unit_id.eq(unit_id)))
-            .filter(tasks::start_time.gt(diesel::dsl::now.at_time_zone("UTC")))
-            .execute(self.dbconn())
-            .expect("Deleting task");
-    }
 }
 
 impl From<&Pool> for DB {
