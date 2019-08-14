@@ -11,7 +11,10 @@ services:
       - 5432:5432
 # 
   game-master:
-    image: paddlers/game-master:latest
+    # image: paddlers/game-master:latest
+    build:
+      context: . 
+      dockerfile: paddlers-game-master/Dockerfile
     depends_on:
       - db
     ports:
@@ -24,7 +27,10 @@ services:
       - RUST_LOG=actix_web=debug
 #
   db-interface:
-    image: paddlers/db-interface:latest
+    # image: paddlers/db-interface:latest
+    build:
+      context: . 
+      dockerfile: paddlers-db-interface/Dockerfile
     depends_on:
       - db
     ports:
@@ -36,7 +42,10 @@ services:
       - ROCKET_DATABASES={game_db={url="postgresql://postgres:password@db:5432"}}
 #
   frontend:
-    image: paddlers/frontend:latest
+    # image: paddlers/frontend:latest
+    build:
+      context: . 
+      dockerfile: paddlers-frontend/Dockerfile
     ports:
       - 80:80
     
