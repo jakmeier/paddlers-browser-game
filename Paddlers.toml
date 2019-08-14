@@ -1,4 +1,0 @@
-# Example for local testing where IP in LAN is 192.168.1.115
-frontend_base_url = "192.168.1.115:8000"
-game_master_base_url = "192.168.1.115:8088"
-graphql_base_url = "192.168.1.115:65432"

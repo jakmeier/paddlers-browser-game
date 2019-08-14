@@ -1,0 +1,41 @@
+version: "3.6"
+services:
+# 
+  db:
+    image: postgres:latest
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    ports:
+      - 5432:5432
+# 
+  game-master:
+    image: paddlers/game-master:latest
+    depends_on:
+      - db
+    ports:
+      - 8088:8088
+    environment:
+      - RUST_BACKTRACE=1
+      - DATABASE_URL=postgresql://postgres:password@db:5432
+      - DATABASE_INIT=1
+      - RUST_LOG=actix_web=debug
+#
+  db-interface:
+    image: paddlers/db-interface:latest
+    depends_on:
+      - db
+    ports:
+      - 65432:65432
+    environment:
+      - RUST_BACKTRACE=1
+      - ROCKET_ADDRESS=0.0.0.0
+      - ROCKET_PORT=65432
+      - ROCKET_DATABASES={game_db={url="postgresql://postgres:password@db:5432"}}
+#
+  frontend:
+    image: paddlers/frontend:latest
+    ports:
+      - 80:80
+    

@@ -1,4 +1,5 @@
 #![feature(result_map_or_else)]
+extern crate env_logger;
 
 mod db;
 mod resource_system;
@@ -21,13 +22,19 @@ use actix_web::{
     web, App, HttpServer
 };
 use actix_cors::Cors;
-use paddlers_shared_lib::api::{
-    shop::{BuildingPurchase, BuildingDeletion},
-    tasks::TaskList,
+use paddlers_shared_lib::{
+    api::{
+        shop::{BuildingPurchase, BuildingDeletion},
+        tasks::TaskList,
+    },
+    config::{
+        Config,
+    },
+    sql_db::{
+        initiliaze_db_if_env_set,
+        sql::GameDB,
+    }
 };
-use paddlers_shared_lib::config::Config;
-use std::io::{self, Read};
-use std::fs::File;
 
 type StringErr = Result<(),String>;
 
@@ -38,26 +45,18 @@ struct ActorAddresses {
 }
 
 fn main() {
+    std::env::set_var("RUST_LOG", "actix_web=info");
+    env_logger::init();
 
-    let dbpool = DB::new_pool();
+    let dbpool: Pool = DB::new_pool();
+    let conn: DB = (&dbpool.clone()).into();
+    initiliaze_db_if_env_set(conn.dbconn()).expect("DB initialization failed.");
+    println!("DB successfully migrated");
 
-    let config  = File::open("Paddlers.toml")
-        .and_then(|mut file| {
-        let mut buffer = String::new();
-        file.read_to_string(&mut buffer)?;
-            Ok(buffer)
-        })
-        .and_then(|buffer| {
-            toml::from_str::<Config>(&buffer)
-            .map_err(|err| io::Error::new(io::ErrorKind::Other, err))
-        })
-        .map_err(|err| {
-            println!("Can't read config file: {}", err);
-        })
-        .unwrap_or(
-            Config::default()
-        );
-    let origin = "http://".to_owned() + &config.frontend_base_url;
+    let config = Config::from_env()
+        .unwrap_or(Config::default());
+        // XXX
+    // let origin = "http://".to_owned() + &config.frontend_base_url;
 
     let sys = actix::System::new("background-worker-example");
     let gm_actor = GameMaster::new(dbpool.clone()).start();
@@ -68,12 +67,14 @@ fn main() {
         App::new()
             .wrap(
                 Cors::new()
-                    .allowed_origin(&origin)
+                    // .allowed_origin(&origin)
+                    .send_wildcard()
                     .allowed_methods(vec!["POST"])
                     .allowed_headers(vec![header::AUTHORIZATION, header::ACCEPT])
                     .allowed_header(header::CONTENT_TYPE)
                     .max_age(3600*24),
             )
+            .wrap(actix_web::middleware::Logger::default())
             .data(
                 ActorAddresses {
                     _game_master: gm_actor.clone(),
@@ -99,8 +100,7 @@ fn main() {
             )
     })
     .disable_signals()
-    .bind(&config.game_master_base_url)
-    .unwrap()
+    .bind(&config.game_master_base_url).expect("binding")
     .start();
 
     sys.run().unwrap();

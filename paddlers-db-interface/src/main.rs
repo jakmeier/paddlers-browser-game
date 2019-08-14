@@ -13,8 +13,6 @@ use rocket::http::Method;
 use rocket_contrib::databases::diesel;
 use rocket_cors::{AllowedHeaders, AllowedOrigins};
 use paddlers_shared_lib::config::Config;
-use std::io::{self, Read};
-use std::fs::File;
 
 #[database("game_db")]
 pub struct DbConn(diesel::PgConnection);
@@ -22,22 +20,8 @@ pub struct DbConn(diesel::PgConnection);
 use hooks::*;
 
 fn main() {
-    let config  = File::open("Paddlers.toml")
-        .and_then(|mut file| {
-        let mut buffer = String::new();
-        file.read_to_string(&mut buffer)?;
-            Ok(buffer)
-        })
-        .and_then(|buffer| {
-            toml::from_str::<Config>(&buffer)
-            .map_err(|err| io::Error::new(io::ErrorKind::Other, err))
-        })
-        .map_err(|err| {
-            println!("Can't read config file: {}", err);
-        })
-        .unwrap_or(
-            Config::default()
-        );
+    let config = Config::from_env()
+        .unwrap_or(Config::default());
     let origin = "http://".to_owned() + &config.frontend_base_url;
     let allowed_origins = AllowedOrigins::some_exact(&[&origin]);
 

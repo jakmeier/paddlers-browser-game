@@ -3,7 +3,7 @@
 use specs::prelude::*;
 use quicksilver::prelude::*;
 use crate::prelude::*;
-use super::{MouseState, LeftClickSystem, RightClickSystem, HoverSystem, UiState, Clickable, DefaultShop};
+use super::{MouseState, LeftClickSystem, RightClickSystem, HoverSystem};
 use crate::net::game_master_api::RestApiSystem;
 
 const DOUBLE_CLICK_DELAY: i64 = 500_000; // [us]

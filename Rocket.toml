@@ -1,3 +1,4 @@
+# Only use this for local debugging OUTSIDE of docker (which should rarely be necessary)
 [global]
 port = 65432
 address = "192.168.1.115"

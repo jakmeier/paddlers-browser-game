@@ -49,6 +49,7 @@ impl PadlErrorCode {
 
 #[derive(Debug)]
 pub enum PadlErrorCode {
+    #[allow(dead_code)]
     TestError,
     // User
     BuildingFull(BuildingType),

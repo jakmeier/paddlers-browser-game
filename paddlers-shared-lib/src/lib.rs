@@ -1,6 +1,8 @@
 #![feature(trivial_bounds)]
-#[cfg(feature = "sql_db")] 
+#[cfg(feature = "sql_db")]
 #[macro_use] extern crate diesel;
+#[cfg(feature = "sql_db")]
+#[macro_use] extern crate diesel_migrations;
 #[cfg(feature = "enum_utils")] 
 #[macro_use] extern crate strum_macros;
 

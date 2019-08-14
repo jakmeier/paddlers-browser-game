@@ -22,6 +22,7 @@ impl TextBoard {
     pub fn display_error_message(&mut self, msg: String) {
         self.display_message(msg, ERROR_COLOR, 3_000_000);
     }
+    #[allow(dead_code)]
     pub fn display_debug_message(&mut self, msg: String) {
         self.display_message(msg, GREY, 8_000_000);
     }

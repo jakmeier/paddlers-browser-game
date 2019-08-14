@@ -7,6 +7,7 @@ edition = "2018"
 [dependencies]
 diesel = { version = "1.4", features = ["postgres", "chrono"], optional = true }
 diesel-derive-enum = { version = "0.4", features = ["postgres"], optional = true }
+diesel_migrations = "1.4"
 dotenv = { version = "0.14", optional = true }
 chrono = { version = "0.4", features = ["serde"] }
 
