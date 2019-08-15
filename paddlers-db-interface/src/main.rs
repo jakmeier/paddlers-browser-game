@@ -23,7 +23,9 @@ fn main() {
     let config = Config::from_env()
         .unwrap_or(Config::default());
     let origin = "http://".to_owned() + &config.frontend_base_url;
-    let allowed_origins = AllowedOrigins::some_exact(&[&origin]);
+    // TODO: Handle environment
+    // let allowed_origins = AllowedOrigins::some_exact(&[&origin]);
+    let allowed_origins = AllowedOrigins::all();
 
     let cors = rocket_cors::CorsOptions {
         allowed_origins,
