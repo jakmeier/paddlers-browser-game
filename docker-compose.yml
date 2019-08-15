@@ -11,7 +11,7 @@ services:
       - 5432:5432
 # 
   game-master:
-    image: jakmeier/paddlers:game-master
+    image: jakmeier/paddlers:game-master-snapshot
     depends_on:
       - db
     ports:
@@ -24,7 +24,7 @@ services:
       - RUST_LOG=actix_web=debug
 #
   db-interface:
-    image: jakmeier/paddlers:db-interface
+    image: jakmeier/paddlers:db-interface-snapshot
     depends_on:
       - db
     ports:
@@ -36,7 +36,7 @@ services:
       - ROCKET_DATABASES={game_db={url="postgresql://postgres:password@db:5432"}}
 #
   frontend:
-    image: jakmeier/paddlers:frontend
+    image: jakmeier/paddlers:frontend-snapshot
     ports:
       - 80:80
     
