@@ -2,6 +2,14 @@
 
 An MMORTS game (massively multiplayer online real-time strategy) with a peaceful-looking theme around ducks and religions.
 
+Real-time in this context means that the clock is always ticking and that it matters *when* players do something. (As opposed to round-based games.)
+However, Paddlers is nothing like Starcraft or similar RTS games which require good players to perform several actions per second.
+
+## Demo
+
+A [live-demo](http://demo.paddlers.ch) of the current state is online now! However, it's only semi-automated deployment at this point, therefore the deployed version may diverge from the master branch by a couple of days.
+
+
 ## Technology
 
 The main developing language across the board is Rust and the frontend compiles to [WebAssmebly](https://webassembly.org/) 
@@ -13,8 +21,6 @@ The project is in an early stage and the team currently consists of a single per
 
 If everything goes to plan, an alpha version will go **live on the 26th of December** with a first test-run to receive feedback from players (alpha-testers).
 
-Hopefully, a link to a live-demo of the deployed master branch will be available here soon.
-
 ## Blog
 
 Some of the game development process is documented in this blog series:
@@ -23,14 +29,20 @@ Some of the game development process is documented in this blog series:
 - [Gamedev #1: Game mechanics](https://www.jakobmeier.ch/blogging/Paddlers_1.html)
 
 
-## Compiling and running the project (or even contributing)
+## Compiling and running the project 
 
-I don't expect many people to find this project. Therefore, I will save the time and not provide too much information here.
+To build the project, you can use docker. 
+If everything is set up properly (by me), a simple `make` in the root directory of the repository should give you a locally running game server hosted at `localhost:80`.
+It will take some time for the first compilation (~30 minutes) but later builds should be much faster.
 
-If you are here nevertheless and you are curious enough that you want to clone the repository and run it, I advise you to get in contact with me first. (Open an issue are send me a casual mail at inbox@jakobmeier.ch)
+Local builds without docker are also possible using a recent nightly rust and [cargo web](https://github.com/koute/cargo-web) for the frontend.
 
-To have the entire micro-service architecture work on a local machine, a few set-up steps are required and these are subject to change on a daily basis.
-But don't pushed away by this! I am a friendly person and everyone is welcome to use my code or parts of my code, so I will help if anyone contacts me.
+## Contributing
+If you are interested in joining the project (for fun or learning purposes, I'd guess) then feel free to contact me at jakob@paddlers.ch! :)
+
+Even if you are not a developer, there are also plenty of other interesting tasks to do (game-design, story telling, art, balancing, translations, ... you name it!) and more contributors = more content.
+
+If you have programming experience, just not with rust, you are very welcome as well. Hobby projects are the way to learn new skills!
 
 ## License
 [MIT / Apache-2.0](https://github.com/jakmeier/paddlers-browser-game/blob/master/LICENSE.md)
