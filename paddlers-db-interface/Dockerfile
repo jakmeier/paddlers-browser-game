@@ -1,4 +1,4 @@
-FROM rust:nightly as DbInterfaceBuilder
+FROM jakmeier/paddlers:builder-base as DbInterfaceBuilder
 # Build only dependencies first to allow Docker's image caching to kick in
 RUN \
 # With selected nightly, there is a bug in cargo new, therefore cargo init is used here

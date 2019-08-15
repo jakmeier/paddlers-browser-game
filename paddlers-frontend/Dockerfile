@@ -1,4 +1,4 @@
-FROM rust:nightly as WasmBuilder
+FROM jakmeier/paddlers:builder-base as WasmBuilder
 RUN USER=root cargo install cargo-web
 RUN \
 # With selected nightly, there is a bug in cargo new, therefore cargo init is used here

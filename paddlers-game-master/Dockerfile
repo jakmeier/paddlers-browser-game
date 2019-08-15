@@ -1,4 +1,4 @@
-FROM rust:nightly as GameMasterBuilder
+FROM jakmeier/paddlers:builder-base as GameMasterBuilder
 # Build only dependencies first to allow Docker's image caching to kick in
 RUN \
 # With selected nightly, there is a bug in cargo new, therefore cargo init is used here
