@@ -28,7 +28,7 @@ FROM buildpack-deps:stretch as DbInterface
 WORKDIR /app
 COPY --from=DbInterfaceBuilder ./paddlers-db-interface/target/debug/paddlers-db-interface ./paddlers-db-interface
 COPY ./diesel.toml ./diesel.toml
-# TODO: Fix for other environments than demo 
-COPY ./demo.env ./.env
+# Customize env file later if you need to 
+COPY ./local.env ./.env
 CMD ["./paddlers-db-interface"]
 EXPOSE 65432

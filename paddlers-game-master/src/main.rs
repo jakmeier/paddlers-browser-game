@@ -51,8 +51,7 @@ fn main() {
 
     let config = Config::from_env()
         .unwrap_or(Config::default());
-        // XXX
-    // let origin = "http://".to_owned() + &config.frontend_base_url;
+    let origin = config.frontend_origin;
 
     let sys = actix::System::new("background-worker-example");
     let gm_actor = GameMaster::new(dbpool.clone()).start();
@@ -63,8 +62,7 @@ fn main() {
         App::new()
             .wrap(
                 Cors::new()
-                    // .allowed_origin(&origin)
-                    .send_wildcard()
+                    .allowed_origin(&origin)
                     .allowed_methods(vec!["POST"])
                     .allowed_headers(vec![header::AUTHORIZATION, header::ACCEPT])
                     .allowed_header(header::CONTENT_TYPE)

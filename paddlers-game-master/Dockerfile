@@ -29,6 +29,6 @@ FROM buildpack-deps:stretch as GameMaster
 WORKDIR /app
 COPY --from=GameMasterBuilder ./paddlers-game-master/target/debug/paddlers-game-master ./paddlers-game-master
 COPY ./diesel.toml ./diesel.toml
-# TODO: Fix for other environments than demo 
-COPY ./demo.env ./.env
+# Customize env file later if you need to 
+COPY ./local.env ./.env
 CMD ["./paddlers-game-master"]
