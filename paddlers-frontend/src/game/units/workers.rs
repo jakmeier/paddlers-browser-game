@@ -39,7 +39,7 @@ impl Worker {
                         => {
                         if let Some(container) = containers.get(tile_state.entity) {
                             if !container.can_add_entity() {
-                                return PadlErrorCode::BuildingFull(town.building_type(destination)?).usr();
+                                return PadlErrorCode::BuildingFull(Some(town.building_type(destination)?)).usr();
                             }
                         }
                         else {
@@ -148,12 +148,13 @@ pub fn move_worker_out_of_building<'a>(
     size: Vector,
     lazy: &Read<'a, LazyUpdate>,
     rest: &mut WriteExpect<'a, RestApiState>,
-) {
+) -> PadlResult<()>
+{
     let worker = workers.get_mut(worker_e).unwrap();
     let http_msg = worker.go_idle(tile);
     match http_msg {
         Ok(msg) => {
-            rest.http_overwrite_tasks(msg);
+            rest.http_overwrite_tasks(msg)?;
         }
         Err(e) => {
             println!("Failure on moving out of building: {}", e);
@@ -168,4 +169,5 @@ pub fn move_worker_out_of_building<'a>(
     );
     town.remove_entity_from_building(&tile).unwrap();
     town.remove_stateful_task(task).expect("Task has conflict in town state");
+    Ok(())
 }

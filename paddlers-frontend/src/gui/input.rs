@@ -52,6 +52,7 @@ impl<'a> System<'a> for LeftClickSystem {
         Write<'a, TownResources>,
         Write<'a, Town>,
         WriteExpect<'a, RestApiState>,
+        WriteExpect<'a, ErrorQueue>,
         Read<'a, LazyUpdate>,
         ReadStorage<'a, Position>,
         ReadStorage<'a, Clickable>,
@@ -59,7 +60,7 @@ impl<'a> System<'a> for LeftClickSystem {
         WriteStorage<'a, Worker>,
      );
 
-    fn run(&mut self, (entities, mouse_state, mut ui_state, shop, mut resources, mut town, mut rest, lazy, position, clickable, mut containers, mut workers): Self::SystemData) {
+    fn run(&mut self, (entities, mouse_state, mut ui_state, shop, mut resources, mut town, mut rest, mut errq, lazy, position, clickable, mut containers, mut workers): Self::SystemData) {
 
         let MouseState(mouse_pos, button) = *mouse_state;
         if button != Some(MouseButton::Left) {
@@ -83,6 +84,9 @@ impl<'a> System<'a> for LeftClickSystem {
                             container_area.size(),
                             &lazy,
                             &mut rest,
+                        ).unwrap_or_else(
+                            |e|
+                            errq.push(e)
                         );
                     }
                 }
@@ -113,7 +117,10 @@ impl<'a> System<'a> for LeftClickSystem {
                 match grabbed {
                     Grabbable::NewBuilding(bt) => {
                         if let Some(pos) = (*town).get_buildable_tile(mouse_pos) {
-                            rest.http_place_building(pos, *bt);
+                            rest.http_place_building(pos, *bt).unwrap_or_else(
+                                |e|
+                                errq.push(e)
+                            );
                             resources.spend(&bt.price());
                             town.insert_new_bulding(&entities, &lazy, pos, *bt);
                             (*ui_state).grabbed_item = None;
@@ -165,7 +172,8 @@ impl<'a> System<'a> for RightClickSystem {
                 let msg = worker.task_on_right_click(start, &mouse_pos, &town, &containers);
                 match msg {
                     Ok(Some(msg)) => {
-                        rest.http_overwrite_tasks(msg);
+                        rest.http_overwrite_tasks(msg)
+                            .unwrap_or_else(|e| errq.push(e));
                     }
                     Ok(None) => { },
                     Err(e) => {

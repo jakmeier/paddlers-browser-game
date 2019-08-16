@@ -286,13 +286,17 @@ impl State for Game<'static, 'static> {
                         let tile_index = self.town().tile(pos.area.center());
                         std::mem::drop(pos_store);
 
-                        self.rest().http_delete_building(tile_index);
-                        println!("Tile: {:?}", tile_index );
+                        let r = self.rest().http_delete_building(tile_index);
+                        self.check(r);
+
                         self.town_mut().remove_building(tile_index);
-                        let result = self.world.delete_entity(e);
-                        if let Err(e) = result {
-                            println!("Someting went wrong while deleting: {}", e);
-                        }
+                        self.world.delete_entity(e)
+                            .unwrap_or_else(
+                                |_|
+                                self.check(
+                                    PadlErrorCode::DevMsg("Tried to delete wrong Generation").dev()
+                                ).unwrap()
+                            );
                     }
                 },
             _evt => {
@@ -343,6 +347,16 @@ impl Game<'_,'_> {
             }
         }
         None
+    }
+    fn check<R>(&self, res: PadlResult<R>) -> Option<R> {
+        if let Err(e) = res {
+            let mut q = self.world.write_resource::<ErrorQueue>();
+            q.push(e);
+            None
+        }
+        else {
+            Some(res.unwrap())
+        }
     }
 }
 

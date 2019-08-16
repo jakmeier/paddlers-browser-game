@@ -52,12 +52,14 @@ pub enum PadlErrorCode {
     #[allow(dead_code)]
     TestError,
     // User
-    BuildingFull(BuildingType),
+    BuildingFull(Option<BuildingType>),
     ForestTooSmall(usize),
+    NotEnoughSupply,
     PathBlocked,
     // Dev only
     DevMsg(&'static str),
     MapOverflow(TileIndex),
+    NoStateForTile(TileIndex),
     UnexpectedTileType(&'static str, TileType),
     RestAPI(String),
     EmptyGraphQLData(&'static str),
@@ -74,10 +76,14 @@ impl fmt::Display for PadlErrorCode {
             PadlErrorCode::TestError =>
                 write!(f, "This is only used for testing"),
             // User
-            PadlErrorCode::BuildingFull(b) =>
+            PadlErrorCode::BuildingFull(Some(b)) =>
                 write!(f, "The {} is full.", b),
+            PadlErrorCode::BuildingFull(None) =>
+                write!(f, "Building is full."),
             PadlErrorCode::ForestTooSmall(amount) =>
                 write!(f, "Missing {} forest flora size.", amount),
+            PadlErrorCode::NotEnoughSupply =>
+                write!(f, "Requires more supplies."),
             PadlErrorCode::PathBlocked =>
                 write!(f, "The path is blocked."),
             // Dev
@@ -85,6 +91,8 @@ impl fmt::Display for PadlErrorCode {
                 write!(f, "Dev Error Msg: {}", msg),
             PadlErrorCode::MapOverflow(i) =>
                 write!(f, "Index is outside the map: {:?}", i),
+            PadlErrorCode::NoStateForTile(i) =>
+                write!(f, "No state found for tile: {:?}", i),
             PadlErrorCode::UnexpectedTileType(expected, was) =>
                 write!(f, "Unexpected tile type: Expected {} but was {:?}", expected, was),
             PadlErrorCode::RestAPI(msg) =>
@@ -125,5 +133,16 @@ impl From<stdweb::web::error::Error> for PadlError {
 impl From<stdweb::web::error::SecurityError> for PadlError {
     fn from(error: stdweb::web::error::SecurityError) -> Self {
         PadlError::dev_err(PadlErrorCode::StdWebSecurityError(error))
+    }
+}
+
+impl From<paddlers_shared_lib::game_mechanics::town::TownError> for PadlError {
+    fn from(error: paddlers_shared_lib::game_mechanics::town::TownError) -> Self {
+        use paddlers_shared_lib::game_mechanics::town::TownError;
+        match error {
+            TownError::BuildingFull => PadlError::user_err(PadlErrorCode::BuildingFull(None)),
+            TownError::NotEnoughSupply => PadlError::user_err(PadlErrorCode::NotEnoughSupply),
+            TownError::InvalidState(s) => PadlError::dev_err(PadlErrorCode::DevMsg(s)),
+        }
     }
 }

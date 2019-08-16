@@ -60,12 +60,12 @@ impl Town {
         self.state.forest_size += add_score;
     }
     /// Call this when a worker begins a task which has an effect on the Town's state
-    pub fn add_stateful_task(&mut self, task: TaskType) -> std::result::Result<(), String> {
-        self.state.register_task_begin(task)
+    pub fn add_stateful_task(&mut self, task: TaskType) -> PadlResult<()> {
+        self.state.register_task_begin(task).map_err(PadlError::from)
     }
     /// Call this when a worker ends a task which has an effect on the Town's state
-    pub fn remove_stateful_task(&mut self, task: TaskType) -> std::result::Result<(), String> {
-        self.state.register_task_end(task)
+    pub fn remove_stateful_task(&mut self, task: TaskType) -> PadlResult<()> {
+        self.state.register_task_end(task).map_err(PadlError::from)
     }
 
 
@@ -291,12 +291,18 @@ impl Town {
             .collect()
     }
 
-    pub fn add_entity_to_building(&mut self, i: &TileIndex) -> std::result::Result<(), String>{
-        let s = self.state.get_mut(i).ok_or("No such state".to_owned())?;
-        s.try_add_entity()
+    pub fn add_entity_to_building(&mut self, i: &TileIndex) -> PadlResult<()>{
+        match self.state.get_mut(i)
+        {
+            None => PadlErrorCode::NoStateForTile(*i).dev(),
+            Some(s) => s.try_add_entity().map_err(PadlError::from),
+        }
     }
-    pub fn remove_entity_from_building(&mut self, i: &TileIndex) -> std::result::Result<(), String>{
-        let s = self.state.get_mut(i).ok_or("No such state".to_owned())?;
-        s.try_remove_entity()
+    pub fn remove_entity_from_building(&mut self, i: &TileIndex) -> PadlResult<()>{
+        match self.state.get_mut(i)
+        {
+            None => PadlErrorCode::NoStateForTile(*i).dev(),
+            Some(s) => s.try_remove_entity().map_err(PadlError::from),
+        }
     }
 }

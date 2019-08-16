@@ -34,6 +34,7 @@ impl Direction {
             None
         }
     }
+    #[allow(dead_code)]
     pub fn unit_vector(&self) -> Vector {
         match self {
             Direction::Undirected => Vector::new(0,0),

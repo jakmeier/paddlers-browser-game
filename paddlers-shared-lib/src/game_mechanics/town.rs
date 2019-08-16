@@ -117,22 +117,22 @@ impl<I: Eq + std::hash::Hash + Clone + Copy + std::fmt::Debug> TownState<I> {
         let required = task.required_forest_size();
         supply >= required 
     }
-    pub fn register_task_begin(&mut self, task: TaskType) -> Result<(), String> {
+    pub fn register_task_begin(&mut self, task: TaskType) -> Result<(), TownError> {
         if self.has_supply_for_additional_worker(task) {
             let required = task.required_forest_size();
             self.forest_usage += required;
             Ok(())
         } else {
-            Err("Not enough supplies".to_owned())
+            Err(TownError::NotEnoughSupply)
         }
     }
-    pub fn register_task_end(&mut self, task: TaskType) -> Result<(), String>  {
+    pub fn register_task_end(&mut self, task: TaskType) -> Result<(), TownError>  {
         let required = task.required_forest_size();
         if self.forest_usage >= required {
             self.forest_usage -= required;
             Ok(())
         } else {
-            Err("Invalid forest usage state".to_owned())
+            Err(TownError::InvalidState("Forest usage"))
         }
     }
 }
@@ -147,20 +147,20 @@ impl<I: Eq + std::hash::Hash + Clone + Copy + std::fmt::Debug> TileState<I> {
             }
         }   
     }
-    pub fn try_add_entity(&mut self) -> Result<(), String> {
+    pub fn try_add_entity(&mut self) -> Result<(), TownError> {
         if self.building_state.capacity > self.building_state.entity_count {
             self.building_state.entity_count += 1;
             Ok(())
         } else {
-            Err("No space in building".to_owned())
+            Err(TownError::BuildingFull)
         }
     }
-    pub fn try_remove_entity(&mut self) -> Result<(), String> {
+    pub fn try_remove_entity(&mut self) -> Result<(), TownError> {
         if 0 < self.building_state.entity_count {
             self.building_state.entity_count -= 1;
             Ok(())
         } else {
-            Err("No entity to remove".to_owned())
+            Err(TownError::InvalidState("No entity to remove"))
         }
     }
 }
@@ -184,4 +184,25 @@ pub fn distance2(a: TileIndex, b: TileIndex) -> f32 {
     let x = (a.0 as i32 - b.0 as i32) as f32;
     let y = (a.1 as i32 - b.1 as i32) as f32;
     x * x + y * y
+}
+
+#[derive(Debug)]
+pub enum TownError {
+    BuildingFull,
+    InvalidState(&'static str),
+    NotEnoughSupply
+}
+
+impl std::error::Error for TownError {}
+impl std::fmt::Display for TownError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            TownError::BuildingFull =>
+                write!(f, "No space in building"),
+            TownError::InvalidState(s) => 
+                write!(f, "Invalid state: {}", s),
+            TownError::NotEnoughSupply =>
+                write!(f, "Not enough supplies"),
+        }
+    }
 }

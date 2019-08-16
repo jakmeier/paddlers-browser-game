@@ -149,7 +149,8 @@ fn simulate_finish_task<T: WorkerAction> (
         TaskType::GatherSticks 
         | TaskType::ChopTree 
             => {
-                town.state.register_task_end(*task.task_type())?;
+                town.state.register_task_end(*task.task_type())
+                    .map_err(|e| e.to_string())?;
                 worker_out_of_building(town, unit, (task.x() as usize, task.y() as usize))
             },
         _ => Err("Task not implemented".to_owned())
@@ -167,7 +168,7 @@ fn simulate_begin_task<T: WorkerAction> (
         TaskType::GatherSticks 
         | TaskType::ChopTree 
             => {
-                town.state.register_task_begin(*task.task_type())?;
+                town.state.register_task_begin(*task.task_type()).map_err(|e| e.to_string())?;
                 worker_into_building(town, unit, (task.x() as usize, task.y() as usize))
             },
         _ => Err("Task not implemented".to_owned())
@@ -189,12 +190,12 @@ fn worker_walk(town: &TownView, unit: &mut Unit, to: TileIndex) -> Result<Durati
 
 fn worker_out_of_building(town: &mut TownView, _unit: &mut Unit, to: TileIndex) -> Result<Duration, String> {
     let tile_state = town.state.get_mut(&to).ok_or("No building found")?; 
-    tile_state.try_remove_entity()?;
+    tile_state.try_remove_entity().map_err(|e| e.to_string())?;
     Ok(Duration::milliseconds(0))
 }
 fn worker_into_building(town: &mut TownView, _unit: &mut Unit, to: TileIndex) -> Result<(), String> {
     let tile_state = town.state.get_mut(&to).ok_or("No building found")?; 
-    tile_state.try_add_entity()?;
+    tile_state.try_add_entity().map_err(|e| e.to_string())?;
     Ok(())
 }
 
