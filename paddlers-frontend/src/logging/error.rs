@@ -63,7 +63,9 @@ pub enum PadlErrorCode {
     EmptyGraphQLData(&'static str),
     StdWebGenericError(stdweb::web::error::Error),
     StdWebConversion(stdweb::private::ConversionError),
+    StdWebSecurityError(stdweb::web::error::SecurityError),
     JsonParseError(serde_json::error::Error),
+    NoDataFromBrowser(&'static str),
 }
 
 impl fmt::Display for PadlErrorCode {
@@ -93,8 +95,12 @@ impl fmt::Display for PadlErrorCode {
                 write!(f, "A web error ocurred: {}", cause),
             PadlErrorCode::StdWebConversion(cause) =>
                 write!(f, "A conversion error in the web std library occurred: {}", cause),
+            PadlErrorCode::StdWebSecurityError(cause) =>
+                write!(f, "A security error in the web std library occurred: {}", cause),
             PadlErrorCode::JsonParseError(cause) =>
                 write!(f, "Error while parsing JSON data: {}", cause),
+            PadlErrorCode::NoDataFromBrowser(data) =>
+                write!(f, "Could not read data from browser: {}", data),
         }
     }
 }
@@ -114,5 +120,10 @@ impl From<serde_json::error::Error> for PadlError {
 impl From<stdweb::web::error::Error> for PadlError {
     fn from(error: stdweb::web::error::Error) -> Self {
         PadlError::dev_err(PadlErrorCode::StdWebGenericError(error))
+    }
+}
+impl From<stdweb::web::error::SecurityError> for PadlError {
+    fn from(error: stdweb::web::error::SecurityError) -> Self {
+        PadlError::dev_err(PadlErrorCode::StdWebSecurityError(error))
     }
 }

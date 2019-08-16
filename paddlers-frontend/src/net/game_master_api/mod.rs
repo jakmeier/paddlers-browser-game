@@ -4,8 +4,7 @@ use paddlers_shared_lib::api::shop::*;
 use paddlers_shared_lib::api::tasks::TaskList;
 use crate::prelude::*;
 use crate::logging::AsyncErr;
-use super::ajax;
-use super::{SHOP_PATH, WORKER_PATH, NetUpdateRequest};
+use super::{ajax, url::*, NetUpdateRequest};
 use specs::prelude::*;
 use futures_util::future::FutureExt;
 use stdweb::PromiseFuture;
@@ -22,7 +21,7 @@ impl RestApiState {
             err_chan: Mutex::new(err_chan),
         }
     }
-    pub fn http_place_building(&mut self, pos: (usize, usize), building_type: BuildingType) {
+    pub fn http_place_building(&mut self, pos: (usize, usize), building_type: BuildingType) -> PadlResult<()> {
         let msg = BuildingPurchase {
             building_type: building_type, 
             x: pos.0,
@@ -30,22 +29,25 @@ impl RestApiState {
         };
 
         let request_string = &serde_json::to_string(&msg).unwrap();
-        let promise = ajax::send("POST", &format!("{}/building", SHOP_PATH), request_string);
+        let promise = ajax::send("POST", &format!("{}/shop/building", game_master_url()?), request_string);
         self.push_promise(promise, None);
+        Ok(())
     }
 
-    pub fn http_delete_building(&mut self, idx: (usize, usize)) {
+    pub fn http_delete_building(&mut self, idx: (usize, usize)) -> PadlResult<()>  {
         let msg = BuildingDeletion { x: idx.0, y: idx.1 };
         let request_string = &serde_json::to_string(&msg).unwrap();
-        let promise = ajax::send("POST", &format!("{}/building/delete", SHOP_PATH), request_string);
+        let promise = ajax::send("POST", &format!("{}/shop/building/delete", game_master_url()?), request_string);
         self.push_promise(promise, None);
+        Ok(())
     }
 
-    pub fn http_overwrite_tasks(&mut self, msg: TaskList) {
+    pub fn http_overwrite_tasks(&mut self, msg: TaskList) -> PadlResult<()>  {
         let request_string = &serde_json::to_string(&msg).unwrap();
-        let promise = ajax::send("POST", &format!("{}/overwriteTasks", WORKER_PATH), request_string);
+        let promise = ajax::send("POST", &format!("{}/worker/overwriteTasks", game_master_url()?), request_string);
         let afterwards = NetUpdateRequest::UnitTasks(msg.unit_id);
         self.push_promise(promise, Some(afterwards));
+        Ok(())
     }
 
     fn push_promise(

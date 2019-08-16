@@ -1,7 +1,7 @@
 # Only use this for local debugging OUTSIDE of docker (which should rarely be necessary)
 [global]
 port = 65432
-address = "192.168.1.115"
+address = "0.0.0.0"
 
 [global.databases]
-game_db = { url = "postgres://postgres@localhost" }
+game_db = { url = "postgres://postgres:password@localhost:5432" }

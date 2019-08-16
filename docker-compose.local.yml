@@ -7,8 +7,9 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=password
+      - POSTGRES_PORT=15432
     ports:
-      - 5432:5432
+      - 15432:5432
 # 
   game-master:
     image: jakmeier/paddlers:game-master-snapshot
@@ -21,7 +22,7 @@ services:
       - DATABASE_URL=postgresql://postgres:password@db:5432
       - DATABASE_INIT=1
       - INSERT_TEST_DATA=1
-      - RUST_LOG=actix_web=warn
+      - RUST_LOG=actix_web=debug
 #
   db-interface:
     image: jakmeier/paddlers:db-interface-snapshot

@@ -18,5 +18,5 @@ pub fn establish_connection() -> PgConnection {
 pub fn get_db_url() -> String {
     dotenv().ok();
     env::var("DATABASE_URL")
-        .unwrap_or("postgres://postgres@localhost:5432".to_string())
+        .unwrap_or("postgresql://postgres:password@localhost:5432".to_string())
 }

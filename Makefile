@@ -1,4 +1,9 @@
-run: docker-compose.test.yml game-master-container db-interface-container frontend-container
+build-and-run: build
+	make run
+
+build: game-master-container db-interface-container frontend-container
+
+run: docker-compose.local.yml
 	docker-compose -f $< up
 
 rust-container: Dockerfile

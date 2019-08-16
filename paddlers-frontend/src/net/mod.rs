@@ -1,6 +1,7 @@
 pub mod graphql;
 pub mod ajax;
 pub mod game_master_api;
+mod url;
 
 use graphql::{
     GraphQlState,
@@ -17,17 +18,6 @@ use std::sync::{
 };
 
 use crate::prelude::*;
-
-// TODO: Better constant handling: How to read uri at compile time (from TOML file)?
-// const GRAPH_QL_PATH: &'static str = "http://192.168.1.115:65432/graphql";
-// const SHOP_PATH: &'static str = "http://192.168.1.115:8088/shop";
-// const WORKER_PATH: &'static str = "http://192.168.1.115:8088/worker";
-
-// TODO: Environment handling
-// TODO: Port handling?
-const GRAPH_QL_PATH: &'static str = "http://demogql.paddlers.ch:11025/graphql";
-const SHOP_PATH: &'static str = "http://demoapi.paddlers.ch:11026/shop";
-const WORKER_PATH: &'static str = "http://demoapi.paddlers.ch:11026/worker";
 
 pub enum NetMsg {
     Attacks(AttacksResponse),
