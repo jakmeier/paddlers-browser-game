@@ -1,5 +1,6 @@
 pub mod text_to_user;
 pub mod error;
+pub mod statistics;
 use error::*;
 use text_to_user::*;
 use std::collections::VecDeque;

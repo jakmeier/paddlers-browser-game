@@ -23,6 +23,7 @@ use crate::logging::{
     ErrorQueue,
     AsyncErr,
     text_to_user::TextBoard,
+    statistics::Statistician,
 };
 
 use input::{UiState, Clickable, DefaultShop, pointer::PointerManager};
@@ -64,6 +65,7 @@ pub(crate) struct Game<'a, 'b> {
     time_zero: Timestamp,
     total_updates: u64,
     async_err_receiver: Receiver<PadlError>,
+    stats: Statistician,
 }
 
 impl Game<'static, 'static> {
@@ -113,6 +115,7 @@ impl State for Game<'static, 'static> {
         dispatcher.setup(&mut world);
 
         let pm = PointerManager::init(&mut world);
+        let now = utc_now();
 
         Ok(Game {
             dispatcher: dispatcher,
@@ -123,10 +126,11 @@ impl State for Game<'static, 'static> {
             bold_font: Asset::new(Font::load("fonts/Manjari-Bold.ttf")),
             unit_len: None,
             net: None,
-            time_zero: utc_now(),
+            time_zero: now,
             resources: TownResources::default(),
             total_updates: 0,
             async_err_receiver: err_recv,
+            stats: Statistician::new(now),
         })
     }
 
@@ -225,7 +229,12 @@ impl State for Game<'static, 'static> {
 
     fn draw(&mut self, window: &mut Window) -> Result<()> {
         let tick = self.world.read_resource::<ClockTick>().0;
-        // multi borrow
+        let now = utc_now();
+        {
+            let mut rest = self.world.write_resource::<RestApiState>();
+            let err = self.stats.run(&mut *rest, now);
+            self.check(err);
+        }
         {
             let (asset, town, ul) = (&mut self.sprites, &self.world.read_resource::<Town>(), self.unit_len.unwrap());
             asset.execute(|sprites| town.render(window, sprites, tick, ul))?;

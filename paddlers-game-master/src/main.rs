@@ -8,6 +8,7 @@ mod game_master;
 mod buildings;
 mod worker_actions;
 mod town_view;
+mod statistics;
 
 use db::*;
 use game_master::{
@@ -26,6 +27,7 @@ use paddlers_shared_lib::{
     api::{
         shop::{BuildingPurchase, BuildingDeletion},
         tasks::TaskList,
+        statistics::FrontendRuntimeStatistics,
     },
     config::{
         Config,
@@ -91,6 +93,11 @@ fn main() {
                 web::resource("/worker/overwriteTasks")
                 .data(web::Json::<TaskList>)
                 .route(web::post().to(api::overwrite_tasks))
+            )
+            .service(
+                web::resource("/stats")
+                .data(web::Json::<FrontendRuntimeStatistics>)
+                .route(web::post().to(statistics::new_frontend_info))
             )
     })
     .disable_signals()

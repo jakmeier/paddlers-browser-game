@@ -1,13 +1,16 @@
 use std::collections::VecDeque;
 use std::sync::{Mutex,mpsc::Sender};
-use paddlers_shared_lib::api::shop::*;
-use paddlers_shared_lib::api::tasks::TaskList;
 use crate::prelude::*;
 use crate::logging::AsyncErr;
 use super::{ajax, url::*, NetUpdateRequest};
 use specs::prelude::*;
 use futures_util::future::FutureExt;
 use stdweb::PromiseFuture;
+use paddlers_shared_lib::api::{
+    shop::*,
+    tasks::TaskList,
+    statistics::*,
+};
 
 pub struct RestApiState {
     pub queue: VecDeque<(stdweb::PromiseFuture<std::string::String>, Option<NetUpdateRequest>)>,
@@ -47,6 +50,13 @@ impl RestApiState {
         let promise = ajax::send("POST", &format!("{}/worker/overwriteTasks", game_master_url()?), request_string);
         let afterwards = NetUpdateRequest::UnitTasks(msg.unit_id);
         self.push_promise(promise, Some(afterwards));
+        Ok(())
+    }
+
+    pub fn http_send_statistics(&mut self, msg: FrontendRuntimeStatistics) -> PadlResult<()>  {
+        let request_string = &serde_json::to_string(&msg).unwrap();
+        let promise = ajax::send("POST", &format!("{}/stats", game_master_url()?), request_string);
+        self.push_promise(promise, None);
         Ok(())
     }
 
