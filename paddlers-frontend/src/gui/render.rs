@@ -8,7 +8,7 @@ use crate::game::{
     town::Town,
 };
 use crate::gui::{
-    sprites::{SpriteIndex, Sprites, WithSprite},
+    sprites::*,
     z::*,
     utils::*,
     animation::AnimationState,
@@ -37,7 +37,7 @@ impl Game<'_, '_> {
                     if let Some(animation) = animation_store.get(e) {
                         draw_animated_sprite(sprites, window, &pos.area, i, pos.z, FitStrategy::TopLeft, animation)?;
                     } else {
-                        draw_static_image(sprites, window, &pos.area, i, pos.z, FitStrategy::TopLeft)?;
+                        draw_static_image(sprites, window, &pos.area, i.default(), pos.z, FitStrategy::TopLeft)?;
                     }
                 },
                 _ => { panic!("Not implemented")}
@@ -68,7 +68,7 @@ impl Game<'_, '_> {
         let max_area = Rectangle::new(center, (ul, ul));
         match item {
             Grabbable::NewBuilding(building_type) => {
-                draw_static_image(&mut self.sprites, window, &max_area, building_type.sprite(), Z_GRABBED_ITEM, FitStrategy::TopLeft)?
+                draw_static_image(&mut self.sprites, window, &max_area, building_type.sprite().default(), Z_GRABBED_ITEM, FitStrategy::TopLeft)?
             }
         }
         Ok(())
@@ -98,7 +98,7 @@ fn render_health(health: &Health, sprites: &mut Asset<Sprites>, window: &mut Win
         0 => {
             let h = 20.0;
             let max_area = Rectangle::new((unit_pos.x,unit_pos.y-h),(w,h));
-            draw_static_image(sprites, window, &max_area, SpriteIndex::Heart, Z_HP_BAR, FitStrategy::Center)?;
+            draw_static_image(sprites, window, &max_area, SpriteIndex::Simple(SingleSprite::Heart), Z_HP_BAR, FitStrategy::Center)?;
         }
         hp if hp < 10 => {
             let d = w / hp as f32;

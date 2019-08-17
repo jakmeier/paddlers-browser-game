@@ -7,7 +7,7 @@ use crate::game::{
     forestry::ForestComponent,
 };
 use crate::gui::{
-    sprites::{SpriteIndex},
+    sprites::{SpriteIndex, SingleSprite},
     z::*,
     input::{UiState, DefaultShop},
     utils::*,
@@ -68,8 +68,8 @@ impl Game<'_, '_> {
         if let Some(rd) = r.get(e) {
             match rd.kind {
                 RenderVariant::ImgWithImgBackground(main, background) => {
-                    draw_static_image(sprites, window, &area, background, Z_MENU_BOX + 1, FitStrategy::Center)?;
-                    draw_static_image(sprites, window, &inner_area, main, Z_MENU_BOX + 2, FitStrategy::Center)?;
+                    draw_static_image(sprites, window, &area, SpriteIndex::Simple(background), Z_MENU_BOX + 1, FitStrategy::Center)?;
+                    draw_static_image(sprites, window, &inner_area, main.default(), Z_MENU_BOX + 2, FitStrategy::Center)?;
                 },
                 _ => { panic!("Not implemented") }
             }
@@ -139,27 +139,27 @@ fn aura_details(aura: &Aura) -> TableRow {
     let text = format!("+{} Ambience", aura.effect);
     TableRow::TextWithImage(
         text,
-        SpriteIndex::Ambience,
+        SpriteIndex::Simple(SingleSprite::Ambience),
     )
 }
 fn health_details(health: &Health) -> TableRow {
     let health_text = format!("Well-being {}/{}", health.max_hp - health.hp, health.max_hp);
     TableRow::TextWithImage(
         health_text,
-        SpriteIndex::Heart,
+        SpriteIndex::Simple(SingleSprite::Heart),
     )
 }
 fn tree_details(forest: &ForestComponent) -> TableRow {
     let text = format!("+{} Forest flora", forest.score);
     TableRow::TextWithImage(
         text,
-        SpriteIndex::Tree,
+        SpriteIndex::Simple(SingleSprite::Tree),
     )
 }
 fn forest_details<'a>(forest_size: usize, forest_usage: usize) -> TableRow<'a> {
     let text = format!("Forest flora: {} (used {})", forest_size, forest_usage);
     TableRow::TextWithImage(
         text,
-        SpriteIndex::Tree,
+        SpriteIndex::Simple(SingleSprite::Tree),
     )
 }

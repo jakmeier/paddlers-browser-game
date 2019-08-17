@@ -2,7 +2,7 @@ use specs::prelude::*;
 use specs::world::EntitiesRes;
 use crate::gui::{
     render::Renderable,
-    sprites::{SpriteIndex,WithSprite},
+    sprites::*,
     z::Z_BUILDINGS,
     utils::*,
 };
@@ -43,7 +43,7 @@ impl Town {
             lazy.create_entity(entities)
             .with(Position::new(area.pos, area.size, Z_BUILDINGS))
             .with(Renderable {
-                kind: RenderVariant::ImgWithImgBackground(bt.sprite(), SpriteIndex::Grass)
+                kind: RenderVariant::ImgWithImgBackground(bt.sprite(), SingleSprite::Grass)
             })
             .with(Clickable);
 

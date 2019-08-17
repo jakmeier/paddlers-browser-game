@@ -3,7 +3,7 @@
 use crate::prelude::*;
 use quicksilver::prelude::*; 
 use crate::gui::{
-    sprites::{SpriteIndex, Sprites, WithSprite},
+    sprites::*,
     utils::*,
     z::*,
 };
@@ -107,7 +107,7 @@ pub fn draw_resources(
             (res_area.pos.x, res_area.pos.y + (res_area.height() - text_h)/2.0),
             (res_area.size.x - img_area.width(), text_h)
         );
-        draw_static_image(sprites, window, &img_area, rt.sprite(), z, FitStrategy::Center)?;
+        draw_static_image(sprites, window, &img_area, rt.sprite().default(), z, FitStrategy::Center)?;
         write_text(font, window, &text_area, z+1, FitStrategy::Center, &n.to_string())?;
     }
     Ok(())
@@ -143,7 +143,7 @@ impl<T: Clone + std::fmt::Debug> UiBox<T> {
     }
 
     #[allow(dead_code)]
-    pub fn add(&mut self, i: SpriteIndex, on_click: T) {
+    pub fn add(&mut self, i: SpriteSet, on_click: T) {
         self.add_el(
             UiElement { 
                 display: RenderVariant::Img(i), 
@@ -163,7 +163,7 @@ impl<T: Clone + std::fmt::Debug> UiBox<T> {
         );
     }
 
-    pub fn add_with_background_color_and_cost(&mut self, i: SpriteIndex, col: Color, on_click: T, cost: Vec<(ResourceType, i64)>) {
+    pub fn add_with_background_color_and_cost(&mut self, i: SpriteSet, col: Color, on_click: T, cost: Vec<(ResourceType, i64)>) {
         self.add_el(
             UiElement { 
                 display: RenderVariant::ImgWithColBackground(i, col),
@@ -205,18 +205,18 @@ impl<T: Clone + std::fmt::Debug> UiBox<T> {
                         sprites, 
                         window, 
                         &draw_area, 
-                        bkg, 
+                        SpriteIndex::Simple(bkg), 
                         Z_MENU_BOX_BUTTONS-1, 
                         FitStrategy::Center
                     )?;
                     img
-                }
+                },
             };
             draw_static_image(
                 sprites, 
                 window, 
                 &draw_area.padded(self.padding + self.margin), 
-                img, 
+                img.default(), 
                 Z_MENU_BOX_BUTTONS, 
                 FitStrategy::Center
             )?;

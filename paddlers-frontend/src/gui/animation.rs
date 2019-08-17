@@ -1,19 +1,11 @@
 use specs::prelude::*;
 use quicksilver::geom::*;
+use crate::gui::utils::*;
 
 #[derive(Component, Debug, Clone)]
 #[storage(VecStorage)]
 pub struct AnimationState {
     pub direction: Direction,
-}
-
-#[derive(Debug, Clone, Copy)]
-pub enum Direction {
-    Undirected,
-    North,
-    East,
-    South,
-    West,
 }
 
 impl Direction {
@@ -25,8 +17,8 @@ impl Direction {
             )
         } else if vec.x == 0.0 && vec.y != 0.0 {
             Some(
-                if vec.y < 0.0 { Direction::South }
-                else { Direction::North }
+                if vec.y < 0.0 { Direction::North }
+                else { Direction::South }
             )
         } else if vec.x == 0.0 && vec.y == 0.0 {
             Some( Direction::Undirected )
@@ -38,9 +30,9 @@ impl Direction {
     pub fn unit_vector(&self) -> Vector {
         match self {
             Direction::Undirected => Vector::new(0,0),
-            Direction::North => Vector::new(0,1),
+            Direction::North => Vector::new(0,-1),
             Direction::East => Vector::new(1,0),
-            Direction::South => Vector::new(0,-1),
+            Direction::South => Vector::new(0,1),
             Direction::West => Vector::new(-1,0),
         }
     }

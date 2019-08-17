@@ -7,6 +7,7 @@ use crate::game::{
     components::*,
 };
 use crate::gui::animation::*;
+use crate::gui::utils::*;
 use crate::gui::render::Renderable;
 use crate::prelude::*;
 use quicksilver::geom::about_equal;
@@ -47,11 +48,13 @@ impl<'a> System<'a> for WorkerSystem {
                     },
                     TaskType::Idle => {
                         mov.stand_still(task.start_time);
+                        anim.direction = Direction::Undirected;
                     }
                     TaskType::GatherSticks 
                     | TaskType::ChopTree 
                     => {
                         mov.stand_still(task.start_time);
+                        anim.direction = Direction::Undirected;
                         move_worker_into_building(&mut container, &mut town, &lazy, &rend, e, task.position);
                     }
                     _ => {debug_assert!(false, "Unexpected task")},

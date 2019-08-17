@@ -3,8 +3,8 @@
 //! no connection with game logic in here
 
 use quicksilver::prelude::*; 
-use crate::gui::sprites::{SpriteIndex, Sprites};
-use crate::gui::animation::{AnimationState, Direction};
+use crate::gui::sprites::*;
+use crate::gui::animation::{AnimationState};
 
 
 pub const BLACK: Color =    Color { r: 0.0, g: 0.0, b: 0.0, a: 1.0 };
@@ -16,9 +16,9 @@ pub const WHITE: Color =    Color { r: 1.0, g: 1.0, b: 1.0, a: 1.0 };
 #[derive(Debug, Clone, Copy)]
 pub enum RenderVariant {
     #[allow(dead_code)]
-    Img(SpriteIndex),
-    ImgWithImgBackground(SpriteIndex, SpriteIndex),
-    ImgWithColBackground(SpriteIndex, Color),
+    Img(SpriteSet),
+    ImgWithImgBackground(SpriteSet, SingleSprite),
+    ImgWithColBackground(SpriteSet, Color),
 }
 
 #[derive(Copy, Clone, Debug)]
@@ -27,18 +27,18 @@ pub enum FitStrategy {
     Center
 }
 
-pub fn draw_animated_sprite(asset: &mut Asset<Sprites>, window: &mut Window, max_area: &Rectangle, i: SpriteIndex, z: i32, fit_strat: FitStrategy, animation_state: &AnimationState) -> Result<()> {
-    let transform = match animation_state.direction {
-        Direction::Undirected | Direction::West
-            => { Transform::IDENTITY },
-        Direction::East 
-            => { horizontal_flip() },
-        Direction::North  
-            => { Transform::IDENTITY },
-        Direction::South
-            => { Transform::IDENTITY },
-    };
-    draw_image(asset, window, max_area, i, z, fit_strat, transform)
+#[derive(Debug, Clone, Copy)]
+pub enum Direction {
+    Undirected,
+    North,
+    East,
+    South,
+    West,
+}
+
+pub fn draw_animated_sprite(asset: &mut Asset<Sprites>, window: &mut Window, max_area: &Rectangle, i: SpriteSet, z: i32, fit_strat: FitStrategy, animation_state: &AnimationState) -> Result<()> {
+    let (image, transform) = i.directed(&animation_state.direction); 
+    draw_image(asset, window, max_area, image, z, fit_strat, transform)
 }
 pub fn draw_static_image(asset: &mut Asset<Sprites>, window: &mut Window, max_area: &Rectangle, i: SpriteIndex, z: i32, fit_strat: FitStrategy) -> Result<()> {
     draw_image(asset, window, max_area, i, z, fit_strat, Transform::IDENTITY)

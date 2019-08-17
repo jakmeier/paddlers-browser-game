@@ -4,7 +4,7 @@ use crate::Timestamp;
 use crate::gui::{
     render::Renderable,
     z::Z_UNITS,
-    sprites::SpriteIndex,
+    sprites::*,
     utils::*,
 };
 use crate::game::{
@@ -31,7 +31,7 @@ pub fn insert_duck(world: &mut World, pos: impl Into<Vector>, birth_time: Timest
         .with(Moving::new(birth_time, pos, speed, speed.len()))
         .with(
             Renderable {
-                kind: RenderVariant::ImgWithImgBackground(SpriteIndex::Duck, SpriteIndex::Water),
+                kind: RenderVariant::ImgWithImgBackground(SpriteSet::Simple(SingleSprite::Duck), SingleSprite::Water),
             }
         )
         .with(Clickable)

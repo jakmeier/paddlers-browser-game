@@ -1,7 +1,7 @@
 use quicksilver::prelude::*;
 use pathfinding::prelude::{astar, absdiff};
 use crate::gui::{
-    sprites::{Sprites, SpriteIndex},
+    sprites::*,
     z::{Z_TILE_SHADOW, Z_TEXTURE}
 };
 pub use paddlers_shared_lib::game_mechanics::town::TileIndex;
@@ -80,7 +80,7 @@ impl Town {
                         // println!("Empty {} {}", x, y);
                         window.draw_ex(
                             &Rectangle::new((d * x as f32, d * y as f32), (d, d)),
-                            Img(&sprites[SpriteIndex::Grass]),
+                            Img(&sprites[SpriteIndex::Simple(SingleSprite::Grass)]),
                             Transform::IDENTITY,
                             Z_TEXTURE
                         );
@@ -92,7 +92,7 @@ impl Town {
                         window.draw_ex(
                             &Rectangle::new((d * x as f32, d * y as f32), (d, d))
                             .translate((shifted,0)),
-                            Img(&sprites[SpriteIndex::Water]),
+                            Img(&sprites[SpriteIndex::Simple(SingleSprite::Water)]),
                             Transform::IDENTITY,
                             Z_TEXTURE
                         );
@@ -102,7 +102,7 @@ impl Town {
                             window.draw_ex(
                                 &Rectangle::new((d * x as f32, d * y as f32), (d, d))
                                 .translate((shifted,0)),
-                                Img(&sprites[SpriteIndex::Water]),
+                                Img(&sprites[SpriteIndex::Simple(SingleSprite::Water)]),
                                 Transform::IDENTITY,
                                 Z_TEXTURE
                             );

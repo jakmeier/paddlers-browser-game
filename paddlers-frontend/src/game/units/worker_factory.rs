@@ -5,7 +5,7 @@ use paddlers_shared_lib::game_mechanics::worker::*;
 use crate::gui::{
     render::Renderable,
     z::Z_UNITS,
-    sprites::SpriteIndex,
+    sprites::*,
     utils::*,
     animation::*,
 };
@@ -39,7 +39,7 @@ pub fn with_hero<B: Builder>( builder: B ) -> B
 {
     builder.with(
         Renderable {
-            kind: RenderVariant::ImgWithImgBackground(SpriteIndex::Hero, SpriteIndex::Grass),
+            kind: RenderVariant::ImgWithImgBackground(SpriteSet::Directed(DirectedSprite::Hero), SingleSprite::Grass),
         }
     )
 }
@@ -47,13 +47,13 @@ pub fn with_hero<B: Builder>( builder: B ) -> B
 pub fn with_basic_worker<B: Builder>( builder: B, color: UnitColor ) -> B 
 {
     let sprite_index = match color {
-        UnitColor::Yellow => SpriteIndex::Duck,
-        UnitColor::White => SpriteIndex::WhiteDuck,
-        UnitColor::Camo => SpriteIndex::CamoDuck,
+        UnitColor::Yellow => SingleSprite::Duck,
+        UnitColor::White => SingleSprite::WhiteDuck,
+        UnitColor::Camo => SingleSprite::CamoDuck,
     };
     builder.with(
         Renderable {
-            kind: RenderVariant::ImgWithImgBackground(sprite_index, SpriteIndex::Grass),
+            kind: RenderVariant::ImgWithImgBackground(SpriteSet::Simple(sprite_index), SingleSprite::Grass),
         }
     )
 }

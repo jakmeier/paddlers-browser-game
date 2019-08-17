@@ -1,6 +1,7 @@
 use quicksilver::prelude::*;
 use quicksilver::graphics::Image;
 use std::ops::Index;
+use crate::gui::utils::*;
 
 /// Store of the sprites.
 /// Cannot easily be in a component because Image is thread local.
@@ -26,11 +27,13 @@ impl Sprites {
             Image::load("plants/tree.png"),
             Image::load("plants/sapling.png"),
             Image::load("plants/young_tree.png"),
-            Image::load("ducks/roger.png"),
             Image::load("ducks/camo_duck_sad.png"),
             Image::load("ducks/white_duck_sad.png"),
             Image::load("buildings/bundling_station.png"),
             Image::load("buildings/saw_mill.png"),
+            Image::load("ducks/roger_front.png"),
+            Image::load("ducks/roger_back.png"),
+            Image::load("ducks/roger.png"),
         ];
 
         Asset::new(
@@ -47,7 +50,43 @@ impl Sprites {
 }
 
 #[derive(Debug, Clone, Copy)]
+/// An instance of a SpriteIndex is a key for a specific sprite (PNG)
 pub enum SpriteIndex {
+    // Multi-sprite images 
+    Simple(SingleSprite),
+    Directed(DirectedSprite, Direction),
+}
+
+/// An instance of a SpriteSet summarizes one or many sprites that show 
+/// the same object in different states / from different angles
+#[derive(Debug, Clone, Copy)]
+pub enum SpriteSet {
+    Simple(SingleSprite),
+    Directed(DirectedSprite),
+}
+
+impl SpriteSet {
+    pub fn default(&self) -> SpriteIndex {
+        match self {
+            SpriteSet::Simple(i) => SpriteIndex::Simple(*i),
+            SpriteSet::Directed(i) => SpriteIndex::Directed(*i, Direction::Undirected),
+        }
+    }
+    pub fn directed(&self, d: &Direction) -> (SpriteIndex, Transform) {
+        let i = match self {
+            SpriteSet::Simple(i) => SpriteIndex::Simple(*i),
+            SpriteSet::Directed(i) => SpriteIndex::Directed(*i, *d),
+        };
+        let t = match d {
+            Direction::East => { horizontal_flip() },
+            _ => { Transform::IDENTITY },
+        };
+        (i,t)
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum SingleSprite {
     Grass,
     Water,
     Duck,
@@ -61,11 +100,15 @@ pub enum SpriteIndex {
     Tree,
     Sapling, 
     YoungTree,
-    Hero,
     CamoDuck,
     WhiteDuck,
     BundlingStation,
     SawMill,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum DirectedSprite {
+    Hero,
 }
 
 impl Index<SpriteIndex> for Sprites {
@@ -74,61 +117,67 @@ impl Index<SpriteIndex> for Sprites {
     fn index(&self, index: SpriteIndex) -> &Self::Output {
         let i =
         match index {
-            SpriteIndex::Grass => 0,
-            SpriteIndex::Water => 1,
-            SpriteIndex::Duck => 2,
-            SpriteIndex::RedFlowers => 3,
-            SpriteIndex::BlueFlowers => 4,
-            SpriteIndex::Feathers => 5,
-            SpriteIndex::Sticks => 6,
-            SpriteIndex::Logs => 7,
-            SpriteIndex::Heart => 8,
-            SpriteIndex::Ambience => 9,
-            SpriteIndex::Tree => 10,
-            SpriteIndex::Sapling => 11,
-            SpriteIndex::YoungTree => 12,
-            SpriteIndex::Hero => 13,
-            SpriteIndex::CamoDuck => 14,
-            SpriteIndex::WhiteDuck => 15,
-            SpriteIndex::BundlingStation => 16,
-            SpriteIndex::SawMill => 17,
+            SpriteIndex::Simple(j) => match j {
+                SingleSprite::Grass => 0,
+                SingleSprite::Water => 1,
+                SingleSprite::Duck => 2,
+                SingleSprite::RedFlowers => 3,
+                SingleSprite::BlueFlowers => 4,
+                SingleSprite::Feathers => 5,
+                SingleSprite::Sticks => 6,
+                SingleSprite::Logs => 7,
+                SingleSprite::Heart => 8,
+                SingleSprite::Ambience => 9,
+                SingleSprite::Tree => 10,
+                SingleSprite::Sapling => 11,
+                SingleSprite::YoungTree => 12,
+                SingleSprite::CamoDuck => 13,
+                SingleSprite::WhiteDuck => 14,
+                SingleSprite::BundlingStation => 15,
+                SingleSprite::SawMill => 16,
+            },
+            SpriteIndex::Directed(j,d) => match (j,d) {
+                (DirectedSprite::Hero, Direction::South) => 17,
+                (DirectedSprite::Hero, Direction::North) => 18,
+                (DirectedSprite::Hero, _) => 19,
+            },
         };
         &self.img[i]
     }
 }
 
 pub trait WithSprite {
-    fn sprite(&self) -> SpriteIndex;
+    fn sprite(&self) -> SpriteSet;
 }
 
 use paddlers_shared_lib::models::BuildingType;
 impl WithSprite for BuildingType {
-    fn sprite(&self) -> SpriteIndex {
+    fn sprite(&self) -> SpriteSet {
         match self {
-            BuildingType::BlueFlowers => SpriteIndex::BlueFlowers,
-            BuildingType::RedFlowers => SpriteIndex::RedFlowers,
-            BuildingType::Tree => SpriteIndex::Sapling,
-            BuildingType::BundlingStation => SpriteIndex::BundlingStation,
-            BuildingType::SawMill => SpriteIndex::SawMill,
+            BuildingType::BlueFlowers => SpriteSet::Simple(SingleSprite::BlueFlowers),
+            BuildingType::RedFlowers => SpriteSet::Simple(SingleSprite::RedFlowers),
+            BuildingType::Tree => SpriteSet::Simple(SingleSprite::Sapling),
+            BuildingType::BundlingStation => SpriteSet::Simple(SingleSprite::BundlingStation),
+            BuildingType::SawMill => SpriteSet::Simple(SingleSprite::SawMill),
         }
     }
 }
 
 use paddlers_shared_lib::models::ResourceType;
 impl WithSprite for ResourceType {
-    fn sprite(&self) -> SpriteIndex {
+    fn sprite(&self) -> SpriteSet {
         match self {
-            ResourceType::Feathers => SpriteIndex::Feathers,
-            ResourceType::Sticks => SpriteIndex::Sticks,
-            ResourceType::Logs => SpriteIndex::Logs,
+            ResourceType::Feathers => SpriteSet::Simple(SingleSprite::Feathers),
+            ResourceType::Sticks => SpriteSet::Simple(SingleSprite::Sticks),
+            ResourceType::Logs => SpriteSet::Simple(SingleSprite::Logs),
         }
     }
 }
 
-pub fn tree_sprite(score: usize) -> SpriteIndex {
+pub fn tree_sprite(score: usize) -> SpriteSet {
     match score {
-        s if s <= 2 => SpriteIndex::Sapling,
-        s if s <= 9 => SpriteIndex::YoungTree,
-        _ => SpriteIndex::Tree,
+        s if s <= 2 => SpriteSet::Simple(SingleSprite::Sapling),
+        s if s <= 9 => SpriteSet::Simple(SingleSprite::YoungTree),
+        _ => SpriteSet::Simple(SingleSprite::Tree),
     }
 }
