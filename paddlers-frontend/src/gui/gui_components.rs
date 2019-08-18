@@ -118,7 +118,7 @@ pub fn draw_resources(
 struct UiElement<T: Clone + std::fmt::Debug> {
     display: RenderVariant,
     hover_display: Option<Vec<(ResourceType, i64)>>, 
-    on_click: T,
+    on_click: Option<T>,
 }
 #[derive(Clone, Debug)]
 pub struct UiBox<T: Clone + std::fmt::Debug> {
@@ -142,13 +142,12 @@ impl<T: Clone + std::fmt::Debug> UiBox<T> {
         }
     }
 
-    #[allow(dead_code)]
     pub fn add(&mut self, i: SpriteSet, on_click: T) {
         self.add_el(
             UiElement { 
                 display: RenderVariant::Img(i), 
                 hover_display: None,
-                on_click: on_click,
+                on_click: Some(on_click),
             }    
         );
     }
@@ -158,7 +157,7 @@ impl<T: Clone + std::fmt::Debug> UiBox<T> {
             UiElement { 
                 display: rv,
                 hover_display: None,
-                on_click: on_click,
+                on_click: Some(on_click),
             }    
         );
     }
@@ -168,7 +167,17 @@ impl<T: Clone + std::fmt::Debug> UiBox<T> {
             UiElement { 
                 display: RenderVariant::ImgWithColBackground(i, col),
                 hover_display: Some(cost),
-                on_click: on_click,
+                on_click: Some(on_click),
+            }    
+        );
+    }
+
+    pub fn add_empty(&mut self) {
+        self.add_el(
+            UiElement { 
+                display: RenderVariant::Hide, 
+                hover_display: None,
+                on_click: None,
             }    
         );
     }
@@ -189,7 +198,7 @@ impl<T: Clone + std::fmt::Debug> UiBox<T> {
             let img = 
             match el.display {
                 RenderVariant::Img(img) => {
-                    img
+                    Some(img)
                 },
                 RenderVariant::ImgWithColBackground(img, col) => {
                     window.draw_ex(
@@ -198,7 +207,7 @@ impl<T: Clone + std::fmt::Debug> UiBox<T> {
                         Transform::IDENTITY, 
                         Z_MENU_BOX_BUTTONS-1,
                     );
-                    img
+                    Some(img)
                 },
                 RenderVariant::ImgWithImgBackground(img, bkg) => {
                     draw_static_image(
@@ -209,17 +218,22 @@ impl<T: Clone + std::fmt::Debug> UiBox<T> {
                         Z_MENU_BOX_BUTTONS-1, 
                         FitStrategy::Center
                     )?;
-                    img
+                    Some(img)
                 },
+                RenderVariant::Hide => {
+                    None
+                }
             };
-            draw_static_image(
-                sprites, 
-                window, 
-                &draw_area.padded(self.padding + self.margin), 
-                img.default(), 
-                Z_MENU_BOX_BUTTONS, 
-                FitStrategy::Center
-            )?;
+            if let Some(img) = img {
+                draw_static_image(
+                    sprites, 
+                    window, 
+                    &draw_area.padded(self.padding + self.margin), 
+                    img.default(), 
+                    Z_MENU_BOX_BUTTONS, 
+                    FitStrategy::Center
+                )?;
+            }
         }
 
         Ok(())
@@ -247,7 +261,7 @@ impl<T: Clone + std::fmt::Debug> UiBox<T> {
 
     pub fn click(&self, mouse: impl Into<Vector>) -> Option<T> {
         if let Some(el) = self.find_element_under_mouse(mouse) {
-            Some(el.on_click.clone())
+            el.on_click.clone()
         }
         else {
             None
@@ -255,7 +269,7 @@ impl<T: Clone + std::fmt::Debug> UiBox<T> {
     }
     pub fn click_and_remove(&mut self, mouse: impl Into<Vector>) -> Option<T> {
         if let Some(el) = self.remove_element_under_mouse(mouse) {
-            Some(el.on_click.clone())
+            el.on_click.clone()
         }
         else {
             None

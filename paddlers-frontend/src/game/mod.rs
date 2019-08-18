@@ -1,6 +1,7 @@
 pub (crate) mod buildings;
 pub (crate) mod units;
 pub (crate) mod movement;
+pub (crate) mod map;
 pub (crate) mod town;
 pub (crate) mod town_resources;
 pub (crate) mod fight;
@@ -11,10 +12,13 @@ use crate::prelude::*;
 use crate::game::units::worker_factory::create_worker_entities;
 use crate::game::units::workers::Worker;
 use crate::game::components::*;
-use crate::gui::input;
-use crate::gui::render::*;
-use crate::gui::sprites::*;
-use crate::gui::animation::AnimationState;
+use crate::gui::{
+    input::{self, UiView},
+    render::*,
+    sprites::*,
+    animation::AnimationState,
+    menu::buttons::MenuButtons,
+};
 use crate::net::{
     NetMsg, 
     game_master_api::RestApiState,
@@ -66,6 +70,7 @@ pub(crate) struct Game<'a, 'b> {
     total_updates: u64,
     async_err_receiver: Receiver<PadlError>,
     stats: Statistician,
+    map: map::GlobalMap,
 }
 
 impl Game<'static, 'static> {
@@ -105,6 +110,7 @@ impl State for Game<'static, 'static> {
         world.insert(TownResources::default());
         world.insert(RestApiState::new(err_send_clone));
         world.insert(TextBoard::default());
+        world.insert(MenuButtons::new());
 
         let mut dispatcher = DispatcherBuilder::new()
             .with(WorkerSystem, "work", &[])
@@ -131,6 +137,7 @@ impl State for Game<'static, 'static> {
             total_updates: 0,
             async_err_receiver: err_recv,
             stats: Statistician::new(now),
+            map: map::GlobalMap::new(),
         })
     }
 
@@ -235,18 +242,34 @@ impl State for Game<'static, 'static> {
             let err = self.stats.run(&mut *rest, now);
             self.check(err);
         }
-        {
-            let (asset, town, ul) = (&mut self.sprites, &self.world.read_resource::<Town>(), self.unit_len.unwrap());
-            asset.execute(|sprites| town.render(window, sprites, tick, ul))?;
-        }
-        self.render_text_messages(window)?;
-        self.render_entities(window)?;
-        self.render_menu_box(window)?;
-        
+
         let ui_state = self.world.read_resource::<UiState>();
         let hovered_entity = ui_state.hovered_entity;
         let grabbed_item = ui_state.grabbed_item.clone();
+        let view = ui_state.current_view;
+        let main_area = Rectangle::new(
+            (0,0), 
+            (ui_state.menu_box_area.x(), window.screen_size().y)
+        );
         std::mem::drop(ui_state);
+        window.clear(Color::WHITE)?;
+        match view {
+            UiView::Town => {
+                {
+                    let (asset, town, ul) = (&mut self.sprites, &self.world.read_resource::<Town>(), self.unit_len.unwrap());
+                    asset.execute(|sprites| town.render(window, sprites, tick, ul))?;
+                }
+                self.render_entities(window)?;
+            },
+            UiView::Map => {
+                let (asset, map) = (&mut self.sprites, &mut self.map);
+                asset.execute(|sprites| map.render(window, sprites, &main_area))?;
+            }
+        }
+        
+        self.render_menu_box(window)?;
+        self.render_text_messages(window)?;
+
         if let Some(entity) = hovered_entity {
             self.render_hovering(window, entity)?;
         }
@@ -307,6 +330,12 @@ impl State for Game<'static, 'static> {
                                 ).unwrap()
                             );
                     }
+                },
+            Event::Key(key, state) 
+                if *key == Key::Tab && *state == ButtonState::Pressed =>
+                {
+                    let mut ui_state = self.world.write_resource::<UiState>();
+                    ui_state.toggle_view();
                 },
             _evt => {
                 // println!("Event: {:#?}", _evt)

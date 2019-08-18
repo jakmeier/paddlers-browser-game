@@ -6,6 +6,7 @@ use crate::gui::{
     utils::*,
     sprites::WithSprite,
     gui_components::*,
+    menu::buttons::MenuButtons,
 };
 use crate::game::{
     movement::*,
@@ -14,22 +15,29 @@ use crate::game::{
     units::workers::*,
     components::*,
 };
-use crate::prelude::*;
 use crate::logging::ErrorQueue;
 use paddlers_shared_lib::api::shop::*;
+use paddlers_shared_lib::prelude::*;
 
 pub mod pointer;
 
 #[derive(Default, Clone, Copy)]
 pub struct MouseState(pub Vector, pub Option<MouseButton>);
 
-#[derive(Default, Clone)]
+#[derive(Clone)]
 pub struct UiState {
     pub selected_entity: Option<Entity>,
     pub hovered_entity: Option<Entity>,
     pub grabbed_item: Option<Grabbable>,
     pub menu_box_area: Rectangle,
+    pub current_view: UiView,
 }
+#[derive(Clone, Copy)]
+pub enum UiView {
+    Town,
+    Map,
+}
+
 pub struct LeftClickSystem;
 pub struct RightClickSystem;
 pub struct HoverSystem;
@@ -49,6 +57,7 @@ impl<'a> System<'a> for LeftClickSystem {
         Read<'a, MouseState>,
         Write<'a, UiState>,
         Read<'a, DefaultShop>,
+        ReadExpect<'a, MenuButtons>,
         Write<'a, TownResources>,
         Write<'a, Town>,
         WriteExpect<'a, RestApiState>,
@@ -60,7 +69,7 @@ impl<'a> System<'a> for LeftClickSystem {
         WriteStorage<'a, Worker>,
      );
 
-    fn run(&mut self, (entities, mouse_state, mut ui_state, shop, mut resources, mut town, mut rest, mut errq, lazy, position, clickable, mut containers, mut workers): Self::SystemData) {
+    fn run(&mut self, (entities, mouse_state, mut ui_state, shop, buttons, mut resources, mut town, mut rest, mut errq, lazy, position, clickable, mut containers, mut workers): Self::SystemData) {
 
         let MouseState(mouse_pos, button) = *mouse_state;
         if button != Some(MouseButton::Left) {
@@ -69,6 +78,7 @@ impl<'a> System<'a> for LeftClickSystem {
         
         // Menu Box area
         if mouse_pos.overlaps_rectangle(&(*ui_state).menu_box_area) {
+            buttons.click(mouse_pos, &mut *ui_state);
             if let Some(entity) = (*ui_state).selected_entity {
                 if let Some(container) = containers.get_mut(entity) {
                     let container_area = position.get(entity).unwrap().area;
@@ -216,14 +226,14 @@ pub struct DefaultShop {
 impl Default for DefaultShop {
     fn default() -> Self {
         DefaultShop {
-            ui : UiBox::new(3, 5, 5.0, 10.0)
+            ui : UiBox::new(3, 4, 5.0, 10.0)
         }
     }
 }
 impl DefaultShop {
     pub fn new() -> Self {
         let mut result = DefaultShop {
-            ui : UiBox::new(3, 5, 5.0, 10.0)
+            ui : UiBox::new(3, 4, 5.0, 10.0)
         };
         result.add_building(BuildingType::BlueFlowers);
         result.add_building(BuildingType::RedFlowers);
@@ -245,5 +255,25 @@ impl DefaultShop {
             )
         }
         None
+    }
+}
+
+impl Default for UiState {
+    fn default() -> Self {
+        UiState {
+            grabbed_item: None,
+            selected_entity: None,
+            hovered_entity: None,
+            menu_box_area: Rectangle::default(),
+            current_view: UiView::Town,
+        }
+    }
+}
+impl UiState {
+    pub fn toggle_view(&mut self) {
+        match self.current_view {
+            UiView::Map => self.current_view = UiView::Town,
+            UiView::Town => self.current_view = UiView::Map,
+        }
     }
 }

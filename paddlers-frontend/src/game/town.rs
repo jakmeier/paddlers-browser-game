@@ -71,7 +71,6 @@ impl Town {
 
     pub fn render(&self, window: &mut Window, sprites: &Sprites, tick: u32, unit_length: f32) -> Result<()> {
         let d = unit_length;
-        window.clear(Color::WHITE)?;
 
         for (x, col) in self.map.0.iter().enumerate() {
             for (y, tile) in col.iter().enumerate() {

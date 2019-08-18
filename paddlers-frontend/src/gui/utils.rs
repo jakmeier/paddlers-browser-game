@@ -19,6 +19,7 @@ pub enum RenderVariant {
     Img(SpriteSet),
     ImgWithImgBackground(SpriteSet, SingleSprite),
     ImgWithColBackground(SpriteSet, Color),
+    Hide,
 }
 
 #[derive(Copy, Clone, Debug)]

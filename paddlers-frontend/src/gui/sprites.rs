@@ -31,6 +31,7 @@ impl Sprites {
             Image::load("ducks/white_duck_sad.png"),
             Image::load("buildings/bundling_station.png"),
             Image::load("buildings/saw_mill.png"),
+            Image::load("gui/map_button.png"),
             Image::load("ducks/roger_front.png"),
             Image::load("ducks/roger_back.png"),
             Image::load("ducks/roger.png"),
@@ -104,6 +105,7 @@ pub enum SingleSprite {
     WhiteDuck,
     BundlingStation,
     SawMill,
+    MapButton,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -135,11 +137,12 @@ impl Index<SpriteIndex> for Sprites {
                 SingleSprite::WhiteDuck => 14,
                 SingleSprite::BundlingStation => 15,
                 SingleSprite::SawMill => 16,
+                SingleSprite::MapButton => 17,
             },
             SpriteIndex::Directed(j,d) => match (j,d) {
-                (DirectedSprite::Hero, Direction::South) => 17,
-                (DirectedSprite::Hero, Direction::North) => 18,
-                (DirectedSprite::Hero, _) => 19,
+                (DirectedSprite::Hero, Direction::South) => 18,
+                (DirectedSprite::Hero, Direction::North) => 19,
+                (DirectedSprite::Hero, _) => 20,
             },
         };
         &self.img[i]

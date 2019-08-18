@@ -1,3 +1,5 @@
+pub mod buttons;
+
 use quicksilver::prelude::*;
 use specs::prelude::*;
 use crate::game::{
@@ -18,6 +20,8 @@ use crate::gui::{
 
 impl Game<'_, '_> {
     pub fn render_menu_box(&mut self, window: &mut Window) -> Result<()> {
+        let button_height = 50.0;
+        let margin_between = 10.0;
         let resources_height = 50.0;
         let data = self.world.read_resource::<UiState>();
         let entity = (*data).selected_entity;
@@ -33,11 +37,16 @@ impl Game<'_, '_> {
         );
 
         let area = area.padded(15.0);
-        let resources_area = Rectangle::new( (area.pos.x, area.y()) , (area.width(), resources_height) );
+
+        let button_area = Rectangle::new( (area.pos.x, area.y()) , (area.width(), button_height) );
+        self.render_buttons(window, &button_area)?;
+
+        let resources_area = Rectangle::new( (area.pos.x, button_area.y() + button_area.height() + margin_between ) , (area.width(), resources_height) );
         self.render_resources(window, &resources_area)?;
 
-        let mut menu_area = area.translate((0,resources_height));
-        menu_area.size.y -= resources_height;
+        let used_height = button_height + resources_height + margin_between;
+        let mut menu_area = area.translate((0,used_height));
+        menu_area.size.y -= used_height;
         match entity {
             Some(id) => {
                 self.render_entity_details(window, &menu_area, id)?;
