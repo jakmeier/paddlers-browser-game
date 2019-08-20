@@ -35,6 +35,12 @@ impl Query {
     fn unit(ctx: &Context, unit_id: i32) -> FieldResult<GqlUnit> {
         Ok(GqlUnit(ctx.db.unit(unit_id as i64).ok_or("No such unit exists")?))
     }
+    fn map(low_x: i32, high_x: i32) -> GqlMapSlice { 
+        GqlMapSlice {
+            low_x,
+            high_x,
+        }
+    }
 }
 
 #[juniper::object(
@@ -202,5 +208,29 @@ impl GqlTask {
     }
     fn start_time(&self) -> FieldResult<GqlTimestamp> {
         datetime(&self.0.start_time)
+    }
+}
+
+pub struct GqlMapSlice {
+    low_x: i32,
+    high_x: i32,
+}
+
+#[juniper::object (Context = Context)]
+impl GqlMapSlice {
+    fn streams(&self, ctx: &Context) -> Vec<GqlStream> {
+        ctx.db.streams(self.low_x as f32, self.high_x as f32).into_iter().map(|t| GqlStream(t)).collect()
+    }
+}
+
+pub struct GqlStream(paddlers_shared_lib::models::Stream);
+#[juniper::object (Context = Context)]
+impl GqlStream {
+    // TODO f32 instead of f64
+    fn control_points(&self) -> Vec<f64> {
+        let mut vec = vec![self.0.start_x as f64, 5.5];
+        // vec.extend_from_slice(&self.0.control_points)
+        vec.extend(self.0.control_points.iter().map(|f|*f as f64));
+        vec
     }
 }

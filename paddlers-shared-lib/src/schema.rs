@@ -51,6 +51,17 @@ table! {
     use diesel::sql_types::*;
     use crate::models::*;
 
+    streams (id) {
+        id -> Int8,
+        start_x -> Float4,
+        control_points -> Array<Float4>,
+    }
+}
+
+table! {
+    use diesel::sql_types::*;
+    use crate::models::*;
+
     tasks (id) {
         id -> Int8,
         unit_id -> Int8,
@@ -86,6 +97,7 @@ allow_tables_to_appear_in_same_query!(
     attacks_to_units,
     buildings,
     resources,
+    streams,
     tasks,
     units,
 );

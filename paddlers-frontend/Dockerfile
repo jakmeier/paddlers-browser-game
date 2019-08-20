@@ -12,7 +12,6 @@ COPY ./Cargo.lock ./paddlers-frontend/
 RUN cd paddlers-frontend; cargo web deploy --target=wasm32-unknown-unknown --release
 # Now replace shallow projects with actual source code and build again
 COPY ./paddlers-shared-lib/src ./paddlers-shared-lib/src
-COPY ./migrations ./migrations
 COPY ./paddlers-frontend/src ./paddlers-frontend/src
 COPY ./paddlers-frontend/api ./paddlers-frontend/api
 RUN rm ./paddlers-frontend/target/deploy/paddlers-frontend.*

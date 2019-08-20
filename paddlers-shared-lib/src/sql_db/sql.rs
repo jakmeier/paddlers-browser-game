@@ -142,4 +142,12 @@ pub trait GameDB {
             .optional()
             .expect("Error loading task")
     }
+    fn streams(&self, low_x: f32, high_x: f32) -> Vec<Stream> {
+        let results = streams::table
+            .filter(streams::start_x.ge(low_x))
+            .filter(streams::start_x.le(high_x))
+            .load::<Stream>(self.dbconn())
+            .expect("Error loading data");
+        results
+    }
 }

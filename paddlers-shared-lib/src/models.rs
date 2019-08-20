@@ -18,6 +18,7 @@ use super::schema::{
     buildings,
     resources,
     tasks,
+    streams
 };
 
 #[derive(Debug, PartialEq, Clone, Copy, Serialize, Deserialize)]
@@ -180,4 +181,20 @@ pub struct NewTask {
     pub x: i32,
     pub y: i32,
     pub start_time: Option<NaiveDateTime>,
+}
+
+#[derive(Debug, Clone, Queryable, Identifiable)]
+#[cfg(feature = "sql_db")]
+pub struct Stream {
+    pub id: i64,
+    pub start_x: f32,
+    pub control_points: Vec<f32>,
+}
+
+#[derive(Insertable, Debug)]
+#[cfg(feature = "sql_db")]
+#[table_name = "streams"]
+pub struct NewStream {
+    pub start_x: f32,
+    pub control_points: Vec<f32>,
 }
