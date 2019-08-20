@@ -1,5 +1,7 @@
 // Background [0,99]
 pub const Z_TEXTURE: i32 = 0;
+pub const Z_GRID: i32 = 10;
+pub const Z_RIVER: i32 = 15;
 pub const Z_TILE_SHADOW: i32 = 50;
 
 // Units [100,199]

@@ -3,6 +3,7 @@
 //! no connection with game logic in here
 
 use quicksilver::prelude::*; 
+use quicksilver::graphics::Mesh; 
 use crate::gui::sprites::*;
 use crate::gui::animation::{AnimationState};
 
@@ -12,6 +13,8 @@ pub const GREEN: Color =    Color { r: 0.5, g: 1.0, b: 0.5, a: 1.0 };
 pub const LIME_GREEN: Color =    Color { r: 0.6, g: 0.9, b: 0.25, a: 1.0 };
 pub const GREY: Color =    Color { r: 0.75, g: 0.75, b: 0.75, a: 1.0 };
 pub const WHITE: Color =    Color { r: 1.0, g: 1.0, b: 1.0, a: 1.0 };
+pub const MAP_GREEN : Color = Color { r: 0.0, g: 0.5647, b: 0.0, a: 1.0 };
+pub const MAP_BLUE : Color = Color::BLUE;
 
 #[derive(Debug, Clone, Copy)]
 pub enum RenderVariant {
@@ -97,7 +100,7 @@ pub fn write_text_col(
         |font| {
             let style = FontStyle::new(max_area.height(), col);
             let img = font.render(text, &style).unwrap();
-            let area = img.area().fit_into(max_area, fit_strat);
+            let area = img.area().shrink_and_fit_into(max_area, fit_strat);
             window.draw_ex(&area, Img(&img), Transform::IDENTITY, z);
             res = area.width();
             Ok(())
@@ -107,13 +110,30 @@ pub fn write_text_col(
 }
 
 
-pub trait JmrRectangle {
+pub trait JmrRectangle 
+where Self: std::marker::Copy 
+{
+    #[must_use]
     fn shrink_to_center(&self, shrink_to_center: f32) -> Rectangle;
+    #[must_use]
     fn padded(&self, padding: f32) -> Rectangle;
-    fn fit_into(self, frame: &Rectangle, fit_strat: FitStrategy) -> Rectangle;
+    #[must_use]
+    fn fit_into_ex(self, frame: &Rectangle, fit_strat: FitStrategy, allow_grow: bool) -> Rectangle;
+    #[must_use]
     fn fit_square(&self, fit_strat: FitStrategy) -> Rectangle;
+    #[must_use]
     fn grid(&self, cols: usize, rows: usize) -> Grid ;
+    #[must_use]
     fn cut_horizontal(&self, h: f32) -> (Rectangle, Rectangle);
+    #[must_use]
+    fn shrink_and_fit_into(self, frame: &Rectangle, fit_strat: FitStrategy) -> Rectangle {
+        self.fit_into_ex(frame, fit_strat, false)
+    }
+    #[must_use]
+    /// Shrinks (or grows) and moves the rectangle to fit within the given frame, without changing proportions 
+    fn fit_into(&self, frame: &Rectangle, fit_strat: FitStrategy) -> Rectangle {
+        self.fit_into_ex(frame, fit_strat, true)
+    }
 }
 
 pub trait JmrVector {
@@ -131,9 +151,9 @@ impl JmrRectangle for Rectangle{
             .with_center(self.center())
     }
     /// Shrinks and moves the rectangle to fit within the given frame, without changing proportions 
-    fn fit_into(mut self, frame: &Rectangle, fit_strat: FitStrategy) -> Rectangle {
+    fn fit_into_ex(mut self, frame: &Rectangle, fit_strat: FitStrategy, allow_grow: bool) -> Rectangle {
         let stretch_factor = ( frame.width() / self.width() ).min( frame.height() / self.height() );
-        if stretch_factor < 1.0 {
+        if allow_grow || stretch_factor < 1.0 {
             self.size *= stretch_factor;
         }
         match fit_strat {
@@ -219,4 +239,21 @@ pub fn horizontal_flip() -> Transform {
          [0f32, 1f32, 0f32],
          [0f32, 0f32, 1f32]]
     )
+}
+
+pub fn h_line(start: impl Into<Vector>, len: f32, thickness: f32) -> Rectangle {
+    Rectangle::new(start, (len, thickness) )
+}
+pub fn v_line(start: impl Into<Vector>, len: f32, thickness: f32) -> Rectangle {
+    Rectangle::new(start, (thickness, len) )
+}
+
+/// Scales all vertices in the mesh by the given factor, taking (0,0) as origin
+pub fn scale_mesh(mesh: &mut Mesh, r: f32) {
+    for p in mesh.vertices.iter_mut() {
+        p.pos *= r;
+        if let Some(mut tp) = p.tex_pos {
+            tp *= r;
+        } 
+    }
 }

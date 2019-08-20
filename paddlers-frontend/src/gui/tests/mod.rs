@@ -21,11 +21,33 @@ fn padded_rectangle() {
 fn fit_rectangle_into_rectangle() {
     let frame = Rectangle::new( (-50,-50), (100,100) );
     let rect  = Rectangle::new( (111,222), (200,400) );
-    let top_left = rect.clone().fit_into(&frame, FitStrategy::TopLeft);
-    let centered = rect.clone().fit_into(&frame, FitStrategy::Center);
+    let top_left = rect.fit_into(&frame, FitStrategy::TopLeft);
+    let centered = rect.fit_into(&frame, FitStrategy::Center);
 
     assert_eq!(top_left, Rectangle::new((-50, -50), (50, 100) ));
     assert_eq!(centered, Rectangle::new(( -25, -50), (50, 100) ));
+}
+
+#[test]
+fn shrink_fit_rectangle_into_rectangle() {
+    let frame = Rectangle::new( (-400,-400), (800,800) );
+    let rect  = Rectangle::new( (111,222), (200,400) );
+    let top_left = rect.shrink_and_fit_into(&frame, FitStrategy::TopLeft);
+    let centered = rect.shrink_and_fit_into(&frame, FitStrategy::Center);
+
+    assert_eq!(top_left, Rectangle::new((-400, -400), (200, 400) ));
+    assert_eq!(centered, Rectangle::new(( -100, -200), (200, 400) ));
+}
+
+#[test]
+fn grow_fit_rectangle_into_rectangle() {
+    let frame = Rectangle::new( (-400,-400), (800,800) );
+    let rect  = Rectangle::new( (111,222), (200,400) );
+    let top_left = rect.fit_into(&frame, FitStrategy::TopLeft);
+    let centered = rect.fit_into(&frame, FitStrategy::Center);
+
+    assert_eq!(top_left, Rectangle::new((-400, -400), (400, 800) ));
+    assert_eq!(centered, Rectangle::new(( -200, -400), (400, 800) ));
 }
 
 #[test]

@@ -262,8 +262,8 @@ impl State for Game<'static, 'static> {
                 self.render_entities(window)?;
             },
             UiView::Map => {
-                let (asset, map) = (&mut self.sprites, &mut self.map);
-                asset.execute(|sprites| map.render(window, sprites, &main_area))?;
+                let (sprites, map) = (&mut self.sprites, &mut self.map);
+                map.render(window, sprites, &main_area)?;
             }
         }
         

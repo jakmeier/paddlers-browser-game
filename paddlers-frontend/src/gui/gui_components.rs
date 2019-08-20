@@ -99,7 +99,7 @@ pub fn draw_resources(
     let grid = max_area.grid(cols, rows);
     let max_img_area = Rectangle::new_sized((50,50));
     for ((rt, n), res_area) in resis.iter().zip(grid) {
-        let mut img_area = max_img_area.fit_into(&res_area, FitStrategy::TopLeft);
+        let mut img_area = max_img_area.shrink_and_fit_into(&res_area, FitStrategy::TopLeft);
         img_area.size.y = res_area.height();
         img_area.pos.x = img_area.pos.x + res_area.width() - img_area.width();
         let text_h = res_area.height().min(36.0);

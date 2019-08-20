@@ -6,7 +6,7 @@ use crate::prelude::*;
 use super::{MouseState, LeftClickSystem, RightClickSystem, HoverSystem};
 use crate::net::game_master_api::RestApiSystem;
 
-const DOUBLE_CLICK_DELAY: i64 = 500_000; // [us]
+const DOUBLE_CLICK_DELAY: i64 = 400_000; // [us]
 const DOUBLE_CLICK_DISTANCE_2: f32 = 1000.0; // [browser pixel coordinates]
 
 pub struct PointerManager<'a, 'b> {

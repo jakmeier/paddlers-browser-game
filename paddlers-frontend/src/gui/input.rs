@@ -208,11 +208,16 @@ impl<'a> System<'a> for HoverSystem {
         let MouseState(mouse_pos, _) = *mouse_state;
         
         (*ui_state).hovered_entity = None;
-
-        for (e, pos) in (&entities, &position).join() {
-            if mouse_pos.overlaps_rectangle(&pos.area) {
-                (*ui_state).hovered_entity = Some(e);
-                break;
+        
+        match (*ui_state).current_view {
+            UiView::Map => {},
+            UiView::Town => {
+                for (e, pos) in (&entities, &position).join() {
+                    if mouse_pos.overlaps_rectangle(&pos.area) {
+                        (*ui_state).hovered_entity = Some(e);
+                        break;
+                    }
+                }
             }
         }
     }
