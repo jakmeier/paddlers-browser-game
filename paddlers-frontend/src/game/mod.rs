@@ -137,7 +137,7 @@ impl State for Game<'static, 'static> {
             total_updates: 0,
             async_err_receiver: err_recv,
             stats: Statistician::new(now),
-            map: map::GlobalMap::new(),
+            map: map::GlobalMap::new_test(),
         })
     }
 
@@ -193,6 +193,24 @@ impl State for Game<'static, 'static> {
                                 println!("No buildings available");
                             }
                         }
+                        NetMsg::Map(response) => {
+                            if let Some(data) = response.data {
+                                let streams = data.map.streams.iter()
+                                    .map(
+                                        |s| {
+                                            s.control_points
+                                                .chunks(2)
+                                                .map(|slice| (slice[0] as f32, slice[1] as f32))
+                                                .collect()
+                                        }
+                                    )
+                                    .collect();
+                                self.map = map::GlobalMap::new(streams);
+                            }
+                            else {
+                                println!("No map data available");
+                            }
+                        },
                         NetMsg::Resources(response) => {
                             if let Some(data) = response.data {
                                 self.resources.update(data);

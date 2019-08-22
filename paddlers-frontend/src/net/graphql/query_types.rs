@@ -87,6 +87,14 @@ impl Into<WorkerTask> for &UnitTask {
     }
 }
 
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "api/schema.json",
+    query_path = "api/queries/map_query.graphql",
+)]
+pub struct MapQuery;
+pub type MapResponse = Response<map_query::ResponseData>;
+
 use paddlers_shared_lib::models::TaskType;
 impl Into<TaskType> for &UnitTaskType {
     fn into(self) -> TaskType {

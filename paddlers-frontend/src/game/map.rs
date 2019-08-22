@@ -8,11 +8,10 @@ use crate::gui::{
     z::*,
 };
 
-// TODO: This will be a shared struct to be sent across the Internet
 pub struct MapSkeleton {
     w: u32,
     h: u32,
-    streams: Vec<Vec<Vector>>,
+    streams: Vec<Vec<(f32,f32)>>,
 }
 
 pub struct GlobalMap {
@@ -24,8 +23,26 @@ pub struct GlobalMap {
 }
 
 impl GlobalMap {
-    pub fn new() -> Self {
+    pub fn new_test() -> Self {
         let mut skeleton = MapSkeleton::static_test_map();
+        let base_shape = skeleton.base_shape();
+        let water_mesh = skeleton.tesselate_rivers(&base_shape);
+        let grid_mesh = skeleton.tesselate_background();
+        let test_villages = vec![(1,3),(2,1),(2,5),(5,5),(6,2),(6,4),(7,3),(8,7),(9,7),(10,8),(10,9),(12,9),(13,10)];
+        GlobalMap {
+            water_mesh,
+            grid_mesh,
+            skeleton,
+            villages: test_villages,
+            scaling: 1.0,
+        }
+    }
+    pub fn new(streams: Vec<Vec<(f32,f32)>>) -> Self {
+        let mut skeleton = MapSkeleton {
+            w: 15,
+            h: 11,
+            streams,
+        };
         let base_shape = skeleton.base_shape();
         let water_mesh = skeleton.tesselate_rivers(&base_shape);
         let grid_mesh = skeleton.tesselate_background();

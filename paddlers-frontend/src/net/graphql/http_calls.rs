@@ -72,3 +72,15 @@ pub (super) fn http_read_worker_tasks(unit_id: i64) -> PadlResult<impl Future<Ou
         })
     )
 }
+pub (super) fn http_read_map(low_x: i64, high_x: i64) -> PadlResult<impl Future<Output = PadlResult<MapResponse>>> {
+    let request_body = MapQuery::build_query(map_query::Variables{low_x, high_x});
+    let request_string = &serde_json::to_string(&request_body)?;
+    let promise = ajax::send("POST", &graphql_url()?, request_string)?;
+    Ok(
+        promise.map(|x| {
+            let response: MapResponse = 
+                serde_json::from_str(&x?)?;
+            Ok(response)
+        })
+    )
+}

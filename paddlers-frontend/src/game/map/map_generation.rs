@@ -16,30 +16,30 @@ impl MapSkeleton {
 
         let mut streams = vec!();
         streams.push(vec![
-                (4,5.5).into(),
-                (4,5).into(),
-                (5,3).into(),
-                (7,1.2).into(),
-                (5,0).into(),
-                (5,-1.2).into(),
+                (4.0,5.5),
+                (4.0,5.0),
+                (5.0,3.0),
+                (7.0,1.2),
+                (5.0,0.0),
+                (5.0,-1.2),
             ]);
 
         streams.push(vec![
-                (1,5.5).into(),
-                (3,5).into(),
-                (0.5,3).into(),
-                (2,1.2).into(),
-                (1.2,0).into(),
-                (1.3,-1.2).into(),
+                (1.0,5.5),
+                (3.0,5.0),
+                (0.5,3.0),
+                (2.0,1.2),
+                (1.2,0.0),
+                (1.3,-1.2),
             ]);
         
         streams.push(vec![
-                (8,5.5).into(),
-                (6.5,6).into(),
-                (10,6.5).into(),
-                (9,8.8).into(),
-                (13,9).into(),
-                (10,10).into(),
+                (8.0,5.5),
+                (6.5,6.0),
+                (10.0,6.5),
+                (9.0,8.8),
+                (13.0,9.0),
+                (10.0,10.0),
             ]);
         MapSkeleton {
             w: 15,
@@ -68,7 +68,11 @@ impl MapSkeleton {
         add_path_to_mesh(&mut mesh, &main_path, 0.75 * scaling);
 
         for stream_points in &mut self.streams {
-            scale_vec(stream_points, scaling);
+            let mut stream_points: Vec<Vector> = 
+                stream_points.iter()
+                .map(|tup| (*tup).into())
+                .collect();
+            scale_vec(&mut stream_points, scaling);
             add_path_to_mesh(
                 &mut mesh,
                 &stream_path(&stream_points),

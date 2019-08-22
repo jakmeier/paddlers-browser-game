@@ -23,6 +23,7 @@ pub enum NetMsg {
     Attacks(AttacksResponse),
     Buildings(BuildingsResponse),
     Error(PadlError),
+    Map(MapResponse),
     Resources(ResourcesResponse),
     UpdateWorkerTasks(UnitTasksResponse),
     Workers(WorkerResponse),
@@ -53,6 +54,7 @@ pub fn init_net(chan: Sender<NetMsg>) {
         // requests done only once
         STATIC_NET_STATE.spawn(STATIC_NET_STATE.gql_state.buildings_query());
         STATIC_NET_STATE.spawn(STATIC_NET_STATE.gql_state.workers_query());
+        STATIC_NET_STATE.spawn(STATIC_NET_STATE.gql_state.map_query());
     }
 }
 pub fn request_unit_tasks_update(unit_id: i64) {
