@@ -9,6 +9,7 @@ mod buildings;
 mod worker_actions;
 mod town_view;
 mod statistics;
+mod setup;
 
 use db::*;
 use game_master::{

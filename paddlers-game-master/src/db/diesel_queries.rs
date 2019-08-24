@@ -99,4 +99,10 @@ impl DB {
             .execute(self.dbconn())
             .expect("Deleting task");
     }
+    pub fn insert_streams(&self, streams: &[NewStream]) -> Vec<Stream> {
+        diesel::insert_into(streams::dsl::streams)
+            .values(streams)
+            .get_results(self.dbconn())
+            .expect("Inserting streams")
+    }
 }

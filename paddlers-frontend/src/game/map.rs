@@ -1,4 +1,4 @@
-mod map_generation;
+mod map_tesselation;
 
 use quicksilver::prelude::*;
 use quicksilver::graphics::{Mesh};
