@@ -8,7 +8,9 @@ REPO=jakmeier/paddlers
 build-and-run: build
 	make run
 
-build: game-master-container db-interface-container frontend-container
+build: debug-game-master-container debug-db-interface-container frontend-container
+
+release: game-master-container db-interface-container frontend-container
 
 run: docker-compose.local.yml
 	docker-compose -f $< up --no-start
@@ -22,13 +24,19 @@ endif
 	docker-compose -f $< up --no-recreate --no-build
 
 rust-container: Dockerfile
-	docker build --target RustBaseImg -t $(REPO):builder-base .
+	docker build --target RustBaseImg -t $(REPO):builder-base -f $< .
 
-game-master-container: Dockerfile rust-container
-	docker build --target GameMaster -t $(REPO):game-master-snapshot -f paddlers-game-master/Dockerfile .
+game-master-container: paddlers-game-master/Dockerfile rust-container
+	docker build --target GameMaster -t $(REPO):game-master-snapshot -f $< .
 
-db-interface-container: Dockerfile rust-container
-	docker build --target DbInterface -t $(REPO):db-interface-snapshot -f paddlers-db-interface/Dockerfile .
+db-interface-container: paddlers-db-interface/Dockerfile rust-container
+	docker build --target DbInterface -t $(REPO):db-interface-snapshot -f $< .
 
-frontend-container: Dockerfile rust-container
-	docker build --target WebServer -t $(REPO):frontend-snapshot -f paddlers-frontend/Dockerfile .
+debug-game-master-container: paddlers-game-master/debug.Dockerfile rust-container
+	docker build --target GameMaster -t $(REPO):game-master-snapshot -f $< .
+
+debug-db-interface-container: paddlers-db-interface/debug.Dockerfile rust-container
+	docker build --target DbInterface -t $(REPO):db-interface-snapshot -f $< .
+
+frontend-container: paddlers-frontend/Dockerfile rust-container
+	docker build --target WebServer -t $(REPO):frontend-snapshot -f $< .

@@ -9,24 +9,24 @@ USER=root cargo init --lib paddlers-shared-lib
 COPY ./paddlers-db-interface/Cargo.toml ./paddlers-db-interface/
 COPY ./paddlers-shared-lib/Cargo.toml ./paddlers-shared-lib/
 COPY ./Cargo.lock ./paddlers-db-interface/
-RUN cargo build --manifest-path=paddlers-db-interface/Cargo.toml --release
+RUN cargo build --manifest-path=paddlers-db-interface/Cargo.toml
 # Now replace shallow projects with actual source code and build again
 # First, the shared lib only to add another layer of caching
 RUN rm ./paddlers-shared-lib/src/*.rs
-RUN rm ./paddlers-db-interface/target/release/deps/paddlers_shared*
-RUN rm ./paddlers-db-interface/target/release/deps/libpaddlers_shared*
+RUN rm ./paddlers-db-interface/target/debug/deps/paddlers_shared*
+RUN rm ./paddlers-db-interface/target/debug/deps/libpaddlers_shared*
 COPY ./paddlers-shared-lib/src ./paddlers-shared-lib/src
 COPY ./migrations ./migrations
-RUN cargo build --manifest-path=paddlers-db-interface/Cargo.toml --release
+RUN cargo build --manifest-path=paddlers-db-interface/Cargo.toml
 # Second, the application binary
 RUN rm ./paddlers-db-interface/src/*.rs
 COPY ./paddlers-db-interface/src ./paddlers-db-interface/src
-RUN rm ./paddlers-db-interface/target/release/deps/paddlers_db*
-RUN cargo build --manifest-path=paddlers-db-interface/Cargo.toml --release
+RUN rm ./paddlers-db-interface/target/debug/deps/paddlers_db*
+RUN cargo build --manifest-path=paddlers-db-interface/Cargo.toml
 
 FROM buildpack-deps:stretch as DbInterface
 WORKDIR /app
-COPY --from=DbInterfaceBuilder ./paddlers-db-interface/target/release/paddlers-db-interface ./paddlers-db-interface
+COPY --from=DbInterfaceBuilder ./paddlers-db-interface/target/debug/paddlers-db-interface ./paddlers-db-interface
 COPY ./diesel.toml ./diesel.toml
 # Customize env file later if you need to 
 COPY ./local.env ./.env
