@@ -8,6 +8,8 @@ table! {
         id -> Int8,
         departure -> Timestamp,
         arrival -> Timestamp,
+        origin_village_id -> Int8,
+        destination_village_id -> Int8,
     }
 }
 
@@ -34,6 +36,7 @@ table! {
         attack_power -> Nullable<Float4>,
         attacks_per_cycle -> Nullable<Int4>,
         creation -> Timestamp,
+        village_id -> Int8,
     }
 }
 
@@ -44,6 +47,7 @@ table! {
     resources (resource_type) {
         resource_type -> Resource_type,
         amount -> Int8,
+        village_id -> Int8,
     }
 }
 
@@ -88,9 +92,25 @@ table! {
     }
 }
 
+table! {
+    use diesel::sql_types::*;
+    use crate::models::*;
+
+    villages (id) {
+        id -> Int8,
+        x -> Float4,
+        y -> Float4,
+        stream_id -> Int8,
+    }
+}
+
 joinable!(attacks_to_units -> attacks (attack_id));
 joinable!(attacks_to_units -> units (unit_id));
+joinable!(buildings -> villages (village_id));
+joinable!(resources -> villages (village_id));
 joinable!(tasks -> units (unit_id));
+joinable!(units -> villages (home));
+joinable!(villages -> streams (stream_id));
 
 allow_tables_to_appear_in_same_query!(
     attacks,
@@ -100,4 +120,5 @@ allow_tables_to_appear_in_same_query!(
     streams,
     tasks,
     units,
+    villages,
 );
