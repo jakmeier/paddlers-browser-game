@@ -28,4 +28,6 @@ pub mod sql_db;
 #[cfg(feature = "sql_db")]
 pub use sql_db::*; 
 
-pub const CYCLE_SECS: u32 = 10;
+/// The default ID Type for referencing objects across the Paddlers services.
+pub type PadlId = i64;
+pub type VillageKey = PadlId;

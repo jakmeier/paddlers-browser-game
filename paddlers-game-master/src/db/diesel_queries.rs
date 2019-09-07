@@ -105,4 +105,10 @@ impl DB {
             .get_results(self.dbconn())
             .expect("Inserting streams")
     }
+    pub fn insert_villages(&self, villages: &[NewVillage]) -> Vec<Village> {
+        diesel::insert_into(villages::dsl::villages)
+            .values(villages)
+            .get_results(self.dbconn())
+            .expect("Inserting villages")
+    }
 }

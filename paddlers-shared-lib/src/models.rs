@@ -18,7 +18,8 @@ use super::schema::{
     buildings,
     resources,
     tasks,
-    streams
+    streams,
+    villages,
 };
 
 #[derive(Debug, PartialEq, Clone, Copy, Serialize, Deserialize)]
@@ -72,6 +73,8 @@ pub struct Attack {
     pub id: i64,
     pub departure: NaiveDateTime,
     pub arrival: NaiveDateTime,
+    pub origin_village_id: i64,
+    pub destination_village_id: i64,
 }
 
 #[cfg(feature = "sql_db")]
@@ -80,6 +83,8 @@ pub struct Attack {
 pub struct NewAttack {
     pub departure: NaiveDateTime,
     pub arrival: NaiveDateTime,
+    pub origin_village_id: i64,
+    pub destination_village_id: i64,
 }
 
 #[cfg(feature = "sql_db")]
@@ -114,6 +119,7 @@ pub struct Building {
     pub attack_power: Option<f32>, 
     pub attacks_per_cycle: Option<i32>,
     pub creation: NaiveDateTime,
+    pub village_id: i64,
 }
 
 #[cfg(feature = "sql_db")]
@@ -127,6 +133,7 @@ pub struct NewBuilding {
     pub attack_power: Option<f32>, 
     pub attacks_per_cycle: Option<i32>,
     pub creation: NaiveDateTime,
+    pub village_id: i64,
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Serialize, Deserialize)]
@@ -146,6 +153,7 @@ pub enum ResourceType {
 pub struct Resource {
     pub resource_type: ResourceType,
     pub amount: i64,
+    pub village_id: i64,
 }
 
 
@@ -197,4 +205,22 @@ pub struct Stream {
 pub struct NewStream {
     pub start_x: f32,
     pub control_points: Vec<f32>,
+}
+
+#[derive(Debug, Clone, Queryable, Identifiable)]
+#[cfg(feature = "sql_db")]
+pub struct Village {
+    pub id: i64,
+    pub x: f32,
+    pub y: f32,
+    pub stream_id: i64,
+}
+
+#[derive(Insertable, Debug)]
+#[cfg(feature = "sql_db")]
+#[table_name = "villages"]
+pub struct NewVillage {
+    pub x: f32,
+    pub y: f32,
+    pub stream_id: i64,
 }

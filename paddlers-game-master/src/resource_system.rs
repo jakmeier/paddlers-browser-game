@@ -25,6 +25,7 @@ impl DB {
             let entity = Resource {
                 resource_type: res, 
                 amount: 0,
+                village_id: paddlers_shared_lib::prelude::TEST_VILLAGE_ID,
             };
             match self.insert_resource(&entity) {
                 Err(e) => println!("Couldn't insert resource. {} probably already exists. Error: {}", res, e),
