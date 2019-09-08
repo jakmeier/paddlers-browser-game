@@ -150,4 +150,20 @@ pub trait GameDB {
             .expect("Error loading data");
         results
     }
+    fn village(&self, village_id: i64) -> Option<Village> {
+        villages::table
+            .find(village_id)
+            .first(self.dbconn())
+            .optional()
+            .expect("Error loading village")
+    }
+    fn villages(&self, low_x: f32, high_x: f32) -> Vec<Village> {
+        let results = villages::table
+            .filter(villages::x.ge(low_x))
+            .filter(villages::x.le(high_x))
+            .load::<Village>(self.dbconn())
+            .expect("Error loading data");
+        results
+    }
+
 }

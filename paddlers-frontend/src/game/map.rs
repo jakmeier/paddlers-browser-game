@@ -1,4 +1,5 @@
 mod map_tesselation;
+mod village_meta;
 
 use quicksilver::prelude::*;
 use quicksilver::graphics::{Mesh};
@@ -7,6 +8,7 @@ use crate::gui::{
     utils::*,
     z::*,
 };
+pub use village_meta::VillageMetaInfo;
 
 pub struct MapSkeleton {
     w: u32,
@@ -18,7 +20,7 @@ pub struct GlobalMap {
     water_mesh: Mesh,
     grid_mesh: Mesh,
     skeleton: MapSkeleton,
-    villages: Vec<(usize,usize)>,
+    villages: Vec<VillageMetaInfo>,
     scaling: f32,
 }
 
@@ -28,7 +30,8 @@ impl GlobalMap {
         let base_shape = skeleton.base_shape();
         let water_mesh = skeleton.tesselate_rivers(&base_shape);
         let grid_mesh = skeleton.tesselate_background();
-        let test_villages = vec![(1,3),(2,1),(2,5),(5,5),(6,2),(6,4),(7,3),(8,7),(9,7),(10,8),(10,9),(12,9),(13,10)];
+        let test_villages : Vec<(usize,usize)> = vec![(1,3),(2,1),(2,5),(5,5),(6,2),(6,4),(7,3),(8,7),(9,7),(10,8),(10,9),(12,9),(13,10)];
+        let test_villages = test_villages.into_iter().map(|coordinates| VillageMetaInfo{ coordinates }).collect();
         GlobalMap {
             water_mesh,
             grid_mesh,
@@ -37,7 +40,7 @@ impl GlobalMap {
             scaling: 1.0,
         }
     }
-    pub fn new(streams: Vec<Vec<(f32,f32)>>) -> Self {
+    pub fn new(streams: Vec<Vec<(f32,f32)>>, villages: Vec<VillageMetaInfo> ) -> Self {
         let mut skeleton = MapSkeleton {
             w: 15,
             h: 11,
@@ -46,12 +49,11 @@ impl GlobalMap {
         let base_shape = skeleton.base_shape();
         let water_mesh = skeleton.tesselate_rivers(&base_shape);
         let grid_mesh = skeleton.tesselate_background();
-        let test_villages = vec![(1,3),(2,1),(2,5),(5,5),(6,2),(6,4),(7,3),(8,7),(9,7),(10,8),(10,9),(12,9),(13,10)];
         GlobalMap {
             water_mesh,
             grid_mesh,
             skeleton,
-            villages: test_villages,
+            villages: villages,
             scaling: 1.0,
         }
     }
@@ -75,7 +77,8 @@ impl GlobalMap {
         }
     }
     pub fn draw_villages(&mut self, window: &mut Window, sprites: &mut Asset<Sprites>) -> Result<()> {
-        for (x,y) in &self.villages {
+        for vil in &self.villages {
+            let (x,y) = vil.coordinates;
             // translate human-readable to nerd indexing
             let (x,y) = (x-1, y-1);
             let sprite_area = Rectangle::new(

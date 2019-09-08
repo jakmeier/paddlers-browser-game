@@ -30,7 +30,8 @@ pub fn new_schema() -> Schema {
 )]
 impl Query {
     fn village(ctx: &Context, village_id: i32) -> FieldResult<GqlVillage> {
-        Ok(GqlVillage{id: village_id as i64})
+        let village = ctx.db.village(village_id as i64).ok_or("No such village")?;
+        Ok(GqlVillage(village))
     }
     fn unit(ctx: &Context, unit_id: i32) -> FieldResult<GqlUnit> {
         Ok(GqlUnit(ctx.db.unit(unit_id as i64).ok_or("No such unit exists")?))
@@ -151,12 +152,15 @@ fn datetime(dt: &NaiveDateTime) -> FieldResult<GqlTimestamp> {
     Ok(GqlTimestamp::from_chrono(dt))
 }
 
-// TODO: Back this with DB (Only necessary once there is more than one village)
-pub struct GqlVillage{
-    id: i64,
-}
+pub struct GqlVillage(paddlers_shared_lib::models::Village);
 #[juniper::object (Context = Context)]
 impl GqlVillage {
+    fn x(&self) -> f64 {
+        self.0.x as f64
+    }
+    fn y(&self) -> f64 {
+        self.0.y as f64
+    }
     fn sticks(&self, ctx: &Context) -> i32 {
         ctx.db.resource(ResourceType::Sticks) as i32
     }
@@ -167,7 +171,7 @@ impl GqlVillage {
         ctx.db.resource(ResourceType::Logs) as i32
     }
     fn units(&self, ctx: &Context) -> Vec<GqlUnit> {
-        ctx.db.units(self.id).into_iter().map(|u| GqlUnit(u)).collect()
+        ctx.db.units(self.0.id).into_iter().map(|u| GqlUnit(u)).collect()
     }
     fn buildings(&self, ctx: &Context) -> FieldResult<Vec<GqlBuilding>> {
         // TODO: Filter for village
@@ -220,6 +224,9 @@ pub struct GqlMapSlice {
 impl GqlMapSlice {
     fn streams(&self, ctx: &Context) -> Vec<GqlStream> {
         ctx.db.streams(self.low_x as f32, self.high_x as f32).into_iter().map(|t| GqlStream(t)).collect()
+    }
+    fn villages(&self, ctx: &Context) -> Vec<GqlVillage> {
+        ctx.db.villages(self.low_x as f32, self.high_x as f32).into_iter().map(|t| GqlVillage(t)).collect()
     }
 }
 

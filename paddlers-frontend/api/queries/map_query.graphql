@@ -1,7 +1,11 @@
 query MapQuery($lowX: Int!, $highX: Int!){
     map(lowX: $lowX, highX: $highX) {
         streams {
-                controlPoints
+            controlPoints
+        }
+        villages {
+            x
+            y
         }
     }
 }

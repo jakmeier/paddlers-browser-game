@@ -207,7 +207,7 @@ pub struct NewStream {
     pub control_points: Vec<f32>,
 }
 
-#[derive(Debug, Clone, Queryable, Identifiable)]
+#[derive(Debug, Clone, Copy, Queryable, Identifiable)]
 #[cfg(feature = "sql_db")]
 pub struct Village {
     pub id: i64,

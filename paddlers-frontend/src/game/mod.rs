@@ -41,6 +41,7 @@ use forestry::*;
 use std::sync::mpsc::{Receiver, channel};
 use town_resources::TownResources;
 use units::worker_system::WorkerSystem;
+use map::VillageMetaInfo;
 
 const MENU_BOX_WIDTH: f32 = 300.0;
 
@@ -205,7 +206,8 @@ impl State for Game<'static, 'static> {
                                         }
                                     )
                                     .collect();
-                                self.map = map::GlobalMap::new(streams);
+                                let villages = data.map.villages.into_iter().map(VillageMetaInfo::from).collect();
+                                self.map = map::GlobalMap::new(streams, villages);
                             }
                             else {
                                 println!("No map data available");
