@@ -30,5 +30,8 @@ COPY --from=DbInterfaceBuilder ./paddlers-db-interface/target/release/paddlers-d
 COPY ./diesel.toml ./diesel.toml
 # Customize env file later if you need to 
 COPY ./local.env ./.env
-CMD ["./paddlers-db-interface"]
+COPY ./wait-for-it.sh ./wait-for-it.sh
+RUN chmod +x ./wait-for-it.sh
+# TODO: Check if this works for demo
+CMD ["./wait-for-it.sh" , "game-master:8088" , "--strict" , "--timeout=60" , "--" , "./paddlers-db-interface"]
 EXPOSE 65432

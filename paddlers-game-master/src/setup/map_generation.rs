@@ -58,16 +58,43 @@ fn new_stream(start: (f32, f32), max_dx: f32, max_y: f32, lcg: &mut Lcg) -> NewS
     }
 }
 
+fn village_positions(stream_points: &[f32]) -> Vec<(f32,f32)> {
+    // TODO
+    let mut v = vec![];
+    let points: Vec<(f32,f32)> = stream_points.chunks_exact(2).map(|t|(t[0],t[1])).collect();
+    for slice in points.windows(2) {
+        match slice {
+            &[p,q] => {
+                let r = (p.0 + q.0 / 2.0, p.1 + q.1 / 2.0);
+                v.push((r.0.round(), r.1.round()));
+            }
+            _ => {panic!()},
+        }
+    }
+    v
+}
+
 impl DB {
     pub fn init_map(&self, seed: u64) {
         let map = NewMap::generate(seed);
-
-        use paddlers_shared_lib::schema::streams;
-        use diesel::query_dsl::RunQueryDsl;
-        diesel::delete(streams::dsl::streams)
-            .execute(self.dbconn())
-            .unwrap();
         
         self.insert_streams(&map.streams);
+    }
+
+    pub fn add_village(&self) -> Village {
+        // TODO
+        // Find unsaturated stream
+        let streams = self.streams(0.0, 20.0); // TODO
+        let s = &streams[0]; // TODO
+        // Pick a position on it
+        let n = self.all_villages().len();
+        let vp = village_positions(&s.control_points); // TODO
+        let (x,y) = vp[vp.len()-n-1]; // TODO
+        let v = NewVillage {
+            stream_id: s.id,
+            x,
+            y,
+        };
+        self.insert_villages(&[v])[0]
     }
 }

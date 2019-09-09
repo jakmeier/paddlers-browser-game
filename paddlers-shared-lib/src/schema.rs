@@ -44,7 +44,7 @@ table! {
     use diesel::sql_types::*;
     use crate::models::*;
 
-    resources (resource_type) {
+    resources (resource_type, village_id) {
         resource_type -> Resource_type,
         amount -> Int8,
         village_id -> Int8,

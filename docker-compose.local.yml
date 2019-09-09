@@ -20,6 +20,7 @@ services:
     environment:
       - RUST_BACKTRACE=1
       - DATABASE_URL=postgresql://postgres:password@db:5432
+      - RESET_DB=1
       - DATABASE_INIT=1
       - INSERT_TEST_DATA=1
       - RUST_LOG=actix_web=debug
@@ -28,6 +29,7 @@ services:
     image: jakmeier/paddlers:db-interface-snapshot
     depends_on:
       - db
+      - game-master
     ports:
       - 65432:65432
     environment:

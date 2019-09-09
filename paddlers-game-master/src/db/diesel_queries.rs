@@ -49,8 +49,8 @@ impl DB {
             .values(res)
             .execute(self.dbconn())
     }
-    pub fn add_resource(&self, rt: ResourceType, plus: i64) -> QueryResult<Resource> {
-        let target = resources::table.filter(resources::resource_type.eq(rt));
+    pub fn add_resource(&self, rt: ResourceType, vk: VillageKey, plus: i64) -> QueryResult<Resource> {
+        let target = resources::table.find((rt,vk.num()));
         diesel::update(target)
             .set(resources::amount.eq(resources::amount + plus))
             .get_result(self.dbconn())

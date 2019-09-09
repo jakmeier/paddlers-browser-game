@@ -30,4 +30,3 @@ pub use sql_db::*;
 
 /// The default ID Type for referencing objects across the Paddlers services.
 pub type PadlId = i64;
-pub type VillageKey = PadlId;

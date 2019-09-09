@@ -22,11 +22,11 @@ impl EconomyWorker {
 
         let n = db.units_with_job(village_id, &[TaskType::GatherSticks]).len();
         let new_sticks = n as i64;
-        db.add_resource(ResourceType::Sticks, new_sticks).expect("Adding resources");
+        db.add_resource(ResourceType::Sticks, TEST_VILLAGE_ID, new_sticks).expect("Adding resources");
 
         let n = db.units_with_job(village_id, &[TaskType::ChopTree]).len();
         let new_logs = n as i64;
-        db.add_resource(ResourceType::Logs, new_logs).expect("Adding logs");
+        db.add_resource(ResourceType::Logs, TEST_VILLAGE_ID, new_logs).expect("Adding logs");
 
          // TODO: Exact econ calculations: Extra DB table for timestamp of last update instead of wait constant time
         ctx.run_later(std::time::Duration::from_millis(5000), Self::work);

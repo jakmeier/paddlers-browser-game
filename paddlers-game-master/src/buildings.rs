@@ -16,7 +16,7 @@ impl BuildingFactory {
             attack_power: typ.attack_power().map(|i| i as f32), 
             attacks_per_cycle: typ.attacks_per_cycle().map(|i| i as i32),
             creation: now,
-            village_id: paddlers_shared_lib::prelude::TEST_VILLAGE_ID,
+            village_id: paddlers_shared_lib::prelude::TEST_VILLAGE_ID.num(),
         }
     }
 }

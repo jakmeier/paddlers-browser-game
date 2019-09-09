@@ -20,17 +20,26 @@ impl DB {
         if env::var("DATABASE_INIT").is_ok() {
             let server = 1;
             run_db_migrations(self.dbconn())?;
-            self.init_resources();
             self.init_map(server);
+            self.init_resources();
         }
         if env::var("INSERT_TEST_DATA").is_ok() {
+            self.insert_test_villages();
+            self.init_resources();
             self.insert_test_data();
         }
         Ok(())
     }
 
+    fn insert_test_villages(&self) {
+        let required_id = TEST_VILLAGE_ID.num().max(TEST_AI_VILLAGE_ID.num());
+        while required_id > self.all_villages().iter().map(|v| v.id).fold(0, |a, b| a.max(b)) {
+            self.add_village();
+        }
+    }
+
     fn insert_test_data(&self) {
-        if self.units(1).len() == 0 {
+        if self.units(TEST_VILLAGE_ID.num()).len() == 0 {
             self.insert_startkit();
         }
     }
@@ -58,8 +67,9 @@ impl DB {
             self.insert_task(&task);
 
             // Some cash
-            self.add_resource(ResourceType::Feathers, 50).expect("Adding resources");
-            self.add_resource(ResourceType::Sticks, 50).expect("Adding resources");
-            self.add_resource(ResourceType::Logs, 50).expect("Adding resources");
+            let vid = TEST_VILLAGE_ID;
+            self.add_resource(ResourceType::Feathers, vid, 50).expect("Adding starter kit resources");
+            self.add_resource(ResourceType::Sticks, vid, 50).expect("Adding starter kit resources");
+            self.add_resource(ResourceType::Logs, vid, 50).expect("Adding starter kit resources");
     }
 }

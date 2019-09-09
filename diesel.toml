@@ -4,4 +4,4 @@
 [print_schema]
 file = "paddlers-shared-lib/src/schema.rs"
 import_types = ["diesel::sql_types::*","crate::models::*"]
-patch_file = "paddlers-shared-lib/src/schema.patch"
+# patch_file = "paddlers-shared-lib/src/schema.patch"

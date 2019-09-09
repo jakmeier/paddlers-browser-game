@@ -1,6 +1,5 @@
 use paddlers_shared_lib::{
-    models::*,
-    sql::GameDB,
+    prelude::*,
     api::shop::*,
 };
 use crate::{
@@ -15,21 +14,25 @@ impl DB {
     {
         use std::ops::Add;
         let feathers = units.into_iter().map(reward_feathers).fold(0, i64::add);
-        self.add_resource(ResourceType::Feathers, feathers).expect("Adding feathers.");
+        self.add_resource(ResourceType::Feathers, TEST_VILLAGE_ID, feathers).expect("Adding feathers.");
     }
 
     pub fn init_resources(&self) {
         use paddlers_shared_lib::strum::IntoEnumIterator;
         for res in ResourceType::iter()
         {
-            let entity = Resource {
-                resource_type: res, 
-                amount: 0,
-                village_id: paddlers_shared_lib::prelude::TEST_VILLAGE_ID,
-            };
-            match self.insert_resource(&entity) {
-                Err(e) => println!("Couldn't insert resource. {} probably already exists. Error: {}", res, e),
-                _ => {}
+            for village in self.all_villages() {
+                let entity = Resource {
+                    resource_type: res, 
+                    amount: 0,
+                    village_id: village.id,
+                };
+                if self.maybe_resource(res, village.key()).is_none() {
+                    match self.insert_resource(&entity) {
+                        Err(e) => println!("Couldn't insert resource. {} Error: {}", res, e),
+                        _ => {}
+                    }
+                }
             }
         }
     }
@@ -42,12 +45,12 @@ impl DB {
 
     pub fn spend(&self, p: &Price) {
         for (res, n) in p.0.iter() {
-            self.add_resource((*res).into(), -*n).expect("Unchecked spending resources");
+            self.add_resource((*res).into(), TEST_VILLAGE_ID, -*n).expect("Unchecked spending resources");
         }
     }
     pub fn can_afford(&self, p: &Price) -> StringErr {
         for (res, n) in p.0.iter() {
-            if self.resource((*res).into()) < *n {
+            if self.resource((*res).into(), TEST_VILLAGE_ID) < *n {
                 return Err(format!("Not enough {}", res));
             }
         }

@@ -27,6 +27,7 @@ services:
     image: jakmeier/paddlers:db-interface-snapshot
     depends_on:
       - db
+      - game-master
     ports:
       - 65432:65432
     environment:

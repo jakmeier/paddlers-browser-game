@@ -4,6 +4,7 @@ use dotenv::dotenv;
 use std::env;
 
 pub mod sql;
+pub mod keys;
 
 embed_migrations!();
 pub use embedded_migrations::run as run_db_migrations;

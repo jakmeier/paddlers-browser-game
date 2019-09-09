@@ -1,4 +1,7 @@
 FROM jakmeier/paddlers:builder-base as GameMasterBuilder
+# Install diesel CLI
+RUN cargo install diesel_cli
+RUN mkdir -p /out && cp /usr/local/cargo/bin/diesel /out/
 # Build only dependencies first to allow Docker's image caching to kick in
 RUN \
 # With selected nightly, there is a bug in cargo new, therefore cargo init is used here
@@ -31,4 +34,8 @@ COPY --from=GameMasterBuilder ./paddlers-game-master/target/debug/paddlers-game-
 COPY ./diesel.toml ./diesel.toml
 # Customize env file later if you need to 
 COPY ./local.env ./.env
-CMD ["./paddlers-game-master"]
+# Copy diesel CLI binary
+COPY --from=GameMasterBuilder /out/diesel /bin/
+COPY --from=GameMasterBuilder ./migrations ./migrations
+# If RESET_DB has been defiend, rerun diesel migrations before starting paddlers-game-master
+CMD [ ! -z "$RESET_DB" ] && while diesel migration revert; do :; done; diesel migration run; ./paddlers-game-master

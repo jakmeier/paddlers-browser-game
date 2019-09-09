@@ -162,13 +162,13 @@ impl GqlVillage {
         self.0.y as f64
     }
     fn sticks(&self, ctx: &Context) -> i32 {
-        ctx.db.resource(ResourceType::Sticks) as i32
+        ctx.db.resource(ResourceType::Sticks, TEST_VILLAGE_ID) as i32
     }
     fn feathers(&self, ctx: &Context) -> i32 {
-        ctx.db.resource(ResourceType::Feathers) as i32
+        ctx.db.resource(ResourceType::Feathers, TEST_VILLAGE_ID) as i32
     }
     fn logs(&self, ctx: &Context) -> i32 {
-        ctx.db.resource(ResourceType::Logs) as i32
+        ctx.db.resource(ResourceType::Logs, TEST_VILLAGE_ID) as i32
     }
     fn units(&self, ctx: &Context) -> Vec<GqlUnit> {
         ctx.db.units(self.0.id).into_iter().map(|u| GqlUnit(u)).collect()

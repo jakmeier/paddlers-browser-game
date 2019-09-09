@@ -11,8 +11,8 @@ impl DB {
         let new_attack = NewAttack {
             departure: now,
             arrival: arrival,
-            origin_village_id: paddlers_shared_lib::prelude::TEST_AI_VILLAGE_ID,
-            destination_village_id: paddlers_shared_lib::prelude::TEST_VILLAGE_ID,
+            origin_village_id: paddlers_shared_lib::prelude::TEST_AI_VILLAGE_ID.num(),
+            destination_village_id: paddlers_shared_lib::prelude::TEST_VILLAGE_ID.num(),
         };
         let attack = self.insert_attack(&new_attack);
 

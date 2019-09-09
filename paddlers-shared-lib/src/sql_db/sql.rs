@@ -1,3 +1,4 @@
+use crate::prelude::VillageKey;
 use crate::models::*;
 use crate::schema::*;
 use diesel::prelude::*;
@@ -77,9 +78,17 @@ pub trait GameDB {
             .expect("Error loading data");
         result
     }
-    fn resource(&self, r: ResourceType) -> i64 {
+    fn maybe_resource(&self, r: ResourceType, v: VillageKey) -> Option<i64> {
         resources::table
-        .find(r)
+        .find((r,v.num()))
+        .first(self.dbconn())
+        .map(|res: Resource| res.amount)
+        .optional()
+        .expect("Error loading data")
+    }
+    fn resource(&self, r: ResourceType, v: VillageKey) -> i64 {
+        resources::table
+        .find((r,v.num()))
         .first(self.dbconn())
         .map(|res: Resource| res.amount)
         .unwrap_or(0)
@@ -161,6 +170,12 @@ pub trait GameDB {
         let results = villages::table
             .filter(villages::x.ge(low_x))
             .filter(villages::x.le(high_x))
+            .load::<Village>(self.dbconn())
+            .expect("Error loading data");
+        results
+    }
+    fn all_villages(&self) -> Vec<Village> {
+        let results = villages::table
             .load::<Village>(self.dbconn())
             .expect("Error loading data");
         results
