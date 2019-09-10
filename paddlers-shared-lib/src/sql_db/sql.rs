@@ -166,6 +166,16 @@ pub trait GameDB {
             .optional()
             .expect("Error loading village")
     }
+    fn village_at(&self, x: f32, y: f32) -> Option<Village> {
+        villages::table
+            .filter(villages::x.ge(x))
+            .filter(villages::x.lt(1.0+x))
+            .filter(villages::y.ge(y))
+            .filter(villages::y.lt(1.0+y))
+            .first(self.dbconn())
+            .optional()
+            .expect("Error looking up village from position")
+    }
     fn villages(&self, low_x: f32, high_x: f32) -> Vec<Village> {
         let results = villages::table
             .filter(villages::x.ge(low_x))

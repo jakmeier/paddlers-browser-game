@@ -34,7 +34,7 @@ impl DB {
     fn insert_test_villages(&self) {
         let required_id = TEST_VILLAGE_ID.num().max(TEST_AI_VILLAGE_ID.num());
         while required_id > self.all_villages().iter().map(|v| v.id).fold(0, |a, b| a.max(b)) {
-            self.add_village();
+            self.add_village().unwrap();
         }
     }
 

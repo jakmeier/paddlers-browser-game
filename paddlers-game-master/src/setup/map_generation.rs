@@ -1,6 +1,6 @@
 //! Uses a LCG to generate a pseudo-random sequence for the streams on the map
 use paddlers_shared_lib::prelude::*;
-use paddlers_shared_lib::game_mechanics::map::MAP_H;
+use paddlers_shared_lib::game_mechanics::map::*;
 use crate::db::DB;
 mod lcg;
 use lcg::Lcg;
@@ -16,13 +16,12 @@ impl NewMap {
         let mut lcg = Lcg::new(seed);
 
         let start_y = 5.5;
-        streams.push(new_stream((1.0, start_y), 5.0, 20.0, &mut lcg));
-        streams.push(new_stream((3.0, start_y), 5.0, -10.0, &mut lcg));
-        streams.push(new_stream((5.0, start_y), 5.0, 20.0, &mut lcg));
-        streams.push(new_stream((7.0, start_y), 5.0, -10.0, &mut lcg));
-        streams.push(new_stream((9.0, start_y), 5.0, 20.0, &mut lcg));
-        streams.push(new_stream((11.0, start_y), 5.0, -10.0, &mut lcg));
-        streams.push(new_stream((13.0, start_y), 5.0, 20.0, &mut lcg));
+        let dx = MAP_STREAM_AREA_W;
+        for i in 0..4 {
+            let b = (4 * i) as f32;
+            streams.push(new_stream((b + 1.0, start_y), dx, 20.0, &mut lcg));
+            streams.push(new_stream((b + 3.0, start_y), dx, -10.0, &mut lcg));
+        }
 
         NewMap {
             streams
@@ -115,20 +114,33 @@ impl DB {
         // self.test_add_all_villages();
     }
 
-    pub fn add_village(&self) -> Village {
-        // TODO
+    pub fn add_village(&self) -> Result<Village, &'static str> {
         // Find unsaturated stream
-        let streams = self.streams(0.0, 20.0); // TODO
-        let s = &streams[0]; // TODO
-        // Pick a position on it
-        let vp = village_positions(&s.control_points); // TODO
-        let (x,y) = vp[0]; // TODO
-        let v = NewVillage {
-            stream_id: s.id,
-            x,
-            y,
-        };
-        self.insert_villages(&[v])[0]
+        let streams = self.streams_to_add_village();
+        for s in streams {
+            // Pick a position on it
+            let vp = village_positions(&s.control_points);
+            for (x,y) in vp {
+                if self.map_position_empty(x, y) {
+                    let v = NewVillage {
+                        stream_id: s.id,
+                        x,
+                        y,
+                    };
+                    return Ok(self.insert_villages(&[v])[0]);
+                }
+            }
+        }
+        Err("No space for another village")
+    }
+
+    fn streams_to_add_village(&self) -> Vec<Stream> {
+        // Good enough for now
+        self.streams(0.0, MAP_MAX_X as f32)
+    }
+
+    fn map_position_empty(&self, x: f32, y: f32) -> bool {
+        self.village_at(x, y).is_none()
     }
 
     #[cfg(debug_assertions)]
