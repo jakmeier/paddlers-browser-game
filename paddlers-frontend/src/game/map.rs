@@ -43,7 +43,7 @@ impl GlobalMap {
     pub fn new(streams: Vec<Vec<(f32,f32)>>, villages: Vec<VillageMetaInfo> ) -> Self {
         let mut skeleton = MapSkeleton {
             w: 15,
-            h: 11,
+            h: paddlers_shared_lib::game_mechanics::map::MAP_H,
             streams,
         };
         let base_shape = skeleton.base_shape();
