@@ -22,7 +22,7 @@ RUN cargo build --manifest-path=paddlers-db-interface/Cargo.toml
 RUN rm ./paddlers-db-interface/src/*.rs
 COPY ./paddlers-db-interface/src ./paddlers-db-interface/src
 RUN rm ./paddlers-db-interface/target/debug/deps/paddlers_db*
-RUN cargo build --manifest-path=paddlers-db-interface/Cargo.toml
+RUN cargo build --manifest-path=paddlers-db-interface/Cargo.toml --features=local
 
 FROM buildpack-deps:stretch as DbInterface
 WORKDIR /app

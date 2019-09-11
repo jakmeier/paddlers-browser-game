@@ -77,6 +77,9 @@ impl GlobalMap {
         }
     }
     pub fn draw_villages(&mut self, window: &mut Window, sprites: &mut Asset<Sprites>) -> Result<()> {
+        #[cfg(feature="dev_view")]
+        self.visualize_control_points(window);
+
         for vil in &self.villages {
             let (x,y) = vil.coordinates;
             // translate human-readable to nerd indexing
@@ -95,5 +98,24 @@ impl GlobalMap {
             )?;
         }
         Ok(())
+    }
+
+    #[cfg(feature="dev_view")]
+    fn visualize_control_points(&self, window: &mut Window) {
+        let pt = self.scaling / 5.0;
+        for s in &self.skeleton.streams {
+            for (x,y) in s {
+                let area = Rectangle::new(
+                    (x * self.scaling - pt/2.0, y * self.scaling - pt/2.0),
+                    (pt, pt),
+                );
+                window.draw_ex(
+                    &area, 
+                    Col(Color::WHITE), 
+                    Transform::rotate(45), 
+                    1000
+                );
+            }
+        }
     }
 }

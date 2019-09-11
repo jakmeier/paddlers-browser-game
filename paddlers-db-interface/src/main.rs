@@ -23,13 +23,18 @@ fn main() {
     let config = Config::from_env()
         .unwrap_or(Config::default());
     
-    // Debugging CORS issues: 
-    // let allowed_origins = AllowedOrigins::all();
+    #[cfg(feature="local")]
+    let allowed_origins = AllowedOrigins::all();
+    #[cfg(not(feature="local"))]
     let origin = config.frontend_origin;
+    #[cfg(not(feature="local"))]
     let allowed_origins = AllowedOrigins::some_exact(&[origin]);
 
     let cors = rocket_cors::CorsOptions {
         allowed_origins,
+        #[cfg(feature="local")]
+        allowed_methods: vec![Method::Post, Method::Get].into_iter().map(From::from).collect(),
+        #[cfg(not(feature="local"))]
         allowed_methods: vec![Method::Post].into_iter().map(From::from).collect(),
         allowed_headers: AllowedHeaders::some(&["Authorization", "Accept", "Content-Type"]),
         allow_credentials: true,

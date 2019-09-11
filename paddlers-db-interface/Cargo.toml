@@ -22,3 +22,6 @@ juniper_rocket = "0.4"
 version = "0.4"
 default-features = false
 features = ["diesel_postgres_pool"]
+
+[features]
+local = []
