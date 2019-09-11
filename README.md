@@ -27,6 +27,7 @@ Some of the game development process is documented in this blog series:
 
 - [Gamedev #0: Creating a new universe](https://www.jakobmeier.ch/blogging/Paddlers_0.html)
 - [Gamedev #1: Game mechanics](https://www.jakobmeier.ch/blogging/Paddlers_1.html)
+- [Gamedev #2: Multiplayer and procedural map generation](https://www.jakobmeier.ch/blogging/Paddlers_2.html)
 
 
 ## Compiling and running the project 
