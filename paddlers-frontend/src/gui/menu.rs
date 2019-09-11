@@ -7,11 +7,12 @@ use crate::game::{
     fight::{Health, Aura},
     components::EntityContainer,
     forestry::ForestComponent,
+    town::town_shop::DefaultShop,
 };
 use crate::gui::{
     sprites::{SpriteIndex, SingleSprite},
     z::*,
-    input::{UiState, DefaultShop},
+    input::{UiState, UiView},
     utils::*,
     gui_components::*,
     render::Renderable,
@@ -47,12 +48,27 @@ impl Game<'_, '_> {
         let used_height = button_height + resources_height + margin_between;
         let mut menu_area = area.translate((0,used_height));
         menu_area.size.y -= used_height;
+        
+        let view = self.world.read_resource::<UiState>().current_view;
+        match view {
+            UiView::Map => {
+                // NOP
+            },
+            UiView::Town => {
+                self.render_town_menu(window, entity, &menu_area)?;
+            },
+        }
+
+        Ok(())
+    }
+
+    fn render_town_menu(&mut self, window: &mut Window, entity: Option<Entity>, area: &Rectangle) -> Result<()> {
         match entity {
             Some(id) => {
-                self.render_entity_details(window, &menu_area, id)?;
+                self.render_entity_details(window, area, id)?;
             },
             None => {
-                self.render_shop(window, &menu_area)?;
+                self.render_shop(window, area)?;
             },
         }
         Ok(())

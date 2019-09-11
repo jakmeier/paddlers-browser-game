@@ -30,11 +30,11 @@ use crate::logging::{
     statistics::Statistician,
 };
 
-use input::{UiState, Clickable, DefaultShop, pointer::PointerManager};
+use input::{UiState, Clickable, pointer::PointerManager};
 use movement::*;
 use quicksilver::prelude::*;
 use specs::prelude::*;
-use town::{Town, TOWN_RATIO};
+use town::{Town, TOWN_RATIO, town_shop::DefaultShop};
 use units::attackers::{Attacker};
 use fight::*;
 use forestry::*;

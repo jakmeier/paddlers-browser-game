@@ -140,7 +140,7 @@ pub fn move_worker_into_building<'a>(
 }
 
 pub fn move_worker_out_of_building<'a>(
-    town: &mut Write<'a, Town>,
+    town: &mut Town,
     worker_e: Entity,
     task: TaskType,
     workers: &mut WriteStorage<'a, Worker>,

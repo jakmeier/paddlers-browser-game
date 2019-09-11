@@ -1,3 +1,6 @@
+pub mod town_input;
+pub mod town_shop;
+
 use quicksilver::prelude::*;
 use pathfinding::prelude::{astar, absdiff};
 use crate::gui::{
