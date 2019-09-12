@@ -33,8 +33,8 @@ impl Sprites {
             Image::load("buildings/bundling_station.png"),
             Image::load("buildings/saw_mill.png"),
             Image::load("gui/map_button.png"),
+            Image::load("gui/map_button_hov.png"),
             Image::load("buildings/shack.png"),
-            Image::load("buildings/shack.png"),//placeholder
             Image::load("ducks/roger_front.png"),
             Image::load("ducks/roger_back.png"),
             Image::load("ducks/roger.png"),
@@ -42,6 +42,8 @@ impl Sprites {
             Image::load("gui/leaves/50px_mid.png"),
             Image::load("gui/leaves/50px_top.png"),
             Image::load("gui/leaves/leaves.png"),
+            Image::load("gui/town_button.png"),
+            Image::load("gui/town_button_hov.png"),
         ];
 
         Asset::new(
@@ -113,6 +115,9 @@ pub enum SingleSprite {
     BundlingStation,
     SawMill,
     MapButton,
+    MapButtonHov,
+    TownButton,
+    TownButtonHov,
     Shack,
 }
 
@@ -147,8 +152,10 @@ impl Index<SpriteIndex> for Sprites {
                 SingleSprite::BundlingStation => 15,
                 SingleSprite::SawMill => 16,
                 SingleSprite::MapButton => 17,
-                SingleSprite::Shack => 18,
-                // SingleSprite:: => 19,
+                SingleSprite::MapButtonHov => 18,
+                SingleSprite::Shack => 19,
+                SingleSprite::TownButton => 27,
+                SingleSprite::TownButtonHov => 28,
             },
             SpriteIndex::Directed(j,d) => match (j,d) {
                 (DirectedSprite::Hero, Direction::South) => 20,

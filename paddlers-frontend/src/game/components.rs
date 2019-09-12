@@ -40,6 +40,7 @@ impl EntityContainer {
             RenderVariant::ImgWithImgBackground(img, _) 
             | RenderVariant::ImgWithColBackground(img, _)
             | RenderVariant::Img(img)
+            | RenderVariant::ImgWithHoverAlternative(img,_)
             => {
                 RenderVariant::ImgWithColBackground(img, GREY)
             },

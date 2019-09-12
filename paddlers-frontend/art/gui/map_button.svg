@@ -16,9 +16,9 @@
    id="svg8"
    inkscape:version="0.92.3 (2405546, 2018-03-11)"
    sodipodi:docname="map_button.svg"
-   inkscape:export-filename="/home/jakmeier/fun/gamedev/paddlers/paddlers-frontend/static/gui/map_button.png"
-   inkscape:export-xdpi="12.7"
-   inkscape:export-ydpi="12.7">
+   inkscape:export-filename="/home/jakmeier/fun/gamedev/paddlers/paddlers-frontend/static/gui/map_button_hov.png"
+   inkscape:export-xdpi="20.32"
+   inkscape:export-ydpi="20.32">
   <defs
      id="defs2" />
   <sodipodi:namedview
@@ -28,11 +28,11 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.98994949"
-     inkscape:cx="141.33169"
-     inkscape:cy="19.25587"
+     inkscape:zoom="1.4"
+     inkscape:cx="-305.77808"
+     inkscape:cy="209.18226"
      inkscape:document-units="mm"
-     inkscape:current-layer="g904"
+     inkscape:current-layer="layer2"
      showgrid="false"
      inkscape:window-width="3750"
      inkscape:window-height="2049"
@@ -48,7 +48,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -116,6 +116,18 @@
          id="path837-3-56"
          d="m 13.540708,258.98148 c 6.962,-0.11145 2.636863,-7.20748 8.476391,-8.59992 4.551553,-0.55557 5.706389,-2.54402 5.714321,-2.9353"
          style="fill:none;stroke:#0000ff;stroke-width:0.79936862;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    </g>
+    <g
+       inkscape:groupmode="layer"
+       id="layer2"
+       inkscape:label="Glow"
+       style="display:inline">
+      <path
+         style="opacity:1;fill:none;fill-opacity:1;stroke:#030303;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.96449703;paint-order:markers stroke fill"
+         d="m 12.274066,203.552 c 6.998332,-6.63527 80.716841,-7.30794 85.411788,2.26785 1.211662,2.4713 -3.79416,81.27708 -3.79416,81.27708 -8.027733,-8.39895 -80.968164,-3.64564 -92.0263716,0 0,0 5.8605171,-79.23268 10.4087436,-83.54493 z"
+         id="rect834-6"
+         inkscape:connector-curvature="0"
+         sodipodi:nodetypes="sssss" />
     </g>
   </g>
 </svg>

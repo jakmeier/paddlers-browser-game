@@ -22,8 +22,8 @@ use crate::gui::{
 
 impl Game<'_, '_> {
     pub fn render_menu_box(&mut self, window: &mut Window) -> Result<()> {
-        let button_height = 50.0;
-        let margin_between = 10.0;
+        let button_height = 80.0;
+        let margin_between = 15.0;
         let resources_height = 50.0;
         let data = self.world.read_resource::<UiState>();
         let entity = (*data).selected_entity;
@@ -43,7 +43,7 @@ impl Game<'_, '_> {
         let mut area = area;
         area.pos.x += 20.0;
         area.size.x -= 60.0;
-        area.pos.y += 50.0;
+        area.pos.y += 40.0;
         area.size.y -= 100.0;
 
         let button_area = Rectangle::new( (area.pos.x, area.y()) , (area.width(), button_height) );
@@ -52,7 +52,7 @@ impl Game<'_, '_> {
         let resources_area = Rectangle::new( (area.pos.x, button_area.y() + button_area.height() + margin_between ) , (area.width(), resources_height) );
         self.render_resources(window, &resources_area)?;
 
-        let used_height = button_height + resources_height + margin_between;
+        let used_height = button_height + resources_height + 2.0 * margin_between;
         let mut menu_area = area.translate((0,used_height));
         menu_area.size.y -= used_height;
         
@@ -155,7 +155,7 @@ impl Game<'_, '_> {
 
         let (shop_area, price_tag_area) = area.cut_horizontal(area.height() - price_tag_h);
         draw_table(window, sprites, &mut table, &shop_area, &mut self.font, 60.0, Z_MENU_TEXT)?;
-        (*shop).ui.draw_hover(window, sprites, &mut self.bold_font, &price_tag_area)
+        (*shop).ui.draw_hover_info(window, sprites, &mut self.bold_font, &price_tag_area)
     }
 
     pub fn render_resources(&mut self, window: &mut Window, area: &Rectangle) -> Result<()> {

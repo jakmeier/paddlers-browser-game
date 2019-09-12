@@ -117,7 +117,7 @@ pub fn draw_resources(
 #[derive(Clone, Debug)]
 struct UiElement<T: Clone + std::fmt::Debug> {
     display: RenderVariant,
-    hover_display: Option<Vec<(ResourceType, i64)>>, 
+    hover_info: Option<Vec<(ResourceType, i64)>>, 
     on_click: Option<T>,
 }
 #[derive(Clone, Debug)]
@@ -142,11 +142,12 @@ impl<T: Clone + std::fmt::Debug> UiBox<T> {
         }
     }
 
+    #[allow(dead_code)]
     pub fn add(&mut self, i: SpriteSet, on_click: T) {
         self.add_el(
             UiElement { 
                 display: RenderVariant::Img(i), 
-                hover_display: None,
+                hover_info: None,
                 on_click: Some(on_click),
             }    
         );
@@ -156,7 +157,7 @@ impl<T: Clone + std::fmt::Debug> UiBox<T> {
         self.add_el(
             UiElement { 
                 display: rv,
-                hover_display: None,
+                hover_info: None,
                 on_click: Some(on_click),
             }    
         );
@@ -166,7 +167,7 @@ impl<T: Clone + std::fmt::Debug> UiBox<T> {
         self.add_el(
             UiElement { 
                 display: RenderVariant::ImgWithColBackground(i, col),
-                hover_display: Some(cost),
+                hover_info: Some(cost),
                 on_click: Some(on_click),
             }    
         );
@@ -176,7 +177,7 @@ impl<T: Clone + std::fmt::Debug> UiBox<T> {
         self.add_el(
             UiElement { 
                 display: RenderVariant::Hide, 
-                hover_display: None,
+                hover_info: None,
                 on_click: None,
             }    
         );
@@ -219,6 +220,13 @@ impl<T: Clone + std::fmt::Debug> UiBox<T> {
                         FitStrategy::Center
                     )?;
                     Some(img)
+                },
+                RenderVariant::ImgWithHoverAlternative(img, hov) => {
+                    if window.mouse().pos().overlaps_rectangle(&draw_area) {
+                        Some(hov)
+                    } else {
+                        Some(img)
+                    } 
                 },
                 RenderVariant::Hide => {
                     None
@@ -276,10 +284,10 @@ impl<T: Clone + std::fmt::Debug> UiBox<T> {
         }
     }
 
-    pub fn draw_hover(&mut self, window: &mut Window, sprites: &mut Asset<Sprites>, font: &mut Asset<Font>, area: &Rectangle) -> Result<()> {
+    pub fn draw_hover_info(&mut self, window: &mut Window, sprites: &mut Asset<Sprites>, font: &mut Asset<Font>, area: &Rectangle) -> Result<()> {
         let mouse = window.mouse().pos();
         if let Some(el) = self.find_element_under_mouse(mouse) {
-            if let Some(cost) = &el.hover_display {
+            if let Some(cost) = &el.hover_info {
                 draw_resources(window, sprites, &cost, area, font, Z_MENU_RESOURCES)?;
             }
         }

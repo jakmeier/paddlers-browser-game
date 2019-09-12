@@ -17,7 +17,7 @@ pub struct DefaultShop {
 impl Default for DefaultShop {
     fn default() -> Self {
         DefaultShop {
-            ui : UiBox::new(3, 4, 5.0, 10.0)
+            ui : UiBox::new(3, 3, 5.0, 10.0)
         }
     }
 }

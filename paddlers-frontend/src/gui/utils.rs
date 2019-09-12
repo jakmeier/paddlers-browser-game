@@ -22,6 +22,7 @@ pub enum RenderVariant {
     Img(SpriteSet),
     ImgWithImgBackground(SpriteSet, SingleSprite),
     ImgWithColBackground(SpriteSet, Color),
+    ImgWithHoverAlternative(SpriteSet, SpriteSet),
     Hide,
 }
 
