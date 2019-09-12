@@ -31,7 +31,7 @@ pub struct UiState {
     pub menu_box_area: Rectangle,
     pub current_view: UiView,
 }
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum UiView {
     Town,
     Map,
@@ -218,5 +218,8 @@ impl UiState {
             UiView::Map => self.current_view = UiView::Town,
             UiView::Town => self.current_view = UiView::Map,
         }
+    }
+    pub fn set_view(&mut self, view: UiView) {
+        self.current_view = view;
     }
 }

@@ -41,10 +41,12 @@ impl Game<'_, '_> {
 
         draw_leaf_border(window, &mut self.sprites, &area);
 
-        area.pos.x += 20.0;
-        area.size.x -= 60.0;
-        area.pos.y += 40.0;
-        area.size.y -= 100.0;
+        let leaf_h = 40.0;
+        let leaf_w = 20.0;
+        area.pos.x += leaf_w;
+        area.pos.y += leaf_h;
+        area.size.x -= 3.0 * leaf_w;
+        area.size.y -= 2.0 * leaf_h;
 
         let mut y = area.y();
         let button_area = Rectangle::new( (area.pos.x, y), (area.width(), button_height) );
@@ -52,21 +54,21 @@ impl Game<'_, '_> {
         y += button_height;
 
         let h = draw_duck_step_line(window, &mut self.sprites, Vector::new(area.x()-20.0, y), area.x() + area.width());
-        y += h;
+        y += h + 10.0;
 
-        let resources_area = Rectangle::new( (area.x(), y), (area.width(), resources_height) );
-        self.render_resources(window, &resources_area)?;
-        y += resources_area.height();
-
-        let h = y0 + h0 - y;
-        let menu_area = Rectangle::new((area.x(), y),(area.width(), h));
-        
         let view = self.world.read_resource::<UiState>().current_view;
         match view {
             UiView::Map => {
                 // NOP
             },
             UiView::Town => {
+                let resources_area = Rectangle::new( (area.x(), y), (area.width(), resources_height) );
+                self.render_resources(window, &resources_area)?;
+                y += resources_area.height();
+
+                let h = y0 + h0 - y - leaf_h;
+                let menu_area = Rectangle::new((area.x(), y),(area.width(), h));
+
                 self.render_town_menu(window, entity, &menu_area)?;
             },
         }
@@ -167,7 +169,7 @@ impl Game<'_, '_> {
         let sprites = &mut self.sprites;
         let font = &mut self.bold_font;
         let resis = self.resources.non_zero_resources();
-        draw_resources(window, sprites, &resis, area, font, Z_MENU_RESOURCES)?;
+        draw_resources(window, sprites, &resis, &area, font, Z_MENU_RESOURCES)?;
         Ok(())
     }
 }

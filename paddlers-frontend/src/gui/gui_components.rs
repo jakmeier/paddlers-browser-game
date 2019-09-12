@@ -107,7 +107,7 @@ pub fn draw_resources(
             (res_area.pos.x, res_area.pos.y + (res_area.height() - text_h)/2.0),
             (res_area.size.x - img_area.width(), text_h)
         );
-        draw_static_image(sprites, window, &img_area, rt.sprite().default(), z, FitStrategy::Center)?;
+        draw_static_image(sprites, window, &img_area.padded(10.0), rt.sprite().default(), z, FitStrategy::Center)?;
         write_text(font, window, &text_area, z+1, FitStrategy::Center, &n.to_string())?;
     }
     Ok(())

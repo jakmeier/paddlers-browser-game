@@ -17,15 +17,13 @@ pub struct DefaultShop {
 impl Default for DefaultShop {
     fn default() -> Self {
         DefaultShop {
-            ui : UiBox::new(3, 3, 5.0, 10.0)
+            ui : UiBox::new(3, 3, 4.0, 8.0)
         }
     }
 }
 impl DefaultShop {
     pub fn new() -> Self {
-        let mut result = DefaultShop {
-            ui : UiBox::new(3, 4, 5.0, 10.0)
-        };
+        let mut result = DefaultShop::default();
         result.add_building(BuildingType::BlueFlowers);
         result.add_building(BuildingType::RedFlowers);
         result.add_building(BuildingType::Tree);

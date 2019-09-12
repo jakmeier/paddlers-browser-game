@@ -3,7 +3,7 @@ use specs::prelude::*;
 use crate::gui::{
     sprites::*,
     gui_components::*,
-    input::UiState,
+    input::{UiState, UiView},
     utils::*,
 };
 
@@ -13,9 +13,7 @@ pub struct MenuButtons {
 
 #[derive(Debug,Clone)]
 enum MenuButtonAction {
-    // ToMapView,
-    // ToTownView,
-    ToggleView
+    SwitchToView(UiView),
 }
 
 impl MenuButtons {
@@ -23,11 +21,11 @@ impl MenuButtons {
         let mut ui_box = UiBox::new(4, 1, 0.0, 5.0);
         ui_box.add_empty();
 
-        let map_button = Self::button_render(SingleSprite::TownButton, SingleSprite::TownButtonHov);
-        ui_box.add_with_render_variant(map_button, MenuButtonAction::ToggleView);
+        let town_button = Self::button_render(SingleSprite::TownButton, SingleSprite::TownButtonHov);
+        ui_box.add_with_render_variant(town_button, MenuButtonAction::SwitchToView(UiView::Town));
         
         let map_button = Self::button_render(SingleSprite::MapButton, SingleSprite::MapButtonHov);
-        ui_box.add_with_render_variant(map_button, MenuButtonAction::ToggleView);
+        ui_box.add_with_render_variant(map_button, MenuButtonAction::SwitchToView(UiView::Map));
         
         ui_box.add_empty();
         
@@ -44,8 +42,8 @@ impl MenuButtons {
     pub fn click(&self, mouse: impl Into<Vector>, ui_state: &mut UiState) {
         if let Some(action) = self.ui.click(mouse) {
             match action {
-                MenuButtonAction::ToggleView => {
-                    ui_state.toggle_view();
+                MenuButtonAction::SwitchToView(v) => {
+                    ui_state.set_view(v);
                 }
             }
         }
