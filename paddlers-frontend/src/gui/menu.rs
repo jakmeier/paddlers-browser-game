@@ -150,6 +150,7 @@ impl Game<'_, '_> {
     pub fn render_shop(&mut self, window: &mut Window, area: &Rectangle) -> Result<()> {
         let mut table = vec![];
         table.push(forest_details(self.town().forest_size(), self.town().forest_usage()));
+        table.push(total_aura_details(self.town().ambience()));
 
         let mut shop = self.world.write_resource::<DefaultShop>();
         let sprites = &mut self.sprites;
@@ -200,5 +201,12 @@ fn forest_details<'a>(forest_size: usize, forest_usage: usize) -> TableRow<'a> {
     TableRow::TextWithImage(
         text,
         SpriteIndex::Simple(SingleSprite::Tree),
+    )
+}
+fn total_aura_details<'a>(aura_size: i64,) -> TableRow<'a> {
+    let text = format!("Ambience: {}", aura_size);
+    TableRow::TextWithImage(
+        text,
+        SpriteIndex::Simple(SingleSprite::Ambience),
     )
 }

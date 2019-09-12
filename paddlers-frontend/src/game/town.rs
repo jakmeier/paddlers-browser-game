@@ -19,6 +19,8 @@ pub struct Town {
     map: TownMap,
     state: TownState<specs::Entity>,
     ul: f32,
+    // Could possibly be added to TownState, depends on further developments of the backend.
+    pub total_ambience: i64,
 }
 impl Default for Town {
     fn default() -> Self {
@@ -37,12 +39,8 @@ impl Town {
             map: map,
             state: TownState::new(),
             ul: ul,
+            total_ambience: 0,
         }
-    }
-
-    #[allow(dead_code)]
-    pub fn update_ul(&mut self, ul: f32) {
-        self.ul = ul;
     }
 
     pub fn forest_size(&self) -> usize {
@@ -56,6 +54,12 @@ impl Town {
     }
     pub fn forest_size_free(&self) -> usize {
         self.state.forest_size - self.state.forest_usage()
+    }
+    pub fn ambience(&self) -> i64 {
+        self.total_ambience
+    }
+    pub fn distance_to_lane(&self, i: TileIndex) -> f32 {
+        self.map.distance_to_lane(i)
     }
 
     #[allow(dead_code)]

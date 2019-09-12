@@ -341,6 +341,21 @@ impl State for Game<'static, 'static> {
                         let r = self.rest().http_delete_building(tile_index);
                         self.check(r);
 
+                        // Account for changes in aura total
+                        let aura_store = self.world.read_storage::<Aura>();
+                        let aura = aura_store.get(e).map(|a| a.effect);
+                        let range_store = self.world.read_storage::<Range>();
+                        let range = range_store.get(e).map(|r| r.range);
+                        std::mem::drop(aura_store);
+                        std::mem::drop(range_store);
+                        if let Some(aura) = aura {
+                            if let Some(range) = range {
+                                if range > self.town().distance_to_lane(tile_index) {
+                                    self.town_mut().total_ambience -= aura;
+                                }
+                            }
+                        }
+
                         self.town_mut().remove_building(tile_index);
                         self.world.delete_entity(e)
                             .unwrap_or_else(

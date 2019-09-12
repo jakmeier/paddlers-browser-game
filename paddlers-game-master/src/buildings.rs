@@ -1,6 +1,6 @@
 use paddlers_shared_lib::{
     models::*,
-    api::attributes::*,
+    game_mechanics::attributes::*,
 };
 
 pub struct BuildingFactory;

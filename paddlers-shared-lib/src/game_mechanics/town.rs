@@ -48,6 +48,11 @@ impl TownMap {
         }
         TownMap(map)
     }
+    pub fn distance_to_lane(&self, i: TileIndex) -> f32 {
+        // Only works for simple map!
+        let d = (i.1 as f32 - TOWN_LANE_Y as f32).abs() - 1.0;
+        d.max(0.0)
+    }
 
     pub fn tile_type(&self, index: TileIndex) -> Option<&TownTileType> {
         self.0.get(index.0).and_then(|m| m.get(index.1))

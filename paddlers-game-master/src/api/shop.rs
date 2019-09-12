@@ -4,8 +4,10 @@ use paddlers_shared_lib::{
     models::*,
     api::{
         shop::*,
+    },
+    game_mechanics::{
         attributes::Attributes,
-    }
+    },
 };
 use crate::buildings::BuildingFactory;
 use crate::StringErr;

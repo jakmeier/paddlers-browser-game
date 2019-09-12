@@ -17,7 +17,9 @@ use crate::game::{
 };
 use paddlers_shared_lib::{
     models::*,
-    api::attributes::Attributes,
+    game_mechanics::{
+        attributes::Attributes,
+    },
     graphql_types::*,
 };
 
@@ -54,7 +56,10 @@ impl Town {
         // No (None) attacks per cycle && Some ap => Aura effect
         if attacks_per_cycle.is_none() && ap.is_some() {
             if let Some(r) = range {
-                builder = builder.with(Aura::new(r, ap.unwrap(), tile_index, self))
+                builder = builder.with(Aura::new(r, ap.unwrap(), tile_index, self));
+                if r > self.distance_to_lane(tile_index) {
+                    self.total_ambience += ap.unwrap();
+                }
             }
         }
 
