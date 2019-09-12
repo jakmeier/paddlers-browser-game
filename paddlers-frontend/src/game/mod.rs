@@ -138,7 +138,7 @@ impl State for Game<'static, 'static> {
             total_updates: 0,
             async_err_receiver: err_recv,
             stats: Statistician::new(now),
-            map: map::GlobalMap::new_test(),
+            map: map::GlobalMap::new_test(), // TODO: Wait for real map to be loaded
         })
     }
 

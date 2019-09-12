@@ -12,6 +12,7 @@ pub struct Sprites {
 
 
 impl Sprites {
+    // TODO: Get rid of Asset (everywhere, not just here)
     pub fn new()-> Asset<Self> {
         let futures = vec![
             Image::load("textures/grass.png"),
@@ -37,6 +38,10 @@ impl Sprites {
             Image::load("ducks/roger_front.png"),
             Image::load("ducks/roger_back.png"),
             Image::load("ducks/roger.png"),
+            Image::load("gui/leaves/50px_bot.png"),
+            Image::load("gui/leaves/50px_mid.png"),
+            Image::load("gui/leaves/50px_top.png"),
+            Image::load("gui/leaves/leaves.png"),
         ];
 
         Asset::new(
@@ -114,6 +119,7 @@ pub enum SingleSprite {
 #[derive(Debug, Clone, Copy)]
 pub enum DirectedSprite {
     Hero,
+    VerticalLeaves,
 }
 
 impl Index<SpriteIndex> for Sprites {
@@ -148,6 +154,10 @@ impl Index<SpriteIndex> for Sprites {
                 (DirectedSprite::Hero, Direction::South) => 20,
                 (DirectedSprite::Hero, Direction::North) => 21,
                 (DirectedSprite::Hero, _) => 22,
+                (DirectedSprite::VerticalLeaves, Direction::South) => 23,
+                (DirectedSprite::VerticalLeaves, Direction::Undirected) => 24,
+                (DirectedSprite::VerticalLeaves, Direction::North) => 25,
+                (DirectedSprite::VerticalLeaves, _) => 26,
             },
         };
         &self.img[i]

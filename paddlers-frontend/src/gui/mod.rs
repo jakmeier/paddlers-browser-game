@@ -1,4 +1,5 @@
 pub (crate) mod animation;
+pub (crate) mod decoration;
 pub (crate) mod input;
 pub (crate) mod menu;
 pub (crate) mod render;

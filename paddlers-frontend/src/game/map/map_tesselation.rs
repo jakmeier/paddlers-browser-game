@@ -54,6 +54,12 @@ impl MapSkeleton {
             (self.w, self.h),
         )
     }
+    pub fn scaled_base_shape(&self, scaling: f32) -> Rectangle {
+        Rectangle::new(
+            (0,0),
+            (self.w as f32 * scaling, self.h as f32 * scaling),
+        )
+    }
     pub fn tesselate_rivers(&mut self, area: &Rectangle) -> Mesh {
         let norm_area = self.base_shape();
         let total_area = norm_area.fit_into(&area, FitStrategy::Center);
@@ -94,7 +100,7 @@ impl MapSkeleton {
 
         let (w,h) = (self.w, self.h);
         let thickness = 0.02;
-        for x in 0..w+1 {
+        for x in 1..w+2 {
             let line = v_line((x,0), h as f32, thickness);
             line.draw(
                 &mut mesh,
@@ -103,7 +109,7 @@ impl MapSkeleton {
                 Z_GRID,
             );
         }
-        for y in 0..h+1 {
+        for y in 1..h+1 {
             let line = h_line((0,y), w as f32, thickness);
             line.draw(
                 &mut mesh,

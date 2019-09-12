@@ -16,6 +16,7 @@ use crate::gui::{
     utils::*,
     gui_components::*,
     render::Renderable,
+    decoration::draw_leaf_border,
 };
 
 
@@ -37,7 +38,13 @@ impl Game<'_, '_> {
             Z_MENU_BOX
         );
 
-        let area = area.padded(15.0);
+        draw_leaf_border(window, &mut self.sprites, &area);
+
+        let mut area = area;
+        area.pos.x += 20.0;
+        area.size.x -= 60.0;
+        area.pos.y += 50.0;
+        area.size.y -= 100.0;
 
         let button_area = Rectangle::new( (area.pos.x, area.y()) , (area.width(), button_height) );
         self.render_buttons(window, &button_area)?;

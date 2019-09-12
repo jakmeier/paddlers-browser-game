@@ -63,6 +63,25 @@ impl GlobalMap {
         window.flush()?;
         window.mesh().extend(&self.water_mesh);
         self.draw_villages(window, sprites)?;
+
+
+        /* Drawing background 
+         * Atm, this is drawn BELOW water to enable a smooth transition
+         * Could be drawn OVER to cut off rivers
+         */
+        let drawn_area = self.skeleton.scaled_base_shape(self.scaling);
+        let x = drawn_area.x() + drawn_area.width();
+        let y = drawn_area.y() + drawn_area.height();
+        let dx = area.width() - drawn_area.width();
+        let dy = area.height() - drawn_area.height();
+        if dx > 0.0 {
+            let margin = Rectangle::new((x,area.y()),(dx, area.height()));
+            window.draw_ex(&margin, Col(MAP_GREEN), Transform::IDENTITY, Z_TEXTURE);
+        }
+        if dy > 0.0 {
+            let margin = Rectangle::new((area.x(),y),(area.width(), dy));
+            window.draw_ex(&margin, Col(MAP_GREEN), Transform::IDENTITY, Z_TEXTURE);
+        }
         Ok(())
     }
     fn apply_scaling(&mut self, area: &Rectangle) {
