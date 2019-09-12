@@ -44,6 +44,7 @@ impl Sprites {
             Image::load("gui/leaves/leaves.png"),
             Image::load("gui/town_button.png"),
             Image::load("gui/town_button_hov.png"),
+            Image::load("gui/steps.png"),
         ];
 
         Asset::new(
@@ -119,6 +120,7 @@ pub enum SingleSprite {
     TownButton,
     TownButtonHov,
     Shack,
+    DuckSteps,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -156,6 +158,7 @@ impl Index<SpriteIndex> for Sprites {
                 SingleSprite::Shack => 19,
                 SingleSprite::TownButton => 27,
                 SingleSprite::TownButtonHov => 28,
+                SingleSprite::DuckSteps => 29,
             },
             SpriteIndex::Directed(j,d) => match (j,d) {
                 (DirectedSprite::Hero, Direction::South) => 20,

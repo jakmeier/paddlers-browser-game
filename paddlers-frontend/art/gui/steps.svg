@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="360mm"
+   height="360mm"
+   viewBox="0 0 360 360"
+   version="1.1"
+   id="svg8"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)"
+   sodipodi:docname="steps.svg"
+   inkscape:export-filename="/home/jakmeier/fun/gamedev/paddlers/paddlers-frontend/static/gui/steps.png"
+   inkscape:export-xdpi="2.8222222"
+   inkscape:export-ydpi="2.8222222">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.49497475"
+     inkscape:cx="601.11439"
+     inkscape:cy="523.99089"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="3750"
+     inkscape:window-height="2049"
+     inkscape:window-x="90"
+     inkscape:window-y="55"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-37.831058,102.77191)">
+    <path
+       style="opacity:1;fill:#000000;fill-opacity:0.39053255;stroke:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:0.96449705;paint-order:markers stroke fill"
+       d="M 290.4377,55.530416 C 242.06144,40.811492 219.08427,36.530958 215.31275,17.061687 c -3.50729,-18.105185 10.65706,-35.819248 53.17009,-66.168977 11.61615,-8.292685 86.42825,-45.031366 86.42825,-45.031366 0,0 -21.05412,49.178946 -19.24563,58.36834 1.51154,7.680507 53.17038,19.63344 53.17038,19.63344 0,0 -38.82055,27.748353 -38.48183,38.444137 0.38235,12.072884 34.71782,47.87378 34.71782,47.87378 0,0 -78.2078,-9.652755 -94.63413,-14.650625 z"
+       id="path815"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ssscscscs" />
+    <path
+       style="opacity:1;fill:#000000;fill-opacity:0.39053255;stroke:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:0.96449705;paint-order:markers stroke fill"
+       d="M 117.46493,92.051607 C 67.948706,102.30129 44.677074,104.47036 39.147226,123.51495 c -5.142425,17.71029 7.348918,36.64131 46.919648,70.73853 10.812212,9.31664 81.965536,52.71927 81.965536,52.71927 0,0 -16.4854,-50.89277 -13.8471,-59.87915 2.20509,-7.51083 54.73817,-14.70694 54.73817,-14.70694 0,0 -36.13066,-31.1702 -34.81876,-41.79063 1.48083,-11.98783 38.93561,-44.511147 38.93561,-44.511147 0,0 -78.76201,2.486395 -95.5754,5.966724 z"
+       id="path815-6"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ssscscscs" />
+  </g>
+</svg>

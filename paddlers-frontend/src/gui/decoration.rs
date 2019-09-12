@@ -77,3 +77,14 @@ fn fill_row_with_img(window: &mut Window, img: &Image, start: Vector, end: f32) 
         stamp.pos.x += stamp.width() * 0.9;
     }
 }
+
+pub fn draw_duck_step_line(window: &mut Window, sprites: &mut Asset<Sprites>, start: Vector, end: f32) -> f32 {
+    let mut h = 0.0;
+    sprites.execute( |sprites| {
+        let img = &sprites[SpriteIndex::Simple(SingleSprite::DuckSteps)];
+        h = img.area().height();
+        fill_row_with_img(window, img, start, end);
+        Ok(())
+    }).unwrap();
+    return h;
+}

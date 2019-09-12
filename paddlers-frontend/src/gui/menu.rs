@@ -16,18 +16,19 @@ use crate::gui::{
     utils::*,
     gui_components::*,
     render::Renderable,
-    decoration::draw_leaf_border,
+    decoration::*,
 };
 
 
 impl Game<'_, '_> {
     pub fn render_menu_box(&mut self, window: &mut Window) -> Result<()> {
         let button_height = 80.0;
-        let margin_between = 15.0;
         let resources_height = 50.0;
         let data = self.world.read_resource::<UiState>();
         let entity = (*data).selected_entity;
-        let area = data.menu_box_area;
+        let mut area = data.menu_box_area;
+        let y0 = data.menu_box_area.y();
+        let h0 = data.menu_box_area.height();
         std::mem::drop(data);
 
         // Menu Box Background
@@ -40,21 +41,25 @@ impl Game<'_, '_> {
 
         draw_leaf_border(window, &mut self.sprites, &area);
 
-        let mut area = area;
         area.pos.x += 20.0;
         area.size.x -= 60.0;
         area.pos.y += 40.0;
         area.size.y -= 100.0;
 
-        let button_area = Rectangle::new( (area.pos.x, area.y()) , (area.width(), button_height) );
+        let mut y = area.y();
+        let button_area = Rectangle::new( (area.pos.x, y), (area.width(), button_height) );
         self.render_buttons(window, &button_area)?;
+        y += button_height;
 
-        let resources_area = Rectangle::new( (area.pos.x, button_area.y() + button_area.height() + margin_between ) , (area.width(), resources_height) );
+        let h = draw_duck_step_line(window, &mut self.sprites, Vector::new(area.x()-20.0, y), area.x() + area.width());
+        y += h;
+
+        let resources_area = Rectangle::new( (area.x(), y), (area.width(), resources_height) );
         self.render_resources(window, &resources_area)?;
+        y += resources_area.height();
 
-        let used_height = button_height + resources_height + 2.0 * margin_between;
-        let mut menu_area = area.translate((0,used_height));
-        menu_area.size.y -= used_height;
+        let h = y0 + h0 - y;
+        let menu_area = Rectangle::new((area.x(), y),(area.width(), h));
         
         let view = self.world.read_resource::<UiState>().current_view;
         match view {
