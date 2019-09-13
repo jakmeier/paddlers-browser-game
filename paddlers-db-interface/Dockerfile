@@ -32,6 +32,5 @@ COPY ./diesel.toml ./diesel.toml
 COPY ./local.env ./.env
 COPY ./wait-for-it.sh ./wait-for-it.sh
 RUN chmod +x ./wait-for-it.sh
-# TODO: Check if this works for demo
-CMD ["./wait-for-it.sh" , "game-master:8088" , "--strict" , "--timeout=60" , "--" , "./paddlers-db-interface"]
+CMD ["./wait-for-it.sh" , "$GAME_MASTER_BASE_URL" , "--strict" , "--timeout=60" , "--" , "./paddlers-db-interface"]
 EXPOSE 65432
