@@ -104,6 +104,10 @@ impl Game<'static, 'static> {
 
 impl State for Game<'static, 'static> {
     fn new() -> Result<Self> {
+        // Start loading fonts asap
+        let font = Asset::new(Font::load("fonts/Manjari-Regular.ttf"));
+        let bold_font = Asset::new(Font::load("fonts/Manjari-Bold.ttf"));
+
         let mut world = init_world();
         let (err_send, err_recv) = channel();
         let err_send_clone = err_send.clone();
@@ -134,8 +138,8 @@ impl State for Game<'static, 'static> {
             world: world,
             sprites: None,
             preload: Some(loading::Preloading::new()),
-            font: Asset::new(Font::load("fonts/Manjari-Regular.ttf")),
-            bold_font: Asset::new(Font::load("fonts/Manjari-Bold.ttf")),
+            font: font,
+            bold_font: bold_font,
             unit_len: None,
             net: None,
             time_zero: now,

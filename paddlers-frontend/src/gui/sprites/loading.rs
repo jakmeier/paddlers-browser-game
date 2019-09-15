@@ -4,6 +4,7 @@ use super::{
     Sprites,
 };
 use crate::game::Game;
+use crate::gui::utils::*;
 use quicksilver::prelude::*;
 
 pub struct Preloading {
@@ -104,21 +105,27 @@ fn load_animation(
 }
 
 impl Game<'static, 'static> {
-    pub fn update_preloading(&mut self, window: &mut Window) -> Result<()> {
+    pub fn update_preloading(&mut self, _window: &mut Window) -> Result<()> {
         Ok(())
     }
     pub fn draw_preloading(&mut self, window: &mut Window) -> Result<()> {
         let progress = self.preload.as_mut().unwrap().progress();
         if progress < 1.0 {
-            // TODO: Display loading progress
-            println!("Loaded {:.3}%", progress * 100.0);
+            self.draw_progress(window, progress);
             return Ok(());
         }
-        println!("Finalizing");
         let images = self.preload.take().unwrap().finalize();
-        println!("Finalized");
         self.sprites = Some(Sprites::new(images));
-        println!("Finalized II");
         Ok(())
+    }
+    fn draw_progress(&mut self, window: &mut Window, progress: f32) {
+        window.clear(DARK_GREEN).unwrap();
+        let size = window.screen_size();
+        let (w,h) = (size.x, size.y);
+        let area = Rectangle::new((w*0.1,h*0.618),(w*0.8,h*0.2));
+
+        // For now, only images are preloaded and therefore this is done very simply
+        let msg = "Downloading images"; 
+        draw_progress_bar(window, &mut self.bold_font, area, progress, &msg);
     }
 }
