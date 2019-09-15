@@ -1,3 +1,4 @@
+use paddlers_shared_lib::game_mechanics::map::MAP_STREAM_AREA_W;
 use quicksilver::prelude::*;
 use quicksilver::graphics::{Mesh};
 pub use super::village_meta::VillageMetaInfo;
@@ -47,7 +48,8 @@ impl MapSegment {
         }
     }
     pub fn is_visible(&self, view: Rectangle) -> bool {
-        self.x <= view.x() + view.width() 
-        && self.x + self.w >= view.x()
+        let overlap = MAP_STREAM_AREA_W * self.scaling;
+        self.x <= view.x() + view.width() + overlap
+        && self.x + self.w + overlap >= view.x()
     }
 }

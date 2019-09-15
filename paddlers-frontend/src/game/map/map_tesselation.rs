@@ -20,9 +20,10 @@ impl MapSegment {
         let scaling = total_area.width() / norm_area.width();
 
         let main_river_area = Rectangle::new(
-            (0, (self.h/2.0).floor() * scaling),
-            (self.w * scaling, scaling)
+            (area.x() - 0.5 * scaling, (self.h/2.0).floor() * scaling),
+            ((self.w + 1.0) * scaling, scaling)
         );
+        println!("Main river area {:?}", main_river_area);
         let main_path = river_path(main_river_area, 2);
         add_path_to_mesh(&mut self.water_mesh, &main_path, 0.75 * scaling);
 
@@ -43,12 +44,6 @@ impl MapSegment {
 
 pub fn tesselate_map_background(base_shape: Rectangle, w: i32, h: i32) -> Mesh {
     let mut mesh = Mesh::new();
-    base_shape.draw(
-        &mut mesh,
-        Col(MAP_GREEN),
-        Transform::IDENTITY,
-        Z_TEXTURE,
-    );
 
     let width = base_shape.width();
     let height = base_shape.height();
@@ -68,7 +63,7 @@ pub fn tesselate_map_background(base_shape: Rectangle, w: i32, h: i32) -> Mesh {
     }
     for y in 0..h+2 {
         let y = dy * y as f32;
-        let line = h_line((0,y), width, thickness);
+        let line = h_line((0,y), width + dx, thickness);
         line.draw(
             &mut mesh,
             Col(TRANSPARENT_BLACK),

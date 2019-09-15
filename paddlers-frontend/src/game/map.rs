@@ -19,6 +19,8 @@ pub struct GlobalMap {
     villages: Vec<VillageMetaInfo>,
     scaling: f32,
     x_offset: f32,
+    view_width: i32,
+    loaded: (i32,i32),
 }
 
 impl GlobalMap {
@@ -34,6 +36,8 @@ impl GlobalMap {
             villages: vec![],
             scaling,
             x_offset: 0.0,
+            view_width: w,
+            loaded: (0,0),
         }
     }
     pub fn add_segment(&mut self, streams: Vec<Vec<(f32,f32)>>, villages: Vec<VillageMetaInfo>, min_x: i32, max_x: i32 ) {
@@ -42,49 +46,61 @@ impl GlobalMap {
         let mut segment = MapSegment::new(min_x, 0, w, h, streams);
         segment.tesselate_rivers();
         self.segments.push(segment);
+
         self.villages.extend(villages.into_iter());
+
+        
     }
     pub fn render(&mut self, window: &mut Window, sprites: &mut Sprites, area: &Rectangle) -> Result<()> {
+        
+        window.draw_ex(area, Col(MAP_GREEN), Transform::IDENTITY, Z_TEXTURE);
 
         self.apply_scaling(area.size());
         self.draw_grid(window);
-
         self.draw_water(window, area);
         self.draw_villages(window, sprites)?;
 
-        /* Draw padding background 
-         * Atm, this is drawn BELOW water to enable a smooth transition
-         * Could be drawn OVER to cut off rivers
-         */
-        let drawn_area = self.draw_area();
-        let x = drawn_area.x() + drawn_area.width();
-        let y = drawn_area.y() + drawn_area.height();
-        let dx = area.width() - drawn_area.width();
-        let dy = area.height() - drawn_area.height();
-        if dx > 0.0 {
-            let margin = Rectangle::new((x,area.y()),(dx, area.height()));
-            window.draw_ex(&margin, Col(MAP_GREEN), Transform::IDENTITY, Z_TEXTURE);
-        }
-        if dy > 0.0 {
-            let margin = Rectangle::new((area.x(),y),(area.width(), dy));
-            window.draw_ex(&margin, Col(MAP_GREEN), Transform::IDENTITY, Z_TEXTURE);
-        }
         Ok(())
     }
+    pub fn drag(&mut self, v: Vector) {
+        self.x_offset += v.x;
+    }
+    const LOAD_AHEAD: i32 = 10;
+    const LOAD_STEP: i32 = 10;
+    pub fn update(&mut self) {
+        let x = - self.x_offset as i32;
+        if self.loaded.0 > x - Self::LOAD_AHEAD {
+            let (low, high) = (self.loaded.0 - 1 - Self::LOAD_STEP, self.loaded.0 - 1);
+            crate::net::request_map_read(low, high);
+
+            self.loaded.0 = self.loaded.0.min(low);
+            self.loaded.1 = self.loaded.1.max(high);
+        }
+        if self.loaded.1 <  x + self.view_width + Self::LOAD_AHEAD {
+            let (low, high) = (self.loaded.1 + 1, self.loaded.1 + 1 + Self::LOAD_STEP);
+            crate::net::request_map_read(low, high);
+
+            self.loaded.0 = self.loaded.0.min(low);
+            self.loaded.1 = self.loaded.1.max(high);
+        }
+    }
     fn draw_grid(&mut self, window: &mut Window) {
-        let t = self.view_transform();
+        let mut x = self.x_offset % 1.0;
+        if x > 0.0 { x -= 1.0 }
+        let t = Transform::translate((x * self.scaling, 0));
         extend_transformed(window.mesh(), &self.grid_mesh, t);
     }
     fn draw_water(&mut self, window: &mut Window, area: &Rectangle) {
         let visible_frame = Rectangle::new(
-            (self.x_offset, 0),
+            (-self.x_offset, 0),
             area.size() / self.scaling,
         );
+        let t = self.view_transform();
         for segment in self.segments.iter_mut() {
             if segment.is_visible(visible_frame) {
                 segment.apply_scaling(self.scaling);
                 window.flush().unwrap();
-                window.mesh().extend(&segment.water_mesh);
+                extend_transformed(&mut window.mesh(), &segment.water_mesh, t)
             }
         }
     }
@@ -100,13 +116,14 @@ impl GlobalMap {
                 (x as f32 * self.scaling, y as f32 * self.scaling),
                 (self.scaling, self.scaling),
             );
-            draw_static_image(
+            draw_image(
                 sprites, 
                 window,
                 &sprite_area, 
                 SpriteIndex::Simple(SingleSprite::Shack), 
                 Z_BUILDINGS, 
-                FitStrategy::Center
+                FitStrategy::Center,
+                self.view_transform(),
             )?;
         }
         Ok(())
@@ -116,13 +133,6 @@ impl GlobalMap {
         let w = 15; // TODO: determine dynamically what fits the viewport
         let h = paddlers_shared_lib::game_mechanics::map::MAP_H as i32;
         (w,h)
-    }
-    fn draw_area(&self) -> Rectangle {
-        let (w,h) = Self::display_shape();
-        Rectangle::new(
-            (0,0),
-            (w as f32 * self.scaling, h as f32 * self.scaling)
-        )
     }
     pub fn calculate_scaling(view_size: Vector) -> f32 {
         let (w,h) = Self::display_shape();

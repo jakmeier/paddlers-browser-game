@@ -87,13 +87,11 @@ impl GraphQlState {
             )
         )
     }
-    pub (super) fn map_query(&self) -> PadlResult<impl Future<Output = PadlResult<NetMsg>>> {
-        let min = 0;
-        let max = 20;
-        let fp = http_read_map(min, max)?;
+    pub (super) fn map_query(&self, min: i32, max: i32) -> PadlResult<impl Future<Output = PadlResult<NetMsg>>> {
+        let fp = http_read_map(min as i64, max as i64)?;
         Ok(
             fp.map(
-                move |response| Ok(NetMsg::Map(response?, min as i32, max as i32)),
+                move |response| Ok(NetMsg::Map(response?, min, max)),
             )
         )
     }

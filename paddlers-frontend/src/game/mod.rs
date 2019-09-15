@@ -267,6 +267,7 @@ impl State for Game<'static, 'static> {
                 Err(TryRecvError::Empty) => {},
             }
         }
+        self.map.as_mut().map(map::GlobalMap::update);
         self.update_time_reference();
         self.dispatcher.dispatch(&mut self.world);
         if self.total_updates % 300 == 15 {
@@ -322,6 +323,7 @@ impl State for Game<'static, 'static> {
         if let Some(grabbed) = grabbed_item {
             self.render_grabbed_item(window, &grabbed)?;
         }
+        self.map.as_mut().unwrap().drag(Vector::new(-0.05, 0));
         Ok(())
     }
 

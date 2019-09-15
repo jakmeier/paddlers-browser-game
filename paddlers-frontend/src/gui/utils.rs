@@ -72,7 +72,7 @@ pub fn draw_static_image(
         Transform::IDENTITY,
     )
 }
-fn draw_image(
+pub fn draw_image(
     sprites: &mut Sprites,
     window: &mut Window,
     max_area: &Rectangle,
