@@ -15,7 +15,7 @@ use crate::gui::{
     input::Grabbable,
 };
 use crate::logging::text_to_user::TextBoard;
-
+use crate::game::resources::ClockTick;
 
 #[derive(Component, Debug)]
 #[storage(VecStorage)]
@@ -31,13 +31,14 @@ impl Game<'_, '_> {
         let animation_store = world.read_storage::<AnimationState>();
         let sprites = &mut self.sprites;
         let entities = self.world.entities();
+        let tick = self.world.read_resource::<ClockTick>();
         for (e, pos, r) in (&entities, &pos_store, &rend_store).join() {
             match r.kind {
                 RenderVariant::ImgWithImgBackground(i, _) => {
                     if let Some(animation) = animation_store.get(e) {
-                        draw_animated_sprite(sprites, window, &pos.area, i, pos.z, FitStrategy::TopLeft, animation)?;
+                        draw_animated_sprite(sprites.as_mut().unwrap(), window, &pos.area, i, pos.z, FitStrategy::TopLeft, animation, tick.0)?;
                     } else {
-                        draw_static_image(sprites, window, &pos.area, i.default(), pos.z, FitStrategy::TopLeft)?;
+                        draw_static_image(sprites.as_mut().unwrap(), window, &pos.area, i.default(), pos.z, FitStrategy::TopLeft)?;
                     }
                 },
                 _ => { panic!("Not implemented")}
@@ -56,7 +57,7 @@ impl Game<'_, '_> {
         }
 
         if let Some((health,p)) = (&health_store, &position_store).join().get(entity, &self.world.entities()) {
-            render_health(&health, &mut self.sprites, window, &p.area)?;
+            render_health(&health, self.sprites.as_mut().unwrap(), window, &p.area)?;
         }
         Ok(())
     }
@@ -68,7 +69,7 @@ impl Game<'_, '_> {
         let max_area = Rectangle::new(center, (ul, ul));
         match item {
             Grabbable::NewBuilding(building_type) => {
-                draw_static_image(&mut self.sprites, window, &max_area, building_type.sprite().default(), Z_GRABBED_ITEM, FitStrategy::TopLeft)?
+                draw_static_image(self.sprites.as_mut().unwrap(), window, &max_area, building_type.sprite().default(), Z_GRABBED_ITEM, FitStrategy::TopLeft)?
             }
         }
         Ok(())
@@ -87,7 +88,7 @@ impl Game<'_, '_> {
     }
 }
 
-fn render_health(health: &Health, sprites: &mut Asset<Sprites>, window: &mut Window, area: &Rectangle) -> Result<()> {
+fn render_health(health: &Health, sprites: &mut Sprites, window: &mut Window, area: &Rectangle) -> Result<()> {
     let (max, hp) = (health.max_hp, health.hp);
     let unit_pos = area.pos;
     let w = area.width();

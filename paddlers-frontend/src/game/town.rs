@@ -76,7 +76,7 @@ impl Town {
     }
 
 
-    pub fn render(&self, window: &mut Window, sprites: &Sprites, tick: u32, unit_length: f32) -> Result<()> {
+    pub fn render(&self, window: &mut Window, sprites: &mut Sprites, tick: u32, unit_length: f32) -> Result<()> {
         let d = unit_length;
 
         for (x, col) in self.map.0.iter().enumerate() {
@@ -86,7 +86,7 @@ impl Town {
                         // println!("Empty {} {}", x, y);
                         window.draw_ex(
                             &Rectangle::new((d * x as f32, d * y as f32), (d, d)),
-                            Img(&sprites[SpriteIndex::Simple(SingleSprite::Grass)]),
+                            Img(&sprites.index(SpriteIndex::Simple(SingleSprite::Grass))),
                             Transform::IDENTITY,
                             Z_TEXTURE
                         );
@@ -98,7 +98,7 @@ impl Town {
                         window.draw_ex(
                             &Rectangle::new((d * x as f32, d * y as f32), (d, d))
                             .translate((shifted,0)),
-                            Img(&sprites[SpriteIndex::Simple(SingleSprite::Water)]),
+                            Img(&sprites.index(SpriteIndex::Simple(SingleSprite::Water))),
                             Transform::IDENTITY,
                             Z_TEXTURE
                         );
@@ -108,7 +108,7 @@ impl Town {
                             window.draw_ex(
                                 &Rectangle::new((d * x as f32, d * y as f32), (d, d))
                                 .translate((shifted,0)),
-                                Img(&sprites[SpriteIndex::Simple(SingleSprite::Water)]),
+                                Img(&sprites.index(SpriteIndex::Simple(SingleSprite::Water))),
                                 Transform::IDENTITY,
                                 Z_TEXTURE
                             );

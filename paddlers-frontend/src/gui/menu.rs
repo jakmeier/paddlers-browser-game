@@ -39,7 +39,7 @@ impl Game<'_, '_> {
             Z_MENU_BOX
         );
 
-        draw_leaf_border(window, &mut self.sprites, &area);
+        draw_leaf_border(window, self.sprites.as_mut().unwrap(), &area);
 
         let leaf_h = 40.0;
         let leaf_w = 20.0;
@@ -53,7 +53,7 @@ impl Game<'_, '_> {
         self.render_buttons(window, &button_area)?;
         y += button_height;
 
-        let h = draw_duck_step_line(window, &mut self.sprites, Vector::new(area.x()-20.0, y), area.x() + area.width());
+        let h = draw_duck_step_line(window, self.sprites.as_mut().unwrap(), Vector::new(area.x()-20.0, y), area.x() + area.width());
         y += h + 10.0;
 
         let view = self.world.read_resource::<UiState>().current_view;
@@ -107,8 +107,8 @@ impl Game<'_, '_> {
         if let Some(rd) = r.get(e) {
             match rd.kind {
                 RenderVariant::ImgWithImgBackground(main, background) => {
-                    draw_static_image(sprites, window, &area, SpriteIndex::Simple(background), Z_MENU_BOX + 1, FitStrategy::Center)?;
-                    draw_static_image(sprites, window, &inner_area, main.default(), Z_MENU_BOX + 2, FitStrategy::Center)?;
+                    draw_static_image(sprites.as_mut().unwrap(), window, &area, SpriteIndex::Simple(background), Z_MENU_BOX + 1, FitStrategy::Center)?;
+                    draw_static_image(sprites.as_mut().unwrap(), window, &inner_area, main.default(), Z_MENU_BOX + 2, FitStrategy::Center)?;
                 },
                 _ => { panic!("Not implemented") }
             }
@@ -143,7 +143,7 @@ impl Game<'_, '_> {
                 TableRow::UiBoxWithEntities(&mut c.ui)
             );
         }
-        draw_table(window, &mut self.sprites, &mut table, &area, &mut self.font, 40.0, Z_MENU_TEXT)?;
+        draw_table(window, self.sprites.as_mut().unwrap(), &mut table, &area, &mut self.font, 40.0, Z_MENU_TEXT)?;
         Ok(())
     }
 
@@ -162,15 +162,15 @@ impl Game<'_, '_> {
         );
 
         let (shop_area, price_tag_area) = area.cut_horizontal(area.height() - price_tag_h);
-        draw_table(window, sprites, &mut table, &shop_area, &mut self.font, 60.0, Z_MENU_TEXT)?;
-        (*shop).ui.draw_hover_info(window, sprites, &mut self.bold_font, &price_tag_area)
+        draw_table(window, sprites.as_mut().unwrap(), &mut table, &shop_area, &mut self.font, 60.0, Z_MENU_TEXT)?;
+        (*shop).ui.draw_hover_info(window, sprites.as_mut().unwrap(), &mut self.bold_font, &price_tag_area)
     }
 
     pub fn render_resources(&mut self, window: &mut Window, area: &Rectangle) -> Result<()> {
         let sprites = &mut self.sprites;
         let font = &mut self.bold_font;
         let resis = self.resources.non_zero_resources();
-        draw_resources(window, sprites, &resis, &area, font, Z_MENU_RESOURCES)?;
+        draw_resources(window, sprites.as_mut().unwrap(), &resis, &area, font, Z_MENU_RESOURCES)?;
         Ok(())
     }
 }

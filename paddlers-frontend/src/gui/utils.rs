@@ -41,45 +41,52 @@ pub enum Direction {
     West,
 }
 
-pub fn draw_animated_sprite(asset: &mut Asset<Sprites>, window: &mut Window, max_area: &Rectangle, i: SpriteSet, z: i32, fit_strat: FitStrategy, animation_state: &AnimationState) -> Result<()> {
-    let (image, transform) = i.directed(&animation_state.direction); 
+pub fn draw_animated_sprite (
+    asset: &mut Sprites,
+    window: &mut Window,
+    max_area: &Rectangle,
+    i: SpriteSet,
+    z: i32,
+    fit_strat: FitStrategy,
+    animation_state: &AnimationState,
+    frame: u32,
+) -> Result<()> {
+    let (image, transform) = i.animated(&animation_state.direction, frame); 
     draw_image(asset, window, max_area, image, z, fit_strat, transform)
 }
-pub fn draw_static_image(asset: &mut Asset<Sprites>, window: &mut Window, max_area: &Rectangle, i: SpriteIndex, z: i32, fit_strat: FitStrategy) -> Result<()> {
+pub fn draw_static_image(asset: &mut Sprites, window: &mut Window, max_area: &Rectangle, i: SpriteIndex, z: i32, fit_strat: FitStrategy) -> Result<()> {
     draw_image(asset, window, max_area, i, z, fit_strat, Transform::IDENTITY)
 }
-fn draw_image(asset: &mut Asset<Sprites>, window: &mut Window, max_area: &Rectangle, i: SpriteIndex, z: i32, fit_strat: FitStrategy, transform: Transform) -> Result<()> {
-    asset.execute( |sprites| {
-        let img = &sprites[i];
-        let mut area = *max_area;
-        let img_slope = img.area().height() / img.area().width();
-        if img_slope < area.height() / area.width() {
-            // high image
-            area.size.y = area.width() * img_slope;
-            match fit_strat {
-                FitStrategy::Center => {
-                    area = area.translate((0,(max_area.height() - area.height())/2.0));
-                },
-                FitStrategy::TopLeft => {},
-            }
-        } else {
-            area.size.x = area.height() / img_slope;
-            match fit_strat {
-                FitStrategy::Center => {
-                    area = area.translate(((max_area.width() - area.width())/2.0, 0.0));
-                },
-                FitStrategy::TopLeft => {},
-            }
+fn draw_image(sprites: &mut Sprites, window: &mut Window, max_area: &Rectangle, i: SpriteIndex, z: i32, fit_strat: FitStrategy, transform: Transform) -> Result<()> {
+    let img = sprites.index(i);
+    let mut area = *max_area;
+    let img_slope = img.area().height() / img.area().width();
+    if img_slope < area.height() / area.width() {
+        // high image
+        area.size.y = area.width() * img_slope;
+        match fit_strat {
+            FitStrategy::Center => {
+                area = area.translate((0,(max_area.height() - area.height())/2.0));
+            },
+            FitStrategy::TopLeft => {},
         }
-        
-        window.draw_ex(
-            &area,
-            Img(img),
-            transform, 
-            z
-        );
-        Ok(())
-    })
+    } else {
+        area.size.x = area.height() / img_slope;
+        match fit_strat {
+            FitStrategy::Center => {
+                area = area.translate(((max_area.width() - area.width())/2.0, 0.0));
+            },
+            FitStrategy::TopLeft => {},
+        }
+    }
+    
+    window.draw_ex(
+        &area,
+        Img(&img),
+        transform, 
+        z
+    );
+    Ok(())
 }
 
 #[inline]

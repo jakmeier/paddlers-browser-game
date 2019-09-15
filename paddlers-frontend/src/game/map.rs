@@ -57,7 +57,7 @@ impl GlobalMap {
             scaling: 1.0,
         }
     }
-    pub fn render(&mut self, window: &mut Window, sprites: &mut Asset<Sprites>, area: &Rectangle) -> Result<()> {
+    pub fn render(&mut self, window: &mut Window, sprites: &mut Sprites, area: &Rectangle) -> Result<()> {
         self.apply_scaling(area);
         window.mesh().extend(&self.grid_mesh);
         window.flush()?;
@@ -95,7 +95,7 @@ impl GlobalMap {
             self.scaling = r;
         }
     }
-    pub fn draw_villages(&mut self, window: &mut Window, sprites: &mut Asset<Sprites>) -> Result<()> {
+    pub fn draw_villages(&mut self, window: &mut Window, sprites: &mut Sprites) -> Result<()> {
         #[cfg(feature="dev_view")]
         self.visualize_control_points(window);
 

@@ -13,26 +13,22 @@ use crate::gui::{
     sprites::*,
 };
 
-pub fn draw_leaf_border(window: &mut Window, sprites: &mut Asset<Sprites>, area: &Rectangle) {
-    sprites.execute( |sprites| {
-        let lv = DirectedSprite::VerticalLeaves;
-        let top = &sprites[SpriteIndex::Directed(lv, Direction::North)];
-        let mid = &sprites[SpriteIndex::Directed(lv, Direction::Undirected)];
-        let bot = &sprites[SpriteIndex::Directed(lv, Direction::South)];
+pub fn draw_leaf_border(window: &mut Window, sprites: &mut Sprites, area: &Rectangle) {
+    let lv = DirectedSprite::VerticalLeaves;
+    let top = sprites.index(SpriteIndex::Directed(lv, Direction::North)).clone();
+    let mid = sprites.index(SpriteIndex::Directed(lv, Direction::Undirected)).clone();
+    let bot = sprites.index(SpriteIndex::Directed(lv, Direction::South)).clone();
 
-        let w = top.area().width();
-        let start = area.pos.translate((-w*0.75,0));
-        draw_column_texture(window, top, mid, bot, start, area.y() + area.height());
-        draw_column_texture(window, top, mid, bot, start.translate((area.width(), 0)), area.y() + area.height());
+    let w = top.area().width();
+    let start = area.pos.translate((-w*0.75,0));
+    draw_column_texture(window, &top, &mid, &bot, start, area.y() + area.height());
+    draw_column_texture(window, &top, &mid, &bot, start.translate((area.width(), 0)), area.y() + area.height());
 
-        let leaves = &sprites[SpriteIndex::Directed(lv, Direction::East)];
-        let h = leaves.area().height();
-        let start = area.pos.translate((0, -h/2.0));
-        fill_row_with_img(window, leaves, start, area.x() + area.width());
-        fill_row_with_img(window, leaves, start.translate((0,area.height())), area.x() + area.width());
-
-        Ok(())
-    }).unwrap();
+    let leaves = &sprites.index(SpriteIndex::Directed(lv, Direction::East));
+    let h = leaves.area().height();
+    let start = area.pos.translate((0, -h/2.0));
+    fill_row_with_img(window, leaves, start, area.x() + area.width());
+    fill_row_with_img(window, leaves, start.translate((0,area.height())), area.x() + area.width());
 }
 
 fn draw_column_texture(window: &mut Window, top: &Image, mid: &Image, bot: &Image, start: Vector, end: f32) {
@@ -78,13 +74,8 @@ fn fill_row_with_img(window: &mut Window, img: &Image, start: Vector, end: f32) 
     }
 }
 
-pub fn draw_duck_step_line(window: &mut Window, sprites: &mut Asset<Sprites>, start: Vector, end: f32) -> f32 {
-    let mut h = 0.0;
-    sprites.execute( |sprites| {
-        let img = &sprites[SpriteIndex::Simple(SingleSprite::DuckSteps)];
-        h = img.area().height();
-        fill_row_with_img(window, img, start, end);
-        Ok(())
-    }).unwrap();
-    return h;
+pub fn draw_duck_step_line(window: &mut Window, sprites: &mut Sprites, start: Vector, end: f32) -> f32 {
+    let img = &sprites.index(SpriteIndex::Simple(SingleSprite::DuckSteps));
+    fill_row_with_img(window, img, start, end);
+    img.area().height()
 }

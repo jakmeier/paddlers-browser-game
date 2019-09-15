@@ -53,6 +53,6 @@ impl MenuButtons {
 impl crate::game::Game<'_, '_> {
     pub fn render_buttons(&mut self, window: &mut Window, area: &Rectangle) -> Result<()> {
         let (sprites, mut buttons) = (&mut self.sprites, self.world.write_resource::<MenuButtons>());
-        buttons.ui.draw(window, sprites, area)
+        buttons.ui.draw(window, sprites.as_mut().unwrap(), area)
     }
 }

@@ -49,10 +49,13 @@ pub(super) mod resources {
     use crate::prelude::*;
 
     #[derive(Default)]
+    /// Global animation ticker
     pub struct ClockTick(pub u32);
     #[derive(Default)]
+    /// Used for UI scaling. To be removed in favour of better options.
     pub struct UnitLength(pub f32);
     #[derive(Default)]
+    /// Timestamp of frame rendering
     pub struct Now(pub Timestamp);
 }
 use resources::*;
@@ -61,7 +64,8 @@ pub(crate) struct Game<'a, 'b> {
     dispatcher: Dispatcher<'a, 'b>,
     pointer_manager: PointerManager<'a, 'b>,
     pub world: World,
-    pub sprites: Asset<Sprites>,
+    pub sprites: Option<Sprites>,
+    pub preload: Option<loading::Preloading>,
     pub font: Asset<Font>,
     pub bold_font: Asset<Font>,
     pub unit_len: Option<f32>,
@@ -128,7 +132,8 @@ impl State for Game<'static, 'static> {
             dispatcher: dispatcher,
             pointer_manager: pm,
             world: world,
-            sprites: Sprites::new(),
+            sprites: None,
+            preload: Some(loading::Preloading::new()),
             font: Asset::new(Font::load("fonts/Manjari-Regular.ttf")),
             bold_font: Asset::new(Font::load("fonts/Manjari-Bold.ttf")),
             unit_len: None,
@@ -148,14 +153,15 @@ impl State for Game<'static, 'static> {
         window.set_max_updates(1); // 1 update per frame is enough
         // window.set_fullscreen(true);
         self.update_time_reference();
+        let now = self.world.read_resource::<Now>().0;
         {
-            let now = self.world.read_resource::<Now>().0;
             self.pointer_manager.run(&mut self.world, now)
         }
 
         {
             let mut tick = self.world.write_resource::<ClockTick>();
-            *tick = ClockTick(tick.0 + 1);
+            let us_draw_rate = 1_000_000/ 60;
+            *tick = ClockTick((now / us_draw_rate) as u32);
         }
         {
             let mut q = self.world.write_resource::<ErrorQueue>();
@@ -163,6 +169,10 @@ impl State for Game<'static, 'static> {
             q.pull_async(&mut self.async_err_receiver, &mut t);
             q.run(&mut t);
         }
+        if self.sprites.is_none() {
+            return self.update_preloading(window);
+        }
+
         {
             let mut res = self.world.write_resource::<TownResources>();
             *res = self.resources;
@@ -262,6 +272,9 @@ impl State for Game<'static, 'static> {
             let err = self.stats.run(&mut *rest, now);
             self.check(err);
         }
+        if self.sprites.is_none() {
+            return self.draw_preloading(window);
+        }
 
         let ui_state = self.world.read_resource::<UiState>();
         let hovered_entity = ui_state.hovered_entity;
@@ -277,13 +290,14 @@ impl State for Game<'static, 'static> {
             UiView::Town => {
                 {
                     let (asset, town, ul) = (&mut self.sprites, &self.world.read_resource::<Town>(), self.unit_len.unwrap());
-                    asset.execute(|sprites| town.render(window, sprites, tick, ul))?;
+                    // asset.execute(|sprites| town.render(window, sprites, tick, ul))?;
+                    town.render(window, asset.as_mut().unwrap(), tick, ul)?;
                 }
                 self.render_entities(window)?;
             },
             UiView::Map => {
                 let (sprites, map) = (&mut self.sprites, &mut self.map);
-                map.render(window, sprites, &main_area)?;
+                map.render(window, &mut sprites.as_mut().unwrap(), &main_area)?;
             }
         }
         

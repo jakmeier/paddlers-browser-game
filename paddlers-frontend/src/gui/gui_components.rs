@@ -17,7 +17,7 @@ pub enum TableRow<'a> {
 
 pub fn draw_table(
     window: &mut Window, 
-    sprites: &mut Asset<Sprites>, 
+    sprites: &mut Sprites, 
     table: &mut [TableRow], 
     max_area: &Rectangle, 
     font: &mut Asset<Font>, 
@@ -86,7 +86,7 @@ fn row_count(table: &[TableRow]) -> usize {
 
 pub fn draw_resources(
     window: &mut Window, 
-    sprites: &mut Asset<Sprites>, 
+    sprites: &mut Sprites, 
     resis: &[(ResourceType, i64)], 
     max_area: &Rectangle, 
     font: &mut Asset<Font>, 
@@ -191,7 +191,7 @@ impl<T: Clone + std::fmt::Debug> UiBox<T> {
     }
 
 
-    pub fn draw(&mut self, window: &mut Window, sprites: &mut Asset<Sprites>, area: &Rectangle) -> Result<()> {
+    pub fn draw(&mut self, window: &mut Window, sprites: &mut Sprites, area: &Rectangle) -> Result<()> {
         self.area = *area;
         let grid = area.grid(self.columns, self.rows);
 
@@ -284,7 +284,7 @@ impl<T: Clone + std::fmt::Debug> UiBox<T> {
         }
     }
 
-    pub fn draw_hover_info(&mut self, window: &mut Window, sprites: &mut Asset<Sprites>, font: &mut Asset<Font>, area: &Rectangle) -> Result<()> {
+    pub fn draw_hover_info(&mut self, window: &mut Window, sprites: &mut Sprites, font: &mut Asset<Font>, area: &Rectangle) -> Result<()> {
         let mouse = window.mouse().pos();
         if let Some(el) = self.find_element_under_mouse(mouse) {
             if let Some(cost) = &el.hover_info {

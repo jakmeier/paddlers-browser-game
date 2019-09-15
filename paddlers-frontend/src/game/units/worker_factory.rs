@@ -39,7 +39,7 @@ pub fn with_hero<B: Builder>( builder: B ) -> B
 {
     builder.with(
         Renderable {
-            kind: RenderVariant::ImgWithImgBackground(SpriteSet::Directed(DirectedSprite::Hero), SingleSprite::Grass),
+            kind: RenderVariant::ImgWithImgBackground(SpriteSet::Animated(AnimatedSprite::Roger), SingleSprite::Grass),
         }
     )
 }
