@@ -28,6 +28,7 @@ pub struct UiState {
     pub selected_entity: Option<Entity>,
     pub hovered_entity: Option<Entity>,
     pub grabbed_item: Option<Grabbable>,
+    pub main_area: Rectangle,
     pub menu_box_area: Rectangle,
     pub current_view: UiView,
 }
@@ -207,6 +208,7 @@ impl Default for UiState {
             grabbed_item: None,
             selected_entity: None,
             hovered_entity: None,
+            main_area: Rectangle::default(),
             menu_box_area: Rectangle::default(),
             current_view: UiView::Town,
         }

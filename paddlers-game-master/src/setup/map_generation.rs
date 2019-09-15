@@ -17,7 +17,7 @@ impl NewMap {
 
         let start_y = 5.5;
         let dx = MAP_STREAM_AREA_W;
-        for i in 0..4 {
+        for i in 0..20 {
             let b = (4 * i) as f32;
             streams.push(new_stream((b + 1.0, start_y), dx, 20.0, &mut lcg));
             streams.push(new_stream((b + 3.0, start_y), dx, -10.0, &mut lcg));

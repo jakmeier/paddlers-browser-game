@@ -75,7 +75,7 @@ pub(crate) struct Game<'a, 'b> {
     total_updates: u64,
     async_err_receiver: Receiver<PadlError>,
     stats: Statistician,
-    map: map::GlobalMap,
+    map: Option<map::GlobalMap>,
 }
 
 impl Game<'static, 'static> {
@@ -88,16 +88,22 @@ impl Game<'static, 'static> {
         self.world.insert(UnitLength(ul));
         self
     }
-    fn with_menu_box_area(mut self, area: Rectangle) -> Self {
+    fn with_ui_division(mut self, main_area: Rectangle, menu_area: Rectangle) -> Self {
         {
             self.world.insert(DefaultShop::new());
             let mut data = self.world.write_resource::<UiState>();
-            (*data).menu_box_area = area;
+            (*data).main_area = main_area;
+            (*data).menu_box_area = menu_area;
         } 
         self
     }
     fn with_network_chan(mut self, net_receiver: Receiver<NetMsg>) -> Self {
         self.net = Some(net_receiver);
+        self
+    }
+    fn init_map(mut self) -> Self {
+        let main_area = self.world.read_resource::<UiState>().main_area;
+        self.map = Some(map::GlobalMap::new(main_area.size()));
         self
     }
 }
@@ -132,6 +138,8 @@ impl State for Game<'static, 'static> {
         let pm = PointerManager::init(&mut world);
         let now = utc_now();
 
+        
+
         Ok(Game {
             dispatcher: dispatcher,
             pointer_manager: pm,
@@ -147,7 +155,7 @@ impl State for Game<'static, 'static> {
             total_updates: 0,
             async_err_receiver: err_recv,
             stats: Statistician::new(now),
-            map: map::GlobalMap::new_test(), // TODO: Wait for real map to be loaded
+            map: None,
         })
     }
 
@@ -208,7 +216,7 @@ impl State for Game<'static, 'static> {
                                 println!("No buildings available");
                             }
                         }
-                        NetMsg::Map(response) => {
+                        NetMsg::Map(response, min, max) => {
                             if let Some(data) = response.data {
                                 let streams = data.map.streams.iter()
                                     .map(
@@ -221,7 +229,7 @@ impl State for Game<'static, 'static> {
                                     )
                                     .collect();
                                 let villages = data.map.villages.into_iter().map(VillageMetaInfo::from).collect();
-                                self.map = map::GlobalMap::new(streams, villages);
+                                self.map.as_mut().unwrap().add_segment(streams, villages, min, max);
                             }
                             else {
                                 println!("No map data available");
@@ -301,7 +309,7 @@ impl State for Game<'static, 'static> {
             },
             UiView::Map => {
                 let (sprites, map) = (&mut self.sprites, &mut self.map);
-                map.render(window, &mut sprites.as_mut().unwrap(), &main_area)?;
+                map.as_mut().unwrap().render(window, &mut sprites.as_mut().unwrap(), &main_area)?;
             }
         }
         
@@ -479,6 +487,7 @@ pub fn run(width: f32, height: f32, net_chan: Receiver<NetMsg>) {
 
     let ul = tw / town::X as f32;
     let menu_box_area = Rectangle::new((tw,0),(MENU_BOX_WIDTH, th));
+    let main_area = Rectangle::new((0,0),(tw, th));
     quicksilver::lifecycle::run_with::<Game, _>(
         "Paddlers", 
         Vector::new(tw + MENU_BOX_WIDTH, th), 
@@ -487,8 +496,9 @@ pub fn run(width: f32, height: f32, net_chan: Receiver<NetMsg>) {
             Game::new().expect("Game initialization")
                 .with_town(Town::new(ul)) // TODO: Think of a better way to handle unit lengths in general
                 .with_unit_length(ul)
-                .with_menu_box_area(menu_box_area)
+                .with_ui_division(main_area, menu_box_area)
                 .with_network_chan(net_chan)
+                .init_map()
             )
     );
 }

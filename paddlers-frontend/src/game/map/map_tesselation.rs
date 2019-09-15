@@ -9,69 +9,22 @@ use crate::gui::{
     utils::*,
     z::*,
 };
-use super::MapSkeleton;
+use crate::game::map::map_segment::MapSegment;
 
-impl MapSkeleton {
-    pub fn static_test_map() -> Self {
-
-        let mut streams = vec!();
-        streams.push(vec![
-                (4.0,5.5),
-                (4.0,5.0),
-                (5.0,3.0),
-                (7.0,1.2),
-                (5.0,0.0),
-                (5.0,-1.2),
-            ]);
-
-        streams.push(vec![
-                (1.0,5.5),
-                (3.0,5.0),
-                (0.5,3.0),
-                (2.0,1.2),
-                (1.2,0.0),
-                (1.3,-1.2),
-            ]);
-        
-        streams.push(vec![
-                (8.0,5.5),
-                (6.5,6.0),
-                (10.0,6.5),
-                (9.0,8.8),
-                (13.0,9.0),
-                (10.0,10.0),
-            ]);
-        MapSkeleton {
-            w: 15,
-            h: 11,
-            streams
-        }
-    }
-
-    pub fn base_shape(&self) -> Rectangle {
-        Rectangle::new(
-            (0,0),
-            (self.w, self.h),
-        )
-    }
-    pub fn scaled_base_shape(&self, scaling: f32) -> Rectangle {
-        Rectangle::new(
-            (0,0),
-            (self.w as f32 * scaling, self.h as f32 * scaling),
-        )
-    }
-    pub fn tesselate_rivers(&mut self, area: &Rectangle) -> Mesh {
+impl MapSegment {
+    pub fn tesselate_rivers(&mut self) {
+        let area = self.scaled_base_shape();
+        self.water_mesh.clear();
         let norm_area = self.base_shape();
         let total_area = norm_area.fit_into(&area, FitStrategy::Center);
         let scaling = total_area.width() / norm_area.width();
 
         let main_river_area = Rectangle::new(
-            (0,(self.h/2) as f32 * scaling),
-            (self.w as f32 * scaling, scaling)
+            (0, (self.h/2.0).floor() * scaling),
+            (self.w * scaling, scaling)
         );
         let main_path = river_path(main_river_area, 2);
-        let mut mesh = Mesh::new();
-        add_path_to_mesh(&mut mesh, &main_path, 0.75 * scaling);
+        add_path_to_mesh(&mut self.water_mesh, &main_path, 0.75 * scaling);
 
         for stream_points in &mut self.streams {
             let mut stream_points: Vec<Vector> = 
@@ -80,46 +33,50 @@ impl MapSkeleton {
                 .collect();
             scale_vec(&mut stream_points, scaling);
             add_path_to_mesh(
-                &mut mesh,
+                &mut self.water_mesh,
                 &stream_path(&stream_points),
                 0.2 * scaling
             );
         }
-        mesh
     }
+}
 
-    pub fn tesselate_background(&self) -> Mesh {
-        // For now, the map is static and cannot be scrolled or zoomed
-        let mut mesh = Mesh::new();
-        self.base_shape().draw(
+pub fn tesselate_map_background(base_shape: Rectangle, w: i32, h: i32) -> Mesh {
+    let mut mesh = Mesh::new();
+    base_shape.draw(
+        &mut mesh,
+        Col(MAP_GREEN),
+        Transform::IDENTITY,
+        Z_TEXTURE,
+    );
+
+    let width = base_shape.width();
+    let height = base_shape.height();
+    let dx =  width / w as f32;
+    let dy = height / h as f32;
+    let thickness = 1.0;
+    
+    for x in 0..w+2 {
+        let x = dx * x as f32;
+        let line = v_line((x,0), height, thickness);
+        line.draw(
             &mut mesh,
-            Col(MAP_GREEN),
+            Col(TRANSPARENT_BLACK),
             Transform::IDENTITY,
-            Z_TEXTURE,
+            Z_GRID,
         );
-
-        let (w,h) = (self.w, self.h);
-        let thickness = 0.02;
-        for x in 1..w+2 {
-            let line = v_line((x,0), h as f32, thickness);
-            line.draw(
-                &mut mesh,
-                Col(Color::BLACK),
-                Transform::IDENTITY,
-                Z_GRID,
-            );
-        }
-        for y in 1..h+1 {
-            let line = h_line((0,y), w as f32, thickness);
-            line.draw(
-                &mut mesh,
-                Col(Color::BLACK),
-                Transform::IDENTITY,
-                Z_GRID,
-            );
-        }
-        mesh
     }
+    for y in 0..h+2 {
+        let y = dy * y as f32;
+        let line = h_line((0,y), width, thickness);
+        line.draw(
+            &mut mesh,
+            Col(TRANSPARENT_BLACK),
+            Transform::IDENTITY,
+            Z_GRID,
+        );
+    }
+    mesh
 }
 
 fn scale_vec(points: &mut Vec<Vector>, scaling: f32) {

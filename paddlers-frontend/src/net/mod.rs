@@ -23,7 +23,7 @@ pub enum NetMsg {
     Attacks(AttacksResponse),
     Buildings(BuildingsResponse),
     Error(PadlError),
-    Map(MapResponse),
+    Map(MapResponse, i32, i32),
     Resources(ResourcesResponse),
     UpdateWorkerTasks(UnitTasksResponse),
     Workers(WorkerResponse),

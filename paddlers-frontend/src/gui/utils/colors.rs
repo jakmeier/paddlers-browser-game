@@ -6,6 +6,12 @@ pub const BLACK: Color = Color {
     b: 0.0,
     a: 1.0,
 };
+pub const TRANSPARENT_BLACK: Color = Color {
+    r: 0.0,
+    g: 0.0,
+    b: 0.0,
+    a: 0.2,
+};
 pub const GREEN: Color = Color {
     r: 0.5,
     g: 1.0,
