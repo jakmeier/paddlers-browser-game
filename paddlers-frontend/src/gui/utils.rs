@@ -2,19 +2,48 @@
 //! Keep the dependencies to a minimum,
 //! no connection with game logic in here
 
-use quicksilver::prelude::*; 
-use quicksilver::graphics::Mesh; 
+use crate::gui::animation::AnimationState;
 use crate::gui::sprites::*;
-use crate::gui::animation::{AnimationState};
+use quicksilver::graphics::Mesh;
+use quicksilver::prelude::*;
 
-
-pub const BLACK: Color =    Color { r: 0.0, g: 0.0, b: 0.0, a: 1.0 };
-pub const GREEN: Color =    Color { r: 0.5, g: 1.0, b: 0.5, a: 1.0 };
-pub const LIME_GREEN: Color =    Color { r: 0.6, g: 0.9, b: 0.25, a: 1.0 };
-pub const GREY: Color =    Color { r: 0.75, g: 0.75, b: 0.75, a: 1.0 };
-pub const WHITE: Color =    Color { r: 1.0, g: 1.0, b: 1.0, a: 1.0 };
-pub const MAP_GREEN : Color = Color { r: 0.0, g: 0.5647, b: 0.0, a: 1.0 };
-pub const MAP_BLUE : Color = Color::BLUE;
+pub const BLACK: Color = Color {
+    r: 0.0,
+    g: 0.0,
+    b: 0.0,
+    a: 1.0,
+};
+pub const GREEN: Color = Color {
+    r: 0.5,
+    g: 1.0,
+    b: 0.5,
+    a: 1.0,
+};
+pub const LIME_GREEN: Color = Color {
+    r: 0.6,
+    g: 0.9,
+    b: 0.25,
+    a: 1.0,
+};
+pub const GREY: Color = Color {
+    r: 0.75,
+    g: 0.75,
+    b: 0.75,
+    a: 1.0,
+};
+pub const WHITE: Color = Color {
+    r: 1.0,
+    g: 1.0,
+    b: 1.0,
+    a: 1.0,
+};
+pub const MAP_GREEN: Color = Color {
+    r: 0.0,
+    g: 0.5647,
+    b: 0.0,
+    a: 1.0,
+};
+pub const MAP_BLUE: Color = Color::BLUE;
 
 #[derive(Debug, Clone, Copy)]
 pub enum RenderVariant {
@@ -29,7 +58,7 @@ pub enum RenderVariant {
 #[derive(Copy, Clone, Debug)]
 pub enum FitStrategy {
     TopLeft,
-    Center
+    Center,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -41,7 +70,7 @@ pub enum Direction {
     West,
 }
 
-pub fn draw_animated_sprite (
+pub fn draw_animated_sprite(
     asset: &mut Sprites,
     window: &mut Window,
     max_area: &Rectangle,
@@ -51,13 +80,36 @@ pub fn draw_animated_sprite (
     animation_state: &AnimationState,
     frame: u32,
 ) -> Result<()> {
-    let (image, transform) = i.animated(&animation_state.direction, frame); 
+    let (image, transform) = i.animated(&animation_state.direction, frame);
     draw_image(asset, window, max_area, image, z, fit_strat, transform)
 }
-pub fn draw_static_image(asset: &mut Sprites, window: &mut Window, max_area: &Rectangle, i: SpriteIndex, z: i32, fit_strat: FitStrategy) -> Result<()> {
-    draw_image(asset, window, max_area, i, z, fit_strat, Transform::IDENTITY)
+pub fn draw_static_image(
+    asset: &mut Sprites,
+    window: &mut Window,
+    max_area: &Rectangle,
+    i: SpriteIndex,
+    z: i32,
+    fit_strat: FitStrategy,
+) -> Result<()> {
+    draw_image(
+        asset,
+        window,
+        max_area,
+        i,
+        z,
+        fit_strat,
+        Transform::IDENTITY,
+    )
 }
-fn draw_image(sprites: &mut Sprites, window: &mut Window, max_area: &Rectangle, i: SpriteIndex, z: i32, fit_strat: FitStrategy, transform: Transform) -> Result<()> {
+fn draw_image(
+    sprites: &mut Sprites,
+    window: &mut Window,
+    max_area: &Rectangle,
+    i: SpriteIndex,
+    z: i32,
+    fit_strat: FitStrategy,
+    transform: Transform,
+) -> Result<()> {
     let img = sprites.index(i);
     let mut area = *max_area;
     let img_slope = img.area().height() / img.area().width();
@@ -66,60 +118,59 @@ fn draw_image(sprites: &mut Sprites, window: &mut Window, max_area: &Rectangle, 
         area.size.y = area.width() * img_slope;
         match fit_strat {
             FitStrategy::Center => {
-                area = area.translate((0,(max_area.height() - area.height())/2.0));
-            },
-            FitStrategy::TopLeft => {},
+                area = area.translate((0, (max_area.height() - area.height()) / 2.0));
+            }
+            FitStrategy::TopLeft => {}
         }
     } else {
         area.size.x = area.height() / img_slope;
         match fit_strat {
             FitStrategy::Center => {
-                area = area.translate(((max_area.width() - area.width())/2.0, 0.0));
-            },
-            FitStrategy::TopLeft => {},
+                area = area.translate(((max_area.width() - area.width()) / 2.0, 0.0));
+            }
+            FitStrategy::TopLeft => {}
         }
     }
-    
-    window.draw_ex(
-        &area,
-        Img(&img),
-        transform, 
-        z
-    );
+
+    window.draw_ex(&area, Img(&img), transform, z);
     Ok(())
 }
 
 #[inline]
-pub fn write_text(asset: &mut Asset<Font>, window: &mut Window, max_area: &Rectangle, z: i32, fit_strat: FitStrategy, text: &str) -> Result<f32> {
+pub fn write_text(
+    asset: &mut Asset<Font>,
+    window: &mut Window,
+    max_area: &Rectangle,
+    z: i32,
+    fit_strat: FitStrategy,
+    text: &str,
+) -> Result<f32> {
     write_text_col(asset, window, max_area, z, fit_strat, text, Color::BLACK)
 }
 pub fn write_text_col(
-    asset: &mut Asset<Font>, 
-    window: &mut Window, 
-    max_area: &Rectangle, 
-    z: i32, 
-    fit_strat: FitStrategy, 
+    asset: &mut Asset<Font>,
+    window: &mut Window,
+    max_area: &Rectangle,
+    z: i32,
+    fit_strat: FitStrategy,
     text: &str,
     col: Color,
-) -> Result<f32> 
-{
+) -> Result<f32> {
     let mut res = 0.0;
-    asset.execute(
-        |font| {
-            let style = FontStyle::new(max_area.height(), col);
-            let img = font.render(text, &style).unwrap();
-            let area = img.area().shrink_and_fit_into(max_area, fit_strat);
-            window.draw_ex(&area, Img(&img), Transform::IDENTITY, z);
-            res = area.width();
-            Ok(())
-        }
-    )?;
+    asset.execute(|font| {
+        let style = FontStyle::new(max_area.height(), col);
+        let img = font.render(text, &style).unwrap();
+        let area = img.area().shrink_and_fit_into(max_area, fit_strat);
+        window.draw_ex(&area, Img(&img), Transform::IDENTITY, z);
+        res = area.width();
+        Ok(())
+    })?;
     Ok(res)
 }
 
-
-pub trait JmrRectangle 
-where Self: std::marker::Copy 
+pub trait JmrRectangle
+where
+    Self: std::marker::Copy,
 {
     #[must_use]
     fn shrink_to_center(&self, shrink_to_center: f32) -> Rectangle;
@@ -130,7 +181,7 @@ where Self: std::marker::Copy
     #[must_use]
     fn fit_square(&self, fit_strat: FitStrategy) -> Rectangle;
     #[must_use]
-    fn grid(&self, cols: usize, rows: usize) -> Grid ;
+    fn grid(&self, cols: usize, rows: usize) -> Grid;
     #[must_use]
     fn cut_horizontal(&self, h: f32) -> (Rectangle, Rectangle);
     #[must_use]
@@ -138,7 +189,7 @@ where Self: std::marker::Copy
         self.fit_into_ex(frame, fit_strat, false)
     }
     #[must_use]
-    /// Shrinks (or grows) and moves the rectangle to fit within the given frame, without changing proportions 
+    /// Shrinks (or grows) and moves the rectangle to fit within the given frame, without changing proportions
     fn fit_into(&self, frame: &Rectangle, fit_strat: FitStrategy) -> Rectangle {
         self.fit_into_ex(frame, fit_strat, true)
     }
@@ -148,41 +199,45 @@ pub trait JmrVector {
     fn distance_2(&self, other: &Vector) -> f32;
 }
 
-impl JmrRectangle for Rectangle{
+impl JmrRectangle for Rectangle {
     fn shrink_to_center(&self, shrink_to_center: f32) -> Rectangle {
-        Rectangle::new_sized(self.size() * shrink_to_center)
-            .with_center(self.center())
+        Rectangle::new_sized(self.size() * shrink_to_center).with_center(self.center())
     }
     /// Padds constant pixels around the rectangle
     fn padded(&self, padding: f32) -> Rectangle {
-        Rectangle::new_sized(self.size() - (2.0*padding, 2.0*padding).into() )
+        Rectangle::new_sized(self.size() - (2.0 * padding, 2.0 * padding).into())
             .with_center(self.center())
     }
-    /// Shrinks and moves the rectangle to fit within the given frame, without changing proportions 
-    fn fit_into_ex(mut self, frame: &Rectangle, fit_strat: FitStrategy, allow_grow: bool) -> Rectangle {
-        let stretch_factor = ( frame.width() / self.width() ).min( frame.height() / self.height() );
+    /// Shrinks and moves the rectangle to fit within the given frame, without changing proportions
+    fn fit_into_ex(
+        mut self,
+        frame: &Rectangle,
+        fit_strat: FitStrategy,
+        allow_grow: bool,
+    ) -> Rectangle {
+        let stretch_factor = (frame.width() / self.width()).min(frame.height() / self.height());
         if allow_grow || stretch_factor < 1.0 {
             self.size *= stretch_factor;
         }
         match fit_strat {
             FitStrategy::TopLeft => self.pos = frame.pos,
-            FitStrategy::Center => { 
-                self.pos = frame.pos; 
-                self.pos = frame.pos + frame.center() - self.center() 
-            },
+            FitStrategy::Center => {
+                self.pos = frame.pos;
+                self.pos = frame.pos + frame.center() - self.center()
+            }
         }
         self
     }
-    /// Finds the largest square that fits into the given rectangle 
+    /// Finds the largest square that fits into the given rectangle
     fn fit_square(&self, fit_strat: FitStrategy) -> Rectangle {
         let s = self.width().min(self.height());
-        let mut rect = Rectangle::new(self.pos, (s,s));
+        let mut rect = Rectangle::new(self.pos, (s, s));
         match fit_strat {
             FitStrategy::Center => {
-                rect = rect.translate(((self.width() - rect.width())/2.0, 0.0));
-                rect = rect.translate((0.0, (self.height() - rect.height())/2.0));
-            },
-            FitStrategy::TopLeft => {},
+                rect = rect.translate(((self.width() - rect.width()) / 2.0, 0.0));
+                rect = rect.translate((0.0, (self.height() - rect.height()) / 2.0));
+            }
+            FitStrategy::TopLeft => {}
         }
         rect
     }
@@ -190,7 +245,7 @@ impl JmrRectangle for Rectangle{
         let dx = self.width() / cols as f32;
         let dy = self.height() / rows as f32;
         Grid {
-            base: Rectangle::new(self.pos, (dx,dy)),
+            base: Rectangle::new(self.pos, (dx, dy)),
             i: 0,
             x: cols,
             y: rows,
@@ -210,7 +265,7 @@ impl JmrVector for Vector {
     fn distance_2(&self, other: &Vector) -> f32 {
         let x = self.x - other.x;
         let y = self.y - other.y;
-        x*x + y*y
+        x * x + y * y
     }
 }
 
@@ -226,7 +281,7 @@ impl Iterator for Grid {
         let x = self.x;
         let y = self.y;
         let i = self.i;
-        if i < x*y {
+        if i < x * y {
             let w = self.base.width();
             let h = self.base.height();
             let mut r = self.base.clone();
@@ -234,26 +289,21 @@ impl Iterator for Grid {
             r.pos.y = self.base.pos.y + h * (i / x) as f32;
             self.i += 1;
             Some(r)
-        }
-        else {
+        } else {
             None
         }
     }
 }
 
 pub fn horizontal_flip() -> Transform {
-    Transform::from_array(
-        [[-1f32, 0f32, 0f32],
-         [0f32, 1f32, 0f32],
-         [0f32, 0f32, 1f32]]
-    )
+    Transform::from_array([[-1f32, 0f32, 0f32], [0f32, 1f32, 0f32], [0f32, 0f32, 1f32]])
 }
 
 pub fn h_line(start: impl Into<Vector>, len: f32, thickness: f32) -> Rectangle {
-    Rectangle::new(start, (len, thickness) )
+    Rectangle::new(start, (len, thickness))
 }
 pub fn v_line(start: impl Into<Vector>, len: f32, thickness: f32) -> Rectangle {
-    Rectangle::new(start, (thickness, len) )
+    Rectangle::new(start, (thickness, len))
 }
 
 /// Scales all vertices in the mesh by the given factor, taking (0,0) as origin
@@ -262,6 +312,6 @@ pub fn scale_mesh(mesh: &mut Mesh, r: f32) {
         p.pos *= r;
         if let Some(mut tp) = p.tex_pos {
             tp *= r;
-        } 
+        }
     }
 }

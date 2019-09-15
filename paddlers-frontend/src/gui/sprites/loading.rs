@@ -1,10 +1,10 @@
-use quicksilver::prelude::*;
-use crate::game::Game;
 use super::{
     animation::{AnimatedObject, AnimatedObjectDef, AnimationVariantDef},
-    paths::{SPRITE_PATHS, ANIMATION_DEFS},
+    paths::{ANIMATION_DEFS, SPRITE_PATHS},
     Sprites,
 };
+use crate::game::Game;
+use quicksilver::prelude::*;
 
 pub struct Preloading {
     images: Vec<Asset<Image>>,
@@ -13,16 +13,21 @@ pub struct Preloading {
 impl Preloading {
     pub fn new() -> Self {
         let images = start_loading_sprites();
-        Preloading {
-            images
-        }
+        Preloading { images }
     }
     pub fn progress(&mut self) -> f32 {
         let total = self.images.len() as f32;
-        let count = self.images.iter_mut()
+        let count = self
+            .images
+            .iter_mut()
             .map(|asset| {
                 let mut helper = false;
-                asset.execute( |_| { helper = true; Ok(()) } ).unwrap();
+                asset
+                    .execute(|_| {
+                        helper = true;
+                        Ok(())
+                    })
+                    .unwrap();
                 helper
             })
             .filter(|b| *b)
@@ -30,10 +35,16 @@ impl Preloading {
         count as f32 / total
     }
     pub fn finalize(self) -> Vec<Image> {
-        self.images.into_iter()
+        self.images
+            .into_iter()
             .map(|mut asset| {
                 let mut helper = None;
-                asset.execute( |img| { helper = Some(img.clone()); Ok(()) } ).unwrap();
+                asset
+                    .execute(|img| {
+                        helper = Some(img.clone());
+                        Ok(())
+                    })
+                    .unwrap();
                 helper.unwrap()
             })
             .collect()
@@ -41,29 +52,32 @@ impl Preloading {
 }
 
 fn start_loading_sprites() -> Vec<Asset<Image>> {
-    let images: Vec<Asset<Image>> = SPRITE_PATHS.iter()
-        .map(load_image)
-        .collect();
+    let images: Vec<Asset<Image>> = SPRITE_PATHS.iter().map(load_image).collect();
     images
 }
 
 pub fn start_loading_animations(images: &Vec<Image>) -> Vec<(Asset<AnimatedObject>, Image)> {
-    let animations = ANIMATION_DEFS.iter()
+    let animations = ANIMATION_DEFS
+        .iter()
         .map(|a| load_animation(a, images))
         .collect();
     animations
 }
 
-fn load_image(path: & &'static str) -> Asset<Image> {
+fn load_image(path: &&'static str) -> Asset<Image> {
     Asset::new(Image::load(*path))
 }
 fn load_image_from_variant(v: &AnimationVariantDef) -> impl Future<Item = Image, Error = Error> {
     match v {
-        AnimationVariantDef::Animated(path) | AnimationVariantDef::Static(path)
-            => Image::load(*path),
+        AnimationVariantDef::Animated(path) | AnimationVariantDef::Static(path) => {
+            Image::load(*path)
+        }
     }
 }
-fn load_animation(def: &'static AnimatedObjectDef, images: &Vec<Image>) -> (Asset<AnimatedObject>, Image) {
+fn load_animation(
+    def: &'static AnimatedObjectDef,
+    images: &Vec<Image>,
+) -> (Asset<AnimatedObject>, Image) {
     let futures = join_all(vec![
         load_image_from_variant(&def.up),
         load_image_from_variant(&def.left),
@@ -72,8 +86,7 @@ fn load_animation(def: &'static AnimatedObjectDef, images: &Vec<Image>) -> (Asse
     ]);
     let cols = def.cols as u32;
     let rows = def.rows as u32;
-    let obj = futures.map(
-        move |res| {
+    let obj = futures.map(move |res| {
         let mut iter = res.into_iter();
         AnimatedObject::walking(
             iter.next().unwrap(),
@@ -83,9 +96,11 @@ fn load_animation(def: &'static AnimatedObjectDef, images: &Vec<Image>) -> (Asse
             rows,
             iter.next().unwrap(),
         )
-        }
-    );
-    (Asset::new(obj), images[def.alternative.index_in_vector()].clone())
+    });
+    (
+        Asset::new(obj),
+        images[def.alternative.index_in_vector()].clone(),
+    )
 }
 
 impl Game<'static, 'static> {

@@ -1,12 +1,8 @@
 //! High-level GUI components that may be related to game logic as far as necessary
 
+use crate::gui::{sprites::*, utils::*, z::*};
 use crate::prelude::*;
-use quicksilver::prelude::*; 
-use crate::gui::{
-    sprites::*,
-    utils::*,
-    z::*,
-};
+use quicksilver::prelude::*;
 
 pub enum TableRow<'a> {
     Text(String),
@@ -16,18 +12,17 @@ pub enum TableRow<'a> {
 }
 
 pub fn draw_table(
-    window: &mut Window, 
-    sprites: &mut Sprites, 
-    table: &mut [TableRow], 
-    max_area: &Rectangle, 
-    font: &mut Asset<Font>, 
-    max_row_height: f32, 
-    z: i32
-) -> Result<()> 
-{
+    window: &mut Window,
+    sprites: &mut Sprites,
+    table: &mut [TableRow],
+    max_area: &Rectangle,
+    font: &mut Asset<Font>,
+    max_row_height: f32,
+    z: i32,
+) -> Result<()> {
     let total_rows = row_count(table);
-    let row_height = max_row_height.min( max_area.height() / total_rows as f32);
-    let font_h = row_height* 0.9;
+    let row_height = max_row_height.min(max_area.height() / total_rows as f32);
+    let font_h = row_height * 0.9;
     let img_s = row_height * 0.95;
     let margin = 10.0;
 
@@ -70,54 +65,65 @@ pub fn draw_table(
 }
 
 fn row_count(table: &[TableRow]) -> usize {
-    table.iter()
-        .fold(
-            0, 
-            |acc, row| {
-                acc + match row {
-                    TableRow::Text(_) => 1,
-                    TableRow::TextWithImage(_,_) => 1,
-                    TableRow::UiBoxWithEntities(uib) => 2 * uib.rows,
-                    TableRow::UiBoxWithBuildings(uib) => 2 * uib.rows,
-                }
-            }
-        )
+    table.iter().fold(0, |acc, row| {
+        acc + match row {
+            TableRow::Text(_) => 1,
+            TableRow::TextWithImage(_, _) => 1,
+            TableRow::UiBoxWithEntities(uib) => 2 * uib.rows,
+            TableRow::UiBoxWithBuildings(uib) => 2 * uib.rows,
+        }
+    })
 }
 
 pub fn draw_resources(
-    window: &mut Window, 
-    sprites: &mut Sprites, 
-    resis: &[(ResourceType, i64)], 
-    max_area: &Rectangle, 
-    font: &mut Asset<Font>, 
-    z: i32
-) -> Result<()> 
-{
+    window: &mut Window,
+    sprites: &mut Sprites,
+    resis: &[(ResourceType, i64)],
+    max_area: &Rectangle,
+    font: &mut Asset<Font>,
+    z: i32,
+) -> Result<()> {
     // XXX This is quite specific. If this is used more flexible, consider refactoring.
     let cols = 3;
     let rows = (2 + resis.len()) / cols;
     let grid = max_area.grid(cols, rows);
-    let max_img_area = Rectangle::new_sized((50,50));
+    let max_img_area = Rectangle::new_sized((50, 50));
     for ((rt, n), res_area) in resis.iter().zip(grid) {
         let mut img_area = max_img_area.shrink_and_fit_into(&res_area, FitStrategy::TopLeft);
         img_area.size.y = res_area.height();
         img_area.pos.x = img_area.pos.x + res_area.width() - img_area.width();
         let text_h = res_area.height().min(36.0);
-        let text_area = Rectangle::new(  
-            (res_area.pos.x, res_area.pos.y + (res_area.height() - text_h)/2.0),
-            (res_area.size.x - img_area.width(), text_h)
+        let text_area = Rectangle::new(
+            (
+                res_area.pos.x,
+                res_area.pos.y + (res_area.height() - text_h) / 2.0,
+            ),
+            (res_area.size.x - img_area.width(), text_h),
         );
-        draw_static_image(sprites, window, &img_area.padded(10.0), rt.sprite().default(), z, FitStrategy::Center)?;
-        write_text(font, window, &text_area, z+1, FitStrategy::Center, &n.to_string())?;
+        draw_static_image(
+            sprites,
+            window,
+            &img_area.padded(10.0),
+            rt.sprite().default(),
+            z,
+            FitStrategy::Center,
+        )?;
+        write_text(
+            font,
+            window,
+            &text_area,
+            z + 1,
+            FitStrategy::Center,
+            &n.to_string(),
+        )?;
     }
     Ok(())
 }
 
-
 #[derive(Clone, Debug)]
 struct UiElement<T: Clone + std::fmt::Debug> {
     display: RenderVariant,
-    hover_info: Option<Vec<(ResourceType, i64)>>, 
+    hover_info: Option<Vec<(ResourceType, i64)>>,
     on_click: Option<T>,
 }
 #[derive(Clone, Debug)]
@@ -144,43 +150,41 @@ impl<T: Clone + std::fmt::Debug> UiBox<T> {
 
     #[allow(dead_code)]
     pub fn add(&mut self, i: SpriteSet, on_click: T) {
-        self.add_el(
-            UiElement { 
-                display: RenderVariant::Img(i), 
-                hover_info: None,
-                on_click: Some(on_click),
-            }    
-        );
+        self.add_el(UiElement {
+            display: RenderVariant::Img(i),
+            hover_info: None,
+            on_click: Some(on_click),
+        });
     }
 
     pub fn add_with_render_variant(&mut self, rv: RenderVariant, on_click: T) {
-        self.add_el(
-            UiElement { 
-                display: rv,
-                hover_info: None,
-                on_click: Some(on_click),
-            }    
-        );
+        self.add_el(UiElement {
+            display: rv,
+            hover_info: None,
+            on_click: Some(on_click),
+        });
     }
 
-    pub fn add_with_background_color_and_cost(&mut self, i: SpriteSet, col: Color, on_click: T, cost: Vec<(ResourceType, i64)>) {
-        self.add_el(
-            UiElement { 
-                display: RenderVariant::ImgWithColBackground(i, col),
-                hover_info: Some(cost),
-                on_click: Some(on_click),
-            }    
-        );
+    pub fn add_with_background_color_and_cost(
+        &mut self,
+        i: SpriteSet,
+        col: Color,
+        on_click: T,
+        cost: Vec<(ResourceType, i64)>,
+    ) {
+        self.add_el(UiElement {
+            display: RenderVariant::ImgWithColBackground(i, col),
+            hover_info: Some(cost),
+            on_click: Some(on_click),
+        });
     }
 
     pub fn add_empty(&mut self) {
-        self.add_el(
-            UiElement { 
-                display: RenderVariant::Hide, 
-                hover_info: None,
-                on_click: None,
-            }    
-        );
+        self.add_el(UiElement {
+            display: RenderVariant::Hide,
+            hover_info: None,
+            on_click: None,
+        });
     }
 
     fn add_el(&mut self, el: UiElement<T>) {
@@ -190,56 +194,55 @@ impl<T: Clone + std::fmt::Debug> UiBox<T> {
         }
     }
 
-
-    pub fn draw(&mut self, window: &mut Window, sprites: &mut Sprites, area: &Rectangle) -> Result<()> {
+    pub fn draw(
+        &mut self,
+        window: &mut Window,
+        sprites: &mut Sprites,
+        area: &Rectangle,
+    ) -> Result<()> {
         self.area = *area;
         let grid = area.grid(self.columns, self.rows);
 
         for (el, draw_area) in self.elements.iter().zip(grid) {
-            let img = 
-            match el.display {
-                RenderVariant::Img(img) => {
-                    Some(img)
-                },
+            let img = match el.display {
+                RenderVariant::Img(img) => Some(img),
                 RenderVariant::ImgWithColBackground(img, col) => {
                     window.draw_ex(
                         &draw_area.padded(self.margin),
                         Col(col),
-                        Transform::IDENTITY, 
-                        Z_MENU_BOX_BUTTONS-1,
+                        Transform::IDENTITY,
+                        Z_MENU_BOX_BUTTONS - 1,
                     );
                     Some(img)
-                },
+                }
                 RenderVariant::ImgWithImgBackground(img, bkg) => {
                     draw_static_image(
-                        sprites, 
-                        window, 
-                        &draw_area, 
-                        SpriteIndex::Simple(bkg), 
-                        Z_MENU_BOX_BUTTONS-1, 
-                        FitStrategy::Center
+                        sprites,
+                        window,
+                        &draw_area,
+                        SpriteIndex::Simple(bkg),
+                        Z_MENU_BOX_BUTTONS - 1,
+                        FitStrategy::Center,
                     )?;
                     Some(img)
-                },
+                }
                 RenderVariant::ImgWithHoverAlternative(img, hov) => {
                     if window.mouse().pos().overlaps_rectangle(&draw_area) {
                         Some(hov)
                     } else {
                         Some(img)
-                    } 
-                },
-                RenderVariant::Hide => {
-                    None
+                    }
                 }
+                RenderVariant::Hide => None,
             };
             if let Some(img) = img {
                 draw_static_image(
-                    sprites, 
-                    window, 
-                    &draw_area.padded(self.padding + self.margin), 
-                    img.default(), 
-                    Z_MENU_BOX_BUTTONS, 
-                    FitStrategy::Center
+                    sprites,
+                    window,
+                    &draw_area.padded(self.padding + self.margin),
+                    img.default(),
+                    Z_MENU_BOX_BUTTONS,
+                    FitStrategy::Center,
                 )?;
             }
         }
@@ -259,32 +262,36 @@ impl<T: Clone + std::fmt::Debug> UiBox<T> {
     }
     fn find_element_under_mouse(&self, mouse: impl Into<Vector>) -> Option<UiElement<T>> {
         self.element_index_under_mouse(mouse)
-            .and_then(|i| self.elements.get(i)) 
+            .and_then(|i| self.elements.get(i))
             .map(UiElement::clone)
     }
     fn remove_element_under_mouse(&mut self, mouse: impl Into<Vector>) -> Option<UiElement<T>> {
         self.element_index_under_mouse(mouse)
-            .map(|i| self.elements.remove(i)) 
+            .map(|i| self.elements.remove(i))
     }
 
     pub fn click(&self, mouse: impl Into<Vector>) -> Option<T> {
         if let Some(el) = self.find_element_under_mouse(mouse) {
             el.on_click.clone()
-        }
-        else {
+        } else {
             None
         }
     }
     pub fn click_and_remove(&mut self, mouse: impl Into<Vector>) -> Option<T> {
         if let Some(el) = self.remove_element_under_mouse(mouse) {
             el.on_click.clone()
-        }
-        else {
+        } else {
             None
         }
     }
 
-    pub fn draw_hover_info(&mut self, window: &mut Window, sprites: &mut Sprites, font: &mut Asset<Font>, area: &Rectangle) -> Result<()> {
+    pub fn draw_hover_info(
+        &mut self,
+        window: &mut Window,
+        sprites: &mut Sprites,
+        font: &mut Asset<Font>,
+        area: &Rectangle,
+    ) -> Result<()> {
         let mouse = window.mouse().pos();
         if let Some(el) = self.find_element_under_mouse(mouse) {
             if let Some(cost) = &el.hover_info {
