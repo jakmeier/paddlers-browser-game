@@ -41,7 +41,7 @@ use forestry::*;
 use std::sync::mpsc::{Receiver, channel};
 use town_resources::TownResources;
 use units::worker_system::WorkerSystem;
-use map::VillageMetaInfo;
+use map::{VillageMetaInfo, GlobalMap, GlobalMapPrivateState};
 
 const MENU_BOX_WIDTH: f32 = 300.0;
 
@@ -75,7 +75,7 @@ pub(crate) struct Game<'a, 'b> {
     total_updates: u64,
     async_err_receiver: Receiver<PadlError>,
     stats: Statistician,
-    map: Option<map::GlobalMap>,
+    map: Option<GlobalMapPrivateState>,
 }
 
 impl Game<'static, 'static> {
@@ -103,9 +103,9 @@ impl Game<'static, 'static> {
     }
     fn init_map(mut self) -> Self {
         let main_area = self.world.read_resource::<UiState>().main_area;
-        let map = map::GlobalMap::new(main_area.size());
-        self.map = Some(map);
-        self.world.insert(map::GlobalMapSharedState::default());
+        let (private, shared) = GlobalMap::new(main_area.size());
+        self.map = Some(private);
+        self.world.insert(shared);
         self
     }
 }
@@ -231,7 +231,7 @@ impl State for Game<'static, 'static> {
                                     )
                                     .collect();
                                 let villages = data.map.villages.into_iter().map(VillageMetaInfo::from).collect();
-                                self.map_mut().add_segment(streams, villages, min, max);
+                                self.map.as_mut().map(|map| map.add_segment(streams, villages, min, max));
                             }
                             else {
                                 println!("No map data available");
@@ -270,8 +270,7 @@ impl State for Game<'static, 'static> {
             }
         }
         {
-            let (map, shared) = (self.map.as_mut().unwrap(),self.world.write_resource());
-            map.update(&shared);
+            self.map_mut().update();
         }
         self.update_time_reference();
         self.dispatcher.dispatch(&mut self.world);
@@ -314,8 +313,14 @@ impl State for Game<'static, 'static> {
                 self.render_entities(window)?;
             },
             UiView::Map => {
-                let (sprites, map, shared) = (&mut self.sprites, self.map.as_mut().unwrap(),self.world.write_resource());
-                map.render(&shared, window, &mut sprites.as_mut().unwrap(), &main_area)?;
+                let (sprites, mut map) = (
+                    &mut self.sprites, 
+                    GlobalMap::combined(
+                        self.map.as_mut().unwrap(),
+                        self.world.write_resource()
+                    )
+                );
+                map.render(window, &mut sprites.as_mut().unwrap(), &main_area)?;
             }
         }
         
@@ -420,12 +425,11 @@ impl Game<'_,'_> {
     pub fn town_mut(&mut self) -> specs::shred::FetchMut<Town> {
         self.world.write_resource()
     }
-    #[allow(dead_code)]
-    pub fn map(&self) -> &map::GlobalMap {
-        self.map.as_ref().unwrap()
-    }
-    pub fn map_mut(&mut self) -> &mut map::GlobalMap {
-        self.map.as_mut().unwrap()
+    pub fn map_mut(&mut self) -> GlobalMap {
+        GlobalMap::combined(
+            self.map.as_mut().unwrap(),
+            self.world.write_resource(),
+        )
     }
     pub fn rest(&mut self) -> specs::shred::FetchMut<RestApiState> {
         self.world.write_resource()
