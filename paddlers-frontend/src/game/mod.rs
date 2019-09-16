@@ -103,7 +103,9 @@ impl Game<'static, 'static> {
     }
     fn init_map(mut self) -> Self {
         let main_area = self.world.read_resource::<UiState>().main_area;
-        self.map = Some(map::GlobalMap::new(main_area.size()));
+        let map = map::GlobalMap::new(main_area.size());
+        self.map = Some(map);
+        self.world.insert(map::GlobalMapSharedState::default());
         self
     }
 }
@@ -229,7 +231,7 @@ impl State for Game<'static, 'static> {
                                     )
                                     .collect();
                                 let villages = data.map.villages.into_iter().map(VillageMetaInfo::from).collect();
-                                self.map.as_mut().unwrap().add_segment(streams, villages, min, max);
+                                self.map_mut().add_segment(streams, villages, min, max);
                             }
                             else {
                                 println!("No map data available");
@@ -267,7 +269,10 @@ impl State for Game<'static, 'static> {
                 Err(TryRecvError::Empty) => {},
             }
         }
-        self.map.as_mut().map(map::GlobalMap::update);
+        {
+            let (map, shared) = (self.map.as_mut().unwrap(),self.world.write_resource());
+            map.update(&shared);
+        }
         self.update_time_reference();
         self.dispatcher.dispatch(&mut self.world);
         if self.total_updates % 300 == 15 {
@@ -309,8 +314,8 @@ impl State for Game<'static, 'static> {
                 self.render_entities(window)?;
             },
             UiView::Map => {
-                let (sprites, map) = (&mut self.sprites, &mut self.map);
-                map.as_mut().unwrap().render(window, &mut sprites.as_mut().unwrap(), &main_area)?;
+                let (sprites, map, shared) = (&mut self.sprites, self.map.as_mut().unwrap(),self.world.write_resource());
+                map.render(&shared, window, &mut sprites.as_mut().unwrap(), &main_area)?;
             }
         }
         
@@ -323,7 +328,6 @@ impl State for Game<'static, 'static> {
         if let Some(grabbed) = grabbed_item {
             self.render_grabbed_item(window, &grabbed)?;
         }
-        self.map.as_mut().unwrap().drag(Vector::new(-0.05, 0));
         Ok(())
     }
 
@@ -413,10 +417,17 @@ impl Game<'_,'_> {
     pub fn town(&self) -> specs::shred::Fetch<Town> {
         self.world.read_resource()
     }
-    pub fn rest(&mut self) -> specs::shred::FetchMut<RestApiState> {
+    pub fn town_mut(&mut self) -> specs::shred::FetchMut<Town> {
         self.world.write_resource()
     }
-    pub fn town_mut(&mut self) -> specs::shred::FetchMut<Town> {
+    #[allow(dead_code)]
+    pub fn map(&self) -> &map::GlobalMap {
+        self.map.as_ref().unwrap()
+    }
+    pub fn map_mut(&mut self) -> &mut map::GlobalMap {
+        self.map.as_mut().unwrap()
+    }
+    pub fn rest(&mut self) -> specs::shred::FetchMut<RestApiState> {
         self.world.write_resource()
     }
     fn update_time_reference(&mut self) {

@@ -18,9 +18,14 @@ pub struct GlobalMap {
     segments: Vec<MapSegment>,
     villages: Vec<VillageMetaInfo>,
     scaling: f32,
-    x_offset: f32,
     view_width: i32,
     loaded: (i32,i32),
+}
+
+#[derive(Debug, Clone, Copy, Default)]
+pub struct GlobalMapSharedState {
+    /// Offset in map coordinates (1.0 = one village width)
+    x_offset: f32,
 }
 
 impl GlobalMap {
@@ -35,9 +40,8 @@ impl GlobalMap {
             segments: vec![],
             villages: vec![],
             scaling,
-            x_offset: 0.0,
             view_width: w,
-            loaded: (0,0),
+            loaded: (0,-1),
         }
     }
     pub fn add_segment(&mut self, streams: Vec<Vec<(f32,f32)>>, villages: Vec<VillageMetaInfo>, min_x: i32, max_x: i32 ) {
@@ -51,24 +55,21 @@ impl GlobalMap {
 
         
     }
-    pub fn render(&mut self, window: &mut Window, sprites: &mut Sprites, area: &Rectangle) -> Result<()> {
+    pub fn render(&mut self, shared: &GlobalMapSharedState, window: &mut Window, sprites: &mut Sprites, area: &Rectangle) -> Result<()> {
         
         window.draw_ex(area, Col(MAP_GREEN), Transform::IDENTITY, Z_TEXTURE);
 
         self.apply_scaling(area.size());
-        self.draw_grid(window);
-        self.draw_water(window, area);
-        self.draw_villages(window, sprites)?;
+        self.draw_grid(shared, window);
+        self.draw_water(shared, window, area);
+        self.draw_villages(shared, window, sprites)?;
 
         Ok(())
     }
-    pub fn drag(&mut self, v: Vector) {
-        self.x_offset += v.x;
-    }
     const LOAD_AHEAD: i32 = 10;
     const LOAD_STEP: i32 = 10;
-    pub fn update(&mut self) {
-        let x = - self.x_offset as i32;
+    pub fn update(&mut self, shared: &GlobalMapSharedState) {
+        let x = - shared.x_offset as i32;
         if self.loaded.0 > x - Self::LOAD_AHEAD {
             let (low, high) = (self.loaded.0 - 1 - Self::LOAD_STEP, self.loaded.0 - 1);
             crate::net::request_map_read(low, high);
@@ -84,18 +85,18 @@ impl GlobalMap {
             self.loaded.1 = self.loaded.1.max(high);
         }
     }
-    fn draw_grid(&mut self, window: &mut Window) {
-        let mut x = self.x_offset % 1.0;
+    fn draw_grid(&mut self, shared: &GlobalMapSharedState, window: &mut Window) {
+        let mut x = shared.x_offset % 1.0;
         if x > 0.0 { x -= 1.0 }
         let t = Transform::translate((x * self.scaling, 0));
         extend_transformed(window.mesh(), &self.grid_mesh, t);
     }
-    fn draw_water(&mut self, window: &mut Window, area: &Rectangle) {
+    fn draw_water(&mut self, shared: &GlobalMapSharedState, window: &mut Window, area: &Rectangle) {
         let visible_frame = Rectangle::new(
-            (-self.x_offset, 0),
+            (-shared.x_offset, 0),
             area.size() / self.scaling,
         );
-        let t = self.view_transform();
+        let t = self.view_transform(shared);
         for segment in self.segments.iter_mut() {
             if segment.is_visible(visible_frame) {
                 segment.apply_scaling(self.scaling);
@@ -104,7 +105,7 @@ impl GlobalMap {
             }
         }
     }
-    fn draw_villages(&mut self, window: &mut Window, sprites: &mut Sprites) -> Result<()> {
+    fn draw_villages(&mut self, shared: &GlobalMapSharedState, window: &mut Window, sprites: &mut Sprites) -> Result<()> {
         #[cfg(feature="dev_view")]
         self.visualize_control_points(window);
 
@@ -123,7 +124,7 @@ impl GlobalMap {
                 SpriteIndex::Simple(SingleSprite::Shack), 
                 Z_BUILDINGS, 
                 FitStrategy::Center,
-                self.view_transform(),
+                self.view_transform(shared),
             )?;
         }
         Ok(())
@@ -147,8 +148,8 @@ impl GlobalMap {
             self.scaling = r;
         }
     }
-    fn view_transform(&self) -> Transform {
-        Transform::translate((self.x_offset * self.scaling, 0))
+    fn view_transform(&self, shared: &GlobalMapSharedState) -> Transform {
+        Transform::translate((shared.x_offset * self.scaling, 0))
     }
 
     #[cfg(feature="dev_view")]
@@ -168,5 +169,11 @@ impl GlobalMap {
                 );
             }
         }
+    }
+}
+
+impl GlobalMapSharedState {
+    pub fn drag(&mut self, v: Vector) {
+        self.x_offset += v.x;
     }
 }

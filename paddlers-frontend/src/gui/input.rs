@@ -19,6 +19,7 @@ use crate::logging::ErrorQueue;
 use paddlers_shared_lib::prelude::*;
 
 pub mod pointer;
+pub mod drag;
 
 #[derive(Default, Clone, Copy)]
 pub struct MouseState(pub Vector, pub Option<MouseButton>);

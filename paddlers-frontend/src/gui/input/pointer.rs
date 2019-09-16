@@ -3,17 +3,24 @@
 use specs::prelude::*;
 use quicksilver::prelude::*;
 use crate::prelude::*;
-use super::{MouseState, LeftClickSystem, RightClickSystem, HoverSystem};
+use super::{MouseState, LeftClickSystem, RightClickSystem, HoverSystem, drag::*};
 use crate::net::game_master_api::RestApiSystem;
 
+// Tolerance thresholds
 const DOUBLE_CLICK_DELAY: i64 = 400_000; // [us]
 const DOUBLE_CLICK_DISTANCE_2: f32 = 1000.0; // [browser pixel coordinates]
+const CLICK_DISTANCE_2: f32 = 1000.0; // [browser pixel coordinates]
 
 pub struct PointerManager<'a, 'b> {
     click_dispatcher: Dispatcher<'a, 'b>,
     hover_dispatcher: Dispatcher<'a, 'b>,
+    drag_dispatcher: Dispatcher<'a, 'b>,
+    // for double-tap detection
     tentative_left_click: Option<(Vector, Timestamp)>,
     definitive_click: Option<(Vector, MouseButton)>,
+    // for dragging
+    moved: bool,
+    left_down: Option<Vector>,
 }
 
 impl PointerManager<'_,'_> {
@@ -33,11 +40,20 @@ impl PointerManager<'_,'_> {
             .build();
         hover_dispatcher.setup(&mut world);
 
+        world.insert(Drag::default());
+        let mut drag_dispatcher = DispatcherBuilder::new()
+            .with(DragSystem, "drag", &[])
+            .build();
+        drag_dispatcher.setup(&mut world);
+
         PointerManager {
-            click_dispatcher: click_dispatcher,
-            hover_dispatcher: hover_dispatcher,
+            click_dispatcher,
+            hover_dispatcher,
+            drag_dispatcher,
             tentative_left_click: None,
             definitive_click: None,
+            moved: false,
+            left_down: None,
         }
     }
 
@@ -55,16 +71,42 @@ impl PointerManager<'_,'_> {
                 self.click_dispatcher.dispatch(&mut world);
         }
         self.definitive_click = None;
+
+        if world.read_resource::<Drag>().is_some() {
+            self.drag_dispatcher.dispatch(&mut world);
+            world.write_resource::<Drag>().clear();
+        }
     }
 
     pub fn move_pointer(&mut self, mut world: &mut World, position: &Vector) {
         Self::update(world, position, None);
         self.hover_dispatcher.dispatch(&mut world);
+        if let Some(pos_before) = self.left_down {
+            if position.distance_2(&pos_before) >= CLICK_DISTANCE_2 {
+                self.moved = true;
+            }
+            if self.moved {
+                world.write_resource::<Drag>().add(pos_before, *position);
+                self.left_down = Some(*position);
+            }
+        }
     }
 
     pub fn button_event(&mut self, now: Timestamp, pos: &Vector, button: MouseButton, state: ButtonState) {
-        match state {
-            ButtonState::Pressed => self.new_click(now, pos, button),
+        match (state, button) {
+            (ButtonState::Pressed, MouseButton::Left) => {
+                self.left_down = Some(*pos);
+            },
+            (ButtonState::Pressed, _) => {
+                self.new_click(now, pos, button);
+            },
+            (ButtonState::Released, MouseButton::Left) => {
+                if !self.moved {
+                    self.new_click(now, pos, button);
+                }
+                self.moved = false;
+                self.left_down = None;
+            },
             _ => { /* NOP */ }
         }
     }
