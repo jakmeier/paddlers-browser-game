@@ -1,0 +1,36 @@
+use quicksilver::geom::Shape;
+use specs::prelude::*;
+use crate::game::{
+    movement::*,
+};
+use super::{UiState, UiView, MouseState};
+
+pub struct HoverSystem;
+
+impl<'a> System<'a> for HoverSystem {
+    type SystemData = (
+        Entities<'a>,
+        Read<'a, MouseState>,
+        Write<'a, UiState>,
+        ReadStorage<'a, Position>,
+     );
+
+    fn run(&mut self, (entities, mouse_state, mut ui_state, position): Self::SystemData) {
+
+        let MouseState(mouse_pos, _) = *mouse_state;
+        
+        (*ui_state).hovered_entity = None;
+        
+        match (*ui_state).current_view {
+            UiView::Map => {},
+            UiView::Town => {
+                for (e, pos) in (&entities, &position).join() {
+                    if mouse_pos.overlaps_rectangle(&pos.area) {
+                        (*ui_state).hovered_entity = Some(e);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+}
