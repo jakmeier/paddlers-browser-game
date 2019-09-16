@@ -59,12 +59,18 @@ impl Default for UiState {
 }
 impl UiState {
     pub fn toggle_view(&mut self) {
+        self.reset_view();
         match self.current_view {
             UiView::Map => self.current_view = UiView::Town,
             UiView::Town => self.current_view = UiView::Map,
         }
     }
     pub fn set_view(&mut self, view: UiView) {
+        self.reset_view();
         self.current_view = view;
+    }
+    fn reset_view(&mut self) {
+        self.selected_entity = None;
+        self.grabbed_item = None;
     }
 }

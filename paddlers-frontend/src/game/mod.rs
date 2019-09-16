@@ -41,7 +41,7 @@ use forestry::*;
 use std::sync::mpsc::{Receiver, channel};
 use town_resources::TownResources;
 use units::worker_system::WorkerSystem;
-use map::{VillageMetaInfo, GlobalMap, GlobalMapPrivateState};
+use map::{VillageMetaInfo, GlobalMap, GlobalMapPrivateState, MapPosition};
 
 const MENU_BOX_WIDTH: f32 = 300.0;
 
@@ -231,7 +231,8 @@ impl State for Game<'static, 'static> {
                                     )
                                     .collect();
                                 let villages = data.map.villages.into_iter().map(VillageMetaInfo::from).collect();
-                                self.map.as_mut().map(|map| map.add_segment(streams, villages, min, max));
+                                let (map, world) = (self.map.as_mut(), &mut self.world);
+                                map.map(|map| map.add_segment(world, streams, villages, min, max));
                             }
                             else {
                                 println!("No map data available");
@@ -479,6 +480,7 @@ impl Game<'_,'_> {
 fn init_world() -> World {
     let mut world = World::new();
     world.register::<Position>();
+    world.register::<MapPosition>();
     world.register::<Moving>();
     world.register::<Renderable>();
     world.register::<Clickable>();
@@ -490,6 +492,7 @@ fn init_world() -> World {
     world.register::<AnimationState>();
     world.register::<EntityContainer>();
     world.register::<ForestComponent>();
+    world.register::<VillageMetaInfo>();
 
     world
 }

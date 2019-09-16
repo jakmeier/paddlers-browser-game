@@ -23,7 +23,6 @@ impl MapSegment {
             (area.x() - 0.5 * scaling, (self.h/2.0).floor() * scaling),
             ((self.w + 1.0) * scaling, scaling)
         );
-        println!("Main river area {:?}", main_river_area);
         let main_path = river_path(main_river_area, 2);
         add_path_to_mesh(&mut self.water_mesh, &main_path, 0.75 * scaling);
 

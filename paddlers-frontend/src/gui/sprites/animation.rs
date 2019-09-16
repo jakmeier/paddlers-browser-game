@@ -92,7 +92,6 @@ impl Animation {
         let y = h * (i / self.cols) as f32;
 
         let region = Rectangle::new((x, y), (w, h));
-        println!("Subimage: {:?}", &region);
         self.sprite_sheet.subimage(region)
     }
 }

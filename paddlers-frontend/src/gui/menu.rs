@@ -8,6 +8,7 @@ use crate::game::{
     components::EntityContainer,
     forestry::ForestComponent,
     town::town_shop::DefaultShop,
+    map::VillageMetaInfo,
 };
 use crate::gui::{
     sprites::{SpriteIndex, SingleSprite},
@@ -59,7 +60,11 @@ impl Game<'_, '_> {
         let view = self.world.read_resource::<UiState>().current_view;
         match view {
             UiView::Map => {
-                // NOP
+                if let Some(e) = entity {
+                    let h = y0 + h0 - y - leaf_h;
+                    let menu_area = Rectangle::new((area.x(), y),(area.width(), h));
+                    self.render_entity_details(window, &menu_area, e)?;
+                }
             },
             UiView::Town => {
                 let resources_area = Rectangle::new( (area.x(), y), (area.width(), resources_height) );
@@ -110,6 +115,10 @@ impl Game<'_, '_> {
                     draw_static_image(sprites.as_mut().unwrap(), window, &area, SpriteIndex::Simple(background), Z_MENU_BOX + 1, FitStrategy::Center)?;
                     draw_static_image(sprites.as_mut().unwrap(), window, &inner_area, main.default(), Z_MENU_BOX + 2, FitStrategy::Center)?;
                 },
+                RenderVariant::ImgWithColBackground(main, col) => {
+                    window.draw_ex(area, Col(col), Transform::IDENTITY, Z_MENU_BOX + 1);
+                    draw_static_image(sprites.as_mut().unwrap(), window, &inner_area, main.default(), Z_MENU_BOX + 2, FitStrategy::Center)?;
+                }
                 _ => { panic!("Not implemented") }
             }
         }
@@ -118,6 +127,13 @@ impl Game<'_, '_> {
 
     fn draw_entity_details_table(&mut self, window: &mut Window, e: Entity, area: &Rectangle) -> Result<()> {
         let mut table = vec![];
+
+        let villages = self.world.read_storage::<VillageMetaInfo>();
+        if let Some(v) = villages.get(e) {
+            for row in village_details(v).into_iter() {
+                table.push(row);
+            }
+        }
 
         let health = self.world.read_storage::<Health>();
         if let Some(health) = health.get(e) {
@@ -209,4 +225,10 @@ fn total_aura_details<'a>(aura_size: i64,) -> TableRow<'a> {
         text,
         SpriteIndex::Simple(SingleSprite::Ambience),
     )
+}
+fn village_details<'a>(info: &VillageMetaInfo) -> Vec<TableRow<'a>> {
+    let row0 = TableRow::Text("Village".to_owned());
+    let text = format!("<{}:{}>", info.coordinates.0, info.coordinates.1);
+    let row1 = TableRow::Text(text);
+    vec![row0, row1]
 }

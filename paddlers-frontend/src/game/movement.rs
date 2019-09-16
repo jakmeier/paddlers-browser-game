@@ -5,6 +5,7 @@ use specs::prelude::*;
 
 #[derive(Component, Debug)]
 #[storage(VecStorage)]
+/// A position on the town view
 pub struct Position {
     pub area: Rectangle,
     pub z: i32, 
