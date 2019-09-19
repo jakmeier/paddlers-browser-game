@@ -1,9 +1,38 @@
+use crate::game::units::workers::Worker;
 use specs::prelude::*;
-use quicksilver::geom::*;
-use crate::gui::render::Renderable;
-use crate::gui::gui_components::UiBox;
-use crate::gui::utils::*;
 use crate::prelude::*;
+use crate::gui::{
+    animation::AnimationState,
+    render::Renderable,
+    gui_components::UiBox,
+    utils::*,
+    input::Clickable,
+};
+use super::movement::*;
+use super::units::attackers::{Attacker};
+use super::fight::*;
+use super::forestry::*;
+use super::map::{VillageMetaInfo, MapPosition};
+
+
+
+pub fn register_components(world: &mut World) {
+    world.register::<Position>();
+    world.register::<MapPosition>();
+    world.register::<Moving>();
+    world.register::<Renderable>();
+    world.register::<Clickable>();
+    world.register::<Attacker>();
+    world.register::<Worker>();
+    world.register::<Range>();
+    world.register::<Health>();
+    world.register::<NetObj>();
+    world.register::<AnimationState>();
+    world.register::<EntityContainer>();
+    world.register::<ForestComponent>();
+    world.register::<VillageMetaInfo>();
+    world.register::<UiMenu>();
+}
 
 #[derive(Component, Debug, Clone, Copy)]
 #[storage(VecStorage)]
@@ -14,10 +43,16 @@ pub struct NetObj {
 
 #[derive(Component, Debug, Clone)]
 #[storage(VecStorage)]
-/// Entitiy that can contain other entities (E.g. House has units inside)
+/// Clickable menu that pop up when entity is selected
+pub struct UiMenu {
+    pub ui: UiBox,
+}
+
+#[derive(Component, Debug, Clone)]
+#[storage(VecStorage)]
+/// Entity that can contain other entities (E.g. House has units inside)
 pub struct EntityContainer {
     pub children: Vec<Entity>,
-    pub ui: UiBox<Entity>,
     pub capacity: usize,
     pub task: TaskType,
 }
@@ -26,7 +61,6 @@ impl EntityContainer {
     pub fn new(capacity: usize, task: TaskType) -> Self {
         EntityContainer {
             children: vec![],
-            ui: UiBox::new(3,3, 0.0, 1.0),
             capacity: capacity,
             task: task,
         }
@@ -34,7 +68,7 @@ impl EntityContainer {
     pub fn can_add_entity(&self) -> bool {
         self.children.len() < self.capacity
     }
-    pub fn add_entity_unchecked(&mut self, e: Entity, rend: &Renderable) {
+    pub fn add_entity_unchecked(&mut self, e: Entity, rend: &Renderable, ui: &mut UiMenu) {
         self.children.push(e);
         let style = match rend.kind {
             RenderVariant::ImgWithImgBackground(img, _) 
@@ -48,16 +82,20 @@ impl EntityContainer {
                 RenderVariant::Hide
             }
         };
-        self.ui.add_with_render_variant(style, e);
+        ui.ui.add_with_render_variant(style, e);
     }
-    pub fn worker_to_release<'a>(&mut self, mouse: &Vector) -> Option<Entity> {
-        if let Some(entity_to_release) = self.ui.click_and_remove(*mouse) {
-            self.children.remove_item(&entity_to_release);
-            return Some(entity_to_release);
-        }
-        None
+    pub fn remove_entity<'a>(&mut self, e: Entity) {
+        self.children.remove_item(&e);
     }
     pub fn count(&self) -> usize {
         self.children.len()
+    }
+}
+
+impl UiMenu {
+    pub fn new_entity_container() -> Self {
+        UiMenu {
+            ui: UiBox::new(3,3, 0.0, 1.0)
+        }
     }
 }

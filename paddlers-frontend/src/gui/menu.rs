@@ -1,5 +1,6 @@
 pub mod buttons;
 
+use crate::game::components::UiMenu;
 use quicksilver::prelude::*;
 use specs::prelude::*;
 use crate::game::{
@@ -155,10 +156,15 @@ impl Game<'_, '_> {
             table.push(
                 TableRow::Text(format!("{}/{} occupied", c.count(), c.capacity))
             );
+        }
+
+        let mut ui_area = self.world.write_storage::<UiMenu>();
+        if let Some(ui) = ui_area.get_mut(e) {
             table.push(
-                TableRow::UiBoxWithEntities(&mut c.ui)
+                TableRow::InteractiveArea(&mut ui.ui)
             );
         }
+
         draw_table(window, self.sprites.as_mut().unwrap(), &mut table, &area, &mut self.font, 40.0, Z_MENU_TEXT)?;
         Ok(())
     }
@@ -174,7 +180,7 @@ impl Game<'_, '_> {
 
 
         table.push(
-            TableRow::UiBoxWithBuildings(&mut (*shop).ui)
+            TableRow::InteractiveArea(&mut (*shop).ui)
         );
 
         let (shop_area, price_tag_area) = area.cut_horizontal(area.height() - price_tag_h);

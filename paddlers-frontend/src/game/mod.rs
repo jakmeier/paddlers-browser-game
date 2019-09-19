@@ -1,3 +1,5 @@
+pub (crate) mod init;
+pub (crate) mod specs_resources;
 pub (crate) mod buildings;
 pub (crate) mod units;
 pub (crate) mod movement;
@@ -7,17 +9,17 @@ pub (crate) mod town_resources;
 pub (crate) mod fight;
 pub (crate) mod components;
 pub (crate) mod forestry;
+pub (crate) mod abilities;
 
 use crate::prelude::*;
-use crate::game::units::worker_factory::create_worker_entities;
-use crate::game::units::workers::Worker;
-use crate::game::components::*;
+use crate::game::{
+    units::worker_factory::create_worker_entities,
+    units::workers::Worker,
+    components::*,
+    };
 use crate::gui::{
     input::{self, UiView},
-    render::*,
     sprites::*,
-    animation::AnimationState,
-    menu::buttons::MenuButtons,
 };
 use crate::net::{
     NetMsg, 
@@ -25,40 +27,23 @@ use crate::net::{
 };
 use crate::logging::{
     ErrorQueue,
-    AsyncErr,
     text_to_user::TextBoard,
     statistics::Statistician,
 };
+pub use specs_resources::*;
 
-use input::{UiState, Clickable, pointer::PointerManager};
+use input::{UiState, pointer::PointerManager};
 use movement::*;
 use quicksilver::prelude::*;
 use specs::prelude::*;
-use town::{Town, TOWN_RATIO, town_shop::DefaultShop};
-use units::attackers::{Attacker};
+use town::{Town, town_shop::DefaultShop};
 use fight::*;
 use forestry::*;
 use std::sync::mpsc::{Receiver, channel};
 use town_resources::TownResources;
 use units::worker_system::WorkerSystem;
-use map::{VillageMetaInfo, GlobalMap, GlobalMapPrivateState, MapPosition};
+use map::{VillageMetaInfo, GlobalMap, GlobalMapPrivateState};
 
-const MENU_BOX_WIDTH: f32 = 300.0;
-
-pub(super) mod resources {
-    use crate::prelude::*;
-
-    #[derive(Default)]
-    /// Global animation ticker
-    pub struct ClockTick(pub u32);
-    #[derive(Default)]
-    /// Used for UI scaling. To be removed in favour of better options.
-    pub struct UnitLength(pub f32);
-    #[derive(Default)]
-    /// Timestamp of frame rendering
-    pub struct Now(pub Timestamp);
-}
-use resources::*;
 
 pub(crate) struct Game<'a, 'b> {
     dispatcher: Dispatcher<'a, 'b>,
@@ -118,19 +103,9 @@ impl State for Game<'static, 'static> {
         let font = Asset::new(Font::load("fonts/Manjari-Regular.ttf"));
         let bold_font = Asset::new(Font::load("fonts/Manjari-Bold.ttf"));
 
-        let mut world = init_world();
         let (err_send, err_recv) = channel();
-        let err_send_clone = err_send.clone();
-        world.insert(ClockTick(0));
-        world.insert(UiState::default());
-        world.insert(Now);
-        world.insert(ErrorQueue::default());
-        world.insert(AsyncErr::new(err_send));
-        world.insert(TownResources::default());
-        world.insert(RestApiState::new(err_send_clone));
-        world.insert(TextBoard::default());
-        world.insert(MenuButtons::new());
-
+        let mut world = init::init_world(err_send);
+        
         let mut dispatcher = DispatcherBuilder::new()
             .with(WorkerSystem, "work", &[])
             .with(MoveSystem, "move", &["work"])
@@ -450,7 +425,7 @@ impl Game<'_,'_> {
             *ts = Now(t);
         }
     }
-    /// Removes entites outside the map
+    /// Removes entities outside the map
     fn reaper(&mut self, map: &Rectangle) {
         let p = self.world.read_storage::<Position>();
         let mut dead = vec![];
@@ -500,50 +475,4 @@ impl Game<'_,'_> {
             _ => {},
         }
     }
-}
-
-fn init_world() -> World {
-    let mut world = World::new();
-    world.register::<Position>();
-    world.register::<MapPosition>();
-    world.register::<Moving>();
-    world.register::<Renderable>();
-    world.register::<Clickable>();
-    world.register::<Attacker>();
-    world.register::<Worker>();
-    world.register::<Range>();
-    world.register::<Health>();
-    world.register::<NetObj>();
-    world.register::<AnimationState>();
-    world.register::<EntityContainer>();
-    world.register::<ForestComponent>();
-    world.register::<VillageMetaInfo>();
-
-    world
-}
-
-pub fn run(width: f32, height: f32, net_chan: Receiver<NetMsg>) {
-    let max_town_width = width - MENU_BOX_WIDTH;
-    let (tw, th) = if max_town_width / height <= TOWN_RATIO {
-        (max_town_width, max_town_width / TOWN_RATIO)
-    } else {
-        (TOWN_RATIO * height, height)
-    };
-
-    let ul = tw / town::X as f32;
-    let menu_box_area = Rectangle::new((tw,0),(MENU_BOX_WIDTH, th));
-    let main_area = Rectangle::new((0,0),(tw, th));
-    quicksilver::lifecycle::run_with::<Game, _>(
-        "Paddlers", 
-        Vector::new(tw + MENU_BOX_WIDTH, th), 
-        Settings::default(), 
-        || Ok(
-            Game::new().expect("Game initialization")
-                .with_town(Town::new(ul)) // TODO: Think of a better way to handle unit lengths in general
-                .with_unit_length(ul)
-                .with_ui_division(main_area, menu_box_area)
-                .with_network_chan(net_chan)
-                .init_map()
-            )
-    );
 }

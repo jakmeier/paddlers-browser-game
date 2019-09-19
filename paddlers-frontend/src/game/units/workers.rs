@@ -4,12 +4,13 @@ use specs::prelude::*;
 use crate::prelude::*;
 use crate::game::{
     town::{Town, TileIndex},
-    movement::Position,
+    movement::{Position, Moving},
     components::*,
 };
 use crate::gui::render::Renderable;
 use crate::gui::z::*;
 use crate::net::game_master_api::RestApiState;
+use crate::logging::ErrorQueue;
 use paddlers_shared_lib::api::tasks::*;
 
 
@@ -28,7 +29,36 @@ pub struct WorkerTask {
 }
 
 impl Worker {
-    pub fn task_on_right_click<'a>(&mut self, from: TileIndex, click: &Vector, town: &Town, containers: &ReadStorage<'a, EntityContainer>) -> PadlResult<Option<TaskList>> {
+    /// Worker is ordered to do something by the player
+    pub fn new_order<'a>(
+        &mut self, 
+        worker_id: Entity, 
+        town: &Town,
+        mouse_pos: Vector,
+        rest: &mut RestApiState,
+        errq: &mut ErrorQueue,
+        position: &ReadStorage<'a, Position>,
+        moving: &ReadStorage<'a, Moving>,
+        containers: &WriteStorage<'a, EntityContainer>,
+        entities: &Entities<'a>,
+    ) {
+        let (from, movement) = (position, moving).join().get(worker_id, &entities).unwrap();
+        let start = town.next_tile_in_direction(from.area.pos, movement.momentum);                
+        let msg = self.task_on_right_click(start, &mouse_pos, &town, &containers);
+        match msg {
+            Ok(Some(msg)) => {
+                rest.http_overwrite_tasks(msg)
+                    .unwrap_or_else(|e| errq.push(e));
+            }
+            Ok(None) => { },
+            Err(e) => {
+                errq.push(e);
+            }
+        }
+    }
+
+
+    fn task_on_right_click<'a>(&mut self, from: TileIndex, click: &Vector, town: &Town, containers: &WriteStorage<'a, EntityContainer>) -> PadlResult<Option<TaskList>> {
         let destination = town.tile(*click);
         if let Some(job) = self.task_at_position(town, destination) {
             // Check with stateful tiles for validity
@@ -124,6 +154,7 @@ fn direction_vector(a: TileIndex, b: TileIndex) -> Vector {
 
 pub fn move_worker_into_building<'a>(
     containers: &mut WriteStorage<'a, EntityContainer>, 
+    ui_menus: &mut WriteStorage<'a, UiMenu>, 
     town: &mut Write<'a, Town>,
     lazy: &Read<'a, LazyUpdate>,
     rend: &ReadStorage<'a, Renderable>,
@@ -133,7 +164,8 @@ pub fn move_worker_into_building<'a>(
     let renderable = rend.get(worker_e).unwrap();
     let tile_state = (*town).tile_state(building_pos).unwrap();
     let c = containers.get_mut(tile_state.entity).unwrap();
-    c.add_entity_unchecked(worker_e, &renderable);
+    let mut ui_menu = ui_menus.get_mut(tile_state.entity).unwrap();
+    c.add_entity_unchecked(worker_e, &renderable, &mut ui_menu);
     town.add_entity_to_building(&building_pos).expect("Task has conflict");
     town.add_stateful_task(c.task).expect("Task has conflict in town state");
     lazy.remove::<Position>(worker_e);

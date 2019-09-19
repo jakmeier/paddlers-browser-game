@@ -4,7 +4,7 @@ use specs::world::Index;
 use crate::game::{
     movement::Position,
     town::Town,
-    resources::UnitLength,
+    UnitLength,
 };
 
 #[derive(Component, Debug)]

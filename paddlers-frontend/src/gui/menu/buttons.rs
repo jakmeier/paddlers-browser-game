@@ -8,11 +8,11 @@ use crate::gui::{
 };
 
 pub struct MenuButtons {
-    ui: UiBox<MenuButtonAction>,
+    ui: UiBox,
 }
 
-#[derive(Debug,Clone)]
-enum MenuButtonAction {
+#[derive(Debug,Clone, PartialEq, Eq)]
+pub enum MenuButtonAction {
     SwitchToView(UiView),
 }
 
@@ -40,7 +40,7 @@ impl MenuButtons {
         )
     }
     pub fn click(&self, mouse: impl Into<Vector>, ui_state: &mut UiState) {
-        if let Some(action) = self.ui.click(mouse) {
+        if let Some(ClickOutput::MenuButtonAction(action)) = self.ui.click(mouse.into()) {
             match action {
                 MenuButtonAction::SwitchToView(v) => {
                     ui_state.set_view(v);

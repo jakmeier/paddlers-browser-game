@@ -1,14 +1,38 @@
 //! High-level GUI components that may be related to game logic as far as necessary
 
-use crate::gui::{sprites::*, utils::*, z::*};
+mod ui_box;
+pub use ui_box::*;
+
+use crate::game::abilities::Ability;
+use crate::gui::{sprites::*, utils::*, menu::buttons::MenuButtonAction};
 use crate::prelude::*;
 use quicksilver::prelude::*;
 
 pub enum TableRow<'a> {
     Text(String),
     TextWithImage(String, SpriteIndex),
-    UiBoxWithEntities(&'a mut UiBox<specs::Entity>),
-    UiBoxWithBuildings(&'a mut UiBox<BuildingType>),
+    InteractiveArea(&'a mut dyn InteractiveTableArea),
+}
+
+/// An area that is part of the graphical user interface.
+pub trait InteractiveTableArea {
+    /// Defines how many table rows it takes to draw the area
+    fn rows(&self) -> usize;
+    /// Draw the area on a specified area
+    fn draw(&mut self, window: &mut Window, sprites: &mut Sprites, area: &Rectangle) -> Result<()>;
+    /// Check if the mouse hits somthing on the area
+    fn click(&self, mouse: Vector) -> Option<ClickOutput>;
+    /// Remove one of the clickable options
+    fn remove(&mut self, output: ClickOutput);
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+/// Elements than can be produces by a lick in a interactive area
+pub enum ClickOutput {
+    Entity(specs::Entity),
+    BuildingType(BuildingType),
+    Ability(Ability),
+    MenuButtonAction(MenuButtonAction),
 }
 
 pub fn draw_table(
@@ -47,16 +71,10 @@ pub fn draw_table(
                 draw_static_image(sprites, window, &symbol, *img, z, FitStrategy::Center)?;
                 line.pos.y += row_height;
             }
-            TableRow::UiBoxWithEntities(uib) => {
+            TableRow::InteractiveArea(ia) => {
                 let mut area = line.clone();
-                area.size.y = area.size.y * (uib.rows * 2) as f32;
-                uib.draw(window, sprites, &area)?;
-                line.pos.y += area.size.y;
-            }
-            TableRow::UiBoxWithBuildings(uib) => {
-                let mut area = line.clone();
-                area.size.y = area.size.y * (uib.rows * 2) as f32;
-                uib.draw(window, sprites, &area)?;
+                area.size.y = area.size.y * ia.rows() as f32;
+                ia.draw(window, sprites, &area)?;
                 line.pos.y += area.size.y;
             }
         }
@@ -69,8 +87,7 @@ fn row_count(table: &[TableRow]) -> usize {
         acc + match row {
             TableRow::Text(_) => 1,
             TableRow::TextWithImage(_, _) => 1,
-            TableRow::UiBoxWithEntities(uib) => 2 * uib.rows,
-            TableRow::UiBoxWithBuildings(uib) => 2 * uib.rows,
+            TableRow::InteractiveArea(ia) => ia.rows(),
         }
     })
 }
@@ -120,184 +137,23 @@ pub fn draw_resources(
     Ok(())
 }
 
-#[derive(Clone, Debug)]
-struct UiElement<T: Clone + std::fmt::Debug> {
-    display: RenderVariant,
-    hover_info: Option<Vec<(ResourceType, i64)>>,
-    on_click: Option<T>,
+impl From<specs::Entity> for ClickOutput {
+    fn from(e: specs::Entity) -> Self {
+        ClickOutput::Entity(e)
+    }
 }
-#[derive(Clone, Debug)]
-pub struct UiBox<T: Clone + std::fmt::Debug> {
-    area: Rectangle,
-    elements: Vec<UiElement<T>>,
-    columns: usize,
-    rows: usize,
-    padding: f32,
-    margin: f32,
+impl From<BuildingType> for ClickOutput {
+    fn from(bt: BuildingType) -> Self {
+        ClickOutput::BuildingType(bt)
+    }
 }
-
-impl<T: Clone + std::fmt::Debug> UiBox<T> {
-    pub fn new(columns: usize, rows: usize, padding: f32, margin: f32) -> Self {
-        UiBox {
-            area: Rectangle::default(),
-            elements: vec![],
-            columns: columns,
-            rows: rows,
-            padding: padding,
-            margin: margin,
-        }
+impl From<Ability> for ClickOutput {
+    fn from(a: Ability) -> Self {
+        ClickOutput::Ability(a)
     }
-
-    #[allow(dead_code)]
-    pub fn add(&mut self, i: SpriteSet, on_click: T) {
-        self.add_el(UiElement {
-            display: RenderVariant::Img(i),
-            hover_info: None,
-            on_click: Some(on_click),
-        });
-    }
-
-    pub fn add_with_render_variant(&mut self, rv: RenderVariant, on_click: T) {
-        self.add_el(UiElement {
-            display: rv,
-            hover_info: None,
-            on_click: Some(on_click),
-        });
-    }
-
-    pub fn add_with_background_color_and_cost(
-        &mut self,
-        i: SpriteSet,
-        col: Color,
-        on_click: T,
-        cost: Vec<(ResourceType, i64)>,
-    ) {
-        self.add_el(UiElement {
-            display: RenderVariant::ImgWithColBackground(i, col),
-            hover_info: Some(cost),
-            on_click: Some(on_click),
-        });
-    }
-
-    pub fn add_empty(&mut self) {
-        self.add_el(UiElement {
-            display: RenderVariant::Hide,
-            hover_info: None,
-            on_click: None,
-        });
-    }
-
-    fn add_el(&mut self, el: UiElement<T>) {
-        self.elements.push(el);
-        if self.columns * self.rows < self.elements.len() {
-            println!("Warning: Not all elements of the UI Area will be visible")
-        }
-    }
-
-    pub fn draw(
-        &mut self,
-        window: &mut Window,
-        sprites: &mut Sprites,
-        area: &Rectangle,
-    ) -> Result<()> {
-        self.area = *area;
-        let grid = area.grid(self.columns, self.rows);
-
-        for (el, draw_area) in self.elements.iter().zip(grid) {
-            let img = match el.display {
-                RenderVariant::Img(img) => Some(img),
-                RenderVariant::ImgWithColBackground(img, col) => {
-                    window.draw_ex(
-                        &draw_area.padded(self.margin),
-                        Col(col),
-                        Transform::IDENTITY,
-                        Z_MENU_BOX_BUTTONS - 1,
-                    );
-                    Some(img)
-                }
-                RenderVariant::ImgWithImgBackground(img, bkg) => {
-                    draw_static_image(
-                        sprites,
-                        window,
-                        &draw_area,
-                        SpriteIndex::Simple(bkg),
-                        Z_MENU_BOX_BUTTONS - 1,
-                        FitStrategy::Center,
-                    )?;
-                    Some(img)
-                }
-                RenderVariant::ImgWithHoverAlternative(img, hov) => {
-                    if window.mouse().pos().overlaps_rectangle(&draw_area) {
-                        Some(hov)
-                    } else {
-                        Some(img)
-                    }
-                }
-                RenderVariant::Hide => None,
-            };
-            if let Some(img) = img {
-                draw_static_image(
-                    sprites,
-                    window,
-                    &draw_area.padded(self.padding + self.margin),
-                    img.default(),
-                    Z_MENU_BOX_BUTTONS,
-                    FitStrategy::Center,
-                )?;
-            }
-        }
-
-        Ok(())
-    }
-
-    fn element_index_under_mouse(&self, mouse: impl Into<Vector>) -> Option<usize> {
-        let dx = self.area.width() / self.columns as f32;
-        let dy = self.area.height() / self.rows as f32;
-        let pos = mouse.into() - self.area.pos;
-        if pos.y < 0.0 || pos.x < 0.0 {
-            return None;
-        }
-        let i = (pos.y / dy) as usize * self.columns + (pos.x / dx) as usize;
-        Some(i)
-    }
-    fn find_element_under_mouse(&self, mouse: impl Into<Vector>) -> Option<UiElement<T>> {
-        self.element_index_under_mouse(mouse)
-            .and_then(|i| self.elements.get(i))
-            .map(UiElement::clone)
-    }
-    fn remove_element_under_mouse(&mut self, mouse: impl Into<Vector>) -> Option<UiElement<T>> {
-        self.element_index_under_mouse(mouse)
-            .map(|i| self.elements.remove(i))
-    }
-
-    pub fn click(&self, mouse: impl Into<Vector>) -> Option<T> {
-        if let Some(el) = self.find_element_under_mouse(mouse) {
-            el.on_click.clone()
-        } else {
-            None
-        }
-    }
-    pub fn click_and_remove(&mut self, mouse: impl Into<Vector>) -> Option<T> {
-        if let Some(el) = self.remove_element_under_mouse(mouse) {
-            el.on_click.clone()
-        } else {
-            None
-        }
-    }
-
-    pub fn draw_hover_info(
-        &mut self,
-        window: &mut Window,
-        sprites: &mut Sprites,
-        font: &mut Asset<Font>,
-        area: &Rectangle,
-    ) -> Result<()> {
-        let mouse = window.mouse().pos();
-        if let Some(el) = self.find_element_under_mouse(mouse) {
-            if let Some(cost) = &el.hover_info {
-                draw_resources(window, sprites, &cost, area, font, Z_MENU_RESOURCES)?;
-            }
-        }
-        Ok(())
+}
+impl From<MenuButtonAction> for ClickOutput {
+    fn from(a: MenuButtonAction) -> Self {
+        ClickOutput::MenuButtonAction(a)
     }
 }

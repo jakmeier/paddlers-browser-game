@@ -23,7 +23,7 @@ impl<'a> System<'a> for RightClickSystem {
         WriteStorage<'a, Worker>,
         ReadStorage<'a, Position>,
         ReadStorage<'a, Moving>,
-        ReadStorage<'a, EntityContainer>,
+        WriteStorage<'a, EntityContainer>,
      );
 
     fn run(&mut self, (mouse_state, mut ui_state, town, mut rest, mut errq, entities, mut worker, position, moving, containers): Self::SystemData) {
@@ -33,7 +33,9 @@ impl<'a> System<'a> for RightClickSystem {
             return;
         }
 
-        (*ui_state).grabbed_item = None;
+        if (*ui_state).grabbed_item.take().is_some() {
+            return;
+        }
 
 
         let in_menu_area = mouse_pos.overlaps_rectangle(&(*ui_state).menu_box_area);
@@ -46,24 +48,9 @@ impl<'a> System<'a> for RightClickSystem {
                 // NOP
             },
             (UiView::Town, false) => {
-                if let Some((worker, from, movement)) = 
-                    ui_state.selected_entity
-                    .and_then(
-                        |selected| 
-                        (&mut worker, &position, &moving).join().get(selected, &entities) 
-                    )
-                {
-                    let start = town.next_tile_in_direction(from.area.pos, movement.momentum);                
-                    let msg = worker.task_on_right_click(start, &mouse_pos, &town, &containers);
-                    match msg {
-                        Ok(Some(msg)) => {
-                            rest.http_overwrite_tasks(msg)
-                                .unwrap_or_else(|e| errq.push(e));
-                        }
-                        Ok(None) => { },
-                        Err(e) => {
-                            errq.push(e);
-                        }
+                if let Some(e) = (*ui_state).selected_entity {
+                    if let Some(worker) = worker.get_mut(e) {
+                        worker.new_order(e, &*town, mouse_pos, &mut *rest, &mut *errq, &position, &moving, &containers, &entities);
                     }
                 }
             },

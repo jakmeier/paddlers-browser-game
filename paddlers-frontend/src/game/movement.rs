@@ -1,5 +1,5 @@
 use crate::Timestamp;
-use crate::game::resources::Now;
+use crate::game::Now;
 use quicksilver::geom::{Vector, Rectangle};
 use specs::prelude::*;
 

@@ -12,7 +12,7 @@ use paddlers_shared_lib::prelude::*;
 
 #[derive(Clone)]
 pub struct DefaultShop {
-    pub ui: UiBox<BuildingType>,
+    pub ui: UiBox,
 }
 impl Default for DefaultShop {
     fn default() -> Self {
@@ -37,8 +37,8 @@ impl DefaultShop {
     }
 
     pub fn click(&self, mouse: impl Into<Vector>) -> Option<Grabbable> {
-        let buy_this = self.ui.click(mouse);
-        if let Some(building_type) = buy_this {
+        let buy_this = self.ui.click(mouse.into());
+        if let Some(ClickOutput::BuildingType(building_type)) = buy_this {
             return Some(
                 Grabbable::NewBuilding(building_type)
             )

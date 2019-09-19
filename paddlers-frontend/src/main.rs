@@ -25,7 +25,7 @@ pub fn main() {
     #[cfg(target_arch = "wasm32")]
     setup_wasm();
     let (net_sender, net_receiver) = channel();
-    game::run(1500.0, 600.0, net_receiver); // is cut to right ratio inside of game
+    game::init::run(1500.0, 600.0, net_receiver); // is cut to right ratio inside of game
     net::init_net(net_sender);
 }
 

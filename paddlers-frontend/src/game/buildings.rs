@@ -67,12 +67,14 @@ impl Town {
             BuildingType::BundlingStation => {
                 builder = builder.with(
                     EntityContainer::new(bt.capacity(), TaskType::GatherSticks)
-                );
+                )
+                .with(UiMenu::new_entity_container());
             },
             BuildingType::SawMill => {
                 builder = builder.with(
                     EntityContainer::new(bt.capacity(), TaskType::ChopTree)
-                );
+                )
+                .with(UiMenu::new_entity_container());
             },
             BuildingType::Tree => {
                 builder = builder.with(ForestComponent::new(created));

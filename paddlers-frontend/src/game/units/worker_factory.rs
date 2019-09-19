@@ -15,6 +15,7 @@ use crate::game::{
     town::Town,
     components::*,
     units::workers::*,
+    abilities::AbilitySet,
 };
 
 pub fn with_unit_base<B: Builder>(
@@ -42,6 +43,7 @@ pub fn with_hero<B: Builder>( builder: B ) -> B
             kind: RenderVariant::ImgWithImgBackground(SpriteSet::Animated(AnimatedSprite::Roger), SingleSprite::Grass),
         }
     )
+    .with(UiMenu { ui: AbilitySet::new_test_set().construct_ui_box() } )
 }
 
 pub fn with_basic_worker<B: Builder>( builder: B, color: UnitColor ) -> B 

@@ -107,6 +107,8 @@ pub enum SingleSprite {
     Shack,
     DuckSteps,
     Roger,
+    WalkAbility,
+    WelcomeAbility,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -178,5 +180,15 @@ pub fn tree_sprite(score: usize) -> SpriteSet {
         s if s <= 2 => SpriteSet::Simple(SingleSprite::Sapling),
         s if s <= 9 => SpriteSet::Simple(SingleSprite::YoungTree),
         _ => SpriteSet::Simple(SingleSprite::Tree),
+    }
+}
+
+use crate::game::abilities::Ability;
+impl WithSprite for Ability {
+    fn sprite(&self) -> SpriteSet {
+        match self {
+            Ability::Walk => SpriteSet::Simple(SingleSprite::WalkAbility),
+            Ability::Welcome => SpriteSet::Simple(SingleSprite::WelcomeAbility),
+        }
     }
 }

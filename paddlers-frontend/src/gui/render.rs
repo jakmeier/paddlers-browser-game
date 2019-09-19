@@ -15,7 +15,7 @@ use crate::gui::{
     input::Grabbable,
 };
 use crate::logging::text_to_user::TextBoard;
-use crate::game::resources::ClockTick;
+use crate::game::ClockTick;
 
 #[derive(Component, Debug)]
 #[storage(VecStorage)]
@@ -70,6 +70,9 @@ impl Game<'_, '_> {
         match item {
             Grabbable::NewBuilding(building_type) => {
                 draw_static_image(self.sprites.as_mut().unwrap(), window, &max_area, building_type.sprite().default(), Z_GRABBED_ITEM, FitStrategy::TopLeft)?
+            }, 
+            Grabbable::Ability(ability) => {
+                draw_static_image(self.sprites.as_mut().unwrap(), window, &max_area, ability.sprite().default(), Z_GRABBED_ITEM, FitStrategy::TopLeft)?
             }
         }
         Ok(())

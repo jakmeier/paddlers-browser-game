@@ -6,6 +6,7 @@ use crate::game::{
     town::{town_shop::DefaultShop, Town},
     town_resources::TownResources,
     units::workers::*,
+    abilities::Ability,
 };
 use crate::gui::menu::buttons::MenuButtons;
 use crate::logging::ErrorQueue;
@@ -31,7 +32,9 @@ impl<'a> System<'a> for LeftClickSystem {
         ReadStorage<'a, Position>,
         ReadStorage<'a, MapPosition>,
         ReadStorage<'a, Clickable>,
+        ReadStorage<'a, Moving>,
         WriteStorage<'a, EntityContainer>,
+        WriteStorage<'a, UiMenu>,
         WriteStorage<'a, Worker>,
     );
 
@@ -43,17 +46,19 @@ impl<'a> System<'a> for LeftClickSystem {
             mut ui_state,
             shop,
             buttons,
-            resources,
+            mut resources,
             mut town,
             mut map,
-            rest,
-            errq,
+            mut rest,
+            mut errq,
             lazy,
             position,
             map_position,
             clickable,
+            moving,
             containers,
-            workers,
+            mut ui_menus,
+            mut workers,
         ): Self::SystemData,
     ) {
         let MouseState(mouse_pos, button) = *mouse_state;
@@ -61,24 +66,56 @@ impl<'a> System<'a> for LeftClickSystem {
             return;
         }
 
+        let active_entity = ui_state.selected_entity;
+
         // Always visible buttons
         buttons.click(mouse_pos, &mut *ui_state);
 
+        // Demultiplex signal to views
         let in_menu_area = mouse_pos.overlaps_rectangle(&(*ui_state).menu_box_area);
         match (ui_state.current_view, in_menu_area) {
             (UiView::Town, true) => {
-                town.left_click_on_menu(
-                    mouse_pos, ui_state, position, workers, containers, lazy, shop, resources,
-                    errq, rest,
-                );
+                if let Some(entity) = (*ui_state).selected_entity {
+                    if let Some(ui_menu) = ui_menus.get_mut(entity) {
+                        town.left_click_on_menu(
+                            entity, mouse_pos, ui_state, position, workers, containers, ui_menu, lazy, errq, rest,
+                        );
+                    }
+                }
+                else {
+                    Town::click_default_shop(mouse_pos, ui_state, shop, resources);
+                }
             }
             (UiView::Map, true) => {
                 // NOP
             }
             (UiView::Town, false) => {
-                town.left_click(
-                    mouse_pos, entities, ui_state, position, clickable, lazy, resources, errq, rest,
-                );
+                let maybe_ability =
+                    town.left_click(
+                        mouse_pos, &entities, &mut ui_state, &position, &clickable, &lazy, &mut resources, &mut errq, &mut rest,
+                    );
+                match maybe_ability {
+                    Some(Ability::Walk) => {
+                        let active_entity = active_entity.expect("Ability requires unit");
+                        let worker = workers.get_mut(active_entity).expect("Ability requires unit");
+                        worker.new_order(
+                            active_entity, 
+                            &*town,
+                            mouse_pos,
+                            &mut *rest,
+                            &mut *errq,
+                            &position,
+                            &moving,
+                            &containers,
+                            &entities,
+                        );
+
+                    },
+                    Some(Ability::Welcome) => {
+                        // TODO
+                    },
+                    None => {},
+                }
             }
             (UiView::Map, false) => map.left_click_on_main_area(mouse_pos, ui_state, entities, map_position, clickable),
         }
