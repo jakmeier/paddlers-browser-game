@@ -2,7 +2,7 @@
 //! Keep the dependencies to a minimum,
 //! no connection with game logic in here
 
-mod colors;
+pub mod colors;
 pub use colors::*;
 mod grid;
 pub use grid::*;

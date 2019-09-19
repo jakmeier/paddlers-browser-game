@@ -24,7 +24,7 @@ impl MapSegment {
             ((self.w + 1.0) * scaling, scaling)
         );
         let main_path = river_path(main_river_area, 2);
-        add_path_to_mesh(&mut self.water_mesh, &main_path, 0.75 * scaling);
+        add_path_to_mesh(&mut self.water_mesh, &main_path, 0.75 * scaling, LIGHT_BLUE, Z_RIVER);
 
         for stream_points in &mut self.streams {
             let mut stream_points: Vec<Vector> = 
@@ -35,7 +35,9 @@ impl MapSegment {
             add_path_to_mesh(
                 &mut self.water_mesh,
                 &stream_path(&stream_points),
-                0.2 * scaling
+                0.2 * scaling,
+                LIGHT_BLUE,
+                Z_RIVER - 1
             );
         }
     }
@@ -108,16 +110,16 @@ fn stream_path(points: &[Vector]) -> Path {
                 let r = (p + q) / 2.0;
                 builder.quadratic_bezier_to(point(p.x, p.y), point(r.x, r.y));
             }
-            _ => {panic!()},
+            _ => {panic!()}, 
         }
     }
 
     builder.build()
 }
 
-fn add_path_to_mesh(mesh: &mut Mesh, path: &Path, thickness: f32) {
-    let mut shape = ShapeRenderer::new(mesh, MAP_BLUE);
-    shape.set_z(Z_RIVER as f32);
+fn add_path_to_mesh(mesh: &mut Mesh, path: &Path, thickness: f32, color: Color, z: i32) {
+    let mut shape = ShapeRenderer::new(mesh, color);
+    shape.set_z(z as f32);
     let mut tessellator = StrokeTessellator::new();
     tessellator.tessellate_path(
         path,

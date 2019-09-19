@@ -8,7 +8,7 @@ REPO=jakmeier/paddlers
 build-and-run: build
 	make run
 
-build: debug-game-master-container debug-db-interface-container frontend-container
+build: debug-game-master-container debug-db-interface-container debug-frontend-container
 
 release: game-master-container db-interface-container frontend-container
 
@@ -37,6 +37,9 @@ debug-game-master-container: paddlers-game-master/debug.Dockerfile rust-containe
 
 debug-db-interface-container: paddlers-db-interface/debug.Dockerfile rust-container
 	docker build --target DbInterface -t $(REPO):db-interface-snapshot -f $< .
+
+debug-frontend-container: paddlers-frontend/debug.Dockerfile rust-container
+	docker build --target WebServer -t $(REPO):frontend-snapshot -f $< .
 
 frontend-container: paddlers-frontend/Dockerfile rust-container
 	docker build --target WebServer -t $(REPO):frontend-snapshot -f $< .

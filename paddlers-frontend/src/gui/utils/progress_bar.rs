@@ -28,5 +28,5 @@ pub fn draw_progress_bar(
     let mut bar = bar_area.padded(3.0);
     window.draw(&bar, Col(DARK_GREEN));
     bar.size.x *= progress;
-    window.draw(&bar, Col(LIME_GREEN));
+    window.draw(&bar, Col(LIGHT_GREEN));
 }

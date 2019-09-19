@@ -33,7 +33,7 @@ impl DefaultShop {
     }
 
     fn add_building(&mut self, b: BuildingType) {
-        self.ui.add_with_background_color_and_cost(b.sprite(), WHITE, b, b.cost());
+        self.ui.add_with_background_color_and_cost(b.sprite(), LIGHT_BLUE, b, b.cost());
     }
 
     pub fn click(&self, mouse: impl Into<Vector>) -> Option<Grabbable> {

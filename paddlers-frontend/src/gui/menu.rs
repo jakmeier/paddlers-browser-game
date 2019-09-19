@@ -35,7 +35,7 @@ impl Game<'_, '_> {
         // Menu Box Background
         window.draw_ex(
             &area,
-            Col(LIME_GREEN),
+            Col(LIGHT_GREEN),
             Transform::IDENTITY, 
             Z_MENU_BOX
         );

@@ -76,6 +76,8 @@ pub(crate) struct Game<'a, 'b> {
     async_err_receiver: Receiver<PadlError>,
     stats: Statistician,
     map: Option<GlobalMapPrivateState>,
+    #[cfg(feature="dev_view")]
+    palette: bool,
 }
 
 impl Game<'static, 'static> {
@@ -158,6 +160,8 @@ impl State for Game<'static, 'static> {
             async_err_receiver: err_recv,
             stats: Statistician::new(now),
             map: None,
+            #[cfg(feature="dev_view")]
+            palette: false,
         })
     }
 
@@ -334,6 +338,8 @@ impl State for Game<'static, 'static> {
         if let Some(grabbed) = grabbed_item {
             self.render_grabbed_item(window, &grabbed)?;
         }
+        #[cfg(feature="dev_view")]
+        self.draw_dev_view(window);
         Ok(())
     }
 
@@ -414,6 +420,8 @@ impl State for Game<'static, 'static> {
                 // println!("Event: {:#?}", _evt)
             }
         };
+        #[cfg(feature="dev_view")]
+        self.dev_view_event(event);
         self.world.maintain();
         Ok(())
     }
@@ -473,6 +481,23 @@ impl Game<'_,'_> {
         }
         else {
             Some(res.unwrap())
+        }
+    }
+    #[cfg(feature="dev_view")]
+    fn draw_dev_view(&self, window: &mut Window) {
+        if self.palette {
+            let area = Rectangle::new((0,0),window.screen_size()).padded(100.0);
+            crate::gui::utils::colors::palette::draw_color_palette(window, area);
+        }
+    }
+    #[cfg(feature="dev_view")]
+    fn dev_view_event(&mut self, event: &Event) {
+        match event {
+            Event::Key(key, state) 
+            if *key == Key::Space && *state == ButtonState::Pressed => {
+                self.palette = !self.palette;
+            },
+            _ => {},
         }
     }
 }

@@ -78,7 +78,7 @@ impl<'a> GlobalMap<'a> {
         sprites: &mut Sprites,
         area: &Rectangle,
     ) -> Result<()> {
-        window.draw_ex(area, Col(MAP_GREEN), Transform::IDENTITY, Z_TEXTURE);
+        window.draw_ex(area, Col(GREEN), Transform::IDENTITY, Z_TEXTURE);
 
         self.apply_scaling(area.size());
         self.draw_grid(window);
@@ -187,17 +187,19 @@ impl<'a> GlobalMap<'a> {
     #[cfg(feature = "dev_view")]
     fn visualize_control_points(&self, window: &mut Window) {
         let pt = self.shared.scaling / 5.0;
-        for s in &self.private.skeleton.streams {
-            for (x, y) in s {
-                let area = Rectangle::new(
-                    (
-                        x * self.shared.scaling - pt / 2.0,
-                        y * self.shared.scaling - pt / 2.0,
-                    ),
-                    (pt, pt),
-                );
-                window.draw_ex(&area, Col(Color::WHITE), Transform::rotate(45), 1000);
-            }
+        for seg in &self.private.segments {
+            for s in &seg.streams {
+                for (x, y) in s {
+                    let area = Rectangle::new(
+                        (
+                            (self.shared.x_offset + x) * self.shared.scaling - pt / 2.0,
+                            y * self.shared.scaling - pt / 2.0,
+                        ),
+                        (pt, pt),
+                    );
+                    window.draw_ex(&area, Col(Color::WHITE), Transform::rotate(45) , 1000);
+                }
+            } 
         }
     }
 }
@@ -224,7 +226,7 @@ impl GlobalMapPrivateState {
                 .with(Renderable {
                     kind: RenderVariant::ImgWithColBackground(
                         SpriteSet::Simple(SingleSprite::Shack),
-                        MAP_GREEN,
+                        GREEN,
                     ),
                 })
                 .with(Clickable)

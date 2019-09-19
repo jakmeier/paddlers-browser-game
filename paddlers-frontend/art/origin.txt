@@ -1,4 +1,0 @@
-[Textures]
-Grass & Water
-    Aswin909
-    https://opengameart.org/content/grass-water-and-sand-texture

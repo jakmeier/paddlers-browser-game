@@ -95,24 +95,39 @@ impl Town {
                     TileType::LANE => {
                         // println!("Lane {} {}", x, y);
                         let shifted = ((tick / 10) % (d as u32)) as i32;
+                        let t = Transform::translate((shifted,0));
                         window.draw_ex(
-                            &Rectangle::new((d * x as f32, d * y as f32), (d, d))
-                            .translate((shifted,0)),
+                            &Rectangle::new((d * x as f32, d * y as f32), (d, d)),
                             Img(&sprites.index(SpriteIndex::Simple(SingleSprite::Water))),
-                            Transform::IDENTITY,
+                            t,
                             Z_TEXTURE
                         );
                         // XXX: Hack only works for basic map
                         if x == 0 {
                             let x = -1;
                             window.draw_ex(
-                                &Rectangle::new((d * x as f32, d * y as f32), (d, d))
-                                .translate((shifted,0)),
+                                &Rectangle::new((d * x as f32, d * y as f32), (d, d)),
                                 Img(&sprites.index(SpriteIndex::Simple(SingleSprite::Water))),
-                                Transform::IDENTITY,
+                                t,
                                 Z_TEXTURE
                             );
                         }
+                        let grass_top_img = &sprites.index(SpriteIndex::Simple(SingleSprite::GrassTop));
+                        let h = d / grass_top_img.area().width() * grass_top_img.area().height();
+                        window.draw_ex(
+                            &Rectangle::new((d * x as f32, d * y as f32 + d - h), (d, h)),
+                            Img(grass_top_img),
+                            Transform::IDENTITY,
+                            Z_TEXTURE + 1
+                        );
+                        let grass_bot_img = &sprites.index(SpriteIndex::Simple(SingleSprite::GrassBot));
+                        let h = d / grass_bot_img.area().width() * grass_bot_img.area().height();
+                        window.draw_ex(
+                            &Rectangle::new((d * x as f32, d * y as f32), (d, h)),
+                            Img(grass_bot_img),
+                            Transform::IDENTITY,
+                            Z_TEXTURE + 1
+                        );
                     }
                 }
             }

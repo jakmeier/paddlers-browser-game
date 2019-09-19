@@ -82,6 +82,8 @@ impl SpriteSet {
 #[derive(Debug, Clone, Copy)]
 pub enum SingleSprite {
     Grass,
+    GrassTop,
+    GrassBot,
     Water,
     Duck,
     RedFlowers,

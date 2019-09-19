@@ -24,8 +24,8 @@ pub (super) const SPRITE_PATHS : [&'static str; SPRITE_PATHS_NUM] = [
     "gui/map_button_hov.png",
     "buildings/shack.png",
     "ducks/roger.png", // 20
-    "ducks/roger.png", // placeholder 21
-    "ducks/roger.png", // placeholder 22
+    "textures/grass_top.png",
+    "textures/grass_bot.png",
     "gui/leaves/50px_bot.png",
     "gui/leaves/50px_mid.png",
     "gui/leaves/50px_top.png",
@@ -39,6 +39,8 @@ impl SingleSprite {
     pub fn index_in_vector(&self) -> usize {
         match self {
             SingleSprite::Grass => 0,
+            SingleSprite::GrassTop => 21,
+            SingleSprite::GrassBot => 22,
             SingleSprite::Water => 1,
             SingleSprite::Duck => 2,
             SingleSprite::RedFlowers => 3,
