@@ -5,7 +5,7 @@ use quicksilver::prelude::*;
 use pathfinding::prelude::{astar, absdiff};
 use crate::gui::{
     sprites::*,
-    z::{Z_TILE_SHADOW, Z_TEXTURE}
+    z::{Z_TILE_SHADOW, Z_TEXTURE, Z_VISITOR}
 };
 pub use paddlers_shared_lib::game_mechanics::town::TileIndex;
 use crate::prelude::*;
@@ -118,7 +118,7 @@ impl Town {
                             &Rectangle::new((d * x as f32, d * y as f32 + d - h), (d, h)),
                             Img(grass_top_img),
                             Transform::IDENTITY,
-                            Z_TEXTURE + 1
+                            Z_VISITOR + 1 // This should be above visitors
                         );
                         let grass_bot_img = &sprites.index(SpriteIndex::Simple(SingleSprite::GrassBot));
                         let h = d / grass_bot_img.area().width() * grass_bot_img.area().height();

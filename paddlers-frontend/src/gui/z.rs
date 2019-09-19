@@ -6,6 +6,7 @@ pub const Z_TILE_SHADOW: i32 = 50;
 
 // Units [100,199]
 pub const Z_BUILDINGS: i32 = 100;
+pub const Z_VISITOR: i32 = 110;
 pub const Z_UNITS: i32 = 120;
 
 // UI [200,400]

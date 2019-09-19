@@ -3,7 +3,7 @@ use specs::prelude::*;
 use crate::Timestamp;
 use crate::gui::{
     render::Renderable,
-    z::Z_UNITS,
+    z::Z_VISITOR,
     sprites::*,
     utils::*,
 };
@@ -27,7 +27,7 @@ pub fn insert_duck(world: &mut World, pos: impl Into<Vector>, birth_time: Timest
     let speed = speed.into();
     let size: Vector = Vector::new(ATTACKER_SIZE_FACTOR_X * ul, ATTACKER_SIZE_FACTOR_Y * ul).into();
     world.create_entity()
-        .with(Position::new(pos, size, Z_UNITS))
+        .with(Position::new(pos, size, Z_VISITOR))
         .with(Moving::new(birth_time, pos, speed, speed.len()))
         .with(
             Renderable {
