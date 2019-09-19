@@ -6,7 +6,7 @@ use crate::game::{
     town::{town_shop::DefaultShop, Town},
     town_resources::TownResources,
     units::workers::*,
-    abilities::Ability,
+    abilities::*,
 };
 use crate::gui::menu::buttons::MenuButtons;
 use crate::logging::ErrorQueue;
@@ -36,6 +36,7 @@ impl<'a> System<'a> for LeftClickSystem {
         WriteStorage<'a, EntityContainer>,
         WriteStorage<'a, UiMenu>,
         WriteStorage<'a, Worker>,
+        WriteStorage<'a, Health>,
     );
 
     fn run(
@@ -59,6 +60,7 @@ impl<'a> System<'a> for LeftClickSystem {
             containers,
             mut ui_menus,
             mut workers,
+            mut health,
         ): Self::SystemData,
     ) {
         let MouseState(mouse_pos, button) = *mouse_state;
@@ -112,7 +114,15 @@ impl<'a> System<'a> for LeftClickSystem {
 
                     },
                     Some(Ability::Welcome) => {
-                        // TODO
+                        use_welcome_ability(
+                            mouse_pos, 
+                            &mut *rest,
+                            &mut *errq,
+                            &position,
+                            &clickable,
+                            &mut health,
+                            &entities,
+                        );
                     },
                     None => {},
                 }

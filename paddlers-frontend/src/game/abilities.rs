@@ -1,3 +1,5 @@
+mod welcome;
+pub use welcome::*;
 use crate::gui::{
     gui_components::UiBox,
     sprites::WithSprite,

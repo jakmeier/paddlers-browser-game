@@ -263,6 +263,7 @@ impl Town {
                 vec![TaskType::Idle]
             }
             TileType::LANE => {
+                // TODO: Check for welcoming ability
                 vec![]
             }
         }

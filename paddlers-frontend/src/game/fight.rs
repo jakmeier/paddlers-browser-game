@@ -56,6 +56,9 @@ impl Health {
             aura_effects: vec![],
         }
     }
+    pub fn make_happy(&mut self, amount: i64) {
+        self.hp -= amount;
+    }
 }
 
 #[derive(Default,Clone,Copy)]

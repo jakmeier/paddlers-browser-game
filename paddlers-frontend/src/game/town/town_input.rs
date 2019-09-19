@@ -95,16 +95,8 @@ impl Town {
         rest: &mut WriteExpect<'a, RestApiState>,
     ) -> Option<Ability> 
     {
-        let mut top_hit: Option<(i32, Entity)> = None;
-        for (e, pos, _) in (entities, position, clickable).join() {
-            if mouse_pos.overlaps_rectangle(&pos.area) {
-                if  top_hit.is_none() 
-                ||  top_hit.unwrap().0 < pos.z {
-                    top_hit = Some((pos.z,e));
-                }
-            }
-        }
-        (*ui_state).selected_entity = top_hit.map(|tup| tup.1);
+        let maybe_top_hit = Self::clickable_lookup(entities, mouse_pos, position, clickable);
+        (*ui_state).selected_entity = maybe_top_hit;
         if let Some(grabbed) = &(*ui_state).grabbed_item {
             match grabbed {
                 Grabbable::NewBuilding(bt) => {
@@ -126,5 +118,24 @@ impl Town {
             }
         }
         None
+    }
+
+    /// Returns the top most entity clickable in the town view
+    pub fn clickable_lookup<'a>(
+        entities: &Entities<'a>,
+        mouse_pos: Vector,
+        position: &ReadStorage<'a, Position>, 
+        clickable: &ReadStorage<'a, Clickable>
+    ) -> Option<Entity> {
+        let mut top_hit: Option<(i32, Entity)> = None;
+        for (e, pos, _) in (entities, position, clickable).join() {
+            if mouse_pos.overlaps_rectangle(&pos.area) {
+                if  top_hit.is_none() 
+                ||  top_hit.unwrap().0 < pos.z {
+                    top_hit = Some((pos.z,e));
+                }
+            }
+        }
+        top_hit.map(|tup| tup.1)
     }
 }
