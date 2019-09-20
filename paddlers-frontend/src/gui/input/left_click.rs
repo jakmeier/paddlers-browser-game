@@ -1,4 +1,5 @@
 use super::{Clickable, MouseState, UiState, UiView};
+use paddlers_shared_lib::prelude::AbilityType;
 use crate::game::{
     components::*,
     map::{GlobalMapSharedState, MapPosition},
@@ -97,7 +98,7 @@ impl<'a> System<'a> for LeftClickSystem {
                         mouse_pos, &entities, &mut ui_state, &position, &clickable, &lazy, &mut resources, &mut errq, &mut rest,
                     );
                 match maybe_ability {
-                    Some(Ability::Walk) => {
+                    Some(AbilityType::Work) => {
                         let active_entity = active_entity.expect("Ability requires unit");
                         let worker = workers.get_mut(active_entity).expect("Ability requires unit");
                         worker.new_order(
@@ -113,7 +114,7 @@ impl<'a> System<'a> for LeftClickSystem {
                         );
 
                     },
-                    Some(Ability::Welcome) => {
+                    Some(AbilityType::Welcome) => {
                         use_welcome_ability(
                             mouse_pos, 
                             &mut *rest,

@@ -101,6 +101,14 @@ pub trait GameDB {
         .expect("Error loading data");
         results
     }
+    fn unit_abilities(&self, unit_id: i64) -> Vec<Ability> {
+        let results = abilities::table
+        .filter(abilities::unit_id.eq(unit_id))
+        .limit(10)
+        .load::<Ability>(self.dbconn())
+        .expect("Error loading data");
+        results
+    }
     fn past_unit_tasks(&self, unit_id: i64) -> Vec<Task> {
         let results = tasks::table
             .filter(tasks::unit_id.eq(unit_id))

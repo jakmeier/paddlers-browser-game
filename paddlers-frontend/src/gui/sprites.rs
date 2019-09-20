@@ -107,7 +107,7 @@ pub enum SingleSprite {
     Shack,
     DuckSteps,
     Roger,
-    WalkAbility,
+    NewOrder,
     WelcomeAbility,
 }
 
@@ -183,12 +183,12 @@ pub fn tree_sprite(score: usize) -> SpriteSet {
     }
 }
 
-use crate::game::abilities::Ability;
-impl WithSprite for Ability {
+use paddlers_shared_lib::prelude::AbilityType;
+impl WithSprite for AbilityType {
     fn sprite(&self) -> SpriteSet {
         match self {
-            Ability::Walk => SpriteSet::Simple(SingleSprite::WalkAbility),
-            Ability::Welcome => SpriteSet::Simple(SingleSprite::WelcomeAbility),
+            AbilityType::Work => SpriteSet::Simple(SingleSprite::NewOrder),
+            AbilityType::Welcome => SpriteSet::Simple(SingleSprite::WelcomeAbility),
         }
     }
 }

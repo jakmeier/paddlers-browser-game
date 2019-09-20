@@ -9,11 +9,11 @@ use crate::game::{
     units::workers::*,
     components::*,
     town::{Town, town_shop::DefaultShop},
-    abilities::Ability,
 };
 use crate::gui::input::{Grabbable, UiState, Clickable};
 use crate::gui::gui_components::{InteractiveTableArea, ClickOutput};
 use paddlers_shared_lib::api::shop::Cost;
+use paddlers_shared_lib::prelude::AbilityType;
 
 
 impl Town {
@@ -93,7 +93,7 @@ impl Town {
         resources: &mut Write<'a, TownResources>,
         errq: &mut WriteExpect<'a, ErrorQueue>,
         rest: &mut WriteExpect<'a, RestApiState>,
-    ) -> Option<Ability> 
+    ) -> Option<AbilityType> 
     {
         let maybe_top_hit = Self::clickable_lookup(entities, mouse_pos, position, clickable);
         (*ui_state).selected_entity = maybe_top_hit;

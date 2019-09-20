@@ -20,6 +20,7 @@ use super::schema::{
     tasks,
     streams,
     villages,
+    abilities,
 };
 
 #[derive(Debug, PartialEq, Clone, Copy, Serialize, Deserialize)]
@@ -52,6 +53,7 @@ pub struct Unit {
     pub color: Option<UnitColor>,
     pub hp: i64,
     pub speed: f32, // in unit lengths per second
+    pub mana: Option<i32>,
 }
 
 #[cfg(feature = "sql_db")]
@@ -65,6 +67,7 @@ pub struct NewUnit {
     pub color: Option<UnitColor>,
     pub hp: i64,
     pub speed: f32,
+    pub mana: Option<i32>,
 }
 
 #[cfg(feature = "sql_db")]
@@ -223,4 +226,31 @@ pub struct NewVillage {
     pub x: f32,
     pub y: f32,
     pub stream_id: i64,
+}
+
+#[derive(Debug, Clone, Copy, Queryable)]
+#[cfg(feature = "sql_db")]
+pub struct Ability {
+    pub ability_type: AbilityType,
+    pub unit_id: i64,
+    pub last_used: Option<NaiveDateTime>,
+}
+
+#[derive(Insertable, Debug)]
+#[cfg(feature = "sql_db")]
+#[table_name = "abilities"]
+pub struct NewAbility {
+    pub ability_type: AbilityType,
+    pub unit_id: i64,
+}
+
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Serialize, Deserialize)]
+#[cfg_attr(feature = "enum_utils", derive(EnumIter, Display))]
+#[cfg_attr(feature = "graphql", derive(juniper::GraphQLEnum))]
+#[cfg_attr(feature = "sql_db", DieselType = "Ability_type", derive(DbEnum))]
+/// Abilities are attributes of worker and hero units.
+/// They are closely related to Tasks but there is no one-to-one correspondence.
+pub enum AbilityType {
+    Work,
+    Welcome,
 }

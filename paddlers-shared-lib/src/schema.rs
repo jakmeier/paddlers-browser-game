@@ -1,4 +1,13 @@
-#![allow(unused_imports)]
+table! {
+    use diesel::sql_types::*;
+    use crate::models::*;
+
+    abilities (ability_type, unit_id) {
+        ability_type -> Ability_type,
+        unit_id -> Int8,
+        last_used -> Nullable<Timestamp>,
+    }
+}
 
 table! {
     use diesel::sql_types::*;
@@ -89,6 +98,7 @@ table! {
         color -> Nullable<Unit_color>,
         hp -> Int8,
         speed -> Float4,
+        mana -> Nullable<Int4>,
     }
 }
 
@@ -104,6 +114,7 @@ table! {
     }
 }
 
+joinable!(abilities -> units (unit_id));
 joinable!(attacks_to_units -> attacks (attack_id));
 joinable!(attacks_to_units -> units (unit_id));
 joinable!(buildings -> villages (village_id));
@@ -113,6 +124,7 @@ joinable!(units -> villages (home));
 joinable!(villages -> streams (stream_id));
 
 allow_tables_to_appear_in_same_query!(
+    abilities,
     attacks,
     attacks_to_units,
     buildings,

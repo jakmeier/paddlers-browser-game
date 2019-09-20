@@ -3,7 +3,7 @@
 mod ui_box;
 pub use ui_box::*;
 
-use crate::game::abilities::Ability;
+use paddlers_shared_lib::prelude::AbilityType;
 use crate::gui::{sprites::*, utils::*, menu::buttons::MenuButtonAction};
 use crate::prelude::*;
 use quicksilver::prelude::*;
@@ -31,7 +31,7 @@ pub trait InteractiveTableArea {
 pub enum ClickOutput {
     Entity(specs::Entity),
     BuildingType(BuildingType),
-    Ability(Ability),
+    Ability(AbilityType),
     MenuButtonAction(MenuButtonAction),
 }
 
@@ -147,8 +147,8 @@ impl From<BuildingType> for ClickOutput {
         ClickOutput::BuildingType(bt)
     }
 }
-impl From<Ability> for ClickOutput {
-    fn from(a: Ability) -> Self {
+impl From<AbilityType> for ClickOutput {
+    fn from(a: AbilityType) -> Self {
         ClickOutput::Ability(a)
     }
 }

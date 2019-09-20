@@ -17,7 +17,6 @@ pub use self::{
     right_click::*,
     hover::*,
 };
-use crate::game::abilities::Ability;
 
 #[derive(Default, Clone, Copy)]
 pub struct MouseState(pub Vector, pub Option<MouseButton>);
@@ -44,7 +43,7 @@ pub struct Clickable;
 #[derive(Clone)]
 pub enum Grabbable {
     NewBuilding(BuildingType),
-    Ability(Ability),
+    Ability(AbilityType),
 }
 
 impl Default for UiState {

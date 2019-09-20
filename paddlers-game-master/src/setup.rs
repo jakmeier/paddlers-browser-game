@@ -54,7 +54,8 @@ impl DB {
                 color: None,
                 hp: 10, 
                 speed: 0.5,
-                home: 1
+                home: TEST_VILLAGE_ID.num(),
+                mana: Some(10),
             };
             let unit = self.insert_unit(&unit);
             let task = NewTask {
@@ -65,6 +66,16 @@ impl DB {
                 start_time: None,
             };
             self.insert_task(&task);
+            let work_ability = NewAbility {
+                unit_id: unit.id,
+                ability_type: AbilityType::Work,
+            };
+            self.insert_ability(&work_ability);
+            let welcome_ability = NewAbility {
+                unit_id: unit.id,
+                ability_type: AbilityType::Welcome,
+            };
+            self.insert_ability(&welcome_ability);
 
             // Some cash
             let vid = TEST_VILLAGE_ID;

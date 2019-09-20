@@ -75,6 +75,9 @@ impl GqlUnit {
     fn y(&self) -> i32 {
         self.0.y
     }
+    fn mana(&self) -> Option<i32> {
+        self.0.mana
+    }
     // TODO: Proper type handling
     pub fn hp(&self) -> i32 {
         self.0.hp as i32
@@ -85,6 +88,9 @@ impl GqlUnit {
     }
     pub fn tasks(&self, ctx: &Context) -> Vec<GqlTask> {
         ctx.db.unit_tasks(self.0.id).into_iter().map(|t| GqlTask(t)).collect()
+    }
+    fn abilities(&self, ctx: &Context) -> Vec<GqlAbility> {
+        ctx.db.unit_abilities(self.0.id).into_iter().map(|t| GqlAbility(t)).collect()
     }
 }
 
@@ -239,5 +245,22 @@ impl GqlStream {
         // vec.extend_from_slice(&self.0.control_points)
         vec.extend(self.0.control_points.iter().map(|f|*f as f64));
         vec
+    }
+}
+
+pub struct GqlAbility(paddlers_shared_lib::models::Ability);
+impl From<paddlers_shared_lib::models::Ability> for GqlAbility {
+    fn from(inner: paddlers_shared_lib::models::Ability) -> Self {
+        GqlAbility(inner)
+    }
+}
+
+#[juniper::object (Context = Context)]
+impl GqlAbility {
+    fn ability_type(&self) -> &paddlers_shared_lib::models::AbilityType {
+        &self.0.ability_type
+    }
+    fn last_used(&self) -> Option<GqlTimestamp> {
+        self.0.last_used.as_ref().map(GqlTimestamp::from_chrono)
     }
 }

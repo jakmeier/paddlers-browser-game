@@ -111,4 +111,10 @@ impl DB {
             .get_results(self.dbconn())
             .expect("Inserting villages")
     }
+    pub fn insert_ability(&self, a: &NewAbility) -> Ability {
+        diesel::insert_into(abilities::dsl::abilities)
+            .values(a)
+            .get_result(self.dbconn())
+            .expect("Inserting ability")
+    }
 }
