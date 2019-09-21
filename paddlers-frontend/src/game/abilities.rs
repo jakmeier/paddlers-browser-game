@@ -1,6 +1,7 @@
 mod welcome;
 pub use welcome::*;
 use paddlers_shared_lib::prelude::*;
+use crate::prelude::*;
 use crate::gui::{
     gui_components::UiBox,
     sprites::WithSprite,
@@ -16,17 +17,23 @@ pub struct AbilitySet {
     abilities: [Option<AbilityType>; MAX_ABILITIES],
 }
 
+use crate::net::graphql::village_units_query::VillageUnitsQueryVillageUnitsAbilities;
 impl AbilitySet {
-    pub fn new_test_set() -> AbilitySet {
-        let abilities = [
-            Some(AbilityType::Work),
-            Some(AbilityType::Welcome),
-            None,
-            None,
-        ];
-        AbilitySet {
-            abilities,
+    pub fn from_gql(gql_abilities: &[VillageUnitsQueryVillageUnitsAbilities]) -> PadlResult<AbilitySet> {
+        if gql_abilities.len() > MAX_ABILITIES {
+            return PadlErrorCode::InvalidGraphQLData("Too many abilities").dev();
         }
+        let mut abilities: [Option<AbilityType>; MAX_ABILITIES] = [None;MAX_ABILITIES];
+        let mut i = 0;
+        for gqla in gql_abilities {
+            abilities[i] = Some((&gqla.ability_type).into());
+            i += 1;
+        }
+        Ok(
+            AbilitySet {
+                abilities,
+            }
+        )
     }
     pub fn construct_ui_box(&self) -> UiBox {
         let rows = 2;

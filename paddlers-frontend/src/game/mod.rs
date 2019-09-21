@@ -227,7 +227,13 @@ impl State for Game<'static, 'static> {
                         }
                         NetMsg::Workers(response) => {
                             let now = self.world.read_resource::<Now>().0;
-                            create_worker_entities(&response, &mut self.world, now);
+                            let results = create_worker_entities(&response, &mut self.world, now);
+                            let mut q = self.world.write_resource::<ErrorQueue>();
+                            for res in results.into_iter() {
+                                if let Err(e) = res {
+                                    q.push(e);
+                                }
+                            }
                         }
                         NetMsg::UpdateWorkerTasks(unit) => {
                             let e = self.entity_by_net_id(unit.id.parse().unwrap());

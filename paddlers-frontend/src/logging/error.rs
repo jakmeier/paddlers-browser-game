@@ -63,6 +63,7 @@ pub enum PadlErrorCode {
     UnexpectedTileType(&'static str, TileType),
     RestAPI(String),
     EmptyGraphQLData(&'static str),
+    InvalidGraphQLData(&'static str),
     StdWebGenericError(stdweb::web::error::Error),
     StdWebConversion(stdweb::private::ConversionError),
     StdWebSecurityError(stdweb::web::error::SecurityError),
@@ -99,6 +100,8 @@ impl fmt::Display for PadlErrorCode {
                 write!(f, "A REST API error occurred: {}", msg),
             PadlErrorCode::EmptyGraphQLData(data_set) =>
                 write!(f, "GraphQL query result has no data for: {}", data_set),
+            PadlErrorCode::InvalidGraphQLData(reason) =>
+                write!(f, "GraphQL query result has invalid data: {}", reason),
             PadlErrorCode::StdWebGenericError(cause) =>
                 write!(f, "A web error ocurred: {}", cause),
             PadlErrorCode::StdWebConversion(cause) =>

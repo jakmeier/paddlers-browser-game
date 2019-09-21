@@ -7,12 +7,17 @@ query VillageUnitsQuery{
       x
       y
       speed
+      mana
       tasks {
         id
         x
         y
         taskType
         startTime
+      }
+      abilities {
+        abilityType
+        lastUsed
       }
     }
   }

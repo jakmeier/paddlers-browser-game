@@ -43,7 +43,11 @@ pub fn with_hero<B: Builder>( builder: B ) -> B
             kind: RenderVariant::ImgWithImgBackground(SpriteSet::Animated(AnimatedSprite::Roger), SingleSprite::Grass),
         }
     )
-    .with(UiMenu { ui: AbilitySet::new_test_set().construct_ui_box() } )
+}
+
+pub fn with_abilities<B: Builder>( builder: B, abilities: AbilitySet) -> B 
+{
+    builder.with(UiMenu { ui: abilities.construct_ui_box() } )
 }
 
 pub fn with_basic_worker<B: Builder>( builder: B, color: UnitColor ) -> B 
@@ -70,7 +74,7 @@ pub fn with_worker<B: Builder, T: IntoIterator<Item: Into<WorkerTask>>>(builder:
 }
 
 use crate::net::graphql::WorkerResponse;
-pub fn create_worker_entities(response: &WorkerResponse, world: &mut World, now: Timestamp) -> Vec<Entity> {
+pub fn create_worker_entities(response: &WorkerResponse, world: &mut World, now: Timestamp) -> Vec<PadlResult<Entity>> {
     response.iter()
         .map(|w|{
             let town = world.read_resource::<Town>();
@@ -84,7 +88,7 @@ pub fn create_worker_entities(response: &WorkerResponse, world: &mut World, now:
 
 use crate::net::graphql::village_units_query::{self, VillageUnitsQueryVillageUnits};
 impl VillageUnitsQueryVillageUnits {
-    fn create_entity(&self, world: &mut World, now: Timestamp, tile_area: Rectangle,) -> Entity {
+    fn create_entity(&self, world: &mut World, now: Timestamp, tile_area: Rectangle,) -> PadlResult<Entity> {
         let speed = unit_speed_to_worker_tiles_per_second(self.speed as f32) * tile_area.width();
         let netid = self.id.parse().unwrap();
         let mut builder = with_unit_base(world.create_entity(), speed, tile_area, now, netid);
@@ -100,7 +104,9 @@ impl VillageUnitsQueryVillageUnits {
             },
             _ => { panic!("Unexpected Unit Type") },
         }
-        builder.build()
+        let abilities = AbilitySet::from_gql(&self.abilities)?;
+        builder = with_abilities(builder, abilities);
+        Ok(builder.build())
     }
 }
 

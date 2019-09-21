@@ -1,3 +1,4 @@
+use paddlers_shared_lib::models::*;
 use graphql_client::{GraphQLQuery, Response};
 use paddlers_shared_lib::graphql_types;
 
@@ -54,6 +55,7 @@ pub type VillageUnitsResponse = Response<village_units_query::ResponseData>;
 pub type WorkerResponse = Vec<village_units_query::VillageUnitsQueryVillageUnits>;
 pub type VillageUnitsTask = village_units_query::VillageUnitsQueryVillageUnitsTasks;
 pub type VillageUnitsTaskType = village_units_query::TaskType;
+pub type VillageUnitsAbilityType = village_units_query::AbilityType;
 
 use crate::game::units::workers::WorkerTask;
 impl Into<WorkerTask> for &VillageUnitsTask {
@@ -62,6 +64,15 @@ impl Into<WorkerTask> for &VillageUnitsTask {
             task_type: (&self.task_type).into(),
             position: (self.x as usize, self.y as usize),
             start_time: timestamp(&self.start_time).0
+        }
+    }
+}
+impl Into<AbilityType> for &VillageUnitsAbilityType {
+    fn into(self) -> AbilityType {
+        match self {
+            VillageUnitsAbilityType::WORK => AbilityType::Work,
+            VillageUnitsAbilityType::WELCOME => AbilityType::Welcome,
+            _ => panic!("Unexpected ability")
         }
     }
 }
