@@ -4,6 +4,7 @@ use actix_web::{HttpResponse, Responder, web};
 use paddlers_shared_lib::api::{
     shop::{BuildingPurchase, BuildingDeletion},
     tasks::{TaskList},
+    abilities::AbilityUse,
 };
 use paddlers_shared_lib::sql::GameDB;
 
@@ -58,5 +59,18 @@ pub (super) fn overwrite_tasks(
             return HttpResponse::BadRequest().body("Couldn't create tasks");
         }
     }
+    HttpResponse::Ok().into()
+}
+
+pub (super) fn use_ability(
+    pool: web::Data<crate::db::Pool>, 
+    body: web::Json<AbilityUse>,
+    addr: web::Data<crate::ActorAddresses>,
+) -> HttpResponse
+{
+    let db: crate::db::DB = pool.get_ref().into();
+    // TODO
+    println!("Use ability {}", body.ability_type);
+            // return HttpResponse::BadRequest().body("Ability not ready");
     HttpResponse::Ok().into()
 }

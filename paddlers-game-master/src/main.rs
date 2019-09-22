@@ -96,6 +96,11 @@ fn main() {
                 .route(web::post().to(api::overwrite_tasks))
             )
             .service(
+                web::resource("/worker/useAbility")
+                .data(web::Json::<TaskList>)
+                .route(web::post().to(api::use_ability))
+            )
+            .service(
                 web::resource("/stats")
                 .data(web::Json::<FrontendRuntimeStatistics>)
                 .route(web::post().to(statistics::new_frontend_info))

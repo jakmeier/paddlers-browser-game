@@ -10,6 +10,7 @@ use paddlers_shared_lib::api::{
     shop::*,
     tasks::TaskList,
     statistics::*,
+    abilities::*,
 };
 
 pub struct RestApiState {
@@ -50,6 +51,13 @@ impl RestApiState {
         let promise = ajax::send("POST", &format!("{}/worker/overwriteTasks", game_master_url()?), request_string);
         let afterwards = NetUpdateRequest::UnitTasks(msg.unit_id);
         self.push_promise(promise, Some(afterwards));
+        Ok(())
+    }
+
+    pub fn http_use_ability(&mut self, msg: AbilityUse) -> PadlResult<()>  {
+        let request_string = &serde_json::to_string(&msg).unwrap();
+        let promise = ajax::send("POST", &format!("{}/worker/useAbility", game_master_url()?), request_string);
+        self.push_promise(promise, None);
         Ok(())
     }
 

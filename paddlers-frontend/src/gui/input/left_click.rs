@@ -34,6 +34,7 @@ impl<'a> System<'a> for LeftClickSystem {
         ReadStorage<'a, MapPosition>,
         ReadStorage<'a, Clickable>,
         ReadStorage<'a, Moving>,
+        ReadStorage<'a, NetObj>,
         WriteStorage<'a, EntityContainer>,
         WriteStorage<'a, UiMenu>,
         WriteStorage<'a, Worker>,
@@ -58,6 +59,7 @@ impl<'a> System<'a> for LeftClickSystem {
             map_position,
             clickable,
             moving,
+            net_ids,
             containers,
             mut ui_menus,
             mut workers,
@@ -97,6 +99,7 @@ impl<'a> System<'a> for LeftClickSystem {
                     town.left_click(
                         mouse_pos, &entities, &mut ui_state, &position, &clickable, &lazy, &mut resources, &mut errq, &mut rest,
                     );
+                let net_id = active_entity.and_then(|e| net_ids.get(e));
                 match maybe_ability {
                     Some(AbilityType::Work) => {
                         let active_entity = active_entity.expect("Ability requires unit");
@@ -116,6 +119,7 @@ impl<'a> System<'a> for LeftClickSystem {
                     },
                     Some(AbilityType::Welcome) => {
                         use_welcome_ability(
+                            net_id.unwrap(),
                             mouse_pos, 
                             &mut *rest,
                             &mut *errq,
