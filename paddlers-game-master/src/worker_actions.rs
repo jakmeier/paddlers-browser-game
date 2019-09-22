@@ -93,6 +93,10 @@ fn interrupt_task(current_task: &mut Task, unit: &Unit) -> Option<NaiveDateTime>
             current_task.y = y;
             Some(moment)
         }
+        TaskType::WelcomeAbility => {
+            // TODO!
+            None
+        }
     }
 }
 
@@ -153,6 +157,11 @@ fn simulate_finish_task<T: WorkerAction> (
                     .map_err(|e| e.to_string())?;
                 worker_out_of_building(town, unit, (task.x() as usize, task.y() as usize))
             },
+        TaskType::WelcomeAbility => {
+            // TODO: Ability time
+            // TODO: apply ability
+            Ok(Duration::milliseconds(100))
+        },
         _ => Err("Task not implemented".to_owned())
     }
 }
@@ -171,6 +180,10 @@ fn simulate_begin_task<T: WorkerAction> (
                 town.state.register_task_begin(*task.task_type()).map_err(|e| e.to_string())?;
                 worker_into_building(town, unit, (task.x() as usize, task.y() as usize))
             },
+        TaskType::WelcomeAbility => {
+            // TODO: Mana checks
+            Ok(())
+        },
         _ => Err("Task not implemented".to_owned())
     }
 }

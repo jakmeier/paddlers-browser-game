@@ -13,8 +13,8 @@ use crate::game::{
 use crate::gui::input::{Grabbable, UiState, Clickable};
 use crate::gui::gui_components::{InteractiveTableArea, ClickOutput};
 use paddlers_shared_lib::api::shop::Cost;
-use paddlers_shared_lib::prelude::AbilityType;
-
+use paddlers_shared_lib::prelude::*;
+use super::task_factory::NewTaskDescriptor;
 
 impl Town {
 
@@ -89,14 +89,14 @@ impl Town {
         ui_state:  &mut Write<'a, UiState>, 
         position: &ReadStorage<'a, Position>, 
         clickable: &ReadStorage<'a, Clickable>,
+        net_ids: &ReadStorage<'a, NetObj>,
         lazy: &Read<'a, LazyUpdate>,
         resources: &mut Write<'a, TownResources>,
         errq: &mut WriteExpect<'a, ErrorQueue>,
         rest: &mut WriteExpect<'a, RestApiState>,
-    ) -> Option<AbilityType> 
+    ) -> Option<NewTaskDescriptor> 
     {
         let maybe_top_hit = Self::clickable_lookup(entities, mouse_pos, position, clickable);
-        (*ui_state).selected_entity = maybe_top_hit;
         if let Some(grabbed) = &(*ui_state).grabbed_item {
             match grabbed {
                 Grabbable::NewBuilding(bt) => {
@@ -113,10 +113,18 @@ impl Town {
                 Grabbable::Ability(a) => {
                     let a = *a;
                     (*ui_state).grabbed_item = None;
-                    return Some(a);
+                    let job = match a {
+                        AbilityType::Welcome => TaskType::WelcomeAbility,
+                        AbilityType::Work => TaskType::Walk, // TODO: find right job
+                    };
+                    let target = maybe_top_hit
+                        .and_then(|e| net_ids.get(e))
+                        .map(|n| n.id);
+                    return Some((job, target))
                 },
             }
         }
+        (*ui_state).selected_entity = maybe_top_hit;
         None
     }
 

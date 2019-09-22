@@ -1,5 +1,6 @@
 use serde::{Serialize, Deserialize};
 use crate::models::*;
+use crate::PadlId;
 #[cfg(feature = "game_mechanics")] 
 use crate::game_mechanics::town::TileIndex;
 
@@ -14,6 +15,7 @@ pub struct RawTask {
     pub task_type: TaskType,
     pub x: usize,
     pub y: usize,
+    pub target: Option<PadlId>,
 }
 
 impl RawTask {
@@ -23,6 +25,16 @@ impl RawTask {
             task_type: t,
             x: i.0,
             y: i.1,
+            target: None,
+        }
+    }
+    #[cfg(feature = "game_mechanics")] 
+    pub fn new_with_target(t: (TaskType, Option<PadlId>), i: TileIndex) -> Self {
+        RawTask {
+            task_type: t.0,
+            x: i.0,
+            y: i.1,
+            target: t.1,
         }
     }
 }

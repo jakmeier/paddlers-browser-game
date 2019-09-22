@@ -3,7 +3,7 @@ use quicksilver::geom::*;
 use specs::prelude::*;
 use crate::prelude::*;
 use crate::game::{
-    town::{Town, TileIndex},
+    town::{Town, TileIndex, task_factory::NewTaskDescriptor},
     movement::{Position},
     components::*,
 };
@@ -12,7 +12,6 @@ use crate::gui::z::*;
 use crate::net::game_master_api::RestApiState;
 use crate::logging::ErrorQueue;
 use paddlers_shared_lib::api::tasks::*;
-
 
 #[derive(Default, Component, Debug)]
 #[storage(VecStorage)]
@@ -34,7 +33,7 @@ impl Worker {
     pub fn new_order<'a>(
         &mut self, 
         start: TileIndex,
-        job: TaskType,
+        job: NewTaskDescriptor,
         destination: TileIndex,
         town: &Town,
         rest: &mut RestApiState,
@@ -56,7 +55,7 @@ impl Worker {
     /// Create a list of tasks that walk a worker to s place and let's it perform a job there.
     /// The returned format can be understood by the backend interface.
     /// Returns an error if the job cannot be done by this worker at the desired position.
-    pub fn try_create_task_list<'a>(&mut self, from: TileIndex, destination: TileIndex, job: TaskType, town: &Town, containers: &WriteStorage<'a, EntityContainer>) -> PadlResult<TaskList> {
+    pub fn try_create_task_list<'a>(&mut self, from: TileIndex, destination: TileIndex, job: NewTaskDescriptor, town: &Town, containers: &WriteStorage<'a, EntityContainer>) -> PadlResult<TaskList> {
         town.check_task_constraints(job, destination, containers)?;
         let tasks = town.build_task_chain(from, destination, job)?;
         let msg = TaskList {

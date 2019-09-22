@@ -169,7 +169,8 @@ pub enum TaskType {
     Walk,
     Defend,
     GatherSticks,
-    ChopTree, 
+    ChopTree,
+    WelcomeAbility,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Queryable, Identifiable, AsChangeset)]
@@ -181,6 +182,7 @@ pub struct Task {
     pub x: i32,
     pub y: i32,
     pub start_time: NaiveDateTime,
+    // pub target: Option<i64>,
 }
 
 #[cfg(feature = "sql_db")]

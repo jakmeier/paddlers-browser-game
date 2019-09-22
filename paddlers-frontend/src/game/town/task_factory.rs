@@ -5,19 +5,22 @@ use crate::prelude::*;
 use super::*;
 use crate::game::components::EntityContainer;
 
+/// Used to describe a new worker-task that has not been processed or checked yet
+pub type NewTaskDescriptor = (TaskType, Option<PadlId>);
+
 impl Town {
-    pub fn build_task_chain(&self, from: TileIndex, destination: TileIndex, job: TaskType) -> PadlResult<Vec<RawTask>>{
+    pub fn build_task_chain(&self, from: TileIndex, destination: TileIndex, job: NewTaskDescriptor) -> PadlResult<Vec<RawTask>>{
         if let Some((path, _dist)) = self.shortest_path(from, destination) {
             let mut tasks = raw_walk_tasks(&path, from);
-            tasks.push( RawTask::new(job, destination) );
+            tasks.push( RawTask::new_with_target(job, destination) );
             Ok(tasks)
         } else {
             PadlErrorCode::PathBlocked.usr()
         }
     }
-    pub fn check_task_constraints<'a>(&self, job: TaskType, destination: TileIndex, containers: &WriteStorage<'a, EntityContainer>) -> PadlResult<()> {
+    pub fn check_task_constraints<'a>(&self, job: NewTaskDescriptor, destination: TileIndex, containers: &WriteStorage<'a, EntityContainer>) -> PadlResult<()> {
         if let Some(tile_state) = self.tile_state(destination) {
-            match job {
+            match job.0 {
                 TaskType::GatherSticks
                 | TaskType::ChopTree
                     => {
@@ -31,13 +34,13 @@ impl Town {
                     }
                 }
                 TaskType::Idle | TaskType::Walk => {},
-                // TaskType::WelcomeAbility => {},
+                TaskType::WelcomeAbility => {},
                 TaskType::Defend  => { panic!("NIY") },
             }
 
         }
         // Check global supply constraints
-        let forest_requirement = job.required_forest_size();
+        let forest_requirement = job.0.required_forest_size();
         if self.forest_size_free() < forest_requirement {
             return PadlErrorCode::ForestTooSmall(forest_requirement - self.forest_size_free()).usr();
         }

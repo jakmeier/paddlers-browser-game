@@ -23,10 +23,12 @@ impl<'a> System<'a> for RightClickSystem {
         WriteStorage<'a, Worker>,
         ReadStorage<'a, Position>,
         ReadStorage<'a, Moving>,
+        ReadStorage<'a, Clickable>,
+        ReadStorage<'a, NetObj>,
         WriteStorage<'a, EntityContainer>,
      );
 
-    fn run(&mut self, (mouse_state, mut ui_state, town, mut rest, mut errq, entities, mut worker, position, moving, containers): Self::SystemData) {
+    fn run(&mut self, (mouse_state, mut ui_state, town, mut rest, mut errq, entities, mut worker, position, moving, clickable, net_ids, containers): Self::SystemData) {
 
         let MouseState(mouse_pos, button) = *mouse_state;
         if button != Some(MouseButton::Right) {
@@ -39,6 +41,7 @@ impl<'a> System<'a> for RightClickSystem {
 
 
         let in_menu_area = mouse_pos.overlaps_rectangle(&(*ui_state).menu_box_area);
+        let maybe_top_hit = Town::clickable_lookup(&entities, mouse_pos, &position, &clickable);
         
         match (ui_state.current_view, in_menu_area) {
             (_, true) => {
@@ -52,9 +55,13 @@ impl<'a> System<'a> for RightClickSystem {
                     if let Some(worker) = worker.get_mut(e) {
                         let maybe_job = worker.task_on_right_click(&mouse_pos, &town);
                         if let Some((job, destination)) = maybe_job {
+                            let target = maybe_top_hit
+                                .and_then(|e| net_ids.get(e))
+                                .map(|n| n.id);
                             let (from, movement) = (&position, &moving).join().get(e, &entities).unwrap();
                             let start = town.next_tile_in_direction(from.area.pos, movement.momentum);
-                            worker.new_order(start, job, destination, &*town, &mut *rest, &mut *errq, &containers);
+                            let new_job = (job, target);
+                            worker.new_order(start, new_job, destination, &*town, &mut *rest, &mut *errq, &containers);
                         }
                     }
                 }

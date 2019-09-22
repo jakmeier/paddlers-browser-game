@@ -1,5 +1,4 @@
 use super::{Clickable, MouseState, UiState, UiView};
-use paddlers_shared_lib::prelude::*;
 use crate::game::{
     components::*,
     map::{GlobalMapSharedState, MapPosition},
@@ -7,7 +6,6 @@ use crate::game::{
     town::{town_shop::DefaultShop, Town},
     town_resources::TownResources,
     units::workers::*,
-    abilities::*,
 };
 use crate::gui::menu::buttons::MenuButtons;
 use crate::logging::ErrorQueue;
@@ -39,7 +37,6 @@ impl<'a> System<'a> for LeftClickSystem {
         WriteStorage<'a, EntityContainer>,
         WriteStorage<'a, UiMenu>,
         WriteStorage<'a, Worker>,
-        WriteStorage<'a, Health>,
     );
 
     fn run(
@@ -64,7 +61,6 @@ impl<'a> System<'a> for LeftClickSystem {
             containers,
             mut ui_menus,
             mut workers,
-            mut health,
         ): Self::SystemData,
     ) {
         let MouseState(mouse_pos, button) = *mouse_state;
@@ -96,48 +92,31 @@ impl<'a> System<'a> for LeftClickSystem {
                 // NOP
             }
             (UiView::Town, false) => {
-                let maybe_ability =
+                let maybe_job =
                     town.left_click(
-                        mouse_pos, &entities, &mut ui_state, &position, &clickable, &lazy, &mut resources, &mut errq, &mut rest,
+                        mouse_pos, &entities, &mut ui_state, &position, &clickable, &net_ids, &lazy, &mut resources, &mut errq, &mut rest,
                     );
-                let net_id = active_entity.and_then(|e| net_ids.get(e));
-                match maybe_ability {
-                    Some(AbilityType::Work) => {
-                        let active_entity = active_entity.expect("Ability requires unit");
-                        let worker = workers.get_mut(active_entity).expect("Ability requires unit");
-                        let (from, movement) = (&position, &moving).join().get(active_entity, &entities).unwrap();
-                        let start = town.next_tile_in_direction(from.area.pos, movement.momentum);
-                        let target_tile = town.tile(mouse_pos);
-                        let destination = (*town).closest_walkable_tile_in_range(start, target_tile, 1.0);
-                        if destination.is_none() {
-                            errq.push(PadlError::user_err(PadlErrorCode::PathBlocked));
-                            return;
-                        }
-                        worker.new_order(
-                            start,
-                            TaskType::Walk,
-                            destination.unwrap(),
-                            &*town,
-                            &mut *rest,
-                            &mut *errq,
-                            &containers,
-                        );
-
-                    },
-                    // TODO: don't do it like this
-                    Some(AbilityType::Welcome) => {
-                        use_welcome_ability(
-                            net_id.unwrap(),
-                            mouse_pos, 
-                            &mut *rest,
-                            &mut *errq,
-                            &position,
-                            &clickable,
-                            &mut health,
-                            &entities,
-                        );
-                    },
-                    None => {},
+                if let Some(job) = maybe_job {
+                    let active_entity = active_entity.expect("Ability requires unit");
+                    let worker = workers.get_mut(active_entity).expect("Ability requires unit");
+                    let (from, movement) = (&position, &moving).join().get(active_entity, &entities).unwrap();
+                    let start = town.next_tile_in_direction(from.area.pos, movement.momentum);
+                    let target_tile = town.tile(mouse_pos);
+                    // TODO range check
+                    let destination = (*town).closest_walkable_tile_in_range(start, target_tile, 1.0);
+                    if destination.is_none() {
+                        errq.push(PadlError::user_err(PadlErrorCode::PathBlocked));
+                        return;
+                    }
+                    worker.new_order(
+                        start,
+                        job,
+                        destination.unwrap(),
+                        &*town,
+                        &mut *rest,
+                        &mut *errq,
+                        &containers,
+                    );
                 }
             }
             (UiView::Map, false) => map.left_click_on_main_area(mouse_pos, ui_state, entities, map_position, clickable),

@@ -5,13 +5,12 @@
 
 use quicksilver::prelude::Vector;
 use specs::prelude::*;
-use paddlers_shared_lib::prelude::*;
-use paddlers_shared_lib::api::abilities::AbilityUse;
 use crate::game::components::*;
 use crate::net::game_master_api::RestApiState;
 use crate::logging::ErrorQueue;
 use crate::game::town::Town;
 
+// TODO: See if this has any use
 pub fn use_welcome_ability<'a>(
     net_id: &NetObj,
     mouse_pos: Vector,
@@ -28,9 +27,4 @@ pub fn use_welcome_ability<'a>(
             h.make_happy(1);
         }
     }
-    rest.http_use_ability( AbilityUse {
-        unit_id: UnitKey(net_id.id),
-        ability_type: AbilityType::Welcome,
-    })
-    .unwrap_or_else(|e| errq.push(e));
 }
