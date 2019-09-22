@@ -6,42 +6,58 @@ use diesel::prelude::*;
 pub trait GameDB {
     fn dbconn(&self) -> &PgConnection;
 
-    fn unit(&self, unit_id: i64) -> Option<Unit> {
-        let results = units::table
-            .filter(units::id.eq(unit_id))
-            .get_result::<Unit>(self.dbconn())
+    fn hobo(&self, hobo_id: i64) -> Option<Hobo> {
+        let results = hobos::table
+            .filter(hobos::id.eq(hobo_id))
+            .get_result::<Hobo>(self.dbconn())
             .optional()
             .expect("Error loading data");
         results
     }
-    fn units(&self, village_id: i64) -> Vec<Unit> {
-        let results = units::table
-            .filter(units::home.eq(village_id))
+    fn hobos(&self, village_id: i64) -> Vec<Hobo> {
+        let results = hobos::table
+            .filter(hobos::home.eq(village_id))
             .limit(500)
-            .load::<Unit>(self.dbconn())
+            .load::<Hobo>(self.dbconn())
             .expect("Error loading data");
         results
     }
-    fn units_with_job(&self, village_id: i64, jobs: &[TaskType]) -> Vec<Unit> {
-        let results = units::table
+    fn worker(&self, worker_id: i64) -> Option<Worker> {
+        let results = workers::table
+            .filter(workers::id.eq(worker_id))
+            .get_result::<Worker>(self.dbconn())
+            .optional()
+            .expect("Error loading data");
+        results
+    }
+    fn workers(&self, village_id: i64) -> Vec<Worker> {
+        let results = workers::table
+            .filter(workers::home.eq(village_id))
+            .limit(500)
+            .load::<Worker>(self.dbconn())
+            .expect("Error loading data");
+        results
+    }
+    fn workers_with_job(&self, village_id: i64, jobs: &[TaskType]) -> Vec<Worker> {
+        let results = workers::table
             .inner_join(tasks::table)
-            .filter(units::home.eq(village_id))
+            .filter(workers::home.eq(village_id))
             .filter(tasks::task_type.eq_any(jobs))
             .filter(tasks::start_time.lt(diesel::dsl::now.at_time_zone("UTC")))
-            .select(units::all_columns)
+            .select(workers::all_columns)
             .distinct()
-            .load::<Unit>(self.dbconn())
+            .load::<Worker>(self.dbconn())
             .expect("Error loading data");
         results
     }
-    fn count_units_at_pos_doing_job(&self, village_id: i64, x: i32, y: i32, job: TaskType ) -> usize {
-        units::table
+    fn count_workers_at_pos_doing_job(&self, village_id: i64, x: i32, y: i32, job: TaskType ) -> usize {
+        workers::table
             .inner_join(tasks::table)
             .filter(tasks::task_type.eq(job))
-            .filter(units::home.eq(village_id))
+            .filter(workers::home.eq(village_id))
             .filter(tasks::x.eq(x))
             .filter(tasks::y.eq(y))
-            .select(diesel::dsl::count(units::id))
+            .select(diesel::dsl::count(workers::id))
             .first::<i64>(self.dbconn())
             .expect("Error loading data") as usize
     }
@@ -53,13 +69,13 @@ pub trait GameDB {
             .expect("Error loading data");
         results
     }
-    fn attack_units(&self, atk: &Attack) -> Vec<Unit> {
-        let results = attacks_to_units::table
-        .inner_join(units::table)
-        .filter(attacks_to_units::attack_id.eq(atk.id))
-        .select(units::all_columns)
+    fn attack_hobos(&self, atk: &Attack) -> Vec<Hobo> {
+        let results = attacks_to_hobos::table
+        .inner_join(hobos::table)
+        .filter(attacks_to_hobos::attack_id.eq(atk.id))
+        .select(hobos::all_columns)
         .limit(500)
-        .load::<Unit>(self.dbconn())
+        .load::<Hobo>(self.dbconn())
         .expect("Error loading data");
         results
     }
@@ -93,25 +109,25 @@ pub trait GameDB {
         .map(|res: Resource| res.amount)
         .unwrap_or(0)
     }
-    fn unit_tasks(&self, unit_id: i64) -> Vec<Task> {
+    fn worker_tasks(&self, worker_id: i64) -> Vec<Task> {
         let results = tasks::table
-        .filter(tasks::unit_id.eq(unit_id))
+        .filter(tasks::worker_id.eq(worker_id))
         .limit(500)
         .load::<Task>(self.dbconn())
         .expect("Error loading data");
         results
     }
-    fn unit_abilities(&self, unit_id: i64) -> Vec<Ability> {
+    fn worker_abilities(&self, worker_id: i64) -> Vec<Ability> {
         let results = abilities::table
-        .filter(abilities::unit_id.eq(unit_id))
+        .filter(abilities::worker_id.eq(worker_id))
         .limit(10)
         .load::<Ability>(self.dbconn())
         .expect("Error loading data");
         results
     }
-    fn past_unit_tasks(&self, unit_id: i64) -> Vec<Task> {
+    fn past_worker_tasks(&self, worker_id: i64) -> Vec<Task> {
         let results = tasks::table
-            .filter(tasks::unit_id.eq(unit_id))
+            .filter(tasks::worker_id.eq(worker_id))
             .filter(tasks::start_time.lt(diesel::dsl::now.at_time_zone("UTC")))
             .order(tasks::start_time.asc())
             .limit(500)
@@ -119,18 +135,18 @@ pub trait GameDB {
             .expect("Error loading data");
         results
     }
-    fn earliest_future_task(&self, unit_id: i64) -> Option<Task> {
+    fn earliest_future_task(&self, worker_id: i64) -> Option<Task> {
         tasks::table
-            .filter(tasks::unit_id.eq(unit_id))
+            .filter(tasks::worker_id.eq(worker_id))
             .filter(tasks::start_time.ge(diesel::dsl::now.at_time_zone("UTC")))
             .order(tasks::start_time.asc())
             .first(self.dbconn())
             .optional()
             .expect("Error loading data")
     }
-    fn current_and_next_task(&self, unit_id: i64) -> (Option<Task>, Option<Task>) {
+    fn current_and_next_task(&self, worker_id: i64) -> (Option<Task>, Option<Task>) {
         let mut results = tasks::table
-            .filter(tasks::unit_id.eq(unit_id))
+            .filter(tasks::worker_id.eq(worker_id))
             .order(tasks::start_time.asc())
             .limit(2)
             .load(self.dbconn())
@@ -143,9 +159,9 @@ pub trait GameDB {
             (current, next)
         }
     }
-    fn current_task(&self, unit_id: i64) -> Option<Task> {
+    fn current_task(&self, worker_id: i64) -> Option<Task> {
         tasks::table
-            .filter(tasks::unit_id.eq(unit_id))
+            .filter(tasks::worker_id.eq(worker_id))
             .filter(tasks::start_time.le(diesel::dsl::now.at_time_zone("UTC")))
             .order(tasks::start_time.asc())
             .first(self.dbconn())

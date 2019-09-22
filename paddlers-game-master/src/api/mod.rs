@@ -51,7 +51,7 @@ pub (super) fn overwrite_tasks(
             for upd in validated.update_tasks {
                 db.update_task(&upd);
             }
-            crate::worker_actions::replace_unit_tasks(&db, &addr.town_worker, body.unit_id, &validated.new_tasks);
+            crate::worker_actions::replace_worker_tasks(&db, &addr.town_worker, body.worker_id, &validated.new_tasks);
         }
         Err(e) => { 
             println!("Task creation failed. {} \n Body: {:?}", e, body.0); 

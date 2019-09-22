@@ -48,7 +48,7 @@ impl RestApiState {
     pub fn http_overwrite_tasks(&mut self, msg: TaskList) -> PadlResult<()>  {
         let request_string = &serde_json::to_string(&msg).unwrap();
         let promise = ajax::send("POST", &format!("{}/worker/overwriteTasks", game_master_url()?), request_string);
-        let afterwards = NetUpdateRequest::UnitTasks(msg.unit_id);
+        let afterwards = NetUpdateRequest::WorkerTasks(msg.worker_id);
         self.push_promise(promise, Some(afterwards));
         Ok(())
     }
@@ -99,8 +99,8 @@ impl<'a> System<'a> for RestApiSystem {
                         else {
                             if let Some(req) = afterwards {
                                 match req {
-                                    NetUpdateRequest::UnitTasks(unit_id) 
-                                        =>  crate::net::request_unit_tasks_update(unit_id),
+                                    NetUpdateRequest::WorkerTasks(unit_id) 
+                                        =>  crate::net::request_worker_tasks_update(unit_id),
                                 }
                             }
                         }

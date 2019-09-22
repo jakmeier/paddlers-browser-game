@@ -7,7 +7,9 @@ use crate::PadlId;
 #[derive(Clone,Copy,Debug, Serialize, Deserialize)]
 pub struct VillageKey(pub PadlId);
 #[derive(Clone,Copy,Debug, Serialize, Deserialize)]
-pub struct UnitKey(pub PadlId);
+pub struct HoboKey(pub PadlId);
+#[derive(Clone,Copy,Debug, Serialize, Deserialize)]
+pub struct WorkerKey(pub PadlId);
 
 impl Into<i64> for VillageKey {
     fn into(self) -> i64 {
@@ -22,12 +24,22 @@ impl VillageKey {
     } 
 }
 
-impl Into<i64> for UnitKey {
+impl Into<i64> for HoboKey {
     fn into(self) -> i64 {
         self.0
     }
 }
-impl UnitKey {
+impl HoboKey {
+    pub fn num(&self) -> i64 {
+        self.0
+    } 
+}
+impl Into<i64> for WorkerKey {
+    fn into(self) -> i64 {
+        self.0
+    }
+}
+impl WorkerKey {
     pub fn num(&self) -> i64 {
         self.0
     } 

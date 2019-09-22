@@ -17,9 +17,9 @@ pub struct AbilitySet {
     abilities: [Option<AbilityType>; MAX_ABILITIES],
 }
 
-use crate::net::graphql::village_units_query::VillageUnitsQueryVillageUnitsAbilities;
+use crate::net::graphql::village_units_query::VillageUnitsQueryVillageWorkersAbilities;
 impl AbilitySet {
-    pub fn from_gql(gql_abilities: &[VillageUnitsQueryVillageUnitsAbilities]) -> PadlResult<AbilitySet> {
+    pub fn from_gql(gql_abilities: &[VillageUnitsQueryVillageWorkersAbilities]) -> PadlResult<AbilitySet> {
         if gql_abilities.len() > MAX_ABILITIES {
             return PadlErrorCode::InvalidGraphQLData("Too many abilities").dev();
         }

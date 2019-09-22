@@ -21,22 +21,18 @@ impl DB {
         let mut rng = rand::thread_rng();
         let n = rng.gen_range(2,5);
         for _ in 0 .. n {
-            let unit = NewUnit {
-                unit_type: UnitType::Basic,
-                x: 0,
-                y: 0,
+            let unit = NewHobo {
                 color: Some(UnitColor::Yellow),
                 hp: rng.gen_range(3, 6), 
                 speed: 0.1,
                 home: TEST_AI_VILLAGE_ID.num(),
-                mana: None,
             };
-            let u = self.insert_unit(&unit);
-            let atu = AttackToUnit {
+            let u = self.insert_hobo(&unit);
+            let atu = AttackToHobo {
                 attack_id: attack.id,
-                unit_id: u.id
+                hobo_id: u.id
             };
-            self.insert_attack_to_unit(&atu);
+            self.insert_attack_to_hobo(&atu);
         }
     }
 

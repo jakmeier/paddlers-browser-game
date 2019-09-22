@@ -33,8 +33,11 @@ impl Query {
         let village = ctx.db.village(village_id as i64).ok_or("No such village")?;
         Ok(GqlVillage(village))
     }
-    fn unit(ctx: &Context, unit_id: i32) -> FieldResult<GqlUnit> {
-        Ok(GqlUnit(ctx.db.unit(unit_id as i64).ok_or("No such unit exists")?))
+    fn worker(ctx: &Context, worker_id: i32) -> FieldResult<GqlWorker> {
+        Ok(GqlWorker(ctx.db.worker(worker_id as i64).ok_or("No such unit exists")?))
+    }
+    fn hobo(ctx: &Context, hobo_id: i32) -> FieldResult<GqlHobo> {
+        Ok(GqlHobo(ctx.db.hobo(hobo_id as i64).ok_or("No such unit exists")?))
     }
     fn map(low_x: i32, high_x: i32) -> GqlMapSlice { 
         GqlMapSlice {
@@ -56,10 +59,11 @@ impl Mutation {
     }
 }
 
-pub struct GqlUnit(paddlers_shared_lib::models::Unit);
+pub struct GqlWorker(paddlers_shared_lib::models::Worker);
+pub struct GqlHobo(paddlers_shared_lib::models::Hobo);
 
 #[juniper::object (Context = Context)]
-impl GqlUnit {
+impl GqlWorker {
     pub fn id(&self) -> juniper::ID {
         self.0.id.to_string().into()
     }
@@ -79,18 +83,32 @@ impl GqlUnit {
         self.0.mana
     }
     // TODO: Proper type handling
+    pub fn speed(&self) -> f64 {
+        self.0.speed as f64
+    }
+    pub fn tasks(&self, ctx: &Context) -> Vec<GqlTask> {
+        ctx.db.worker_tasks(self.0.id).into_iter().map(|t| GqlTask(t)).collect()
+    }
+    fn abilities(&self, ctx: &Context) -> Vec<GqlAbility> {
+        ctx.db.worker_abilities(self.0.id).into_iter().map(|t| GqlAbility(t)).collect()
+    }
+}
+
+#[juniper::object (Context = Context)]
+impl GqlHobo {
+    pub fn id(&self) -> juniper::ID {
+        self.0.id.to_string().into()
+    }
+    pub fn color(&self) -> &Option<paddlers_shared_lib::models::UnitColor> {
+        &self.0.color
+    }
+    // TODO: Proper type handling
     pub fn hp(&self) -> i32 {
         self.0.hp as i32
     }
     // TODO: Proper type handling
     pub fn speed(&self) -> f64 {
         self.0.speed as f64
-    }
-    pub fn tasks(&self, ctx: &Context) -> Vec<GqlTask> {
-        ctx.db.unit_tasks(self.0.id).into_iter().map(|t| GqlTask(t)).collect()
-    }
-    fn abilities(&self, ctx: &Context) -> Vec<GqlAbility> {
-        ctx.db.unit_abilities(self.0.id).into_iter().map(|t| GqlAbility(t)).collect()
     }
 }
 
@@ -106,9 +124,9 @@ impl GqlAttack {
     fn id(&self) -> juniper::ID {
         self.0.id.to_string().into()
     }
-    fn units(&self, ctx: &Context) -> FieldResult<Vec<GqlUnit>> {
+    fn units(&self, ctx: &Context) -> FieldResult<Vec<GqlHobo>> {
         Ok(
-            ctx.db.attack_units(&self.0).into_iter().map(|u| GqlUnit(u)).collect()
+            ctx.db.attack_hobos(&self.0).into_iter().map(|u| GqlHobo(u)).collect()
         )
     }
     fn departure(&self) -> FieldResult<GqlTimestamp> {
@@ -176,8 +194,8 @@ impl GqlVillage {
     fn logs(&self, ctx: &Context) -> i32 {
         ctx.db.resource(ResourceType::Logs, TEST_VILLAGE_ID) as i32
     }
-    fn units(&self, ctx: &Context) -> Vec<GqlUnit> {
-        ctx.db.units(self.0.id).into_iter().map(|u| GqlUnit(u)).collect()
+    fn workers(&self, ctx: &Context) -> Vec<GqlWorker> {
+        ctx.db.workers(self.0.id).into_iter().map(|u| GqlWorker(u)).collect()
     }
     fn buildings(&self, ctx: &Context) -> FieldResult<Vec<GqlBuilding>> {
         // TODO: Filter for village

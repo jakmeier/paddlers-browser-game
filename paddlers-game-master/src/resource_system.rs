@@ -10,7 +10,7 @@ use crate::{
 impl DB {
     pub fn collect_reward<'a, I>(&self, units: I) 
     where
-        I: IntoIterator<Item = &'a Unit>,
+        I: IntoIterator<Item = &'a Hobo>,
     {
         use std::ops::Add;
         let feathers = units.into_iter().map(reward_feathers).fold(0, i64::add);
@@ -58,7 +58,7 @@ impl DB {
     }
 
 }
-fn reward_feathers(unit: &Unit) -> i64 {
+fn reward_feathers(unit: &Hobo) -> i64 {
     let f = (1.0 + unit.hp as f32 * unit.speed / 4.0).log2().ceil() as i64;
     // println!("{:#?} gives {} feathers", &unit, f);
     f

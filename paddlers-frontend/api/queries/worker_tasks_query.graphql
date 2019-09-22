@@ -1,8 +1,9 @@
-query UnitTasksQuery($unitId: Int!){
-    unit(unitId: $unitId) {
+query WorkerTasksQuery($workerId: Int!){
+    worker(workerId: $workerId) {
         id
         x
         y
+        mana
         tasks {
             id
             x

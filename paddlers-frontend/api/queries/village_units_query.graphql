@@ -1,6 +1,6 @@
 query VillageUnitsQuery{
   village(villageId: 1) {
-    units {
+    workers {
       id
       unitType
       color

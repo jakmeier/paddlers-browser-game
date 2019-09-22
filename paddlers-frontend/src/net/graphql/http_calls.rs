@@ -60,13 +60,13 @@ pub (super) fn http_read_workers() ->  PadlResult<impl Future<Output = PadlResul
     )
 }
 
-pub (super) fn http_read_worker_tasks(unit_id: i64) -> PadlResult<impl Future<Output = PadlResult<UnitTasksRawResponse>>> {
-    let request_body = UnitTasksQuery::build_query(unit_tasks_query::Variables{ unit_id: unit_id });
+pub (super) fn http_read_worker_tasks(unit_id: i64) -> PadlResult<impl Future<Output = PadlResult<WorkerTasksRawResponse>>> {
+    let request_body = WorkerTasksQuery::build_query(worker_tasks_query::Variables{ worker_id: unit_id });
     let request_string = &serde_json::to_string(&request_body)?;
     let promise = ajax::send("POST", &graphql_url()?, request_string)?;
     Ok(
         promise.map(|x| {
-            let response: UnitTasksRawResponse = 
+            let response: WorkerTasksRawResponse = 
                 serde_json::from_str(&x?)?;
             Ok(response)
         })

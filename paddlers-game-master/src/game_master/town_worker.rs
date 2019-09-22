@@ -35,8 +35,8 @@ impl TownWorker {
         let db = self.db();
         // TODO [Village ids]
         for village_id in &[1] {
-            for unit in db.units(*village_id) {
-                if let Some((event, time)) = Event::load_next_unit_task(&db, unit.id) {
+            for unit in db.workers(*village_id) {
+                if let Some((event, time)) = Event::load_next_worker_task(&db, unit.id) {
                     self.event_queue.add_event(event, time);
                 }
             }

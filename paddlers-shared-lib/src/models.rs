@@ -12,9 +12,10 @@ use ::diesel_derive_enum::DbEnum;
 
 #[cfg(feature = "sql_db")]
 use super::schema::{
-    units,
+    hobos,
+    workers,
     attacks,
-    attacks_to_units,
+    attacks_to_hobos,
     buildings,
     resources,
     tasks,
@@ -44,30 +45,48 @@ pub enum UnitColor {
 
 #[cfg(feature = "sql_db")]
 #[derive(Debug, Queryable, Identifiable, AsChangeset)]
-pub struct Unit {
+pub struct Worker {
     pub id: i64,
     pub home: i64,
     pub x: i32,
     pub y: i32,
     pub unit_type: UnitType,
     pub color: Option<UnitColor>,
-    pub hp: i64,
     pub speed: f32, // in unit lengths per second
     pub mana: Option<i32>,
 }
 
 #[cfg(feature = "sql_db")]
 #[derive(Insertable)]
-#[table_name = "units"]
-pub struct NewUnit {
+#[table_name = "workers"]
+pub struct NewWorker {
     pub home: i64,
     pub x: i32,
     pub y: i32,
     pub unit_type: UnitType,
     pub color: Option<UnitColor>,
-    pub hp: i64,
     pub speed: f32,
     pub mana: Option<i32>,
+}
+
+#[cfg(feature = "sql_db")]
+#[derive(Debug, Queryable, Identifiable, AsChangeset)]
+pub struct Hobo {
+    pub id: i64,
+    pub home: i64,
+    pub color: Option<UnitColor>,
+    pub speed: f32,
+    pub hp: i64,
+}
+
+#[cfg(feature = "sql_db")]
+#[derive(Insertable)]
+#[table_name = "hobos"]
+pub struct NewHobo {
+    pub hp: i64,
+    pub home: i64,
+    pub color: Option<UnitColor>,
+    pub speed: f32,
 }
 
 #[cfg(feature = "sql_db")]
@@ -92,10 +111,10 @@ pub struct NewAttack {
 
 #[cfg(feature = "sql_db")]
 #[derive(Debug, Queryable,Insertable)]
-#[table_name = "attacks_to_units"]
-pub struct AttackToUnit {
+#[table_name = "attacks_to_hobos"]
+pub struct AttackToHobo {
     pub attack_id: i64,
-    pub unit_id: i64,
+    pub hobo_id: i64,
 }
 
 
@@ -177,23 +196,24 @@ pub enum TaskType {
 #[cfg(feature = "sql_db")]
 pub struct Task {
     pub id: i64,
-    pub unit_id: i64,
+    pub worker_id: i64,
     pub task_type: TaskType,
     pub x: i32,
     pub y: i32,
     pub start_time: NaiveDateTime,
-    // pub target: Option<i64>,
+    pub target_hobo_id: Option<i64>,
 }
 
 #[cfg(feature = "sql_db")]
 #[derive(Insertable, Debug)]
 #[table_name = "tasks"]
 pub struct NewTask {
-    pub unit_id: i64,
+    pub worker_id: i64,
     pub task_type: TaskType,
     pub x: i32,
     pub y: i32,
     pub start_time: Option<NaiveDateTime>,
+    pub target_hobo_id: Option<i64>,
 }
 
 #[derive(Debug, Clone, Queryable, Identifiable)]
@@ -234,7 +254,7 @@ pub struct NewVillage {
 #[cfg(feature = "sql_db")]
 pub struct Ability {
     pub ability_type: AbilityType,
-    pub unit_id: i64,
+    pub worker_id: i64,
     pub last_used: Option<NaiveDateTime>,
 }
 
@@ -243,7 +263,7 @@ pub struct Ability {
 #[table_name = "abilities"]
 pub struct NewAbility {
     pub ability_type: AbilityType,
-    pub unit_id: i64,
+    pub worker_id: i64,
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Serialize, Deserialize)]

@@ -2,9 +2,9 @@ table! {
     use diesel::sql_types::*;
     use crate::models::*;
 
-    abilities (ability_type, unit_id) {
+    abilities (ability_type, worker_id) {
         ability_type -> Ability_type,
-        unit_id -> Int8,
+        worker_id -> Int8,
         last_used -> Nullable<Timestamp>,
     }
 }
@@ -26,9 +26,9 @@ table! {
     use diesel::sql_types::*;
     use crate::models::*;
 
-    attacks_to_units (attack_id, unit_id) {
+    attacks_to_hobos (attack_id, hobo_id) {
         attack_id -> Int8,
-        unit_id -> Int8,
+        hobo_id -> Int8,
     }
 }
 
@@ -46,6 +46,19 @@ table! {
         attacks_per_cycle -> Nullable<Int4>,
         creation -> Timestamp,
         village_id -> Int8,
+    }
+}
+
+table! {
+    use diesel::sql_types::*;
+    use crate::models::*;
+
+    hobos (id) {
+        id -> Int8,
+        home -> Int8,
+        color -> Nullable<Unit_color>,
+        speed -> Float4,
+        hp -> Int8,
     }
 }
 
@@ -77,28 +90,12 @@ table! {
 
     tasks (id) {
         id -> Int8,
-        unit_id -> Int8,
+        worker_id -> Int8,
         task_type -> Task_type,
         x -> Int4,
         y -> Int4,
         start_time -> Timestamp,
-    }
-}
-
-table! {
-    use diesel::sql_types::*;
-    use crate::models::*;
-
-    units (id) {
-        id -> Int8,
-        home -> Int8,
-        x -> Int4,
-        y -> Int4,
-        unit_type -> Unit_type,
-        color -> Nullable<Unit_color>,
-        hp -> Int8,
-        speed -> Float4,
-        mana -> Nullable<Int4>,
+        target_hobo_id -> Nullable<Int8>,
     }
 }
 
@@ -114,23 +111,42 @@ table! {
     }
 }
 
-joinable!(abilities -> units (unit_id));
-joinable!(attacks_to_units -> attacks (attack_id));
-joinable!(attacks_to_units -> units (unit_id));
+table! {
+    use diesel::sql_types::*;
+    use crate::models::*;
+
+    workers (id) {
+        id -> Int8,
+        home -> Int8,
+        x -> Int4,
+        y -> Int4,
+        unit_type -> Unit_type,
+        color -> Nullable<Unit_color>,
+        speed -> Float4,
+        mana -> Nullable<Int4>,
+    }
+}
+
+joinable!(abilities -> workers (worker_id));
+joinable!(attacks_to_hobos -> attacks (attack_id));
+joinable!(attacks_to_hobos -> hobos (hobo_id));
 joinable!(buildings -> villages (village_id));
+joinable!(hobos -> villages (home));
 joinable!(resources -> villages (village_id));
-joinable!(tasks -> units (unit_id));
-joinable!(units -> villages (home));
+joinable!(tasks -> hobos (target_hobo_id));
+joinable!(tasks -> workers (worker_id));
 joinable!(villages -> streams (stream_id));
+joinable!(workers -> villages (home));
 
 allow_tables_to_appear_in_same_query!(
     abilities,
     attacks,
-    attacks_to_units,
+    attacks_to_hobos,
     buildings,
+    hobos,
     resources,
     streams,
     tasks,
-    units,
     villages,
+    workers,
 );

@@ -25,12 +25,12 @@ pub enum NetMsg {
     Error(PadlError),
     Map(MapResponse, i32, i32),
     Resources(ResourcesResponse),
-    UpdateWorkerTasks(UnitTasksResponse),
+    UpdateWorkerTasks(WorkerTasksResponse),
     Workers(WorkerResponse),
 }
 
 pub enum NetUpdateRequest {
-    UnitTasks(i64),
+    WorkerTasks(i64),
 }
 
 struct NetState {
@@ -61,7 +61,7 @@ pub fn request_map_read(min: i32, max: i32) {
         STATIC_NET_STATE.spawn(STATIC_NET_STATE.gql_state.map_query(min, max));
     }
 }
-pub fn request_unit_tasks_update(unit_id: i64) {
+pub fn request_worker_tasks_update(unit_id: i64) {
     unsafe{
         STATIC_NET_STATE.spawn(STATIC_NET_STATE.gql_state.worker_tasks_query(unit_id));
     }

@@ -6,7 +6,7 @@ use chrono::Duration;
 impl DB {
     pub fn maybe_attack_now(&self, atk: &Attack, time_into_fight: Duration) {
 
-        let off = self.attack_units(atk);
+        let off = self.attack_hobos(atk);
 
         let seconds = seconds_to_complete(&off).ceil();
         if time_into_fight > Duration::milliseconds((seconds * 1_000.0) as i64){
@@ -17,7 +17,7 @@ impl DB {
 
     }
 
-    fn execute_fight(&self, defenders: &[Building], attackers: &[Unit]) {
+    fn execute_fight(&self, defenders: &[Building], attackers: &[Hobo]) {
 
         println!("Fight!");
         // println!("{:#?} against {:#?}", defenders, attackers);
@@ -26,7 +26,7 @@ impl DB {
 
         let defeated_units = attackers.iter().filter(|a| (a.hp as u32) <= ap );
         self.collect_reward(defeated_units.clone());
-        defeated_units.for_each(|u| self.delete_unit(u));
+        defeated_units.for_each(|u| self.delete_hobo(u));
 
         // TODO: Move survivors back
     }
@@ -67,7 +67,7 @@ fn tiles_in_range(b: &Building) -> usize {
     }
     n
 }
-fn seconds_to_complete(units: &[Unit]) -> f32 {
+fn seconds_to_complete(units: &[Hobo]) -> f32 {
     let slowest_speed =
         units.iter()
         .map(|u| u.speed)

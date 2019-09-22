@@ -20,11 +20,11 @@ impl EconomyWorker {
         let db = &self.db();
         let village_id = 1; // TODO village id
 
-        let n = db.units_with_job(village_id, &[TaskType::GatherSticks]).len();
+        let n = db.workers_with_job(village_id, &[TaskType::GatherSticks]).len();
         let new_sticks = n as i64;
         db.add_resource(ResourceType::Sticks, TEST_VILLAGE_ID, new_sticks).expect("Adding resources");
 
-        let n = db.units_with_job(village_id, &[TaskType::ChopTree]).len();
+        let n = db.workers_with_job(village_id, &[TaskType::ChopTree]).len();
         let new_logs = n as i64;
         db.add_resource(ResourceType::Logs, TEST_VILLAGE_ID, new_logs).expect("Adding logs");
 

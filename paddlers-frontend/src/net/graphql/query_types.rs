@@ -52,8 +52,8 @@ pub type ResourcesResponse = Response<resources_query::ResponseData>;
 )]
 pub struct VillageUnitsQuery;
 pub type VillageUnitsResponse = Response<village_units_query::ResponseData>;
-pub type WorkerResponse = Vec<village_units_query::VillageUnitsQueryVillageUnits>;
-pub type VillageUnitsTask = village_units_query::VillageUnitsQueryVillageUnitsTasks;
+pub type WorkerResponse = Vec<village_units_query::VillageUnitsQueryVillageWorkers>;
+pub type VillageUnitsTask = village_units_query::VillageUnitsQueryVillageWorkersTasks;
 pub type VillageUnitsTaskType = village_units_query::TaskType;
 pub type VillageUnitsAbilityType = village_units_query::AbilityType;
 
@@ -80,15 +80,15 @@ impl Into<AbilityType> for &VillageUnitsAbilityType {
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "api/schema.json",
-    query_path = "api/queries/unit_tasks_query.graphql",
+    query_path = "api/queries/worker_tasks_query.graphql",
 )]
-pub struct UnitTasksQuery;
-pub type UnitTasksRawResponse = Response<unit_tasks_query::ResponseData>;
-pub type UnitTasksResponse = unit_tasks_query::UnitTasksQueryUnit;
-pub type UnitTask = unit_tasks_query::UnitTasksQueryUnitTasks;
-pub type UnitTaskType = unit_tasks_query::TaskType;
+pub struct WorkerTasksQuery;
+pub type WorkerTasksRawResponse = Response<worker_tasks_query::ResponseData>;
+pub type WorkerTasksResponse = worker_tasks_query::WorkerTasksQueryWorker;
+pub type WorkerTaskEx = worker_tasks_query::WorkerTasksQueryWorkerTasks;
+pub type WorkerTaskType = worker_tasks_query::TaskType;
 
-impl Into<WorkerTask> for &UnitTask {
+impl Into<WorkerTask> for &WorkerTaskEx {
     fn into(self) -> WorkerTask {
         WorkerTask {
             task_type: (&self.task_type).into(),
@@ -107,19 +107,19 @@ pub struct MapQuery;
 pub type MapResponse = Response<map_query::ResponseData>;
 
 use paddlers_shared_lib::models::TaskType;
-impl Into<TaskType> for &UnitTaskType {
+impl Into<TaskType> for &WorkerTaskType {
     fn into(self) -> TaskType {
         match self {
-            UnitTaskType::IDLE => TaskType::Idle,
-            UnitTaskType::WALK => TaskType::Walk,
-            UnitTaskType::GATHER_STICKS => TaskType::GatherSticks,
-            UnitTaskType::CHOP_TREE => TaskType::ChopTree,
-            UnitTaskType::DEFEND => TaskType::Defend,
+            WorkerTaskType::IDLE => TaskType::Idle,
+            WorkerTaskType::WALK => TaskType::Walk,
+            WorkerTaskType::GATHER_STICKS => TaskType::GatherSticks,
+            WorkerTaskType::CHOP_TREE => TaskType::ChopTree,
+            WorkerTaskType::DEFEND => TaskType::Defend,
             _ => panic!("Unexpected task type")
         }
     }
 }
-impl Into<TaskType> for UnitTaskType {
+impl Into<TaskType> for WorkerTaskType {
     fn into(self) -> TaskType {
         (&self).into()
     }

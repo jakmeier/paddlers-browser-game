@@ -10,8 +10,13 @@ impl SqlKey<VillageKey> for Village {
     }
 }
 
-impl SqlKey<UnitKey> for Unit {
-    fn key(&self) -> UnitKey {
-        UnitKey(self.id)
+impl SqlKey<WorkerKey> for Worker {
+    fn key(&self) -> WorkerKey {
+        WorkerKey(self.id)
+    }
+}
+impl SqlKey<HoboKey> for Hobo {
+    fn key(&self) -> HoboKey {
+        HoboKey(self.id)
     }
 }

@@ -6,7 +6,7 @@ use crate::game_mechanics::town::TileIndex;
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct TaskList {
-    pub unit_id: i64,
+    pub worker_id: i64,
     pub tasks: Vec<RawTask>,
 }
 

@@ -59,7 +59,7 @@ impl Worker {
         town.check_task_constraints(job, destination, containers)?;
         let tasks = town.build_task_chain(from, destination, job)?;
         let msg = TaskList {
-            unit_id: self.netid,
+            worker_id: self.netid,
             tasks: tasks,
         };
         Ok(msg)
@@ -82,7 +82,7 @@ impl Worker {
             RawTask::new(TaskType::Idle, idx)
         ];
         Ok( TaskList {
-            unit_id: self.netid,
+            worker_id: self.netid,
             tasks: tasks,
         })
     }

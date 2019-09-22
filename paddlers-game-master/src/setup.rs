@@ -39,7 +39,7 @@ impl DB {
     }
 
     fn insert_test_data(&self) {
-        if self.units(TEST_VILLAGE_ID.num()).len() == 0 {
+        if self.workers(TEST_VILLAGE_ID.num()).len() == 0 {
             self.insert_startkit();
         }
     }
@@ -47,32 +47,32 @@ impl DB {
     fn insert_startkit(&self) {
             // Our brave Hero
             let (x,y) = (0,0);
-            let unit = NewUnit {
+            let worker = NewWorker {
                 unit_type: UnitType::Hero,
                 x: x,
                 y: y,
                 color: None,
-                hp: 10, 
                 speed: 0.5,
                 home: TEST_VILLAGE_ID.num(),
                 mana: Some(10),
             };
-            let unit = self.insert_unit(&unit);
+            let worker = self.insert_worker(&worker);
             let task = NewTask {
-                unit_id: unit.id,
+                worker_id: worker.id,
                 task_type: TaskType::Idle,
                 x: x,
                 y: y,
                 start_time: None,
+                target_hobo_id: None,
             };
             self.insert_task(&task);
             let work_ability = NewAbility {
-                unit_id: unit.id,
+                worker_id: worker.id,
                 ability_type: AbilityType::Work,
             };
             self.insert_ability(&work_ability);
             let welcome_ability = NewAbility {
-                unit_id: unit.id,
+                worker_id: worker.id,
                 ability_type: AbilityType::Welcome,
             };
             self.insert_ability(&welcome_ability);

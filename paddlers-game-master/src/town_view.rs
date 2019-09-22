@@ -25,7 +25,7 @@ impl TownView {
                 BuildingType::SawMill => TaskType::ChopTree,
                 _ => TaskType::Idle,
             };
-            let entity_count = db.count_units_at_pos_doing_job(village_id, b.x, b.y, task_type);
+            let entity_count = db.count_workers_at_pos_doing_job(village_id, b.x, b.y, task_type);
             state.insert(idx, TileState::new_building(b.id, capacity, entity_count));
             let forest_supply = match b.building_type {
                 BuildingType::Tree => tree_size(now - b.creation), 
@@ -34,9 +34,9 @@ impl TownView {
             state.forest_size += forest_supply;
         }
 
-        let units = db.units(village_id);
-        for unit in units {
-            let tasks = db.unit_tasks(unit.id);
+        let workers = db.workers(village_id);
+        for worker in workers {
+            let tasks = db.worker_tasks(worker.id);
             for task in tasks {
                 state.register_task_begin(task.task_type).expect("Current DB state invalid");
             }

@@ -62,7 +62,7 @@ impl GraphQlState {
             fp.map(
                 |response| {
                     if let Some(data) = response?.data {
-                        let workers = data.village.units;
+                        let workers = data.village.workers;
                         Ok(NetMsg::Workers(workers))
                     }
                     else {
@@ -78,7 +78,7 @@ impl GraphQlState {
             fp.map(
                 |response| {
                     if let Some(data) = response?.data {
-                        Ok(NetMsg::UpdateWorkerTasks(data.unit))
+                        Ok(NetMsg::UpdateWorkerTasks(data.worker))
                     }
                     else {
                         gql_empty_error("worker_tasks")

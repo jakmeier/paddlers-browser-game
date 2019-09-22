@@ -6,10 +6,10 @@ use super::*;
 
 impl DB {
 
-    pub fn delete_unit(&self, unit: &Unit) {
-        let result = diesel::delete(unit).execute(self.dbconn());
+    pub fn delete_hobo(&self, hobo: &Hobo) {
+        let result = diesel::delete(hobo).execute(self.dbconn());
         if result.is_err() {
-            println!("Couldn't delete unit {:?}", unit);
+            println!("Couldn't delete hobo {:?}", hobo);
         }
     }
 
@@ -20,17 +20,23 @@ impl DB {
         }
     }
 
-    pub fn insert_unit(&self, u: &NewUnit) -> Unit {
-        diesel::insert_into(units::dsl::units)
+    pub fn insert_hobo(&self, u: &NewHobo) -> Hobo {
+        diesel::insert_into(hobos::dsl::hobos)
             .values(u)
             .get_result(self.dbconn())
-            .expect("Inserting unit")
+            .expect("Inserting hobo")
     }
-    pub fn update_unit(&self, u: &Unit) {
+    pub fn insert_worker(&self, u: &NewWorker) -> Worker {
+        diesel::insert_into(workers::dsl::workers)
+            .values(u)
+            .get_result(self.dbconn())
+            .expect("Inserting worker")
+    }
+    pub fn update_worker(&self, u: &Worker) {
         diesel::update(u)
             .set(u)
             .execute(self.dbconn())
-            .expect("Updating unit");
+            .expect("Updating worker");
     }
     pub fn insert_attack(&self, new_attack: &NewAttack) -> Attack {
         diesel::insert_into(attacks::dsl::attacks)
@@ -38,11 +44,11 @@ impl DB {
             .get_result(self.dbconn())
             .expect("Inserting attack")
     }
-    pub fn insert_attack_to_unit(&self, atu: &AttackToUnit) {
-        diesel::insert_into(attacks_to_units::dsl::attacks_to_units)
+    pub fn insert_attack_to_hobo(&self, atu: &AttackToHobo) {
+        diesel::insert_into(attacks_to_hobos::dsl::attacks_to_hobos)
             .values(atu)
             .execute(self.dbconn())
-            .expect("Inserting attack to unit");
+            .expect("Inserting attack to hobo");
     }
     pub fn insert_resource(&self, res: &Resource) -> QueryResult<usize> {
         diesel::insert_into(dsl::resources)
@@ -92,9 +98,9 @@ impl DB {
             .execute(self.dbconn())
             .expect("Deleting task");
     }
-    pub fn flush_task_queue(&self, unit_id: i64) {
+    pub fn flush_task_queue(&self, worker_id: i64) {
         diesel::delete(tasks::table
-            .filter(tasks::unit_id.eq(unit_id)))
+            .filter(tasks::worker_id.eq(worker_id)))
             .filter(tasks::start_time.gt(diesel::dsl::now.at_time_zone("UTC")))
             .execute(self.dbconn())
             .expect("Deleting task");

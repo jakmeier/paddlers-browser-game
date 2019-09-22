@@ -3,7 +3,7 @@ pub use crate::models::*;
 pub use crate::sql_db::{sql::GameDB, keys::SqlKey};
 pub use crate::config::Config;
 pub use crate::PadlId;
-pub use crate::api::keys::{UnitKey, VillageKey};
+pub use crate::api::keys::{HoboKey, WorkerKey, VillageKey};
 
 //TODO Delete this once multiple villages are properly supported
 #[cfg(feature = "sql_db")] 

@@ -4,7 +4,6 @@ query AttacksQuery($min_attack_id: Int) {
       id
       units {
         id
-        unitType
         color
         hp
         speed
