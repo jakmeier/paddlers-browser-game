@@ -50,7 +50,12 @@ impl<'a> System<'a> for RightClickSystem {
             (UiView::Town, false) => {
                 if let Some(e) = (*ui_state).selected_entity {
                     if let Some(worker) = worker.get_mut(e) {
-                        worker.new_order(e, &*town, mouse_pos, &mut *rest, &mut *errq, &position, &moving, &containers, &entities);
+                        let maybe_job = worker.task_on_right_click(&mouse_pos, &town);
+                        if let Some((job, destination)) = maybe_job {
+                            let (from, movement) = (&position, &moving).join().get(e, &entities).unwrap();
+                            let start = town.next_tile_in_direction(from.area.pos, movement.momentum);
+                            worker.new_order(start, job, destination, &*town, &mut *rest, &mut *errq, &containers);
+                        }
                     }
                 }
             },

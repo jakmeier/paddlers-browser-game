@@ -1,5 +1,5 @@
 use super::{Clickable, MouseState, UiState, UiView};
-use paddlers_shared_lib::prelude::AbilityType;
+use paddlers_shared_lib::prelude::*;
 use crate::game::{
     components::*,
     map::{GlobalMapSharedState, MapPosition},
@@ -14,6 +14,7 @@ use crate::logging::ErrorQueue;
 use crate::net::game_master_api::RestApiState;
 use quicksilver::prelude::*;
 use specs::prelude::*;
+use crate::prelude::*;
 
 pub struct LeftClickSystem;
 
@@ -104,19 +105,26 @@ impl<'a> System<'a> for LeftClickSystem {
                     Some(AbilityType::Work) => {
                         let active_entity = active_entity.expect("Ability requires unit");
                         let worker = workers.get_mut(active_entity).expect("Ability requires unit");
+                        let (from, movement) = (&position, &moving).join().get(active_entity, &entities).unwrap();
+                        let start = town.next_tile_in_direction(from.area.pos, movement.momentum);
+                        let target_tile = town.tile(mouse_pos);
+                        let destination = (*town).closest_walkable_tile_in_range(start, target_tile, 1.0);
+                        if destination.is_none() {
+                            errq.push(PadlError::user_err(PadlErrorCode::PathBlocked));
+                            return;
+                        }
                         worker.new_order(
-                            active_entity, 
+                            start,
+                            TaskType::Walk,
+                            destination.unwrap(),
                             &*town,
-                            mouse_pos,
                             &mut *rest,
                             &mut *errq,
-                            &position,
-                            &moving,
                             &containers,
-                            &entities,
                         );
 
                     },
+                    // TODO: don't do it like this
                     Some(AbilityType::Welcome) => {
                         use_welcome_ability(
                             net_id.unwrap(),

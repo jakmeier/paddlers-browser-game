@@ -4,7 +4,7 @@ use specs::prelude::*;
 use crate::prelude::*;
 use crate::game::{
     town::{Town, TileIndex},
-    movement::{Position, Moving},
+    movement::{Position},
     components::*,
 };
 use crate::gui::render::Renderable;
@@ -29,79 +29,55 @@ pub struct WorkerTask {
 }
 
 impl Worker {
-    /// Worker is ordered to do something by the player
+    /// Worker is ordered by the player to perform a job at a position
+    /// How to get there and if this is possible has yet to be checked.
     pub fn new_order<'a>(
         &mut self, 
-        worker_id: Entity, 
+        start: TileIndex,
+        job: TaskType,
+        destination: TileIndex,
         town: &Town,
-        mouse_pos: Vector,
         rest: &mut RestApiState,
         errq: &mut ErrorQueue,
-        position: &ReadStorage<'a, Position>,
-        moving: &ReadStorage<'a, Moving>,
         containers: &WriteStorage<'a, EntityContainer>,
-        entities: &Entities<'a>,
     ) {
-        let (from, movement) = (position, moving).join().get(worker_id, &entities).unwrap();
-        let start = town.next_tile_in_direction(from.area.pos, movement.momentum);                
-        let msg = self.task_on_right_click(start, &mouse_pos, &town, &containers);
+        let msg = self.try_create_task_list(start, destination, job, &town, &containers);
         match msg {
-            Ok(Some(msg)) => {
+            Ok(msg) => {
                 rest.http_overwrite_tasks(msg)
                     .unwrap_or_else(|e| errq.push(e));
             }
-            Ok(None) => { },
             Err(e) => {
                 errq.push(e);
             }
         }
     }
 
-
-    fn task_on_right_click<'a>(&mut self, from: TileIndex, click: &Vector, town: &Town, containers: &WriteStorage<'a, EntityContainer>) -> PadlResult<Option<TaskList>> {
-        let destination = town.tile(*click);
-        if let Some(job) = self.task_at_position(town, destination) {
-            // Check with stateful tiles for validity
-            if let Some(tile_state) = town.tile_state(destination) {
-                match job {
-                    TaskType::GatherSticks
-                    | TaskType::ChopTree
-                        => {
-                        if let Some(container) = containers.get(tile_state.entity) {
-                            if !container.can_add_entity() {
-                                return PadlErrorCode::BuildingFull(Some(town.building_type(destination)?)).usr();
-                            }
-                        }
-                        else {
-                            return PadlErrorCode::DevMsg("Cannot gather resources here.").usr();
-                        }
-                    }
-                    TaskType::Idle | TaskType::Walk => {},
-                    TaskType::Defend  => { panic!("NIY") },
-                }
-
-            }
-            // Check global supply constraints
-            let forest_requirement = job.required_forest_size();
-            if town.forest_size_free() < forest_requirement {
-                return PadlErrorCode::ForestTooSmall(forest_requirement - town.forest_size_free()).usr();
-            }
-            if let Some((path, _dist)) = town.shortest_path(from, destination) {
-                let mut tasks = raw_walk_tasks(&path, from);
-                tasks.push( RawTask::new(job, destination) );
-                let msg = TaskList {
-                    unit_id: self.netid,
-                    tasks: tasks,
-                };
-                Ok(Some(msg))
-            } else {
-                PadlErrorCode::PathBlocked.usr()
-            }
-        } else {
-            // Nothing to do here
-            Ok(None)
-        }
+    /// Create a list of tasks that walk a worker to s place and let's it perform a job there.
+    /// The returned format can be understood by the backend interface.
+    /// Returns an error if the job cannot be done by this worker at the desired position.
+    pub fn try_create_task_list<'a>(&mut self, from: TileIndex, destination: TileIndex, job: TaskType, town: &Town, containers: &WriteStorage<'a, EntityContainer>) -> PadlResult<TaskList> {
+        town.check_task_constraints(job, destination, containers)?;
+        let tasks = town.build_task_chain(from, destination, job)?;
+        let msg = TaskList {
+            unit_id: self.netid,
+            tasks: tasks,
+        };
+        Ok(msg)
     }
+    
+    /// Finds the default-task that is performed on a right click in the town area
+    pub fn task_on_right_click<'a>(&mut self, click: &Vector, town: &Town) -> Option<(TaskType, TileIndex)> {
+        let destination = town.tile(*click); // TODO: destination is not always where it has been clicked
+        let job = town.available_tasks(destination)
+            .into_iter()
+            // .filter(
+            //     || TODO
+            // )
+            .next()?;
+        Some((job, destination))
+    }
+    
     fn go_idle(&mut self, idx: TileIndex) -> Result<TaskList, String> {
         let tasks = vec![
             RawTask::new(TaskType::Idle, idx)
@@ -120,36 +96,6 @@ impl Worker {
         }
         None
     }
-    fn task_at_position(&self, town: &Town, i: TileIndex) -> Option<TaskType> {
-        let jobs = town.available_tasks(i);
-        jobs.into_iter()
-            // .filter(
-            //     || TODO
-            // )
-            .next()
-    }
-}
-
-fn raw_walk_tasks(path: &[TileIndex], from: TileIndex) -> Vec<RawTask> {
-    let mut tasks = vec![];
-    let mut current_direction = Vector::new(0,0);
-    let mut current = from;
-    for next in path {
-        let next_direction = direction_vector(current, *next);
-        if next_direction != current_direction && current_direction != Vector::new(0,0) {
-            tasks.push( RawTask::new(TaskType::Walk, current) );
-        }
-        current = *next;
-        current_direction = next_direction;
-    }
-    tasks.push( RawTask::new(TaskType::Walk, current) );
-    tasks
-}
-
-fn direction_vector(a: TileIndex, b: TileIndex) -> Vector {
-    let a = Vector::new(a.0 as u32, a.1 as u32);
-    let b = Vector::new(b.0 as u32, b.1 as u32);
-    a - b
 }
 
 pub fn move_worker_into_building<'a>(
