@@ -16,10 +16,6 @@ use crate::game::{
 use paddlers_shared_lib::graphql_types::*;
 use paddlers_shared_lib::game_mechanics::town::*;
 
-#[derive(Default, Component)]
-#[storage(NullStorage)]
-pub struct Attacker;
-
 const ATTACKER_SIZE_FACTOR_X: f32 = 0.6; 
 const ATTACKER_SIZE_FACTOR_Y: f32 = 0.4; 
 
@@ -36,7 +32,6 @@ pub fn insert_duck(world: &mut World, pos: impl Into<Vector>, birth_time: Timest
             }
         )
         .with(Clickable)
-        .with(Attacker)
         .with(NetObj::hobo(netid))
         .with(Health::new_full_health(hp))
         .build()

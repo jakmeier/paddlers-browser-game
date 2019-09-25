@@ -11,7 +11,6 @@ pub use crate::gui::{
     input::Clickable,
 };
 pub use super::movement::{Moving, Position};
-pub use super::units::attackers::{Attacker};
 pub use super::fight::{Health, Range};
 pub use super::forestry::ForestComponent;
 pub use super::map::{VillageMetaInfo, MapPosition};
@@ -24,7 +23,6 @@ pub fn register_components(world: &mut World) {
     world.register::<Moving>();
     world.register::<Renderable>();
     world.register::<Clickable>();
-    world.register::<Attacker>();
     world.register::<Worker>();
     world.register::<Range>();
     world.register::<Health>();
