@@ -1,3 +1,6 @@
+use crate::logging::error::PadlResult;
+use specs::prelude::*;
+use crate::game::components::NetObj;
 use paddlers_shared_lib::models::*;
 use graphql_client::{GraphQLQuery, Response};
 use paddlers_shared_lib::graphql_types;
@@ -58,13 +61,21 @@ pub type VillageUnitsTaskType = village_units_query::TaskType;
 pub type VillageUnitsAbilityType = village_units_query::AbilityType;
 
 use crate::game::units::workers::WorkerTask;
-impl Into<WorkerTask> for &VillageUnitsTask {
-    fn into(self) -> WorkerTask {
-        WorkerTask {
+impl VillageUnitsTask {
+    pub fn create(&self, net_ids: &ReadStorage<NetObj>, entities: &Entities) -> PadlResult<WorkerTask> {
+        let target = 
+        if let Some(id) = self.hobo_target {
+            Some(NetObj::lookup_hobo(id, net_ids, entities)?)
+        }
+        else {
+            None
+        };
+        Ok(WorkerTask {
             task_type: (&self.task_type).into(),
             position: (self.x as usize, self.y as usize),
-            start_time: timestamp(&self.start_time).0
-        }
+            start_time: timestamp(&self.start_time).0,
+            target,
+        })
     }
 }
 impl Into<AbilityType> for &VillageUnitsAbilityType {
@@ -88,13 +99,21 @@ pub type WorkerTasksResponse = worker_tasks_query::WorkerTasksQueryWorker;
 pub type WorkerTaskEx = worker_tasks_query::WorkerTasksQueryWorkerTasks;
 pub type WorkerTaskType = worker_tasks_query::TaskType;
 
-impl Into<WorkerTask> for &WorkerTaskEx {
-    fn into(self) -> WorkerTask {
-        WorkerTask {
+impl WorkerTaskEx {
+    pub fn create(&self, net_ids: &ReadStorage<NetObj>, entities: &Entities) -> PadlResult<WorkerTask> {
+        let target = 
+        if let Some(id) = self.hobo_target {
+            Some(NetObj::lookup_hobo(id, net_ids, entities)?)
+        }
+        else {
+            None
+        };
+        Ok(WorkerTask {
             task_type: (&self.task_type).into(),
             position: (self.x as usize, self.y as usize),
-            start_time: timestamp(&self.start_time).0
-        }
+            start_time: timestamp(&self.start_time).0,
+            target,
+        })
     }
 }
 
@@ -115,6 +134,7 @@ impl Into<TaskType> for &WorkerTaskType {
             WorkerTaskType::GATHER_STICKS => TaskType::GatherSticks,
             WorkerTaskType::CHOP_TREE => TaskType::ChopTree,
             WorkerTaskType::DEFEND => TaskType::Defend,
+            WorkerTaskType::WELCOME_ABILITY => TaskType::WelcomeAbility,
             _ => panic!("Unexpected task type")
         }
     }
@@ -132,6 +152,7 @@ impl Into<TaskType> for &VillageUnitsTaskType {
             VillageUnitsTaskType::GATHER_STICKS => TaskType::GatherSticks,
             VillageUnitsTaskType::CHOP_TREE => TaskType::ChopTree,
             VillageUnitsTaskType::DEFEND => TaskType::Defend,
+            VillageUnitsTaskType::WELCOME_ABILITY => TaskType::WelcomeAbility,
             _ => panic!("Unexpected task type")
         }
     }

@@ -58,7 +58,7 @@ impl<'a> System<'a> for LeftClickSystem {
             clickable,
             moving,
             net_ids,
-            containers,
+            mut containers,
             mut ui_menus,
             mut workers,
         ): Self::SystemData,
@@ -99,7 +99,7 @@ impl<'a> System<'a> for LeftClickSystem {
                 if let Some(job) = maybe_job {
                     let active_entity = active_entity.expect("Ability requires unit");
                     let worker = workers.get_mut(active_entity).expect("Ability requires unit");
-                    let (from, movement) = (&position, &moving).join().get(active_entity, &entities).unwrap();
+                    let (from, movement) = (&position, &moving).join().get(active_entity, &entities).expect("Unit has position");
                     let start = town.next_tile_in_direction(from.area.pos, movement.momentum);
                     let target_tile = town.tile(mouse_pos);
                     // TODO range check
@@ -115,7 +115,7 @@ impl<'a> System<'a> for LeftClickSystem {
                         &*town,
                         &mut *rest,
                         &mut *errq,
-                        &containers,
+                        &mut containers,
                     );
                 }
             }

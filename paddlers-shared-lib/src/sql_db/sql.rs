@@ -1,4 +1,4 @@
-use crate::prelude::VillageKey;
+use crate::prelude::{VillageKey, HoboKey};
 use crate::models::*;
 use crate::schema::*;
 use diesel::prelude::*;
@@ -214,5 +214,12 @@ pub trait GameDB {
             .expect("Error loading data");
         results
     }
-
+    fn effects_on_hobo(&self, hobo: HoboKey) -> Vec<Effect> {
+        let results = effects::table
+            .filter(effects::hobo_id.eq(hobo.num()))
+            .limit(500)
+            .load::<Effect>(self.dbconn())
+            .expect("Error loading data");
+        results
+    }
 }

@@ -10,6 +10,7 @@ query WorkerTasksQuery($workerId: Int!){
             y
             taskType
             startTime
+            hoboTarget
         }
     }
 }

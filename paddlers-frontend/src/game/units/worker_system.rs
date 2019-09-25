@@ -57,6 +57,9 @@ impl<'a> System<'a> for WorkerSystem {
                         mov.stand_still(task.start_time);
                         anim.direction = Direction::Undirected;
                         move_worker_into_building(&mut container, &mut ui_menus, &mut town, &lazy, &rend, e, task.position);
+                    },
+                    TaskType::WelcomeAbility => {
+                        // TODO
                     }
                     _ => {debug_assert!(false, "Unexpected task")},
                 }

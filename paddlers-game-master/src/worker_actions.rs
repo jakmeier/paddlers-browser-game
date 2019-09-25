@@ -16,6 +16,7 @@ trait WorkerAction {
     fn x(&self) -> i32;
     fn y(&self) -> i32;
     fn task_type(&self) -> &TaskType;
+    fn target(&self) -> Option<HoboKey>;
 }
 pub struct ValidatedTaskList {
     pub new_tasks: Vec<NewTask>,
@@ -39,13 +40,19 @@ pub (crate) fn validate_task_list(db: &DB, tl: &TaskList, village_id: i64) -> Re
     let mut tasks = vec![];
 
     for task in tl.tasks.iter() {
+        
+        // Validate target hobo exists if there is one
+        if let Some(target_id) =  task.target {
+            db.hobo(target_id).ok_or("No such hobo id")?;
+        }
+
         let new_task = NewTask {
             worker_id: worker_id,
             task_type: task.task_type,
             x: task.x as i32,
             y: task.y as i32,
             start_time: Some(timestamp),
-            target_hobo_id: None,
+            target_hobo_id: task.target,
         };
         simulate_begin_task(&new_task, &mut town, &mut worker)?;
         let duration = simulate_finish_task(&new_task, &mut town, &mut worker)?;
@@ -95,8 +102,8 @@ fn interrupt_task(current_task: &mut Task, worker: &Worker) -> Option<NaiveDateT
             Some(moment)
         }
         TaskType::WelcomeAbility => {
-            // TODO!
-            None
+            let cast_time = current_task.start_time + AbilityType::Welcome.busy_duration();
+            Some(cast_time)
         }
     }
 }
@@ -127,9 +134,11 @@ pub (crate) fn finish_task(
         let mut worker = db.worker(task.worker_id).ok_or("Task references non-existing worker")?;
         if let Some(town) = town {
             crate::worker_actions::simulate_finish_task(&task, town, &mut worker)?;
+            apply_task_to_db(db, &task, &worker)?;
         } else {
             let mut town = TownView::load_village(db, worker.home);
             crate::worker_actions::simulate_finish_task(&task, &mut town, &mut worker)?;
+            apply_task_to_db(db, &task, &worker)?;
         }
         
         db.update_worker(&worker);
@@ -140,6 +149,29 @@ pub (crate) fn finish_task(
         // Already executed.
         Ok(None)
     }
+}
+
+fn apply_task_to_db(
+    db: &DB,
+    task: &Task,
+    worker: &Worker,
+) -> Result<(), String> {
+    match task.task_type {
+        TaskType::WelcomeAbility => {
+            let a = AbilityType::Welcome;
+            let (attribute, strength) = a.apply();
+            let ne = NewEffect {
+                hobo_id: task.target().ok_or("Ability must have a target")?.num(),
+                attribute,
+                strength: Some(strength),
+                start_time: None, // default = now
+            };
+            db.insert_effect(&ne);
+            db.update_ability_used_timestamp(WorkerKey(worker.id), a);
+        },
+        _ => { /* NOP */ },
+    }
+    Ok(())
 }
 
 fn simulate_finish_task<T: WorkerAction> (
@@ -159,9 +191,9 @@ fn simulate_finish_task<T: WorkerAction> (
                 worker_out_of_building(town, worker, (task.x() as usize, task.y() as usize))
             },
         TaskType::WelcomeAbility => {
-            // TODO: Ability time
-            // TODO: apply ability
-            Ok(Duration::milliseconds(100))
+            let a = AbilityType::Welcome;
+            let duration = a.busy_duration();
+            Ok(duration)
         },
         _ => Err("Task not implemented".to_owned())
     }
@@ -223,6 +255,9 @@ impl WorkerAction for NewTask {
     fn task_type(&self) -> &TaskType {
         &self.task_type
     }
+    fn target(&self) -> Option<HoboKey> {
+        self.target_hobo_id.map(HoboKey)
+    }
 }
 impl WorkerAction for Task {
     fn x(&self) -> i32 {
@@ -233,5 +268,8 @@ impl WorkerAction for Task {
     }
     fn task_type(&self) -> &TaskType {
         &self.task_type
+    }
+    fn target(&self) -> Option<HoboKey> {
+        self.target_hobo_id.map(HoboKey)
     }
 }

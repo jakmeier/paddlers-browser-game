@@ -5,7 +5,7 @@ CREATE TABLE buildings (
     y INT NOT NULL,
     building_type BUILDING_TYPE NOT NULL,
     building_range REAL,
-    attack_power REAL,
+    attack_power INT,
     attacks_per_cycle INT,
     creation TIMESTAMP NOT NULL
 )

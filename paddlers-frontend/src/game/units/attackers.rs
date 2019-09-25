@@ -11,6 +11,7 @@ use crate::game::{
     input::Clickable,
     movement::{Position, Moving},
     fight::Health,
+    components::NetObj,
 };
 use paddlers_shared_lib::graphql_types::*;
 use paddlers_shared_lib::game_mechanics::town::*;
@@ -22,7 +23,7 @@ pub struct Attacker;
 const ATTACKER_SIZE_FACTOR_X: f32 = 0.6; 
 const ATTACKER_SIZE_FACTOR_Y: f32 = 0.4; 
 
-pub fn insert_duck(world: &mut World, pos: impl Into<Vector>, birth_time: Timestamp, speed: impl Into<Vector>, hp: i64, ul: f32) -> Entity {
+pub fn insert_duck(world: &mut World, pos: impl Into<Vector>, birth_time: Timestamp, speed: impl Into<Vector>, hp: i64, ul: f32, netid: i64) -> Entity {
     let pos = pos.into();
     let speed = speed.into();
     let size: Vector = Vector::new(ATTACKER_SIZE_FACTOR_X * ul, ATTACKER_SIZE_FACTOR_Y * ul).into();
@@ -36,6 +37,7 @@ pub fn insert_duck(world: &mut World, pos: impl Into<Vector>, birth_time: Timest
         )
         .with(Clickable)
         .with(Attacker)
+        .with(NetObj::hobo(netid))
         .with(Health::new_full_health(hp))
         .build()
 }
@@ -60,7 +62,8 @@ impl AttacksQueryVillageAttacksUnits {
         let y = TOWN_LANE_Y as f32 * ul;
         let pos = Vector::new(x,y) + attacker_position_rank_offset(pos_rank, ul);
         let hp = self.hp;
-        insert_duck(world, pos, birth, (v as f32, 0.0), hp, ul)
+        let netid = self.id.parse().expect("Parsing id");
+        insert_duck(world, pos, birth, (v as f32, 0.0), hp, ul, netid)
     }
 }
 

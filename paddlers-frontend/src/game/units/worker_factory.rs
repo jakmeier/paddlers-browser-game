@@ -32,7 +32,7 @@ pub fn with_unit_base<B: Builder>(
         .with(Position::new(pos, size, Z_UNITS))
         .with(Moving::new(birth, pos, (0,0), speed))
         .with(Clickable)
-        .with(NetObj{ id: netid })
+        .with(NetObj::worker(netid))
         .with(AnimationState{ direction: Direction::Undirected })
 }
 
@@ -63,7 +63,7 @@ pub fn with_basic_worker<B: Builder>( builder: B, color: UnitColor ) -> B
         }
     )
 }
-pub fn with_worker<B: Builder, T: IntoIterator<Item: Into<WorkerTask>>>(builder: B, tasks: T, netid: i64) -> B {
+pub fn with_worker<B: Builder, T: IntoIterator<Item = WorkerTask>>(builder: B, tasks: T, netid: i64) -> B {
     let worker_tasks = tasks.into_iter()
         .map(|t| t.into())
         .collect::<std::collections::VecDeque<_>>();
@@ -91,8 +91,16 @@ impl VillageUnitsQueryVillageWorkers {
     fn create_entity(&self, world: &mut World, now: Timestamp, tile_area: Rectangle,) -> PadlResult<Entity> {
         let speed = unit_speed_to_worker_tiles_per_second(self.speed as f32) * tile_area.width();
         let netid = self.id.parse().unwrap();
-        let mut builder = with_unit_base(world.create_entity(), speed, tile_area, now, netid);
-        let tasks = &self.tasks;
+        
+        let net = world.read_storage::<NetObj>();
+        let ent = world.entities();
+        let tasks = self.tasks.iter()
+            .map(|t| t.create(&net, &ent))
+            .filter(|t| t.is_ok()) // Ignoring task that cannot be assigned to a unit 
+            .map(|t| t.unwrap());
+        
+        let lazy = world.read_resource::<LazyUpdate>();
+        let mut builder = with_unit_base(lazy.create_entity(&world.entities()), speed, tile_area, now, netid);
         builder = with_worker(builder, tasks, netid);
         match self.unit_type {
             village_units_query::UnitType::HERO => {

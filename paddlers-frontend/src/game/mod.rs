@@ -10,11 +10,10 @@ pub (crate) mod fight;
 pub (crate) mod components;
 pub (crate) mod forestry;
 pub (crate) mod abilities;
+pub (crate) mod net_receiver;
 
 use crate::prelude::*;
 use crate::game::{
-    units::worker_factory::create_worker_entities,
-    units::workers::Worker,
     components::*,
     };
 use crate::gui::{
@@ -42,7 +41,7 @@ use forestry::*;
 use std::sync::mpsc::{Receiver, channel};
 use town_resources::TownResources;
 use units::worker_system::WorkerSystem;
-use map::{VillageMetaInfo, GlobalMap, GlobalMapPrivateState};
+use map::{GlobalMap, GlobalMapPrivateState};
 
 
 pub(crate) struct Game<'a, 'b> {
@@ -170,90 +169,9 @@ impl State for Game<'static, 'static> {
             let mut res = self.world.write_resource::<TownResources>();
             *res = self.resources;
         }
-        {
-            use std::sync::mpsc::TryRecvError;
-            match self.net.as_ref().unwrap().try_recv() {
-                Ok(msg) => {
-                    // println!("Received Network data!");
-                    match msg {
-                        NetMsg::Error(msg) => {
-                            println!("Network Error: {}", msg);
-                        }
-                        NetMsg::Attacks(response) => {
-                            if let Some(data) = response.data {
-                                for atk in data.village.attacks {
-                                    atk.create_entities(&mut self.world, self.unit_len.unwrap());
-                                }
-                            }
-                            else {
-                                println!("No data returned");
-                            }
-                        }
-                        NetMsg::Buildings(response) => {
-                            if let Some(data) = response.data {
-                                data.create_entities(self);
-                            }
-                            else {
-                                println!("No buildings available");
-                            }
-                        }
-                        NetMsg::Map(response, min, max) => {
-                            if let Some(data) = response.data {
-                                let streams = data.map.streams.iter()
-                                    .map(
-                                        |s| {
-                                            s.control_points
-                                                .chunks(2)
-                                                .map(|slice| (slice[0] as f32, slice[1] as f32))
-                                                .collect()
-                                        }
-                                    )
-                                    .collect();
-                                let villages = data.map.villages.into_iter().map(VillageMetaInfo::from).collect();
-                                let (map, world) = (self.map.as_mut(), &mut self.world);
-                                map.map(|map| map.add_segment(world, streams, villages, min, max));
-                            }
-                            else {
-                                println!("No map data available");
-                            }
-                        },
-                        NetMsg::Resources(response) => {
-                            if let Some(data) = response.data {
-                                self.resources.update(data);
-                            }
-                            else {
-                                println!("No resources available");
-                            }
-                        }
-                        NetMsg::Workers(response) => {
-                            let now = self.world.read_resource::<Now>().0;
-                            let results = create_worker_entities(&response, &mut self.world, now);
-                            let mut q = self.world.write_resource::<ErrorQueue>();
-                            for res in results.into_iter() {
-                                if let Err(e) = res {
-                                    q.push(e);
-                                }
-                            }
-                        }
-                        NetMsg::UpdateWorkerTasks(unit) => {
-                            let e = self.entity_by_net_id(unit.id.parse().unwrap());
-                            if let Some(entity) = e {
-                                let workers = &mut self.world.write_storage::<Worker>();
-                                let worker = workers.get_mut(entity).unwrap();
-                                worker.tasks.clear();
-                                for task in unit.tasks {
-                                    worker.tasks.push_back((&task).into());
-                                }
-                            }
-                            else {
-                                println!("Network error: Unknown worker entity");
-                            }
-                        }
-                    }
-                },
-                Err(TryRecvError::Disconnected) => { println!("Network connection is dead.")},
-                Err(TryRecvError::Empty) => {},
-            }
+        if let Err(net_err) = self.update_net() {
+            let mut q = self.world.write_resource::<ErrorQueue>();
+            q.push(net_err);
         }
         {
             self.map_mut().update();
@@ -443,16 +361,11 @@ impl Game<'_,'_> {
         std::mem::drop(p);
         self.world.delete_entities(&dead).expect("Something bad happened when deleting dead entities");
     }
-    fn entity_by_net_id(&self, net_id: i64) -> Option<Entity> {
+    fn worker_entity_by_net_id(&self, net_id: i64) -> PadlResult<Entity> {
         // TODO: Efficient NetId lookup
         let net = self.world.read_storage::<NetObj>();
         let ent = self.world.entities();
-        for (e, n) in (&ent, &net).join() {
-            if n.id == net_id {
-                return Some(e);
-            }
-        }
-        None
+        NetObj::lookup_worker(net_id, &net, &ent)
     }
     fn check<R>(&self, res: PadlResult<R>) -> Option<R> {
         if let Err(e) = res {

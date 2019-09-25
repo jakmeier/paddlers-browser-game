@@ -123,4 +123,17 @@ impl DB {
             .get_result(self.dbconn())
             .expect("Inserting ability")
     }
+    pub fn insert_effect(&self, e: &NewEffect) -> Effect {
+        diesel::insert_into(effects::dsl::effects)
+            .values(e)
+            .get_result(self.dbconn())
+            .expect("Inserting effect")
+    }
+    pub fn update_ability_used_timestamp(&self, worker: WorkerKey, at: AbilityType) {
+        let target = abilities::table.find((at, worker.num()));
+        diesel::update(target)
+            .set(abilities::last_used.eq(diesel::dsl::now.at_time_zone("UTC").nullable()))
+            .execute(self.dbconn())
+            .expect("Updating ability timestamp");
+    }
 }

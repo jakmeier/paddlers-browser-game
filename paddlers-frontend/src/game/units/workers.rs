@@ -25,6 +25,7 @@ pub struct WorkerTask {
     pub task_type: TaskType, 
     pub position: TileIndex,
     pub start_time: Timestamp,
+    pub target: Option<Entity>,
 }
 
 impl Worker {
@@ -38,9 +39,9 @@ impl Worker {
         town: &Town,
         rest: &mut RestApiState,
         errq: &mut ErrorQueue,
-        containers: &WriteStorage<'a, EntityContainer>,
+        containers: &mut WriteStorage<'a, EntityContainer>,
     ) {
-        let msg = self.try_create_task_list(start, destination, job, &town, &containers);
+        let msg = self.try_create_task_list(start, destination, job, &town, containers);
         match msg {
             Ok(msg) => {
                 rest.http_overwrite_tasks(msg)
@@ -55,9 +56,9 @@ impl Worker {
     /// Create a list of tasks that walk a worker to s place and let's it perform a job there.
     /// The returned format can be understood by the backend interface.
     /// Returns an error if the job cannot be done by this worker at the desired position.
-    pub fn try_create_task_list<'a>(&mut self, from: TileIndex, destination: TileIndex, job: NewTaskDescriptor, town: &Town, containers: &WriteStorage<'a, EntityContainer>) -> PadlResult<TaskList> {
+    pub fn try_create_task_list<'a>(&mut self, from: TileIndex, destination: TileIndex, job: NewTaskDescriptor, town: &Town, containers: &mut WriteStorage<'a, EntityContainer>) -> PadlResult<TaskList> {
         town.check_task_constraints(job, destination, containers)?;
-        let tasks = town.build_task_chain(from, destination, job)?;
+        let tasks = town.build_task_chain(from, destination, &job)?;
         let msg = TaskList {
             worker_id: self.netid,
             tasks: tasks,

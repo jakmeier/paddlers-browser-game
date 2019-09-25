@@ -36,11 +36,49 @@ pub fn register_components(world: &mut World) {
     world.register::<UiMenu>();
 }
 
+/// Required to give NetObj values a context
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum NetObjType {
+    Hobo,
+    Worker,
+}
+
 #[derive(Component, Debug, Clone, Copy)]
 #[storage(VecStorage)]
+/// Identifies an entity across views (frontend/backend(s))
 pub struct NetObj {
-    pub id: i64, 
-    // Maybe one could add a type field to make it unique. But not sure right now if it is even necessary.
+    pub id: i64,
+    typ: NetObjType,
+}
+
+impl NetObj {
+    pub fn hobo(id: i64) -> Self {
+        NetObj {
+            id,
+            typ: NetObjType::Hobo,
+        }
+    }
+    pub fn worker(id: i64) -> Self {
+        NetObj {
+            id,
+            typ: NetObjType::Worker,
+        }
+    }
+    pub fn lookup_hobo(net_id: i64, net_ids: &ReadStorage<NetObj>, entities: &Entities) -> PadlResult<Entity> {
+        Self::lookup_entity(net_id, NetObjType::Hobo, net_ids, entities)
+    }
+    pub fn lookup_worker(net_id: i64, net_ids: &ReadStorage<NetObj>, entities: &Entities) -> PadlResult<Entity> {
+        Self::lookup_entity(net_id, NetObjType::Worker, net_ids, entities)
+    }
+    fn lookup_entity(net_id: i64, net_type: NetObjType, net_ids: &ReadStorage<NetObj>, entities: &Entities) -> PadlResult<Entity> {
+        // TODO: Efficient NetId lookup
+        for (e, n) in (entities, net_ids).join() {
+            if n.id == net_id && n.typ == net_type {
+                return Ok(e);
+            }
+        }
+        PadlErrorCode::UnknownNetObj(NetObj{ id: net_id, typ: net_type }).dev()
+    }
 }
 
 #[derive(Component, Debug, Clone)]

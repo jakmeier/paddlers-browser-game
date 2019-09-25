@@ -56,6 +56,7 @@ pub enum PadlErrorCode {
     ForestTooSmall(usize),
     NotEnoughSupply,
     PathBlocked,
+    NoNetwork,
     // Dev only
     DevMsg(&'static str),
     MapOverflow(TileIndex),
@@ -64,6 +65,7 @@ pub enum PadlErrorCode {
     RestAPI(String),
     EmptyGraphQLData(&'static str),
     InvalidGraphQLData(&'static str),
+    UnknownNetObj(crate::game::components::NetObj),
     StdWebGenericError(stdweb::web::error::Error),
     StdWebConversion(stdweb::private::ConversionError),
     StdWebSecurityError(stdweb::web::error::SecurityError),
@@ -87,6 +89,8 @@ impl fmt::Display for PadlErrorCode {
                 write!(f, "Requires more supplies."),
             PadlErrorCode::PathBlocked =>
                 write!(f, "The path is blocked."),
+            PadlErrorCode::NoNetwork =>
+                write!(f, "Connection to server dropped."),
             // Dev
             PadlErrorCode::DevMsg(msg) =>
                 write!(f, "Dev Error Msg: {}", msg),
@@ -102,6 +106,8 @@ impl fmt::Display for PadlErrorCode {
                 write!(f, "GraphQL query result has no data for: {}", data_set),
             PadlErrorCode::InvalidGraphQLData(reason) =>
                 write!(f, "GraphQL query result has invalid data: {}", reason),
+            PadlErrorCode::UnknownNetObj(key) =>
+                write!(f, "GraphQL query result has unknown key: {:?}", key),
             PadlErrorCode::StdWebGenericError(cause) =>
                 write!(f, "A web error ocurred: {}", cause),
             PadlErrorCode::StdWebConversion(cause) =>

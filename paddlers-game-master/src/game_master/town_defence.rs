@@ -19,16 +19,28 @@ impl DB {
 
     fn execute_fight(&self, defenders: &[Building], attackers: &[Hobo]) {
 
-        println!("Fight!");
+        // println!("Fight!");
         // println!("{:#?} against {:#?}", defenders, attackers);
-        let ap = aura_def_pts(defenders);
-        println!("Aura def = {}", ap);
+        let ap = aura_def_pts(defenders) as i64;
+        // println!("Aura def = {}", ap);
 
-        let defeated_units = attackers.iter().filter(|a| (a.hp as u32) <= ap );
+        let defeated_units = attackers.into_iter()
+            .map(|a| (a, a.hp - ap as i64))
+            .map(|(a, hp)| (a, hp - self.damage_from_effects(a)) )
+            .filter(|(_, hp)| *hp <= 0 )
+            .map(|(a, _)| a );
         self.collect_reward(defeated_units.clone());
         defeated_units.for_each(|u| self.delete_hobo(u));
 
         // TODO: Move survivors back
+    }
+
+    fn damage_from_effects(&self, hobo: &Hobo) -> i64 {
+        self.effects_on_hobo(hobo.key())
+            .iter()
+            .filter(|e| e.attribute == HoboAttributeType::Health )
+            .filter(|e| e.strength.is_some() )
+            .fold(0, |acc, e| acc + e.strength.unwrap() as i64)
     }
 }
 
@@ -38,7 +50,6 @@ fn aura_def_pts(def: &[Building]) -> u32 {
         if d.attacks_per_cycle.is_none() {
             if let (Some(_range), Some(ap)) = (d.building_range, d.attack_power) {
                 if tiles_in_range(d) > 0 {
-                    // TODO: AP should be integer
                     sum += ap as u32;
                 }
             }

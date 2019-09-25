@@ -42,10 +42,23 @@ table! {
         y -> Int4,
         building_type -> Building_type,
         building_range -> Nullable<Float4>,
-        attack_power -> Nullable<Float4>,
+        attack_power -> Nullable<Int4>,
         attacks_per_cycle -> Nullable<Int4>,
         creation -> Timestamp,
         village_id -> Int8,
+    }
+}
+
+table! {
+    use diesel::sql_types::*;
+    use crate::models::*;
+
+    effects (id) {
+        id -> Int8,
+        hobo_id -> Int8,
+        attribute -> Hobo_attribute_type,
+        strength -> Nullable<Int4>,
+        start_time -> Timestamp,
     }
 }
 
@@ -131,6 +144,7 @@ joinable!(abilities -> workers (worker_id));
 joinable!(attacks_to_hobos -> attacks (attack_id));
 joinable!(attacks_to_hobos -> hobos (hobo_id));
 joinable!(buildings -> villages (village_id));
+joinable!(effects -> hobos (hobo_id));
 joinable!(hobos -> villages (home));
 joinable!(resources -> villages (village_id));
 joinable!(tasks -> hobos (target_hobo_id));
@@ -143,6 +157,7 @@ allow_tables_to_appear_in_same_query!(
     attacks,
     attacks_to_hobos,
     buildings,
+    effects,
     hobos,
     resources,
     streams,

@@ -22,6 +22,7 @@ use super::schema::{
     streams,
     villages,
     abilities,
+    effects,
 };
 
 #[derive(Debug, PartialEq, Clone, Copy, Serialize, Deserialize)]
@@ -137,8 +138,8 @@ pub struct Building {
     pub x: i32,
     pub y: i32,
     pub building_type: BuildingType,
-    pub building_range: Option<f32>, 
-    pub attack_power: Option<f32>, 
+    pub building_range: Option<f32>,
+    pub attack_power: Option<i32>,
     pub attacks_per_cycle: Option<i32>,
     pub creation: NaiveDateTime,
     pub village_id: i64,
@@ -152,7 +153,7 @@ pub struct NewBuilding {
     pub y: i32,
     pub building_type: BuildingType,
     pub building_range: Option<f32>, 
-    pub attack_power: Option<f32>, 
+    pub attack_power: Option<i32>, 
     pub attacks_per_cycle: Option<i32>,
     pub creation: NaiveDateTime,
     pub village_id: i64,
@@ -250,8 +251,9 @@ pub struct NewVillage {
     pub stream_id: i64,
 }
 
-#[derive(Debug, Clone, Copy, Queryable)]
+#[derive(Debug, Clone, Copy, Queryable, AsChangeset)]
 #[cfg(feature = "sql_db")]
+#[table_name = "abilities"]
 pub struct Ability {
     pub ability_type: AbilityType,
     pub worker_id: i64,
@@ -275,4 +277,34 @@ pub struct NewAbility {
 pub enum AbilityType {
     Work,
     Welcome,
+}
+
+#[derive(Debug, Clone, Copy, Queryable)]
+#[cfg(feature = "sql_db")]
+pub struct Effect {
+    pub id: i64,
+    pub hobo_id: i64,
+    pub attribute: HoboAttributeType,
+    pub strength: Option<i32>,
+    pub start_time: NaiveDateTime,
+}
+
+#[derive(Insertable, Debug)]
+#[cfg(feature = "sql_db")]
+#[table_name = "effects"]
+pub struct NewEffect {
+    pub hobo_id: i64,
+    pub attribute: HoboAttributeType,
+    pub strength: Option<i32>,
+    pub start_time: Option<NaiveDateTime>,
+}
+
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Serialize, Deserialize)]
+#[cfg_attr(feature = "enum_utils", derive(EnumIter, Display))]
+#[cfg_attr(feature = "graphql", derive(juniper::GraphQLEnum))]
+#[cfg_attr(feature = "sql_db", DieselType = "Hobo_attribute_type", derive(DbEnum))]
+/// Describes an attribute of a hobo
+pub enum HoboAttributeType {
+    Health,
+    Speed,
 }

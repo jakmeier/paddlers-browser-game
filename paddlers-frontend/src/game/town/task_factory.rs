@@ -9,10 +9,10 @@ use crate::game::components::EntityContainer;
 pub type NewTaskDescriptor = (TaskType, Option<PadlId>);
 
 impl Town {
-    pub fn build_task_chain(&self, from: TileIndex, destination: TileIndex, job: NewTaskDescriptor) -> PadlResult<Vec<RawTask>>{
+    pub fn build_task_chain(&self, from: TileIndex, destination: TileIndex, job: &NewTaskDescriptor) -> PadlResult<Vec<RawTask>>{
         if let Some((path, _dist)) = self.shortest_path(from, destination) {
             let mut tasks = raw_walk_tasks(&path, from);
-            tasks.push( RawTask::new_with_target(job, destination) );
+            tasks.extend(raw_job_execution_tasks(job, destination));
             Ok(tasks)
         } else {
             PadlErrorCode::PathBlocked.usr()
@@ -83,6 +83,31 @@ fn raw_walk_tasks(path: &[TileIndex], from: TileIndex) -> Vec<RawTask> {
         current_direction = next_direction;
     }
     tasks.push( RawTask::new(TaskType::Walk, current) );
+    tasks
+}
+
+fn raw_job_execution_tasks(job: &NewTaskDescriptor, place: TileIndex) -> Vec<RawTask> {
+
+    let actual_task = RawTask::new_with_target(*job, place);
+    
+    let mut tasks = vec![actual_task];
+
+    // tasks required afterwards
+    match job.0 {
+        TaskType::ChopTree
+      | TaskType::GatherSticks
+      | TaskType::Idle
+      | TaskType::Walk => {
+            // NOP
+        },
+        TaskType::WelcomeAbility => {
+            tasks.push(RawTask::new(TaskType::Idle, place));
+        },
+        TaskType::Defend  => {
+            panic!("Not implemented");
+        },
+    }
+
     tasks
 }
 

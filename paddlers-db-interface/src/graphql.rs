@@ -110,6 +110,9 @@ impl GqlHobo {
     pub fn speed(&self) -> f64 {
         self.0.speed as f64
     }
+    pub fn effects(&self, ctx: &Context) -> Vec<GqlEffect> {
+        ctx.db.effects_on_hobo(HoboKey(self.0.id)).into_iter().map(|e| GqlEffect(e)).collect()
+    }
 }
 
 pub struct GqlAttack(paddlers_shared_lib::models::Attack);
@@ -237,6 +240,9 @@ impl GqlTask {
     fn start_time(&self) -> FieldResult<GqlTimestamp> {
         datetime(&self.0.start_time)
     }
+    fn hobo_target(&self) -> Option<i32> {
+        self.0.target_hobo_id.map(|id| id as i32)
+    }
 }
 
 pub struct GqlMapSlice {
@@ -280,5 +286,28 @@ impl GqlAbility {
     }
     fn last_used(&self) -> Option<GqlTimestamp> {
         self.0.last_used.as_ref().map(GqlTimestamp::from_chrono)
+    }
+}
+
+pub struct GqlEffect(paddlers_shared_lib::models::Effect);
+impl From<paddlers_shared_lib::models::Effect> for GqlEffect {
+    fn from(inner: paddlers_shared_lib::models::Effect) -> Self {
+        GqlEffect(inner)
+    }
+}
+
+#[juniper::object (Context = Context)]
+impl GqlEffect {
+    pub fn id(&self) -> juniper::ID {
+        self.0.id.to_string().into()
+    }
+    fn attribute(&self) -> &paddlers_shared_lib::models::HoboAttributeType {
+        &self.0.attribute
+    }
+    fn start_time(&self) -> GqlTimestamp {
+        GqlTimestamp::from_chrono(&self.0.start_time)
+    }
+    fn strength(&self) -> Option<i32> {
+        self.0.strength
     }
 }

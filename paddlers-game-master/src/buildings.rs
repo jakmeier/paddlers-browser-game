@@ -13,7 +13,7 @@ impl BuildingFactory {
             y: pos.1 as i32,
             building_type: typ.into(),
             building_range: typ.range(), 
-            attack_power: typ.attack_power().map(|i| i as f32), 
+            attack_power: typ.attack_power().map(|i| i as i32), 
             attacks_per_cycle: typ.attacks_per_cycle().map(|i| i as i32),
             creation: now,
             village_id: paddlers_shared_lib::prelude::TEST_VILLAGE_ID.num(),

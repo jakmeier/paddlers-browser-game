@@ -112,15 +112,24 @@ impl Town {
                 },
                 Grabbable::Ability(a) => {
                     let a = *a;
-                    (*ui_state).grabbed_item = None;
-                    let job = match a {
-                        AbilityType::Welcome => TaskType::WelcomeAbility,
-                        AbilityType::Work => TaskType::Walk, // TODO: find right job
-                    };
                     let target = maybe_top_hit
                         .and_then(|e| net_ids.get(e))
                         .map(|n| n.id);
-                    return Some((job, target))
+                    (*ui_state).grabbed_item = None;
+                    match a {
+                        AbilityType::Welcome => {
+                            if target.is_some() {
+                                return Some((TaskType::WelcomeAbility, target));
+                            }
+                            else {
+                                return None;
+                            }
+                        }
+                        AbilityType::Work => {
+                            let job = TaskType::Walk; // TODO: find right job
+                            return Some((job, None));
+                        }
+                    }
                 },
             }
         }
