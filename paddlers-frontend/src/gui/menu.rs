@@ -10,6 +10,7 @@ use crate::game::{
     forestry::ForestComponent,
     town::town_shop::DefaultShop,
     map::VillageMetaInfo,
+    status_effects::StatusEffects
 };
 use crate::gui::{
     sprites::{SpriteIndex, SingleSprite},
@@ -163,6 +164,15 @@ impl Game<'_, '_> {
             table.push(
                 TableRow::InteractiveArea(&mut ui.ui)
             );
+        }
+
+        let effects = self.world.read_storage::<StatusEffects>();
+        if let Some(ef) = effects.get(e) {
+            let list = ef.menu_table_infos();
+            if list.len() > 0 {
+                TableRow::Text("Status effects".to_owned());
+                table.extend(list);
+            }
         }
 
         draw_table(window, self.sprites.as_mut().unwrap(), &mut table, &area, &mut self.font, 40.0, Z_MENU_TEXT)?;

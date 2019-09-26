@@ -5,11 +5,13 @@ use crate::game::{
     units::workers::*,
     town::Town,
     components::*,
+    abilities::use_welcome_ability,
 };
 use crate::gui::animation::*;
 use crate::gui::utils::*;
 use crate::gui::render::Renderable;
 use crate::prelude::*;
+use crate::logging::ErrorQueue;
 use quicksilver::geom::about_equal;
 
 pub struct WorkerSystem;
@@ -20,15 +22,32 @@ impl<'a> System<'a> for WorkerSystem {
         Read<'a, LazyUpdate>,
         WriteStorage<'a, Worker>,
         WriteStorage<'a, Moving>,
+        WriteStorage<'a, Health>,
+        WriteStorage<'a, StatusEffects>,
         WriteStorage<'a, AnimationState>,
         WriteStorage<'a, EntityContainer>,
         WriteStorage<'a, UiMenu>,
         ReadStorage<'a, Renderable>,
         Write<'a, Town>,
+        Write<'a, ErrorQueue>,
         Read<'a, Now>,
      );
 
-    fn run(&mut self, (entities, lazy, mut workers, mut velocities, mut animations, mut container, mut ui_menus, rend, mut town, now): Self::SystemData) {
+    fn run(&mut self, (
+        entities,
+        lazy,
+        mut workers,
+        mut velocities,
+        mut health,
+        mut status_effects,
+        mut animations,
+        mut container,
+        mut ui_menus,
+        rend,
+        mut town,
+        mut errq,
+        now
+    ): Self::SystemData) {
         for (e, worker, mut mov, mut anim) in (&entities, &mut workers, &mut velocities, &mut animations).join() {
             if let Some(task) = worker.poll(now.0) {
                 match task.task_type {
@@ -59,7 +78,11 @@ impl<'a> System<'a> for WorkerSystem {
                         move_worker_into_building(&mut container, &mut ui_menus, &mut town, &lazy, &rend, e, task.position);
                     },
                     TaskType::WelcomeAbility => {
-                        // TODO
+                        use_welcome_ability(
+                            task.target.expect("Welcoming required target"),
+                            &mut health,
+                            &mut status_effects,
+                        ).unwrap_or_else(|e| errq.push(e));
                     }
                     _ => {debug_assert!(false, "Unexpected task")},
                 }

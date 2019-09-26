@@ -62,6 +62,7 @@ pub enum PadlErrorCode {
     MapOverflow(TileIndex),
     NoStateForTile(TileIndex),
     UnexpectedTileType(&'static str, TileType),
+    MissingComponent(&'static str),
     RestAPI(String),
     EmptyGraphQLData(&'static str),
     InvalidGraphQLData(&'static str),
@@ -100,6 +101,8 @@ impl fmt::Display for PadlErrorCode {
                 write!(f, "No state found for tile: {:?}", i),
             PadlErrorCode::UnexpectedTileType(expected, was) =>
                 write!(f, "Unexpected tile type: Expected {} but was {:?}", expected, was),
+            PadlErrorCode::MissingComponent(component) =>
+                write!(f, "Entity does not have required component: {}", component),
             PadlErrorCode::RestAPI(msg) =>
                 write!(f, "A REST API error occurred: {}", msg),
             PadlErrorCode::EmptyGraphQLData(data_set) =>

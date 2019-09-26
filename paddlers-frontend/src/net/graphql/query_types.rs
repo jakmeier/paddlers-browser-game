@@ -56,6 +56,7 @@ pub type ResourcesResponse = Response<resources_query::ResponseData>;
 pub struct VillageUnitsQuery;
 pub type VillageUnitsResponse = Response<village_units_query::ResponseData>;
 pub type WorkerResponse = Vec<village_units_query::VillageUnitsQueryVillageWorkers>;
+#[allow(dead_code)]
 pub type VillageUnitsTask = village_units_query::VillageUnitsQueryVillageWorkersTasks;
 pub type VillageUnitsTaskType = village_units_query::TaskType;
 pub type VillageUnitsAbilityType = village_units_query::AbilityType;
@@ -96,6 +97,7 @@ impl Into<AbilityType> for &VillageUnitsAbilityType {
 pub struct WorkerTasksQuery;
 pub type WorkerTasksRawResponse = Response<worker_tasks_query::ResponseData>;
 pub type WorkerTasksResponse = worker_tasks_query::WorkerTasksQueryWorker;
+#[allow(dead_code)]
 pub type WorkerTaskEx = worker_tasks_query::WorkerTasksQueryWorkerTasks;
 pub type WorkerTaskType = worker_tasks_query::TaskType;
 

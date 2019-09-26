@@ -12,6 +12,7 @@ use crate::game::{
     movement::{Position, Moving},
     fight::Health,
     components::NetObj,
+    status_effects::StatusEffects,
 };
 use paddlers_shared_lib::graphql_types::*;
 use paddlers_shared_lib::game_mechanics::town::*;
@@ -32,6 +33,7 @@ pub fn insert_duck(world: &mut World, pos: impl Into<Vector>, birth_time: Timest
             }
         )
         .with(Clickable)
+        .with(StatusEffects::new())
         .with(NetObj::hobo(netid))
         .with(Health::new_full_health(hp))
         .build()

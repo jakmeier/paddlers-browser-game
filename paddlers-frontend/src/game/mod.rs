@@ -11,6 +11,7 @@ pub (crate) mod components;
 pub (crate) mod forestry;
 pub (crate) mod abilities;
 pub (crate) mod net_receiver;
+pub (crate) mod status_effects;
 
 use crate::prelude::*;
 use crate::game::{

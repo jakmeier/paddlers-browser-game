@@ -7,6 +7,11 @@ query AttacksQuery($min_attack_id: Int) {
         color
         hp
         speed
+        effects {
+          attribute
+          startTime
+          strength
+        }
       }
       departure
       arrival
