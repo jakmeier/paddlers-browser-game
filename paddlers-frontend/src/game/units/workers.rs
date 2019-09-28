@@ -32,7 +32,8 @@ impl Worker {
     /// Worker is ordered by the player to perform a job at a position
     /// How to get there and if this is possible has yet to be checked.
     pub fn new_order<'a>(
-        &mut self, 
+        &mut self,
+        entity: Entity,
         start: TileIndex,
         job: NewTaskDescriptor,
         destination: TileIndex,
@@ -40,8 +41,9 @@ impl Worker {
         rest: &mut RestApiState,
         errq: &mut ErrorQueue,
         containers: &mut WriteStorage<'a, EntityContainer>,
+        mana: &ReadStorage<'a, Mana>,
     ) {
-        let msg = self.try_create_task_list(start, destination, job, &town, containers);
+        let msg = self.try_create_task_list(entity, start, destination, job, &town, containers, mana);
         match msg {
             Ok(msg) => {
                 rest.http_overwrite_tasks(msg)
@@ -53,11 +55,21 @@ impl Worker {
         }
     }
 
-    /// Create a list of tasks that walk a worker to s place and let's it perform a job there.
+    /// Create a list of tasks that walk a worker to a place and let's it perform a job there.
     /// The returned format can be understood by the backend interface.
     /// Returns an error if the job cannot be done by this worker at the desired position.
-    pub fn try_create_task_list<'a>(&mut self, from: TileIndex, destination: TileIndex, job: NewTaskDescriptor, town: &Town, containers: &mut WriteStorage<'a, EntityContainer>) -> PadlResult<TaskList> {
-        town.check_task_constraints(job, destination, containers)?;
+    pub fn try_create_task_list<'a>(
+        &mut self,
+        entity: Entity,
+        from: TileIndex,
+        destination: TileIndex,
+        job: NewTaskDescriptor,
+        town: &Town,
+        containers: &mut WriteStorage<'a, EntityContainer>,
+        mana: &ReadStorage<'a, Mana>,
+) -> PadlResult<TaskList> {
+        let mana = mana.get(entity);
+        town.check_task_constraints(job, destination, containers, mana)?;
         let tasks = town.build_task_chain(from, destination, &job)?;
         let msg = TaskList {
             worker_id: self.netid,

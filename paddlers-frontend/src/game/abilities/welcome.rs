@@ -9,18 +9,27 @@ use crate::game::components::*;
 use paddlers_shared_lib::models::AbilityType;
 
 pub fn use_welcome_ability<'a>(
+    user: Entity,
     target: Entity,
     health: &mut WriteStorage<'a, Health>,
     status_effects: &mut WriteStorage<StatusEffects>,
+    mana: &mut WriteStorage<Mana>,
 ) -> PadlResult<()>
 {
     let h = health.get_mut(target)
-        .ok_or(PadlError::dev_err(PadlErrorCode::MissingComponent("Health for entity")))?;
+        .ok_or(PadlError::dev_err(PadlErrorCode::MissingComponent("Health for hobo")))?;
     let se = status_effects.get_mut(target)
-        .ok_or(PadlError::dev_err(PadlErrorCode::MissingComponent("Status effects for entity")))?;
+        .ok_or(PadlError::dev_err(PadlErrorCode::MissingComponent("Status effects for hobo")))?;
+    let m = mana.get_mut(user)
+        .ok_or(PadlError::dev_err(PadlErrorCode::MissingComponent("Mana for worker")))?;
 
-    let strength = AbilityType::Welcome.apply().1;
+    let a = AbilityType::Welcome;
+    let strength = a.apply().1;
+    let mana_cost = a.mana_cost();
+
     h.make_happy(strength as i64);
     se.add_health_reduction(strength);
+    m.mana -= mana_cost;
+
     Ok(())
 }

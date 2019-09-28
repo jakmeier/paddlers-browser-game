@@ -134,11 +134,11 @@ pub (crate) fn finish_task(
         let mut worker = db.worker(task.worker_id).ok_or("Task references non-existing worker")?;
         if let Some(town) = town {
             crate::worker_actions::simulate_finish_task(&task, town, &mut worker)?;
-            apply_task_to_db(db, &task, &worker)?;
+            apply_task_to_db(db, &task, &mut worker)?;
         } else {
             let mut town = TownView::load_village(db, worker.home);
             crate::worker_actions::simulate_finish_task(&task, &mut town, &mut worker)?;
-            apply_task_to_db(db, &task, &worker)?;
+            apply_task_to_db(db, &task, &mut worker)?;
         }
         
         db.update_worker(&worker);
@@ -154,7 +154,7 @@ pub (crate) fn finish_task(
 fn apply_task_to_db(
     db: &DB,
     task: &Task,
-    worker: &Worker,
+    worker: &mut Worker,
 ) -> Result<(), String> {
     match task.task_type {
         TaskType::WelcomeAbility => {
@@ -168,6 +168,7 @@ fn apply_task_to_db(
             };
             db.insert_effect(&ne);
             db.update_ability_used_timestamp(WorkerKey(worker.id), a);
+            *worker.mana.as_mut().unwrap() -= AbilityType::Welcome.mana_cost();
         },
         _ => { /* NOP */ },
     }
@@ -214,8 +215,18 @@ fn simulate_begin_task<T: WorkerAction> (
                 worker_into_building(town, worker, (task.x() as usize, task.y() as usize))
             },
         TaskType::WelcomeAbility => {
-            // TODO: Mana checks
-            Ok(())
+            if let Some(mana) = &mut worker.mana {
+                let cost  = AbilityType::Welcome.mana_cost();
+                if *mana >= cost {
+                    *mana = *mana - cost;
+                    Ok(())
+                }
+                else {
+                    Err("Not enough mana".to_owned())
+                }
+            } else {
+                Err("Worker has no mana but tries to use welcome ability".to_owned())
+            }
         },
         _ => Err("Task not implemented".to_owned())
     }

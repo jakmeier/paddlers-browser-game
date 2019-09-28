@@ -21,4 +21,11 @@ impl AbilityType {
         };
         Duration::milliseconds(ms)
     }
+
+    pub fn mana_cost(&self) -> i32 {
+        match self {
+            AbilityType::Welcome => 5,
+            AbilityType::Work => 0,
+        }
+    }
 }

@@ -27,6 +27,7 @@ impl<'a> System<'a> for WorkerSystem {
         WriteStorage<'a, AnimationState>,
         WriteStorage<'a, EntityContainer>,
         WriteStorage<'a, UiMenu>,
+        WriteStorage<'a, Mana>,
         ReadStorage<'a, Renderable>,
         Write<'a, Town>,
         Write<'a, ErrorQueue>,
@@ -43,6 +44,7 @@ impl<'a> System<'a> for WorkerSystem {
         mut animations,
         mut container,
         mut ui_menus,
+        mut mana,
         rend,
         mut town,
         mut errq,
@@ -79,9 +81,11 @@ impl<'a> System<'a> for WorkerSystem {
                     },
                     TaskType::WelcomeAbility => {
                         use_welcome_ability(
+                            e,
                             task.target.expect("Welcoming required target"),
                             &mut health,
                             &mut status_effects,
+                            &mut mana,
                         ).unwrap_or_else(|e| errq.push(e));
                     }
                     _ => {debug_assert!(false, "Unexpected task")},

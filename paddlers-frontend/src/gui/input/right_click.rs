@@ -25,10 +25,11 @@ impl<'a> System<'a> for RightClickSystem {
         ReadStorage<'a, Moving>,
         ReadStorage<'a, Clickable>,
         ReadStorage<'a, NetObj>,
+        ReadStorage<'a, Mana>,
         WriteStorage<'a, EntityContainer>,
      );
 
-    fn run(&mut self, (mouse_state, mut ui_state, town, mut rest, mut errq, entities, mut worker, position, moving, clickable, net_ids, mut containers): Self::SystemData) {
+    fn run(&mut self, (mouse_state, mut ui_state, town, mut rest, mut errq, entities, mut worker, position, moving, clickable, net_ids, mana, mut containers): Self::SystemData) {
 
         let MouseState(mouse_pos, button) = *mouse_state;
         if button != Some(MouseButton::Right) {
@@ -61,7 +62,7 @@ impl<'a> System<'a> for RightClickSystem {
                             let (from, movement) = (&position, &moving).join().get(e, &entities).unwrap();
                             let start = town.next_tile_in_direction(from.area.pos, movement.momentum);
                             let new_job = (job, target);
-                            worker.new_order(start, new_job, destination, &*town, &mut *rest, &mut *errq, &mut containers);
+                            worker.new_order(e, start, new_job, destination, &*town, &mut *rest, &mut *errq, &mut containers, &mana);
                         }
                     }
                 }

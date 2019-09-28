@@ -34,6 +34,7 @@ impl<'a> System<'a> for LeftClickSystem {
         ReadStorage<'a, Clickable>,
         ReadStorage<'a, Moving>,
         ReadStorage<'a, NetObj>,
+        ReadStorage<'a, Mana>,
         WriteStorage<'a, EntityContainer>,
         WriteStorage<'a, UiMenu>,
         WriteStorage<'a, Worker>,
@@ -58,6 +59,7 @@ impl<'a> System<'a> for LeftClickSystem {
             clickable,
             moving,
             net_ids,
+            mana,
             mut containers,
             mut ui_menus,
             mut workers,
@@ -109,6 +111,7 @@ impl<'a> System<'a> for LeftClickSystem {
                         return;
                     }
                     worker.new_order(
+                        active_entity,
                         start,
                         job,
                         destination.unwrap(),
@@ -116,6 +119,7 @@ impl<'a> System<'a> for LeftClickSystem {
                         &mut *rest,
                         &mut *errq,
                         &mut containers,
+                        &mana,
                     );
                 }
             }

@@ -55,6 +55,7 @@ pub enum PadlErrorCode {
     BuildingFull(Option<BuildingType>),
     ForestTooSmall(usize),
     NotEnoughSupply,
+    NotEnoughMana,
     PathBlocked,
     NoNetwork,
     // Dev only
@@ -88,6 +89,8 @@ impl fmt::Display for PadlErrorCode {
                 write!(f, "Missing {} forest flora size.", amount),
             PadlErrorCode::NotEnoughSupply =>
                 write!(f, "Requires more supplies."),
+            PadlErrorCode::NotEnoughMana =>
+                write!(f, "Not enough mana."),
             PadlErrorCode::PathBlocked =>
                 write!(f, "The path is blocked."),
             PadlErrorCode::NoNetwork =>

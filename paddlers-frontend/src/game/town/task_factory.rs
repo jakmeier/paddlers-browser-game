@@ -3,7 +3,7 @@ use paddlers_shared_lib::prelude::*;
 use paddlers_shared_lib::api::tasks::*;
 use crate::prelude::*;
 use super::*;
-use crate::game::components::EntityContainer;
+use crate::game::components::{EntityContainer, Mana};
 
 /// Used to describe a new worker-task that has not been processed or checked yet
 pub type NewTaskDescriptor = (TaskType, Option<PadlId>);
@@ -18,12 +18,19 @@ impl Town {
             PadlErrorCode::PathBlocked.usr()
         }
     }
-    pub fn check_task_constraints<'a>(&self, job: NewTaskDescriptor, destination: TileIndex, containers: &WriteStorage<'a, EntityContainer>) -> PadlResult<()> {
-        if let Some(tile_state) = self.tile_state(destination) {
-            match job.0 {
-                TaskType::GatherSticks
-                | TaskType::ChopTree
-                    => {
+    pub fn check_task_constraints<'a>(
+        &self,
+        job: NewTaskDescriptor,
+        destination: TileIndex,
+        containers: &WriteStorage<'a, EntityContainer>,
+        mana: Option<&Mana>,
+    )-> PadlResult<()>
+    {
+        match job.0 {
+            TaskType::GatherSticks
+            | TaskType::ChopTree
+                => {
+                if let Some(tile_state) = self.tile_state(destination) {
                     if let Some(container) = containers.get(tile_state.entity) {
                         if !container.can_add_entity() {
                             return PadlErrorCode::BuildingFull(Some(self.building_type(destination)?)).usr();
@@ -33,12 +40,16 @@ impl Town {
                         return PadlErrorCode::DevMsg("Cannot gather resources here.").usr();
                     }
                 }
-                TaskType::Idle | TaskType::Walk => {},
-                TaskType::WelcomeAbility => {},
-                TaskType::Defend  => { panic!("NIY") },
             }
-
+            TaskType::Idle | TaskType::Walk => {},
+            TaskType::WelcomeAbility => {
+                if mana.map(|o| o.mana).unwrap_or(0) < AbilityType::Welcome.mana_cost() {
+                    return PadlErrorCode::NotEnoughMana.usr();
+                }
+            },
+            TaskType::Defend  => { panic!("NIY") },
         }
+
         // Check global supply constraints
         let forest_requirement = job.0.required_forest_size();
         if self.forest_size_free() < forest_requirement {
