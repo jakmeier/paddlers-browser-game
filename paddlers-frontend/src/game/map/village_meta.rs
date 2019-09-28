@@ -1,7 +1,8 @@
+use specs::storage::BTreeStorage;
 use specs::prelude::*;
 
 #[derive(Component, Debug, Clone)]
-#[storage(VecStorage)]
+#[storage(BTreeStorage)]
 pub struct VillageMetaInfo {
     pub coordinates: (i32,i32),
 }

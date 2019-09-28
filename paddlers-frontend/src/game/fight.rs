@@ -1,4 +1,5 @@
 // use quicksilver::prelude::*;
+use specs::storage::BTreeStorage;
 use specs::prelude::*;
 use specs::world::Index;
 use crate::game::{
@@ -8,7 +9,7 @@ use crate::game::{
 };
 
 #[derive(Component, Debug)]
-#[storage(VecStorage)]
+#[storage(HashMapStorage)]
 /// Range to be displayed when hovering
 pub struct Range {
     pub range: f32,
@@ -22,7 +23,7 @@ impl Range {
 }
 
 #[derive(Component, Debug)]
-#[storage(VecStorage)]
+#[storage(HashMapStorage)]
 pub struct Aura {
     pub affected_tiles: Vec<(usize, usize)>,
     pub effect: i64,
@@ -41,7 +42,7 @@ impl Aura {
 }
 
 #[derive(Component, Debug)]
-#[storage(VecStorage)]
+#[storage(BTreeStorage)]
 pub struct Health {
     pub max_hp: i64,
     pub hp: i64,

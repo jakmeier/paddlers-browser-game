@@ -1,3 +1,4 @@
+use specs::storage::BTreeStorage;
 use specs::prelude::*;
 pub use crate::gui::{
     utils::*,
@@ -13,7 +14,7 @@ pub use super::forestry::ForestComponent;
 pub use super::map::{VillageMetaInfo, MapPosition};
 
 #[derive(Component, Debug, Clone)]
-#[storage(VecStorage)]
+#[storage(BTreeStorage)]
 pub struct StatusEffects {
     health: Option<StatusEffect>,
 }

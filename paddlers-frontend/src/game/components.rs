@@ -20,22 +20,22 @@ pub use super::mana::Mana;
 
 
 pub fn register_components(world: &mut World) {
-    world.register::<Position>();
-    world.register::<MapPosition>();
-    world.register::<Moving>();
-    world.register::<Renderable>();
-    world.register::<Clickable>();
-    world.register::<Worker>();
-    world.register::<Range>();
-    world.register::<Health>();
-    world.register::<NetObj>();
     world.register::<AnimationState>();
+    world.register::<Clickable>();
     world.register::<EntityContainer>();
     world.register::<ForestComponent>();
-    world.register::<VillageMetaInfo>();
-    world.register::<UiMenu>();
-    world.register::<StatusEffects>();
+    world.register::<Health>();
     world.register::<Mana>();
+    world.register::<MapPosition>();
+    world.register::<Moving>();
+    world.register::<NetObj>();
+    world.register::<Position>();
+    world.register::<Range>();
+    world.register::<Renderable>();
+    world.register::<StatusEffects>();
+    world.register::<UiMenu>();
+    world.register::<VillageMetaInfo>();
+    world.register::<Worker>();
 }
 
 /// Required to give NetObj values a context
@@ -84,14 +84,14 @@ impl NetObj {
 }
 
 #[derive(Component, Debug, Clone)]
-#[storage(VecStorage)]
+#[storage(HashMapStorage)]
 /// Clickable menu that pop up when entity is selected
 pub struct UiMenu {
     pub ui: UiBox,
 }
 
 #[derive(Component, Debug, Clone)]
-#[storage(VecStorage)]
+#[storage(HashMapStorage)]
 /// Entity that can contain other entities (E.g. House has units inside)
 pub struct EntityContainer {
     pub children: Vec<Entity>,

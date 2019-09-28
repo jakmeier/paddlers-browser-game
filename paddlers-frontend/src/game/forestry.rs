@@ -7,7 +7,7 @@ use crate::game::town::Town;
 use paddlers_shared_lib::game_mechanics::forestry::tree_size;
 
 #[derive(Component, Debug, Clone)]
-#[storage(VecStorage)]
+#[storage(HashMapStorage)]
 pub struct ForestComponent {
     pub planted: Timestamp,
     pub score: usize,

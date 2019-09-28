@@ -1,6 +1,7 @@
 use crate::Timestamp;
 use crate::game::Now;
 use quicksilver::geom::{Vector, Rectangle};
+use specs::storage::BTreeStorage;
 use specs::prelude::*;
 
 #[derive(Component, Debug)]
@@ -12,7 +13,7 @@ pub struct Position {
 }
 
 #[derive(Component, Debug)]
-#[storage(VecStorage)]
+#[storage(BTreeStorage)]
 pub struct Moving {
     pub start_ts: Timestamp,
     pub start_pos: Vector,

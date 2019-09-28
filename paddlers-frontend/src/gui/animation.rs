@@ -1,9 +1,10 @@
+use specs::storage::BTreeStorage;
 use specs::prelude::*;
 use quicksilver::geom::*;
 use crate::gui::utils::*;
 
 #[derive(Component, Debug, Clone)]
-#[storage(VecStorage)]
+#[storage(BTreeStorage)]
 pub struct AnimationState {
     pub direction: Direction,
 }

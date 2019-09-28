@@ -6,7 +6,7 @@ pub use crate::gui::{
 };
 
 #[derive(Component, Debug, Clone, Copy)]
-#[storage(VecStorage)]
+#[storage(HashMapStorage)]
 pub struct Mana {
     pub mana: i32,
 }

@@ -14,7 +14,7 @@ use crate::logging::ErrorQueue;
 use paddlers_shared_lib::api::tasks::*;
 
 #[derive(Default, Component, Debug)]
-#[storage(VecStorage)]
+#[storage(HashMapStorage)]
 pub struct Worker {
     pub tasks: VecDeque<WorkerTask>,
     pub netid: i64,

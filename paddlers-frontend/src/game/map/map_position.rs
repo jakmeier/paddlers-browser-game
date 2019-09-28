@@ -1,9 +1,10 @@
+use specs::storage::BTreeStorage;
 use specs::prelude::*;
 use quicksilver::prelude::*;
 use crate::gui::input::Clickable;
 
 #[derive(Component, Debug)]
-#[storage(VecStorage)]
+#[storage(BTreeStorage)]
 /// A position on the map view
 /// Coordinates are in map view (unscaled) but zerp-indexed
 pub struct MapPosition {
