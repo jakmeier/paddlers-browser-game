@@ -64,9 +64,7 @@ impl<'a> System<'a> for WorkerSystem {
                         mov.start_ts = task.start_time;
                         mov.start_pos = position_now;
                         mov.momentum = dir.normalize() * mov.max_speed;
-                        if let Some(dir) = Direction::from_vector(&mov.momentum) {
-                            anim.direction = dir;
-                        }
+                        anim.direction = Direction::from_vector(&mov.momentum);
                     },
                     TaskType::Idle => {
                         mov.stand_still(task.start_time);
@@ -80,6 +78,8 @@ impl<'a> System<'a> for WorkerSystem {
                         move_worker_into_building(&mut container, &mut ui_menus, &mut town, &lazy, &rend, e, task.position);
                     },
                     TaskType::WelcomeAbility => {
+                        mov.stand_still(task.start_time);
+                        anim.direction = Direction::Undirected;
                         use_welcome_ability(
                             e,
                             task.target.expect("Welcoming required target"),

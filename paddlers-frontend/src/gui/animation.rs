@@ -10,21 +10,16 @@ pub struct AnimationState {
 }
 
 impl Direction {
-    pub fn from_vector(vec: &Vector) -> Option<Self> {
-        if vec.x != 0.0 && vec.y == 0.0 {
-            Some(
-                if vec.x < 0.0 { Direction::West }
-                else { Direction::East }
-            )
-        } else if vec.x == 0.0 && vec.y != 0.0 {
-            Some(
-                if vec.y < 0.0 { Direction::North }
-                else { Direction::South }
-            )
-        } else if vec.x == 0.0 && vec.y == 0.0 {
-            Some( Direction::Undirected )
+    pub fn from_vector(vec: &Vector) -> Self {
+        if about_equal(vec.x, vec.y) {
+            return Direction::Undirected;
+        }
+        if vec.x.abs() > vec.y.abs() {
+            if vec.x < 0.0 { Direction::West }
+            else { Direction::East }
         } else {
-            None
+            if vec.y < 0.0 { Direction::North }
+            else { Direction::South }
         }
     }
     #[allow(dead_code)]
