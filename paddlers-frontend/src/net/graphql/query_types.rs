@@ -19,7 +19,8 @@ fn timestamp(s: &String) -> graphql_types::GqlTimestamp {
 )]
 pub struct AttacksQuery;
 pub type AttacksResponse = Response<attacks_query::ResponseData>;
-
+pub type HoboEffect = attacks_query::AttacksQueryVillageAttacksUnitsEffects;
+pub type HoboAttribute = attacks_query::HoboAttributeType;
 
 impl attacks_query::AttacksQueryVillageAttacks {
     #[allow(dead_code)]
@@ -29,6 +30,16 @@ impl attacks_query::AttacksQueryVillageAttacks {
     #[allow(dead_code)]
     pub fn arrival(&self) -> chrono::NaiveDateTime {
         timestamp(&self.arrival).to_chrono()
+    }
+}
+
+impl Into<HoboAttributeType> for &HoboAttribute {
+    fn into(self) -> HoboAttributeType {
+        match self {
+            HoboAttribute::HEALTH => HoboAttributeType::Health,
+            HoboAttribute::SPEED => HoboAttributeType::Speed,
+            _ => panic!("Unexpected attribute")
+        }
     }
 }
 

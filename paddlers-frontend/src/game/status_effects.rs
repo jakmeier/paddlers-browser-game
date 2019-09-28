@@ -1,5 +1,7 @@
 use specs::storage::BTreeStorage;
 use specs::prelude::*;
+use crate::prelude::*;
+use paddlers_shared_lib::models::*;
 pub use crate::gui::{
     utils::*,
     gui_components::*,
@@ -8,10 +10,7 @@ pub use crate::gui::{
     render::Renderable,
     input::Clickable,
 };
-pub use super::movement::{Moving, Position};
-pub use super::fight::{Health, Range};
-pub use super::forestry::ForestComponent;
-pub use super::map::{VillageMetaInfo, MapPosition};
+use crate::net::graphql::query_types::HoboEffect;
 
 #[derive(Component, Debug, Clone)]
 #[storage(BTreeStorage)]
@@ -33,6 +32,23 @@ impl StatusEffects {
         StatusEffects {
             health: None,
         }
+    }
+    pub fn from_gql_query(
+        effects: &[HoboEffect],
+    ) -> PadlResult<Self> {
+        let mut status = Self::new();
+        for ef in effects {
+            match (&ef.attribute).into() {
+                HoboAttributeType::Health => {
+                    let strength = ef.strength.ok_or(PadlError::dev_err(PadlErrorCode::InvalidGraphQLData("Health effect without strength")))?;
+                    status.add_health_reduction(strength as i32);
+                },
+                _ => {
+                    return PadlErrorCode::InvalidGraphQLData("Unknown Effect").dev(); 
+                },
+            }
+        }
+        Ok(status)
     }
     pub fn add_health_reduction(&mut self, v: i32) {
         if self.health.is_none() {
