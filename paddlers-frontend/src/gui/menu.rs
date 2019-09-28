@@ -6,11 +6,10 @@ use specs::prelude::*;
 use crate::game::{
     Game,
     fight::{Health, Aura},
-    components::EntityContainer,
+    components::*,
     forestry::ForestComponent,
     town::town_shop::DefaultShop,
     map::VillageMetaInfo,
-    status_effects::StatusEffects
 };
 use crate::gui::{
     sprites::{SpriteIndex, SingleSprite},
@@ -140,6 +139,11 @@ impl Game<'_, '_> {
         let health = self.world.read_storage::<Health>();
         if let Some(health) = health.get(e) {
             table.push(health_details(health));
+        }
+
+        let mana = self.world.read_storage::<Mana>();
+        if let Some(m) = mana.get(e) {
+            table.extend(m.menu_table_infos());
         }
 
         let aura = self.world.read_storage::<Aura>();

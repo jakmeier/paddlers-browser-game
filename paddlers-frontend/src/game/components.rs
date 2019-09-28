@@ -15,6 +15,7 @@ pub use super::fight::{Health, Range};
 pub use super::forestry::ForestComponent;
 pub use super::map::{VillageMetaInfo, MapPosition};
 pub use super::status_effects::{StatusEffects};
+pub use super::mana::Mana;
 
 
 
@@ -34,6 +35,7 @@ pub fn register_components(world: &mut World) {
     world.register::<VillageMetaInfo>();
     world.register::<UiMenu>();
     world.register::<StatusEffects>();
+    world.register::<Mana>();
 }
 
 /// Required to give NetObj values a context
