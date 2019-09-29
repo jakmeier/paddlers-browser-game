@@ -9,6 +9,7 @@ use crate::game::{
 };
 use crate::gui::animation::*;
 use crate::gui::utils::*;
+use crate::gui::gui_components::ClickOutput;
 use crate::gui::render::Renderable;
 use crate::prelude::*;
 use crate::logging::ErrorQueue;
@@ -80,18 +81,31 @@ impl<'a> System<'a> for WorkerSystem {
                     TaskType::WelcomeAbility => {
                         mov.stand_still(task.start_time);
                         anim.direction = Direction::Undirected;
-                        use_welcome_ability(
+                        let err = use_welcome_ability(
                             e,
                             task.target.expect("Welcoming required target"),
                             &mut health,
                             &mut status_effects,
                             &mut mana,
-                        ).unwrap_or_else(|e| errq.push(e));
+                        );
+                        if let Err(e) = err {
+                            errq.push(e);
+                        } else {
+                            let ui = ui_menus.get_mut(e).expect("Ui menu vanished");
+                            update_cooldown(&mut *ui, AbilityType::Welcome, now.0);
+                        }
                     }
                     _ => {debug_assert!(false, "Unexpected task")},
                 }
             }
         }
+    }
+}
+
+fn update_cooldown(ui: &mut UiMenu, ability: AbilityType, now: Timestamp) {
+    let click = ClickOutput::Ability(ability);
+    if let Some(el) = ui.ui.find_by_on_click(click) {
+        el.overlay = Some((now, now + ability.cooldown().num_microseconds().unwrap()));
     }
 }
 

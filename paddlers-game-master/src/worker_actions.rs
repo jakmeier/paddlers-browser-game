@@ -46,6 +46,8 @@ pub (crate) fn validate_task_list(db: &DB, tl: &TaskList, village_id: i64) -> Re
             db.hobo(target_id).ok_or("No such hobo id")?;
         }
 
+        validate_ability(db, task.task_type, worker_id, timestamp)?;
+
         let new_task = NewTask {
             worker_id: worker_id,
             task_type: task.task_type,
@@ -253,6 +255,31 @@ fn worker_out_of_building(town: &mut TownView, _worker: &mut Worker, to: TileInd
 fn worker_into_building(town: &mut TownView, _worker: &mut Worker, to: TileIndex) -> Result<(), String> {
     let tile_state = town.state.get_mut(&to).ok_or("No building found")?; 
     tile_state.try_add_entity().map_err(|e| e.to_string())?;
+    Ok(())
+}
+fn validate_ability(db: &DB, task_type: TaskType, worker_id: i64, now: chrono::NaiveDateTime) -> Result<(), String> {
+    if let Some(ability_type) = 
+        match task_type {
+            TaskType::WelcomeAbility => {
+                Some(AbilityType::Welcome)
+            },
+            TaskType::ChopTree | TaskType::GatherSticks => {
+                Some(AbilityType::Work)
+            },
+            _ => { None },
+        }
+    {
+        if let Some(a) = db.worker_ability(worker_id, ability_type) {
+            if let Some(last_used) = a.last_used {
+                let free_to_use = last_used + ability_type.cooldown();
+                if free_to_use > now {
+                    return Err("Cooldown not ready".to_owned());
+                }
+            }
+        } else {
+            return Err("Worker does not have this ability".to_owned());
+        }
+    }
     Ok(())
 }
 

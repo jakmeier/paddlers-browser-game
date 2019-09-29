@@ -22,6 +22,16 @@ impl AbilityType {
         Duration::milliseconds(ms)
     }
 
+    /// How long until the ability can be used again
+    pub fn cooldown(&self) -> Duration {
+        let ms = 
+        match self {
+            AbilityType::Welcome => 30000,
+            AbilityType::Work => 0,
+        };
+        Duration::milliseconds(ms)
+    }
+
     pub fn mana_cost(&self) -> i32 {
         match self {
             AbilityType::Welcome => 5,

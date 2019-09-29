@@ -1,5 +1,6 @@
 use quicksilver::prelude::*;
 use specs::prelude::*;
+use crate::game::specs_resources::Now;
 use crate::gui::{
     sprites::*,
     gui_components::*,
@@ -53,6 +54,6 @@ impl MenuButtons {
 impl crate::game::Game<'_, '_> {
     pub fn render_buttons(&mut self, window: &mut Window, area: &Rectangle) -> Result<()> {
         let (sprites, mut buttons) = (&mut self.sprites, self.world.write_resource::<MenuButtons>());
-        buttons.ui.draw(window, sprites.as_mut().unwrap(), area)
+        buttons.ui.draw(window, sprites.as_mut().unwrap(), self.world.read_resource::<Now>().0, area)
     }
 }

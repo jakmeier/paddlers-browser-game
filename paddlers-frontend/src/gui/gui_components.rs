@@ -19,7 +19,7 @@ pub trait InteractiveTableArea {
     /// Defines how many table rows it takes to draw the area
     fn rows(&self) -> usize;
     /// Draw the area on a specified area
-    fn draw(&mut self, window: &mut Window, sprites: &mut Sprites, area: &Rectangle) -> Result<()>;
+    fn draw(&mut self, window: &mut Window, sprites: &mut Sprites, now: Timestamp, area: &Rectangle) -> Result<()>;
     /// Check if the mouse hits somthing on the area
     fn click(&self, mouse: Vector) -> Option<ClickOutput>;
     /// Remove one of the clickable options
@@ -43,6 +43,7 @@ pub fn draw_table(
     font: &mut Asset<Font>,
     max_row_height: f32,
     z: i32,
+    now: Timestamp,
 ) -> Result<()> {
     let total_rows = row_count(table);
     let row_height = max_row_height.min(max_area.height() / total_rows as f32);
@@ -74,7 +75,7 @@ pub fn draw_table(
             TableRow::InteractiveArea(ia) => {
                 let mut area = line.clone();
                 area.size.y = area.size.y * ia.rows() as f32;
-                ia.draw(window, sprites, &area)?;
+                ia.draw(window, sprites, now, &area)?;
                 line.pos.y += area.size.y;
             }
         }

@@ -1,5 +1,6 @@
 pub mod buttons;
 
+use crate::game::specs_resources::Now;
 use crate::game::components::UiMenu;
 use quicksilver::prelude::*;
 use specs::prelude::*;
@@ -179,7 +180,8 @@ impl Game<'_, '_> {
             }
         }
 
-        draw_table(window, self.sprites.as_mut().unwrap(), &mut table, &area, &mut self.font, 40.0, Z_MENU_TEXT)?;
+        draw_table(window, self.sprites.as_mut().unwrap(), &mut table, 
+            &area, &mut self.font, 40.0, Z_MENU_TEXT, self.world.read_resource::<Now>().0)?;
         Ok(())
     }
 
@@ -198,7 +200,8 @@ impl Game<'_, '_> {
         );
 
         let (shop_area, price_tag_area) = area.cut_horizontal(area.height() - price_tag_h);
-        draw_table(window, sprites.as_mut().unwrap(), &mut table, &shop_area, &mut self.font, 60.0, Z_MENU_TEXT)?;
+        draw_table(window, sprites.as_mut().unwrap(), &mut table, 
+            &shop_area, &mut self.font, 60.0, Z_MENU_TEXT, self.world.read_resource::<Now>().0)?;
         (*shop).ui.draw_hover_info(window, sprites.as_mut().unwrap(), &mut self.bold_font, &price_tag_area)
     }
 

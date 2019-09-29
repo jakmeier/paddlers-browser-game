@@ -4,8 +4,10 @@ use quicksilver::prelude::*;
 use super::*;
 
 #[derive(Clone, Debug)]
-struct UiElement {
+pub struct UiElement {
     display: RenderVariant,
+    // Extend with enum and more variants once necessary (for overlay and hover info)
+    pub overlay: Option<(Timestamp, Timestamp)>,
     hover_info: Option<Vec<(ResourceType, i64)>>,
     on_click: Option<ClickOutput>,
 }
@@ -28,6 +30,7 @@ impl InteractiveTableArea for UiBox {
         &mut self,
         window: &mut Window,
         sprites: &mut Sprites,
+        now: Timestamp,
         area: &Rectangle,
     ) -> Result<()> {
         self.area = *area;
@@ -75,12 +78,16 @@ impl InteractiveTableArea for UiBox {
                     FitStrategy::Center,
                 )?;
             }
+            if el.overlay.is_some() {
+                el.draw_overlay(window, &draw_area.padded(self.margin), now);
+            }
         }
 
         Ok(())
     }
     fn click(&self, mouse: Vector) -> Option<ClickOutput> {
         self.find_element_under_mouse(mouse)
+            .filter(|el| el.is_active())
             .and_then(|el| el.on_click.clone())
             .map(Into::into)
     }
@@ -106,6 +113,7 @@ impl UiBox {
     (&mut self, i: SpriteSet, on_click: T) {
         self.add_el(UiElement {
             display: RenderVariant::Img(i),
+            overlay: None,
             hover_info: None,
             on_click: Some(on_click.into()),
         });
@@ -116,6 +124,7 @@ impl UiBox {
     (&mut self, rv: RenderVariant, on_click: T) {
         self.add_el(UiElement {
             display: rv,
+            overlay: None,
             hover_info: None,
             on_click: Some(on_click.into()),
         });
@@ -130,6 +139,7 @@ impl UiBox {
     ) {
         self.add_el(UiElement {
             display: RenderVariant::ImgWithColBackground(i, col),
+            overlay: None,
             hover_info: Some(cost),
             on_click: Some(on_click.into()),
         });
@@ -138,6 +148,7 @@ impl UiBox {
     pub fn add_empty(&mut self) {
         self.add_el(UiElement {
             display: RenderVariant::Hide,
+            overlay: None,
             hover_info: None,
             on_click: None,
         });
@@ -150,6 +161,16 @@ impl UiBox {
         }
     }
 
+    pub fn add_with_cooldown
+    <T: Into<ClickOutput> + Clone>
+    (&mut self, i: SpriteSet, on_click: T, start: Timestamp, end: Timestamp) {
+        self.add_el(UiElement {
+            display: RenderVariant::Img(i),
+            overlay: Some((start, end)),
+            hover_info: None,
+            on_click: Some(on_click.into()),
+        });
+    }
     
     fn element_index_under_mouse(&self, mouse: impl Into<Vector>) -> Option<usize> {
         let dx = self.area.width() / self.columns as f32;
@@ -168,6 +189,9 @@ impl UiBox {
     fn remove_with_on_click(&mut self, val: ClickOutput) {
         self.elements.retain(|el| el.on_click.is_none() || *el.on_click.as_ref().unwrap() != val);
     }
+    pub fn find_by_on_click(&mut self, val: ClickOutput) -> Option<&mut UiElement> {
+        self.elements.iter_mut().find(|el| el.on_click.is_some() && *el.on_click.as_ref().unwrap() == val)
+    }
 
     pub fn draw_hover_info(
         &mut self,
@@ -183,5 +207,58 @@ impl UiBox {
             }
         }
         Ok(())
+    }
+}
+
+impl UiElement {
+    fn draw_overlay(
+        &self,
+        window: &mut Window,
+        area: &Rectangle,
+        now: Timestamp
+    ) {
+        if let Some((start, end)) = self.overlay {
+            if now > start && now < end {
+                let progress = (now - start) as f32 / (end - start) as f32;
+                let center = area.center();
+                let border = [
+                    Vector::new(center.x, area.y()),
+                    Vector::new(area.x(), area.y()),
+                    Vector::new(area.x(), center.y),
+                    Vector::new(area.x(), area.y() + area.height()),
+                    Vector::new(center.x, area.y() + area.height()),
+                    Vector::new(area.x() + area.width(), area.y() + area.height()),
+                    Vector::new(area.x() + area.width(), center.y),
+                    Vector::new(area.x() + area.width(), area.y()),
+                    Vector::new(center.x, area.y()),
+                ];
+                for i in 0..8 {
+                    let segment_len = ((1.0-progress) * 8.0 - i as f32).min(1.0);
+                    if segment_len <= 0.0 {
+                        break;
+                    }
+                    let t  = Triangle::new(
+                        center,
+                        border[i],
+                        border[i] + ((border[i+1] - border[i]) * segment_len),
+                    );
+                    window.draw_ex(
+                        &t,
+                        Col(Color { r: 1.0, g: 1.0, b: 1.0, a: 0.8 }),
+                        Transform::IDENTITY,
+                        Z_MENU_BOX_BUTTONS + 1,
+                    );
+                }
+            }
+        }
+    }
+    fn is_active(&self) -> bool {
+        if let Some((start, end)) = self.overlay {
+            let now = utc_now();
+            if start < now && now < end {
+                return false;
+            }
+        }
+        true
     }
 }

@@ -125,6 +125,13 @@ pub trait GameDB {
         .expect("Error loading data");
         results
     }
+    fn worker_ability(&self, worker_id: i64, ability_type: AbilityType) -> Option<Ability> {
+        abilities::table
+        .find((ability_type, worker_id))
+        .first(self.dbconn())
+        .optional()
+        .expect("Error loading data")
+    }
     fn past_worker_tasks(&self, worker_id: i64) -> Vec<Task> {
         let results = tasks::table
             .filter(tasks::worker_id.eq(worker_id))

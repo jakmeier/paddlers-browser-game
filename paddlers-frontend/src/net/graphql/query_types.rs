@@ -1,5 +1,5 @@
-use crate::logging::error::PadlResult;
 use specs::prelude::*;
+use crate::prelude::*;
 use crate::game::components::NetObj;
 use paddlers_shared_lib::models::*;
 use graphql_client::{GraphQLQuery, Response};
@@ -8,6 +8,9 @@ use paddlers_shared_lib::graphql_types;
 pub use serde::Deserialize;
 type GqlTimestamp = String;
 
+pub fn parse_timestamp(s: &String) -> Timestamp {
+    timestamp(s).0
+}
 fn timestamp(s: &String) -> graphql_types::GqlTimestamp {
     graphql_types::GqlTimestamp::from_string(s).unwrap()
 }
