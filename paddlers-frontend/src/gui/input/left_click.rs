@@ -104,8 +104,9 @@ impl<'a> System<'a> for LeftClickSystem {
                     let (from, movement) = (&position, &moving).join().get(active_entity, &entities).expect("Unit has position");
                     let start = town.next_tile_in_direction(from.area.pos, movement.momentum);
                     let target_tile = town.tile(mouse_pos);
-                    // TODO range check
-                    let destination = (*town).closest_walkable_tile_in_range(start, target_tile, 1.0);
+                    let range = AbilityType::from_task(&job.0).as_ref().map(AbilityType::range).unwrap_or(0.0);
+                    // TODO: Take movement of visitor into account
+                    let destination = (*town).closest_walkable_tile_in_range(start, target_tile, range);
                     if destination.is_none() {
                         errq.push(PadlError::user_err(PadlErrorCode::PathBlocked));
                         return;

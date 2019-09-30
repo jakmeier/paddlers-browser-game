@@ -258,17 +258,12 @@ fn worker_into_building(town: &mut TownView, _worker: &mut Worker, to: TileIndex
     Ok(())
 }
 fn validate_ability(db: &DB, task_type: TaskType, worker_id: i64, now: chrono::NaiveDateTime) -> Result<(), String> {
-    if let Some(ability_type) = 
-        match task_type {
-            TaskType::WelcomeAbility => {
-                Some(AbilityType::Welcome)
-            },
-            TaskType::ChopTree | TaskType::GatherSticks => {
-                Some(AbilityType::Work)
-            },
-            _ => { None },
-        }
+    if let Some(ability_type) = AbilityType::from_task(&task_type)
     {
+        // TODO: Range checks
+        // let range = ability_type.range();
+        // TODO: Take movement of visitor into account
+
         if let Some(a) = db.worker_ability(worker_id, ability_type) {
             if let Some(last_used) = a.last_used {
                 let free_to_use = last_used + ability_type.cooldown();

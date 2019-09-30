@@ -12,6 +12,18 @@ impl AbilityType {
         }
     }
 
+    pub fn from_task(task: &TaskType) -> Option<AbilityType> {
+        match task {
+            TaskType::WelcomeAbility => {
+                Some(AbilityType::Welcome)
+            },
+            TaskType::ChopTree | TaskType::GatherSticks => {
+                Some(AbilityType::Work)
+            },
+            _ => { None },
+        }
+    }
+
     /// How long it takes a worker to perform the ability
     pub fn busy_duration(&self) -> Duration {
         let ms = 
@@ -36,6 +48,13 @@ impl AbilityType {
         match self {
             AbilityType::Welcome => 5,
             AbilityType::Work => 0,
+        }
+    }
+    
+    pub fn range(&self) -> f32 {
+        match self {
+            AbilityType::Welcome => 2.0,
+            AbilityType::Work => 0.0,
         }
     }
 }
