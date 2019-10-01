@@ -83,6 +83,13 @@ impl DB {
                     last_update: chrono::Utc::now().naive_utc(),
                 }
             );
+            self.insert_worker_flag(
+                WorkerFlag {
+                    worker_id: worker.id,
+                    flag_type: WorkerFlagType::Work,
+                    last_update: chrono::Utc::now().naive_utc(),
+                }
+            );
 
             // Some cash
             let vid = TEST_VILLAGE_ID;

@@ -1,4 +1,3 @@
-use chrono::NaiveDateTime;
 use crate::prelude::{VillageKey, HoboKey, WorkerKey};
 use crate::models::*;
 use crate::schema::*;
@@ -167,9 +166,9 @@ pub trait GameDB {
             (current, next)
         }
     }
-    fn current_task(&self, worker_id: i64) -> Option<Task> {
+    fn current_task(&self, worker_id: WorkerKey) -> Option<Task> {
         tasks::table
-            .filter(tasks::worker_id.eq(worker_id))
+            .filter(tasks::worker_id.eq(worker_id.num()))
             .filter(tasks::start_time.le(diesel::dsl::now.at_time_zone("UTC")))
             .order(tasks::start_time.asc())
             .first(self.dbconn())
@@ -229,13 +228,5 @@ pub trait GameDB {
             .load::<Effect>(self.dbconn())
             .expect("Error loading data");
         results
-    }
-    fn last_update(&self, worker: WorkerKey, f: WorkerFlagType) -> Option<NaiveDateTime> {
-        worker_flags::table
-        .find((worker.num(), f))
-        .first(self.dbconn())
-        .map(|flag: WorkerFlag| flag.last_update)
-        .optional()
-        .expect("Error loading data")
     }
 }

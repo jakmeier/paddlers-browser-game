@@ -31,7 +31,7 @@ pub (crate) fn validate_task_list(db: &DB, tl: &TaskList, village_id: i64) -> Re
     let mut worker = db.worker(worker_id).ok_or("Worker does not exist")?;
 
     // check timing and effect of current task interruption
-    let mut current_task = db.current_task(worker.id).expect("Must have a current task");
+    let mut current_task = db.current_task(worker.key()).expect("Must have a current task");
     let mut timestamp = interrupt_task(&mut current_task, &worker).ok_or("Cannot interrupt current task.")?;
     worker.x = current_task.x;
     worker.y = current_task.y;
@@ -144,6 +144,7 @@ pub (crate) fn finish_task(
         }
         
         db.update_worker(&worker);
+        db.update_worker_flag_timestamp_now(worker.key(), WorkerFlagType::Work);
         db.delete_task(&task);
 
         Ok(Event::load_next_worker_task(db, task.worker_id))

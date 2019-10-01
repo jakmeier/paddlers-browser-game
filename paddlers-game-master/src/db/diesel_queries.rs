@@ -163,4 +163,10 @@ impl DB {
             .execute(self.dbconn())
             .expect("Updating flag timestamp");
     }
+    pub fn worker_flags(&self, worker: WorkerKey) -> Vec<WorkerFlag> {
+        worker_flags::table
+        .filter(worker_flags::worker_id.eq(worker.num()))
+        .get_results(self.dbconn())
+        .expect("Error loading data")
+    }
 }
