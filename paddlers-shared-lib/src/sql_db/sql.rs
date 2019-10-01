@@ -1,4 +1,5 @@
-use crate::prelude::{VillageKey, HoboKey};
+use chrono::NaiveDateTime;
+use crate::prelude::{VillageKey, HoboKey, WorkerKey};
 use crate::models::*;
 use crate::schema::*;
 use diesel::prelude::*;
@@ -228,5 +229,13 @@ pub trait GameDB {
             .load::<Effect>(self.dbconn())
             .expect("Error loading data");
         results
+    }
+    fn last_update(&self, worker: WorkerKey, f: WorkerFlagType) -> Option<NaiveDateTime> {
+        worker_flags::table
+        .find((worker.num(), f))
+        .first(self.dbconn())
+        .map(|flag: WorkerFlag| flag.last_update)
+        .optional()
+        .expect("Error loading data")
     }
 }

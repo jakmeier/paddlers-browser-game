@@ -1,8 +1,9 @@
 use crate::db::*;
 use actix::prelude::*;
 use paddlers_shared_lib::prelude::*;
+use paddlers_shared_lib::game_mechanics::worker::*;
 
-/// Actor for calculating gathered resources by workers
+/// Actor for calculating gathered regular events on workers (resource collection, mana regeneration)
 pub struct EconomyWorker {
     dbpool: Pool,
 }
@@ -30,6 +31,25 @@ impl EconomyWorker {
 
          // TODO: Exact econ calculations: Extra DB table for timestamp of last update instead of wait constant time
         ctx.run_later(std::time::Duration::from_millis(5000), Self::work);
+
+        let workers = db.workers(village_id);
+        let now = chrono::Utc::now().naive_utc();
+        for w in workers {
+            if let Some(last_update) = db.last_update(w.key(), WorkerFlagType::ManaRegeneration) {
+                let mana_regen = hero_mana_regeneration_per_hour();
+                let interval_ms = 3_600_000 / mana_regen as i64;
+                let new_mana = (now - last_update).num_milliseconds() / interval_ms;
+                if new_mana > 0 {
+                    let new_time = last_update + chrono::Duration::milliseconds(interval_ms * new_mana);
+                    db.update_worker_flag_timestamp(
+                        w.key(), 
+                        WorkerFlagType::ManaRegeneration,
+                        new_time,
+                    );
+                    db.add_worker_mana(w.key(), new_mana as i32, hero_max_mana());
+                }
+            }
+        }
     }
 }
 

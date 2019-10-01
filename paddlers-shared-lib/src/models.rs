@@ -14,6 +14,7 @@ use ::diesel_derive_enum::DbEnum;
 use super::schema::{
     hobos,
     workers,
+    worker_flags,
     attacks,
     attacks_to_hobos,
     buildings,
@@ -307,4 +308,21 @@ pub struct NewEffect {
 pub enum HoboAttributeType {
     Health,
     Speed,
+}
+
+#[derive(Debug, Clone, Copy, Queryable, Insertable)]
+#[cfg(feature = "sql_db")]
+pub struct WorkerFlag {
+    pub worker_id: i64,
+    pub flag_type: WorkerFlagType,
+    pub last_update: NaiveDateTime,
+}
+
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Serialize, Deserialize)]
+#[cfg_attr(feature = "enum_utils", derive(EnumIter, Display))]
+#[cfg_attr(feature = "graphql", derive(juniper::GraphQLEnum))]
+#[cfg_attr(feature = "sql_db", DieselType = "Worker_flag_type", derive(DbEnum))]
+pub enum WorkerFlagType {
+    ManaRegeneration,
+    Work,
 }

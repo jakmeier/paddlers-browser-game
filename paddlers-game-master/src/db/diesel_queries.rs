@@ -38,6 +38,13 @@ impl DB {
             .execute(self.dbconn())
             .expect("Updating worker");
     }
+    pub fn add_worker_mana(&self, w: WorkerKey, plus: i32, max: i32) {
+        let worker = self.worker(w.num()).expect("Invalid worker key");
+        diesel::update(&worker)
+            .set(workers::mana.eq( Some(max.min(worker.mana.unwrap_or(0) + plus)) ))
+            .execute(self.dbconn())
+            .expect("Updating worker for mana");
+    }
     pub fn insert_attack(&self, new_attack: &NewAttack) -> Attack {
         diesel::insert_into(attacks::dsl::attacks)
             .values(new_attack)
@@ -135,5 +142,25 @@ impl DB {
             .set(abilities::last_used.eq(diesel::dsl::now.at_time_zone("UTC").nullable()))
             .execute(self.dbconn())
             .expect("Updating ability timestamp");
+    }
+    pub fn insert_worker_flag(&self, wf: WorkerFlag) {
+        diesel::insert_into(worker_flags::dsl::worker_flags)
+            .values(wf)
+            .execute(self.dbconn())
+            .expect("Inserting flag");
+    }
+    pub fn update_worker_flag_timestamp_now(&self, w: WorkerKey, f: WorkerFlagType) {
+        let target = worker_flags::table.find((w.num(), f));
+        diesel::update(target)
+            .set(worker_flags::last_update.eq(diesel::dsl::now.at_time_zone("UTC")))
+            .execute(self.dbconn())
+            .expect("Updating flag timestamp to now");
+    }
+    pub fn update_worker_flag_timestamp(&self, w: WorkerKey, f: WorkerFlagType, ts: chrono::NaiveDateTime) {
+        let target = worker_flags::table.find((w.num(), f));
+        diesel::update(target)
+            .set(worker_flags::last_update.eq(ts))
+            .execute(self.dbconn())
+            .expect("Updating flag timestamp");
     }
 }

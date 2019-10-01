@@ -76,6 +76,13 @@ impl DB {
                 ability_type: AbilityType::Welcome,
             };
             self.insert_ability(&welcome_ability);
+            self.insert_worker_flag(
+                WorkerFlag {
+                    worker_id: worker.id,
+                    flag_type: WorkerFlagType::ManaRegeneration,
+                    last_update: chrono::Utc::now().naive_utc(),
+                }
+            );
 
             // Some cash
             let vid = TEST_VILLAGE_ID;

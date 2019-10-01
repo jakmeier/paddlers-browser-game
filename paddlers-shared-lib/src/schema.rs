@@ -128,6 +128,17 @@ table! {
     use diesel::sql_types::*;
     use crate::models::*;
 
+    worker_flags (worker_id, flag_type) {
+        worker_id -> Int8,
+        flag_type -> Worker_flag_type,
+        last_update -> Timestamp,
+    }
+}
+
+table! {
+    use diesel::sql_types::*;
+    use crate::models::*;
+
     workers (id) {
         id -> Int8,
         home -> Int8,
@@ -150,6 +161,7 @@ joinable!(resources -> villages (village_id));
 joinable!(tasks -> hobos (target_hobo_id));
 joinable!(tasks -> workers (worker_id));
 joinable!(villages -> streams (stream_id));
+joinable!(worker_flags -> workers (worker_id));
 joinable!(workers -> villages (home));
 
 allow_tables_to_appear_in_same_query!(
@@ -163,5 +175,6 @@ allow_tables_to_appear_in_same_query!(
     streams,
     tasks,
     villages,
+    worker_flags,
     workers,
 );

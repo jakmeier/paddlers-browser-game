@@ -1,0 +1,2 @@
+DROP TABLE worker_flags;
+DROP TYPE WORKER_FLAG_TYPE;
