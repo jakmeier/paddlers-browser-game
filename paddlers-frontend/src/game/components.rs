@@ -3,7 +3,7 @@ use specs::prelude::*;
 use crate::prelude::*;
 use crate::gui::{
     utils::*,
-    gui_components::UiBox,
+    gui_components::{UiBox, UiElement},
 };
 pub use crate::gui::{
     animation::AnimationState,
@@ -124,7 +124,7 @@ impl EntityContainer {
                 RenderVariant::Hide
             }
         };
-        ui.ui.add_with_render_variant(style, e);
+        ui.ui.add(UiElement::new(e).with_render_variant(style));
     }
     pub fn remove_entity<'a>(&mut self, e: Entity) {
         self.children.remove_item(&e);

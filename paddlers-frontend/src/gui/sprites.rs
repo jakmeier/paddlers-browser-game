@@ -109,6 +109,18 @@ pub enum SingleSprite {
     Roger,
     NewOrder,
     WelcomeAbility,
+    #[allow(dead_code)]
+    FrameBlue1,
+    #[allow(dead_code)]
+    FrameBlue2,
+    #[allow(dead_code)]
+    FrameBlue3,
+    #[allow(dead_code)]
+    FrameGreen1,
+    #[allow(dead_code)]
+    FrameGreen2,
+    #[allow(dead_code)]
+    FrameGreen3,
 }
 
 #[derive(Debug, Clone, Copy)]

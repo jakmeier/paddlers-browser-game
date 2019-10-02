@@ -4,8 +4,9 @@ use paddlers_shared_lib::prelude::*;
 use crate::prelude::*;
 use crate::net::graphql::query_types::parse_timestamp;
 use crate::gui::{
-    gui_components::UiBox,
-    sprites::WithSprite,
+    gui_components::{UiBox, UiElement},
+    sprites::{WithSprite, SingleSprite},
+    utils::RenderVariant,
 };
 
 /// A unit can learn a limited number of Abilities. (including walking)
@@ -42,16 +43,19 @@ impl AbilitySet {
     }
     pub fn construct_ui_box(&self) -> UiBox {
         let rows = 2;
-        let mut ui = UiBox::new(MAX_ABILITIES / rows, rows, 0.0, 1.0);
+        let mut ui = UiBox::new(MAX_ABILITIES / rows, rows, 15.0, 5.0);
         for i in 0..MAX_ABILITIES {
             let a = self.abilities[i];
             let lu = self.last_used[i];
             if let Some(ability) = a {
+                let mut el = UiElement::new(ability)
+                    .with_render_variant(
+                        RenderVariant::ImgWithImgBackground(ability.sprite(), SingleSprite::FrameGreen3)
+                    );
                 if let Some(t) = lu {
-                    ui.add_with_cooldown(ability.sprite(), ability, t, t + ability.cooldown().num_microseconds().unwrap());
-                } else {
-                    ui.add(ability.sprite(), ability);
+                    el = el.with_cooldown(t, t + ability.cooldown().num_microseconds().unwrap());
                 }
+                ui.add(el);
             }
         }
         ui

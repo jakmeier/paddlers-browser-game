@@ -36,6 +36,7 @@ pub use specs_resources::*;
 use input::{UiState, pointer::PointerManager};
 use movement::*;
 use quicksilver::prelude::*;
+use quicksilver::input::MouseCursor;
 use specs::prelude::*;
 use town::{Town, town_shop::DefaultShop};
 use fight::*;
@@ -238,6 +239,9 @@ impl State for Game<'static, 'static> {
         }
         if let Some(grabbed) = grabbed_item {
             self.render_grabbed_item(window, &grabbed)?;
+            window.set_cursor(MouseCursor::None);
+        } else {
+            window.set_cursor(MouseCursor::Default);
         }
         #[cfg(feature="dev_view")]
         self.draw_dev_view(window);

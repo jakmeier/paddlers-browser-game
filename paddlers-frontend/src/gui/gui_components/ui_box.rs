@@ -52,7 +52,7 @@ impl InteractiveTableArea for UiBox {
                     draw_static_image(
                         sprites,
                         window,
-                        &draw_area,
+                        &draw_area.padded(self.margin),
                         SpriteIndex::Simple(bkg),
                         Z_MENU_BOX_BUTTONS - 1,
                         FitStrategy::Center,
@@ -107,69 +107,11 @@ impl UiBox {
         }
     }
 
-    #[allow(dead_code)]
-    pub fn add
-    <T: Into<ClickOutput> + Clone>
-    (&mut self, i: SpriteSet, on_click: T) {
-        self.add_el(UiElement {
-            display: RenderVariant::Img(i),
-            overlay: None,
-            hover_info: None,
-            on_click: Some(on_click.into()),
-        });
-    }
-
-    pub fn add_with_render_variant
-    <T: Into<ClickOutput> + Clone>
-    (&mut self, rv: RenderVariant, on_click: T) {
-        self.add_el(UiElement {
-            display: rv,
-            overlay: None,
-            hover_info: None,
-            on_click: Some(on_click.into()),
-        });
-    }
-
-    pub fn add_with_background_color_and_cost<T: Into<ClickOutput> + Clone>(
-        &mut self,
-        i: SpriteSet,
-        col: Color,
-        on_click: T,
-        cost: Vec<(ResourceType, i64)>,
-    ) {
-        self.add_el(UiElement {
-            display: RenderVariant::ImgWithColBackground(i, col),
-            overlay: None,
-            hover_info: Some(cost),
-            on_click: Some(on_click.into()),
-        });
-    }
-
-    pub fn add_empty(&mut self) {
-        self.add_el(UiElement {
-            display: RenderVariant::Hide,
-            overlay: None,
-            hover_info: None,
-            on_click: None,
-        });
-    }
-
-    fn add_el(&mut self, el: UiElement) {
+    pub fn add(&mut self, el: UiElement) {
         self.elements.push(el);
         if self.columns * self.rows < self.elements.len() {
             println!("Warning: Not all elements of the UI Area will be visible")
         }
-    }
-
-    pub fn add_with_cooldown
-    <T: Into<ClickOutput> + Clone>
-    (&mut self, i: SpriteSet, on_click: T, start: Timestamp, end: Timestamp) {
-        self.add_el(UiElement {
-            display: RenderVariant::Img(i),
-            overlay: Some((start, end)),
-            hover_info: None,
-            on_click: Some(on_click.into()),
-        });
     }
     
     fn element_index_under_mouse(&self, mouse: impl Into<Vector>) -> Option<usize> {
@@ -260,5 +202,48 @@ impl UiElement {
             }
         }
         true
+    }
+
+    pub fn new<T: Into<ClickOutput> + Clone> (on_click: T) -> Self {
+        UiElement {
+            display: RenderVariant::Hide,
+            overlay: None,
+            hover_info: None,
+            on_click: Some(on_click.into()),
+        }
+    }
+    pub fn with_image(mut self, i: SpriteSet) -> Self {
+        self.display = RenderVariant::Img(i);
+        self
+    }
+    pub fn with_cooldown(mut self, start: Timestamp, end: Timestamp) -> Self {
+        self.overlay = Some((start, end));
+        self
+    }
+    pub fn with_render_variant(mut self, rv: RenderVariant) -> Self {
+        self.display = rv;
+        self
+    }
+    pub fn with_background_color(mut self, col: Color) -> Self {
+        match self.display {
+            RenderVariant::Img(i) => {
+                self.display = RenderVariant::ImgWithColBackground(i, col);
+            },
+            _ => panic!("Not implemented")
+        }
+        self
+    }
+    pub fn with_cost(mut self, cost: Vec<(ResourceType, i64)>) -> Self {
+        self.hover_info = Some(cost);
+        self
+    }
+
+    pub fn empty() -> Self {
+        UiElement {
+            display: RenderVariant::Hide,
+            overlay: None,
+            hover_info: None,
+            on_click: None,
+        }
     }
 }

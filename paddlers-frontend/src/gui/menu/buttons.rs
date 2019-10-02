@@ -20,15 +20,21 @@ pub enum MenuButtonAction {
 impl MenuButtons {
     pub fn new() -> Self {
         let mut ui_box = UiBox::new(4, 1, 0.0, 5.0);
-        ui_box.add_empty();
+        ui_box.add(UiElement::empty());
 
         let town_button = Self::button_render(SingleSprite::TownButton, SingleSprite::TownButtonHov);
-        ui_box.add_with_render_variant(town_button, MenuButtonAction::SwitchToView(UiView::Town));
+        ui_box.add(
+            UiElement::new(MenuButtonAction::SwitchToView(UiView::Town))
+                .with_render_variant(town_button)
+        );
         
         let map_button = Self::button_render(SingleSprite::MapButton, SingleSprite::MapButtonHov);
-        ui_box.add_with_render_variant(map_button, MenuButtonAction::SwitchToView(UiView::Map));
+        ui_box.add(
+            UiElement::new(MenuButtonAction::SwitchToView(UiView::Map))
+                .with_render_variant(map_button)
+        );
         
-        ui_box.add_empty();
+        ui_box.add(UiElement::empty());
         
         MenuButtons {
             ui: ui_box

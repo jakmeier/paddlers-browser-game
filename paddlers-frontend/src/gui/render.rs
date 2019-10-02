@@ -72,7 +72,7 @@ impl Game<'_, '_> {
                 draw_static_image(self.sprites.as_mut().unwrap(), window, &max_area, building_type.sprite().default(), Z_GRABBED_ITEM, FitStrategy::TopLeft)?
             }, 
             Grabbable::Ability(ability) => {
-                draw_static_image(self.sprites.as_mut().unwrap(), window, &max_area, ability.sprite().default(), Z_GRABBED_ITEM, FitStrategy::TopLeft)?
+                draw_static_image(self.sprites.as_mut().unwrap(), window, &max_area.shrink_to_center(0.375), ability.sprite().default(), Z_GRABBED_ITEM, FitStrategy::TopLeft)?
             }
         }
         Ok(())
