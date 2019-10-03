@@ -12,10 +12,11 @@ pub struct Mana {
 }
 impl Mana {
     pub fn menu_table_infos<'a>(&self) -> Vec<TableRow<'a>> {
-        let text = format!("Mana {}/{}", self.mana, self.max_mana());
-        let row = TableRow::TextWithImage(
-            text,
-            SpriteIndex::Simple(SingleSprite::Water),
+        let row = TableRow::ProgressBar(
+            DARK_GREEN,
+            BLUE,
+            self.mana,
+            self.max_mana(),
         );
         vec![row]
     }

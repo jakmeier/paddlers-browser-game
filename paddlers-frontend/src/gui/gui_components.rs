@@ -4,7 +4,7 @@ mod ui_box;
 pub use ui_box::*;
 
 use paddlers_shared_lib::prelude::AbilityType;
-use crate::gui::{sprites::*, utils::*, menu::buttons::MenuButtonAction};
+use crate::gui::{sprites::*, utils::*, menu::buttons::MenuButtonAction, z::*};
 use crate::prelude::*;
 use quicksilver::prelude::*;
 
@@ -12,6 +12,7 @@ pub enum TableRow<'a> {
     Text(String),
     TextWithImage(String, SpriteIndex),
     InteractiveArea(&'a mut dyn InteractiveTableArea),
+    ProgressBar(Color, Color, i32, i32),
 }
 
 /// An area that is part of the graphical user interface.
@@ -78,6 +79,31 @@ pub fn draw_table(
                 ia.draw(window, sprites, now, &area)?;
                 line.pos.y += area.size.y;
             }
+            TableRow::ProgressBar(bkgcol, col, i, n) => {
+                let mut area = line.clone();
+                let margin = area.size.y * 0.15;
+                area.size.y -= margin;
+                let text = format!("{}/{}", i, n);
+                let mut text_area = area.shrink_to_center(0.9);
+                text_area.pos.y += text_area.size.y * 0.1;
+                write_text_col(
+                    font,
+                    window,
+                    &text_area,
+                    z,
+                    FitStrategy::Center,
+                    &text,
+                    Color::WHITE,
+                )
+                .unwrap();
+
+                window.draw_ex(&area, Col(GREY), Transform::IDENTITY, Z_MENU_BOX + 1);
+                let mut bar = area.padded(3.0);
+                window.draw_ex(&bar, Col(*bkgcol), Transform::IDENTITY, Z_MENU_BOX + 2);
+                bar.size.x *= *i as f32 / *n as f32;
+                window.draw_ex(&bar, Col(*col), Transform::IDENTITY, Z_MENU_BOX + 3);
+                line.pos.y += line.size.y;
+            }
         }
     }
     Ok(())
@@ -89,6 +115,7 @@ fn row_count(table: &[TableRow]) -> usize {
             TableRow::Text(_) => 1,
             TableRow::TextWithImage(_, _) => 1,
             TableRow::InteractiveArea(ia) => ia.rows(),
+            TableRow::ProgressBar(_,_,_,_) => 1,
         }
     })
 }
