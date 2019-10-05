@@ -16,6 +16,7 @@ pub use super::forestry::ForestComponent;
 pub use super::map::{VillageMetaInfo, MapPosition};
 pub use super::status_effects::{StatusEffects};
 pub use super::mana::Mana;
+pub use super::level::Level;
 
 
 
@@ -25,6 +26,7 @@ pub fn register_components(world: &mut World) {
     world.register::<EntityContainer>();
     world.register::<ForestComponent>();
     world.register::<Health>();
+    world.register::<Level>();
     world.register::<Mana>();
     world.register::<MapPosition>();
     world.register::<Moving>();

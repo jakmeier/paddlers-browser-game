@@ -8,6 +8,8 @@ query VillageUnitsQuery{
       y
       speed
       mana
+      level
+      experience
       tasks {
         id
         x

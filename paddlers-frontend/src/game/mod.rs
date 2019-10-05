@@ -13,6 +13,7 @@ pub (crate) mod abilities;
 pub (crate) mod net_receiver;
 pub (crate) mod status_effects;
 pub (crate) mod mana;
+pub (crate) mod level;
 
 use crate::prelude::*;
 use crate::game::{

@@ -142,6 +142,11 @@ impl Game<'_, '_> {
             table.push(health_details(health));
         }
 
+        let lvls = self.world.read_storage::<Level>();
+        if let Some(level) = lvls.get(e) {
+            table.extend(level.menu_table_infos());
+        }
+
         let mana = self.world.read_storage::<Mana>();
         if let Some(m) = mana.get(e) {
             table.extend(m.menu_table_infos());

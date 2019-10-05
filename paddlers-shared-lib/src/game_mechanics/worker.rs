@@ -25,3 +25,7 @@ pub fn hero_resource_collection_per_hour(task: TaskType) -> Option<(ResourceType
         }
     }
 }
+
+pub const fn hero_level_exp(now: i32) -> i32 {
+    now * 100
+}

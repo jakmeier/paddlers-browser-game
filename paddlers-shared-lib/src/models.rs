@@ -56,6 +56,8 @@ pub struct Worker {
     pub color: Option<UnitColor>,
     pub speed: f32, // in unit lengths per second
     pub mana: Option<i32>,
+    pub level: i32,
+    pub exp: i32,
 }
 
 #[cfg(feature = "sql_db")]
@@ -69,6 +71,8 @@ pub struct NewWorker {
     pub color: Option<UnitColor>,
     pub speed: f32,
     pub mana: Option<i32>,
+    pub level: i32,
+    pub exp: i32,
 }
 
 #[cfg(feature = "sql_db")]

@@ -36,3 +36,9 @@ pub const WHITE: Color = Color {
     b: 1.0,
     a: 1.0,
 };
+pub const YELLOW: Color = Color {
+    r: 1.0,
+    g: 1.0,
+    b: 0.0,
+    a: 1.0,
+};

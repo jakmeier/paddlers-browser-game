@@ -2,7 +2,6 @@ use specs::prelude::*;
 pub use crate::gui::{
     utils::*,
     gui_components::*,
-    sprites::{SingleSprite, SpriteIndex},
 };
 
 #[derive(Component, Debug, Clone, Copy)]
@@ -17,6 +16,7 @@ impl Mana {
             BLUE,
             self.mana,
             self.max_mana(),
+            None,
         );
         vec![row]
     }

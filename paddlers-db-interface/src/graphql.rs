@@ -92,6 +92,12 @@ impl GqlWorker {
     fn abilities(&self, ctx: &Context) -> Vec<GqlAbility> {
         ctx.db.worker_abilities(self.0.id).into_iter().map(|t| GqlAbility(t)).collect()
     }
+    fn level(&self) -> i32 {
+        self.0.level
+    }
+    fn experience(&self) -> i32 {
+        self.0.exp
+    }
 }
 
 #[juniper::object (Context = Context)]

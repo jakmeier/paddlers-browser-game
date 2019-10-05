@@ -55,6 +55,8 @@ impl DB {
                 speed: 0.5,
                 home: TEST_VILLAGE_ID.num(),
                 mana: Some(10),
+                level: 1,
+                exp: 0,
             };
             let worker = self.insert_worker(&worker);
             let task = NewTask {

@@ -1,0 +1,5 @@
+ALTER TABLE workers
+DROP COLUMN exp;
+
+ALTER TABLE workers
+DROP COLUMN level;

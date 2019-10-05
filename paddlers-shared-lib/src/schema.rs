@@ -148,6 +148,8 @@ table! {
         color -> Nullable<Unit_color>,
         speed -> Float4,
         mana -> Nullable<Int4>,
+        level -> Int4,
+        exp -> Int4,
     }
 }
 

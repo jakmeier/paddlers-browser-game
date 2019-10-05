@@ -25,6 +25,8 @@ pub fn with_unit_base<B: Builder>(
     birth: Timestamp,
     netid: i64,
     mana: Option<i64>,
+    lvl: i32,
+    exp: i32,
 ) -> B
 {
     let pos = tile_area.pos;
@@ -34,7 +36,8 @@ pub fn with_unit_base<B: Builder>(
         .with(Moving::new(birth, pos, (0,0), speed))
         .with(Clickable)
         .with(NetObj::worker(netid))
-        .with(AnimationState{ direction: Direction::Undirected });
+        .with(AnimationState{ direction: Direction::Undirected })
+        .with(Level{ lvl, exp });
     if let Some(m) = mana {
         builder = builder.with(Mana{ mana: m as i32 });
     }
@@ -95,7 +98,6 @@ use crate::net::graphql::village_units_query::{self, VillageUnitsQueryVillageWor
 impl VillageUnitsQueryVillageWorkers {
     fn create_entity(&self, world: &mut World, now: Timestamp, tile_area: Rectangle,) -> PadlResult<Entity> {
         let speed = unit_speed_to_worker_tiles_per_second(self.speed as f32) * tile_area.width();
-        let mana = self.mana;
         let netid = self.id.parse().unwrap();
         
         let net = world.read_storage::<NetObj>();
@@ -106,7 +108,16 @@ impl VillageUnitsQueryVillageWorkers {
             .map(|t| t.unwrap());
         
         let lazy = world.read_resource::<LazyUpdate>();
-        let mut builder = with_unit_base(lazy.create_entity(&world.entities()), speed, tile_area, now, netid, mana);
+        let mut builder = with_unit_base(
+            lazy.create_entity(&world.entities()),
+            speed,
+            tile_area,
+            now,
+            netid,
+            self.mana,
+            self.level as i32,
+            self.experience as i32,
+        );
         builder = with_worker(builder, tasks, netid);
         match self.unit_type {
             village_units_query::UnitType::HERO => {
