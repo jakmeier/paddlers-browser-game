@@ -21,6 +21,7 @@ use super::schema::{
     resources,
     tasks,
     streams,
+    players,
     villages,
     abilities,
     effects,
@@ -44,6 +45,22 @@ pub enum UnitColor {
     Camo,
 }
 
+
+#[cfg(feature = "sql_db")]
+#[derive(Debug, Queryable, Identifiable, AsChangeset)]
+pub struct Player {
+    pub id: i64,
+    pub karma: i64,
+    pub display_name: String,
+}
+
+#[cfg(feature = "sql_db")]
+#[derive(Insertable)]
+#[table_name = "players"]
+pub struct NewPlayer {
+    pub karma: i64,
+    pub display_name: String,
+}
 
 #[cfg(feature = "sql_db")]
 #[derive(Debug, Queryable, Identifiable, AsChangeset)]
@@ -245,6 +262,7 @@ pub struct Village {
     pub x: f32,
     pub y: f32,
     pub stream_id: i64,
+    pub player_id: Option<i64>,
 }
 
 #[derive(Insertable, Debug)]

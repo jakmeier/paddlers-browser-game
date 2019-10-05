@@ -79,6 +79,17 @@ table! {
     use diesel::sql_types::*;
     use crate::models::*;
 
+    players (id) {
+        id -> Int8,
+        karma -> Int8,
+        display_name -> Nullable<Varchar>,
+    }
+}
+
+table! {
+    use diesel::sql_types::*;
+    use crate::models::*;
+
     resources (resource_type, village_id) {
         resource_type -> Resource_type,
         amount -> Int8,
@@ -121,6 +132,7 @@ table! {
         x -> Float4,
         y -> Float4,
         stream_id -> Int8,
+        player_id -> Nullable<Int8>,
     }
 }
 
@@ -162,6 +174,7 @@ joinable!(hobos -> villages (home));
 joinable!(resources -> villages (village_id));
 joinable!(tasks -> hobos (target_hobo_id));
 joinable!(tasks -> workers (worker_id));
+joinable!(villages -> players (player_id));
 joinable!(villages -> streams (stream_id));
 joinable!(worker_flags -> workers (worker_id));
 joinable!(workers -> villages (home));
@@ -173,6 +186,7 @@ allow_tables_to_appear_in_same_query!(
     buildings,
     effects,
     hobos,
+    players,
     resources,
     streams,
     tasks,
