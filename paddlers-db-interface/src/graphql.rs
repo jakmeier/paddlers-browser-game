@@ -29,6 +29,10 @@ pub fn new_schema() -> Schema {
     Context = Context,
 )]
 impl Query {
+    fn player(ctx: &Context, player_id: i32) -> FieldResult<GqlPlayer> {
+        let player = ctx.db.player(player_id as i64).ok_or("No such village")?;
+        Ok(GqlPlayer(player))
+    }
     fn village(ctx: &Context, village_id: i32) -> FieldResult<GqlVillage> {
         let village = ctx.db.village(village_id as i64).ok_or("No such village")?;
         Ok(GqlVillage(village))
@@ -56,6 +60,20 @@ impl Mutation {
     /// Why? GraphiQL is not able to display a schema with an empty Mutation.
     fn say_hi() -> &str {
         "Hi!"
+    }
+}
+
+pub struct GqlPlayer(paddlers_shared_lib::models::Player);
+#[juniper::object (Context = Context)]
+impl GqlPlayer {
+    fn display_name(&self) -> Option<&String> {
+        self.0.display_name.as_ref()
+    }
+    fn karma(&self) -> i32 {
+        self.0.karma as i32
+    }
+    fn villages(&self, ctx: &Context) -> Vec<GqlVillage> {
+        ctx.db.player_villages(PlayerKey(self.0.id)).into_iter().map(|t| GqlVillage(t)).collect()
     }
 }
 

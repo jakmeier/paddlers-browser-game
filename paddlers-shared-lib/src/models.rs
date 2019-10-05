@@ -51,7 +51,7 @@ pub enum UnitColor {
 pub struct Player {
     pub id: i64,
     pub karma: i64,
-    pub display_name: String,
+    pub display_name: Option<String>,
 }
 
 #[cfg(feature = "sql_db")]
@@ -59,7 +59,7 @@ pub struct Player {
 #[table_name = "players"]
 pub struct NewPlayer {
     pub karma: i64,
-    pub display_name: String,
+    pub display_name: Option<String>,
 }
 
 #[cfg(feature = "sql_db")]
@@ -272,6 +272,7 @@ pub struct NewVillage {
     pub x: f32,
     pub y: f32,
     pub stream_id: i64,
+    pub player_id: Option<i64>,
 }
 
 #[derive(Debug, Clone, Copy, Queryable, AsChangeset)]

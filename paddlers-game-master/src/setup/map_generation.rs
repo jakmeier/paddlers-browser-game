@@ -114,7 +114,7 @@ impl DB {
         // self.test_add_all_villages();
     }
 
-    pub fn add_village(&self) -> Result<Village, &'static str> {
+    pub fn add_village(&self, pid: PlayerKey) -> Result<Village, &'static str> {
         // Find unsaturated stream
         let streams = self.streams_to_add_village();
         for s in streams {
@@ -126,6 +126,7 @@ impl DB {
                         stream_id: s.id,
                         x,
                         y,
+                        player_id: Some(pid.num()),
                     };
                     return Ok(self.insert_villages(&[v])[0]);
                 }
@@ -154,6 +155,7 @@ impl DB {
                     stream_id: s.id,
                     x,
                     y,
+                    player_id: None,
                 };
                 self.insert_villages(&[v]);
             }

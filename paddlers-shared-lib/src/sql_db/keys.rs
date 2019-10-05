@@ -4,6 +4,12 @@ pub trait SqlKey<K> {
     fn key(&self) -> K;
 }
 
+impl SqlKey<PlayerKey> for Player {
+    fn key(&self) -> PlayerKey {
+        PlayerKey(self.id)
+    }
+}
+
 impl SqlKey<VillageKey> for Village {
     fn key(&self) -> VillageKey {
         VillageKey(self.id)

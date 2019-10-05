@@ -17,21 +17,19 @@ impl DB {
         self.add_resource(ResourceType::Feathers, TEST_VILLAGE_ID, feathers).expect("Adding feathers.");
     }
 
-    pub fn init_resources(&self) {
+    pub fn init_resources(&self, vid: VillageKey) {
         use paddlers_shared_lib::strum::IntoEnumIterator;
         for res in ResourceType::iter()
         {
-            for village in self.all_villages() {
-                let entity = Resource {
-                    resource_type: res, 
-                    amount: 0,
-                    village_id: village.id,
-                };
-                if self.maybe_resource(res, village.key()).is_none() {
-                    match self.insert_resource(&entity) {
-                        Err(e) => println!("Couldn't insert resource. {} Error: {}", res, e),
-                        _ => {}
-                    }
+            let entity = Resource {
+                resource_type: res, 
+                amount: 0,
+                village_id: vid.num(),
+            };
+            if self.maybe_resource(res, vid).is_none() {
+                match self.insert_resource(&entity) {
+                    Err(e) => println!("Couldn't insert resource. {} Error: {}", res, e),
+                    _ => {}
                 }
             }
         }

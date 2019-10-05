@@ -1,4 +1,4 @@
-use crate::prelude::{VillageKey, HoboKey, WorkerKey};
+use crate::prelude::{VillageKey, HoboKey, WorkerKey, PlayerKey};
 use crate::models::*;
 use crate::schema::*;
 use diesel::prelude::*;
@@ -6,6 +6,13 @@ use diesel::prelude::*;
 pub trait GameDB {
     fn dbconn(&self) -> &PgConnection;
 
+    fn player(&self, player_id: i64) -> Option<Player> {
+        players::table
+            .find(player_id)
+            .first(self.dbconn())
+            .optional()
+            .expect("Error loading data")
+    }
     fn hobo(&self, hobo_id: i64) -> Option<Hobo> {
         let results = hobos::table
             .filter(hobos::id.eq(hobo_id))
@@ -211,6 +218,13 @@ pub trait GameDB {
         let results = villages::table
             .filter(villages::x.ge(low_x))
             .filter(villages::x.le(high_x))
+            .load::<Village>(self.dbconn())
+            .expect("Error loading data");
+        results
+    }
+    fn player_villages(&self, player_id: PlayerKey) -> Vec<Village> {
+        let results = villages::table
+            .filter(villages::player_id.eq(player_id.num()))
             .load::<Village>(self.dbconn())
             .expect("Error loading data");
         results
