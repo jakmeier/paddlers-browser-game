@@ -16,6 +16,7 @@ use game_master::{
     GameMaster,
     town_worker::TownWorker,
     economy_worker::EconomyWorker,
+    attack_spawn::AttackSpawner,
 };
 
 use actix::prelude::*;
@@ -41,6 +42,7 @@ struct ActorAddresses {
     _game_master: Addr<GameMaster>,
     town_worker: Addr<TownWorker>,
     _econ_worker: Addr<EconomyWorker>,
+    attack_worker: Addr<AttackSpawner>,
 }
 
 fn main() {
@@ -57,7 +59,8 @@ fn main() {
     let origin = config.frontend_origin;
 
     let sys = actix::System::new("background-worker-example");
-    let gm_actor = GameMaster::new(dbpool.clone()).start();
+    let attack_worker = AttackSpawner::new(dbpool.clone()).start();
+    let gm_actor = GameMaster::new(dbpool.clone(), &attack_worker).start();
     let town_worker_actor = TownWorker::new(dbpool.clone()).start();
     let econ_worker = EconomyWorker::new(dbpool.clone()).start();
 
@@ -77,6 +80,7 @@ fn main() {
                     _game_master: gm_actor.clone(),
                     town_worker: town_worker_actor.clone(),
                     _econ_worker: econ_worker.clone(),
+                    attack_worker: attack_worker.clone(),
                 })
             .data(dbpool.clone())
             .route("/", web::get().to(api::index))

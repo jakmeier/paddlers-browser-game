@@ -23,7 +23,7 @@ impl<'a> System<'a> for HoverSystem {
         
         match (*ui_state).current_view {
             UiView::Map => {},
-            UiView::Town => {
+            UiView::Town(_) => {
                 for (e, pos) in (&entities, &position).join() {
                     if mouse_pos.overlaps_rectangle(&pos.area) {
                         (*ui_state).hovered_entity = Some(e);

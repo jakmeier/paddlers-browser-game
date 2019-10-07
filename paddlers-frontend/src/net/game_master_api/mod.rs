@@ -7,6 +7,7 @@ use specs::prelude::*;
 use futures_util::future::FutureExt;
 use stdweb::PromiseFuture;
 use paddlers_shared_lib::api::{
+    keys::VillageKey,
     shop::*,
     tasks::TaskList,
     statistics::*,
@@ -24,11 +25,12 @@ impl RestApiState {
             err_chan: Mutex::new(err_chan),
         }
     }
-    pub fn http_place_building(&mut self, pos: (usize, usize), building_type: BuildingType) -> PadlResult<()> {
+    pub fn http_place_building(&mut self, pos: (usize, usize), building_type: BuildingType, village: VillageKey) -> PadlResult<()> {
         let msg = BuildingPurchase {
             building_type: building_type, 
             x: pos.0,
             y: pos.1,
+            village
         };
 
         let request_string = &serde_json::to_string(&msg).unwrap();
@@ -37,8 +39,8 @@ impl RestApiState {
         Ok(())
     }
 
-    pub fn http_delete_building(&mut self, idx: (usize, usize)) -> PadlResult<()>  {
-        let msg = BuildingDeletion { x: idx.0, y: idx.1 };
+    pub fn http_delete_building(&mut self, idx: (usize, usize), village: VillageKey) -> PadlResult<()>  {
+        let msg = BuildingDeletion { x: idx.0, y: idx.1, village };
         let request_string = &serde_json::to_string(&msg).unwrap();
         let promise = ajax::send("POST", &format!("{}/shop/building/delete", game_master_url()?), request_string);
         self.push_promise(promise, None);

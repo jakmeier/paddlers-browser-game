@@ -17,7 +17,8 @@ pub fn purchase_building(
     -> impl Responder 
 {
     let db: crate::db::DB = pool.get_ref().into();
-    db.try_buy_building(body.building_type.into(), (body.x, body.y))
+    // TODO [user authentication]
+    db.try_buy_building(body.building_type.into(), (body.x, body.y), body.village)
         .map_or_else(
             |e| HttpResponse::from(&e),
             |_| HttpResponse::Ok().into(), 
@@ -30,7 +31,8 @@ pub fn delete_building(
 )-> impl Responder 
 {
     let db: crate::db::DB = pool.get_ref().into();
-    if let Some(building) = db.find_building_by_coordinates(body.x as i32, body.y as i32) {
+    // TODO [user authentication]
+    if let Some(building) = db.find_building_by_coordinates(body.x as i32, body.y as i32, body.village) {
         db.delete_building(&building);
         HttpResponse::Ok().into()
     } else {

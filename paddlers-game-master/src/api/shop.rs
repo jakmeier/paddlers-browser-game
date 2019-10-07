@@ -1,7 +1,6 @@
 use crate::db::DB;
 use paddlers_shared_lib::{
-    sql::GameDB,
-    models::*,
+    prelude::*,
     api::{
         shop::*,
     },
@@ -13,16 +12,13 @@ use crate::buildings::BuildingFactory;
 use crate::StringErr;
 
 impl DB {
-    // TODO: This should be with village/user parameters
-    pub fn try_buy_building(&self, typ: BuildingType, pos: (usize ,usize)) -> StringErr {
-        println!("Buying building");
-        
+    pub fn try_buy_building(&self, typ: BuildingType, pos: (usize ,usize), village: VillageKey) -> StringErr {
         self.building_has_space(typ, pos)
             .map(
                 |_| self.try_spend(&typ.price())
             ).map(
                 |_| {
-                    self.insert_building(&BuildingFactory::new(typ, pos));
+                    self.insert_building(&BuildingFactory::new(typ, pos, village));
                 }
             )
     }

@@ -6,7 +6,7 @@ use crate::PadlId;
 
 #[derive(Clone,Copy,Debug, Serialize, Deserialize)]
 pub struct PlayerKey(pub PadlId);
-#[derive(Clone,Copy,Debug, Serialize, Deserialize)]
+#[derive(Clone,Copy,Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct VillageKey(pub PadlId);
 #[derive(Clone,Copy,Debug, Serialize, Deserialize)]
 pub struct HoboKey(pub PadlId);

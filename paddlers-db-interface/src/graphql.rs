@@ -5,6 +5,7 @@ use juniper;
 use juniper::FieldResult;
 use paddlers_shared_lib::prelude::*;
 use paddlers_shared_lib::graphql_types::*;
+use paddlers_shared_lib::sql_db::keys::SqlKey;
 
 pub struct Mutation;
 pub struct Query;
@@ -213,13 +214,13 @@ impl GqlVillage {
         self.0.y as f64
     }
     fn sticks(&self, ctx: &Context) -> i32 {
-        ctx.db.resource(ResourceType::Sticks, TEST_VILLAGE_ID) as i32
+        ctx.db.resource(ResourceType::Sticks, self.0.key()) as i32
     }
     fn feathers(&self, ctx: &Context) -> i32 {
-        ctx.db.resource(ResourceType::Feathers, TEST_VILLAGE_ID) as i32
+        ctx.db.resource(ResourceType::Feathers, self.0.key()) as i32
     }
     fn logs(&self, ctx: &Context) -> i32 {
-        ctx.db.resource(ResourceType::Logs, TEST_VILLAGE_ID) as i32
+        ctx.db.resource(ResourceType::Logs, self.0.key()) as i32
     }
     fn workers(&self, ctx: &Context) -> Vec<GqlWorker> {
         ctx.db.workers(self.0.id).into_iter().map(|u| GqlWorker(u)).collect()

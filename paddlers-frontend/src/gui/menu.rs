@@ -68,7 +68,7 @@ impl Game<'_, '_> {
                     self.render_entity_details(window, &menu_area, e)?;
                 }
             },
-            UiView::Town => {
+            UiView::Town(_) => {
                 let resources_area = Rectangle::new( (area.x(), y), (area.width(), resources_height) );
                 self.render_resources(window, &resources_area)?;
                 y += resources_area.height();

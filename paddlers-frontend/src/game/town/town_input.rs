@@ -101,7 +101,7 @@ impl Town {
             match grabbed {
                 Grabbable::NewBuilding(bt) => {
                     if let Some(pos) = self.get_buildable_tile(mouse_pos) {
-                        rest.http_place_building(pos, *bt).unwrap_or_else(
+                        rest.http_place_building(pos, *bt, self.village_key).unwrap_or_else(
                             |e|
                             errq.push(e)
                         );

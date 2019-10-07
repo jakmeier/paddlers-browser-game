@@ -212,7 +212,7 @@ impl State for Game<'static, 'static> {
         std::mem::drop(ui_state);
         window.clear(Color::WHITE)?;
         match view {
-            UiView::Town => {
+            UiView::Town(_) => {
                 {
                     let (asset, town, ul) = (&mut self.sprites, &self.world.read_resource::<Town>(), self.unit_len.unwrap());
                     // asset.execute(|sprites| town.render(window, sprites, tick, ul))?;
@@ -279,41 +279,48 @@ impl State for Game<'static, 'static> {
                 if *key == Key::Delete && *state == ButtonState::Pressed =>
                 {
                     let mut ui_state = self.world.write_resource::<UiState>();
-                    if let Some(e) = ui_state.selected_entity {
-                        (*ui_state).selected_entity = None;
-                        std::mem::drop(ui_state);
+                    let view = (*ui_state).current_view;
+                    match view {
+                        UiView::Town(village_key) => {
+                            if let Some(e) = ui_state.selected_entity {
+                                (*ui_state).selected_entity = None;
+                                
+                                std::mem::drop(ui_state);
 
-                        let pos_store = self.world.read_storage::<Position>();
-                        let pos = pos_store.get(e).unwrap();
-                        let tile_index = self.town().tile(pos.area.center());
-                        std::mem::drop(pos_store);
+                                let pos_store = self.world.read_storage::<Position>();
+                                let pos = pos_store.get(e).unwrap();
+                                let tile_index = self.town().tile(pos.area.center());
+                                std::mem::drop(pos_store);
 
-                        let r = self.rest().http_delete_building(tile_index);
-                        self.check(r);
+                                let r = self.rest().http_delete_building(tile_index, village_key);
+                                self.check(r);
 
-                        // Account for changes in aura total
-                        let aura_store = self.world.read_storage::<Aura>();
-                        let aura = aura_store.get(e).map(|a| a.effect);
-                        let range_store = self.world.read_storage::<Range>();
-                        let range = range_store.get(e).map(|r| r.range);
-                        std::mem::drop(aura_store);
-                        std::mem::drop(range_store);
-                        if let Some(aura) = aura {
-                            if let Some(range) = range {
-                                if range > self.town().distance_to_lane(tile_index) {
-                                    self.town_mut().total_ambience -= aura;
+                                // Account for changes in aura total
+                                let aura_store = self.world.read_storage::<Aura>();
+                                let aura = aura_store.get(e).map(|a| a.effect);
+                                let range_store = self.world.read_storage::<Range>();
+                                let range = range_store.get(e).map(|r| r.range);
+                                std::mem::drop(aura_store);
+                                std::mem::drop(range_store);
+                                if let Some(aura) = aura {
+                                    if let Some(range) = range {
+                                        if range > self.town().distance_to_lane(tile_index) {
+                                            self.town_mut().total_ambience -= aura;
+                                        }
+                                    }
                                 }
-                            }
-                        }
 
-                        self.town_mut().remove_building(tile_index);
-                        self.world.delete_entity(e)
-                            .unwrap_or_else(
-                                |_|
-                                self.check(
-                                    PadlErrorCode::DevMsg("Tried to delete wrong Generation").dev()
-                                ).unwrap()
-                            );
+                                self.town_mut().remove_building(tile_index);
+                                self.world.delete_entity(e)
+                                    .unwrap_or_else(
+                                        |_|
+                                        self.check(
+                                            PadlErrorCode::DevMsg("Tried to delete wrong Generation").dev()
+                                        ).unwrap()
+                                    );
+                            }
+                        },
+                        _ => {},
                     }
                 },
             Event::Key(key, state) 

@@ -1,3 +1,4 @@
+use crate::api::keys::VillageKey;
 use crate::models::*;
 use serde::{Serialize, Deserialize};
 
@@ -37,6 +38,7 @@ impl Cost for BuildingType {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct BuildingPurchase {
+    pub village: VillageKey,
     pub building_type: BuildingType,
     pub x: usize,
     pub y: usize,
@@ -44,6 +46,7 @@ pub struct BuildingPurchase {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct BuildingDeletion {
+    pub village: VillageKey,
     pub x: usize,
     pub y: usize,
 }

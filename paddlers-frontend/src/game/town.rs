@@ -11,6 +11,7 @@ use crate::gui::{
     z::{Z_TILE_SHADOW, Z_TEXTURE, Z_VISITOR}
 };
 pub use paddlers_shared_lib::game_mechanics::town::TileIndex;
+use paddlers_shared_lib::prelude::*;
 use crate::prelude::*;
 use paddlers_shared_lib::game_mechanics::town::*;
 pub (crate) use paddlers_shared_lib::game_mechanics::town::TownTileType as TileType;
@@ -19,6 +20,7 @@ pub type TileState = TileStateEx<specs::Entity>;
 
 #[derive(Debug)]
 pub struct Town {
+    pub village_key: VillageKey,
     map: TownMap,
     state: TownState<specs::Entity>,
     ul: f32,
@@ -43,6 +45,7 @@ impl Town {
             state: TownState::new(),
             ul: ul,
             total_ambience: 0,
+            village_key: TEST_VILLAGE_ID
         }
     }
 

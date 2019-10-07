@@ -93,8 +93,9 @@ pub trait GameDB {
             .expect("Error loading data");
         results
     }
-    fn find_building_by_coordinates(&self, x: i32, y: i32) -> Option<Building> {
+    fn find_building_by_coordinates(&self, x: i32, y: i32, village: VillageKey) -> Option<Building> {
         let result = buildings::table
+            .filter(buildings::village_id.eq(village.num()))
             .filter(buildings::x.eq(x).and(buildings::y.eq(y)))
             .first::<Building>(self.dbconn())
             .optional()
@@ -231,6 +232,13 @@ pub trait GameDB {
     }
     fn all_villages(&self) -> Vec<Village> {
         let results = villages::table
+            .load::<Village>(self.dbconn())
+            .expect("Error loading data");
+        results
+    }
+    fn all_player_villages(&self) -> Vec<Village> {
+        let results = villages::table
+            .filter(villages::player_id.is_not_null())
             .load::<Village>(self.dbconn())
             .expect("Error loading data");
         results
