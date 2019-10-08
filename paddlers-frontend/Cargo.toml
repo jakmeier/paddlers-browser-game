@@ -11,7 +11,7 @@ paddlers-shared-lib = { path = "../paddlers-shared-lib", features = ["enum_utils
 # Waiting for PR with bugfix to be accepted
 quicksilver = { git = "https://github.com/jakmeier/quicksilver", branch= "cross-browser-touch", default-features = false, features = ["fonts", "complex_shapes"] }
 # quicksilver = { path = "../../quicksilver", default-features = false, features = ["fonts"] }
-stdweb = {version = "0.4.18", features = ["experimental_features_which_may_break_on_minor_version_bumps"] }
+stdweb = {version = "0.4.19", features = ["experimental_features_which_may_break_on_minor_version_bumps"] }
 specs = { version = "0.15", default-features = false } # parallel not supported in wasm
 specs-derive = "0.4"
 graphql_client = "0.8"
@@ -19,9 +19,10 @@ serde = { version = "1.0", features = ["derive"]}
 serde_json = "1.0"
 chrono = "0.4"
 pathfinding = "1.1"
+url = "2.1.0"
 
-futures-preview = "0.3.0-alpha.17"
-futures-util-preview = "0.3.0-alpha.17"
+futures-preview = "0.3.0-alpha.18"
+futures-util-preview = "0.3.0-alpha.18"
 
 
 [features]

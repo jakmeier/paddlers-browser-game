@@ -1,6 +1,5 @@
 #![recursion_limit="512"]
 #![feature(is_sorted, associated_type_bounds, vec_remove_item)]
-#![feature(type_alias_enum_variants)] // May be removed with nightly update
 #[macro_use]
 mod wasm_setup;
 extern crate quicksilver;
