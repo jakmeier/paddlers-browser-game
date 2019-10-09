@@ -1,5 +1,5 @@
-query AttacksQuery($min_attack_id: Int) {
-  village(villageId: 1) {
+query AttacksQuery($min_attack_id: Int, $village_id: Int!) {
+  village(villageId: $village_id) {
     attacks(minId: $min_attack_id) {
       id
       units {

@@ -63,11 +63,13 @@ impl GameMaster {
 
 // TODO: Efficiently check only required attacks
 fn check_attacks(db: &DB) {
-    let attacks = db.attacks(None);
-    let now = chrono::Utc::now().naive_utc();
-    for atk in attacks.iter() {
-        if atk.arrival < now {
-            db.maybe_attack_now(atk, now -  atk.arrival);
+    for village in db.all_player_villages() {
+        let attacks = db.attacks(village.key(), None);
+        let now = chrono::Utc::now().naive_utc();
+        for atk in attacks.iter() {
+            if atk.arrival < now {
+                db.maybe_attack_now(atk, now -  atk.arrival);
+            }
         }
     }
 }

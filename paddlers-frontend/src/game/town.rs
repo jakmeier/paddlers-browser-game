@@ -10,6 +10,7 @@ use crate::gui::{
     sprites::*,
     z::{Z_TILE_SHADOW, Z_TEXTURE, Z_VISITOR}
 };
+use crate::game::state::*;
 pub use paddlers_shared_lib::game_mechanics::town::TileIndex;
 use paddlers_shared_lib::prelude::*;
 use crate::prelude::*;
@@ -45,7 +46,7 @@ impl Town {
             state: TownState::new(),
             ul: ul,
             total_ambience: 0,
-            village_key: TEST_VILLAGE_ID
+            village_key: current_village(),
         }
     }
 

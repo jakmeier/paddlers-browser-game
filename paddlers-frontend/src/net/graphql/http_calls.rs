@@ -8,8 +8,8 @@ use graphql_client::GraphQLQuery;
 use futures::Future;
 use futures_util::future::FutureExt;
 
-pub (super) fn http_read_incoming_attacks(min_attack_id: Option<i64>) -> PadlResult<impl Future<Output = PadlResult<AttacksResponse>>> {
-    let request_body = AttacksQuery::build_query(attacks_query::Variables{min_attack_id: min_attack_id});
+pub (super) fn http_read_incoming_attacks(min_attack_id: Option<i64>, village_id: i64) -> PadlResult<impl Future<Output = PadlResult<AttacksResponse>>> {
+    let request_body = AttacksQuery::build_query(attacks_query::Variables{min_attack_id, village_id});
     let request_string = &serde_json::to_string(&request_body)?;
     let promise = ajax::send("POST", &graphql_url()?, request_string)?;
     Ok(
@@ -21,8 +21,8 @@ pub (super) fn http_read_incoming_attacks(min_attack_id: Option<i64>) -> PadlRes
     )
 }
 
-pub (super) fn http_read_buildings() -> PadlResult<impl Future<Output = PadlResult<BuildingsResponse>>> {
-    let request_body = BuildingsQuery::build_query(buildings_query::Variables{});
+pub (super) fn http_read_buildings(village_id: i64) -> PadlResult<impl Future<Output = PadlResult<BuildingsResponse>>> {
+    let request_body = BuildingsQuery::build_query(buildings_query::Variables{village_id});
     let request_string = &serde_json::to_string(&request_body)?;
     let promise = ajax::send("POST", &graphql_url()?, request_string)?;
     Ok(
@@ -34,8 +34,8 @@ pub (super) fn http_read_buildings() -> PadlResult<impl Future<Output = PadlResu
     )
 }
 
-pub (super) fn http_read_resources() -> PadlResult<impl Future<Output = PadlResult<ResourcesResponse>>> {
-    let request_body = ResourcesQuery::build_query(resources_query::Variables{});
+pub (super) fn http_read_resources(village_id: i64) -> PadlResult<impl Future<Output = PadlResult<ResourcesResponse>>> {
+    let request_body = ResourcesQuery::build_query(resources_query::Variables{ village_id });
     let request_string = &serde_json::to_string(&request_body)?;
     let promise = ajax::send("POST", &graphql_url()?, request_string)?;
     Ok(
@@ -47,8 +47,8 @@ pub (super) fn http_read_resources() -> PadlResult<impl Future<Output = PadlResu
     )
 }
 
-pub (super) fn http_read_workers() ->  PadlResult<impl Future<Output = PadlResult<VillageUnitsResponse>>> {
-    let request_body = VillageUnitsQuery::build_query(village_units_query::Variables{});
+pub (super) fn http_read_workers(village_id: i64) ->  PadlResult<impl Future<Output = PadlResult<VillageUnitsResponse>>> {
+    let request_body = VillageUnitsQuery::build_query(village_units_query::Variables{village_id});
     let request_string = &serde_json::to_string(&request_body)?;
     let promise = ajax::send("POST", &graphql_url()?, request_string)?;
     Ok(

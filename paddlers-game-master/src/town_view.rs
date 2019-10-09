@@ -9,13 +9,13 @@ pub struct TownView {
 }
 
 impl TownView {
-    pub (crate) fn load_village(db: &DB, _village_id: i64) -> Self {
+    pub (crate) fn load_village(db: &DB, village: VillageKey) -> Self {
         let mut map = TownMap::basic_map();
         let mut state = TownState::new();
         let village_id = 1;
         let now = chrono::Utc::now().naive_utc();
 
-        let buildings = db.buildings();
+        let buildings = db.buildings(village);
         for b in buildings {
             let idx = (b.x as usize, b.y as usize);
             map[idx] = TownTileType::BUILDING(b.building_type);

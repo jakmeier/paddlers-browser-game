@@ -1,7 +1,7 @@
 use quicksilver::prelude::*;
 use specs::prelude::*;
-use paddlers_shared_lib::prelude::TEST_VILLAGE_ID;
 use crate::game::specs_resources::Now;
+use crate::game::state::*;
 use crate::gui::{
     sprites::*,
     gui_components::*,
@@ -25,7 +25,7 @@ impl MenuButtons {
 
         let town_button = Self::button_render(SingleSprite::TownButton, SingleSprite::TownButtonHov);
         ui_box.add(
-            UiElement::new(MenuButtonAction::SwitchToView(UiView::Town(TEST_VILLAGE_ID)))// TODO: handle village ID
+            UiElement::new(MenuButtonAction::SwitchToView(UiView::Town(current_village())))
                 .with_render_variant(town_button)
         );
         

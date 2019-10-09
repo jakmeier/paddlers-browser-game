@@ -68,8 +68,9 @@ pub trait GameDB {
             .first::<i64>(self.dbconn())
             .expect("Error loading data") as usize
     }
-    fn attacks(&self, min_id: Option<i64>) -> Vec<Attack> {
+    fn attacks(&self, village: VillageKey, min_id: Option<i64>) -> Vec<Attack> {
         let results = attacks::table
+            .filter(attacks::destination_village_id.eq(village.num()))
             .filter(attacks::id.ge(min_id.unwrap_or(0)))
             .limit(500)
             .load::<Attack>(self.dbconn())
@@ -86,8 +87,9 @@ pub trait GameDB {
         .expect("Error loading data");
         results
     }
-    fn buildings(&self) -> Vec<Building> {
+    fn buildings(&self, village: VillageKey) -> Vec<Building> {
         let results = buildings::table
+            .filter(buildings::village_id.eq(village.num()))
             .limit(500)
             .load::<Building>(self.dbconn())
             .expect("Error loading data");

@@ -226,9 +226,8 @@ impl GqlVillage {
         ctx.db.workers(self.0.id).into_iter().map(|u| GqlWorker(u)).collect()
     }
     fn buildings(&self, ctx: &Context) -> FieldResult<Vec<GqlBuilding>> {
-        // TODO: Filter for village
         Ok(
-            ctx.db.buildings().into_iter().map(GqlBuilding::from).collect()
+            ctx.db.buildings(self.0.key()).into_iter().map(GqlBuilding::from).collect()
         )
     }
     #[graphql(
@@ -239,9 +238,8 @@ impl GqlVillage {
         )
     )]
     fn attacks(&self, ctx: &Context, min_id: Option<i32>) -> FieldResult<Vec<GqlAttack>> {
-        // TODO: Filter for village
         Ok(
-            ctx.db.attacks(min_id.map(i64::from)).into_iter().map(GqlAttack::from).collect()
+            ctx.db.attacks(self.0.key(), min_id.map(i64::from)).into_iter().map(GqlAttack::from).collect()
         )
     }
 }

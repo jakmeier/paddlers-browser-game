@@ -8,6 +8,7 @@ use futures::Future;
 use futures_util::future::FutureExt;
 use std::sync::atomic::{AtomicI64, Ordering};
 use crate::prelude::*;
+use crate::game::state::current_village;
 
 pub struct GraphQlState {
     next_attack_id: AtomicI64,
@@ -22,7 +23,7 @@ impl GraphQlState {
     }
 
     pub (super) fn attacks_query(&'static self) -> PadlResult<impl Future<Output = PadlResult<NetMsg>>> {
-        let fp = http_read_incoming_attacks(Some(self.next_attack_id.load(Ordering::Relaxed)))?;
+        let fp = http_read_incoming_attacks(Some(self.next_attack_id.load(Ordering::Relaxed)), current_village().num())?;
         Ok(
             fp.map(
                 move |response| {
@@ -40,7 +41,7 @@ impl GraphQlState {
         )
     }
     pub (super) fn resource_query(&self) -> PadlResult<impl Future<Output = PadlResult<NetMsg>>> {
-        let fp = http_read_resources()?;
+        let fp = http_read_resources(current_village().num())?;
         Ok(
             fp.map(
                 |response|
@@ -49,7 +50,7 @@ impl GraphQlState {
         )
     }
     pub (super) fn buildings_query(&self) -> PadlResult<impl Future<Output = PadlResult<NetMsg>>> {
-        let fp = http_read_buildings()?;
+        let fp = http_read_buildings(current_village().num())?;
         Ok(
             fp.map(
                 |response| Ok(NetMsg::Buildings(response?)),
@@ -57,7 +58,7 @@ impl GraphQlState {
         )
     }
     pub (super) fn workers_query(&self) -> PadlResult<impl Future<Output = PadlResult<NetMsg>>> {
-        let fp = http_read_workers()?; 
+        let fp = http_read_workers(current_village().num())?; 
         Ok(
             fp.map(
                 |response| {

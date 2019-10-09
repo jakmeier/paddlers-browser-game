@@ -1,5 +1,5 @@
-query VillageUnitsQuery{
-  village(villageId: 1) {
+query VillageUnitsQuery($village_id: Int!){
+  village(villageId: $village_id) {
     workers {
       id
       unitType

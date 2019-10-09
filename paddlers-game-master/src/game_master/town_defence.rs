@@ -10,14 +10,15 @@ impl DB {
 
         let seconds = seconds_to_complete(&off).ceil();
         if time_into_fight > Duration::milliseconds((seconds * 1_000.0) as i64){
-            let def = self.buildings();
-            self.execute_fight(&def, &off);
+            let village = VillageKey(atk.destination_village_id);
+            let def = self.buildings(village);
+            self.execute_fight(&def, &off, village);
             self.delete_attack(atk);
         }
 
     }
 
-    fn execute_fight(&self, defenders: &[Building], attackers: &[Hobo]) {
+    fn execute_fight(&self, defenders: &[Building], attackers: &[Hobo], village: VillageKey) {
 
         // println!("Fight!");
         // println!("{:#?} against {:#?}", defenders, attackers);
@@ -29,7 +30,7 @@ impl DB {
             .map(|(a, hp)| (a, hp - self.damage_from_effects(a)) )
             .filter(|(_, hp)| *hp <= 0 )
             .map(|(a, _)| a );
-        self.collect_reward(defeated_units.clone());
+        self.collect_reward(defeated_units.clone(), village);
         defeated_units.for_each(|u| self.delete_hobo(u));
 
         // TODO: Move survivors back

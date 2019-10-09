@@ -47,13 +47,12 @@ pub (super) fn overwrite_tasks(
 )-> impl Responder 
 {
     let db: crate::db::DB = pool.get_ref().into();
-    let village_id = 1; // TODO [user authentication]
-    match crate::worker_actions::validate_task_list(&db, &body.0, village_id) {
+    match crate::worker_actions::validate_task_list(&db, &body.0) {
         Ok(validated) => {
             for upd in validated.update_tasks {
                 db.update_task(&upd);
             }
-            crate::worker_actions::replace_worker_tasks(&db, &addr.town_worker, body.worker_id, &validated.new_tasks);
+            crate::worker_actions::replace_worker_tasks(&db, &addr.town_worker, body.worker_id, &validated.new_tasks, validated.village_id);
         }
         Err(e) => { 
             println!("Task creation failed. {} \n Body: {:?}", e, body.0); 

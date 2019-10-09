@@ -21,14 +21,17 @@ trait WorkerAction {
 pub struct ValidatedTaskList {
     pub new_tasks: Vec<NewTask>,
     pub update_tasks: Vec<Task>,
+    pub village_id: VillageKey,
 }
-pub (crate) fn validate_task_list(db: &DB, tl: &TaskList, village_id: i64) -> Result<ValidatedTaskList, Box<dyn std::error::Error>> {
+pub (crate) fn validate_task_list(db: &DB, tl: &TaskList) -> Result<ValidatedTaskList, Box<dyn std::error::Error>> {
+    // TODO [user authentication]
 
     let worker_id = tl.worker_id;
 
     // Load relevant data into memory 
-    let mut town = TownView::load_village(db, village_id);
     let mut worker = db.worker(worker_id).ok_or("Worker does not exist")?;
+    let village_id = VillageKey(worker.home);
+    let mut town = TownView::load_village(db, village_id);
 
     // check timing and effect of current task interruption
     let mut current_task = db.current_task(worker.key()).expect("Must have a current task");
@@ -64,13 +67,14 @@ pub (crate) fn validate_task_list(db: &DB, tl: &TaskList, village_id: i64) -> Re
     Ok( ValidatedTaskList {
             new_tasks: tasks,
             update_tasks: vec![current_task],
+            village_id
         }
     )
 }
-pub (crate) fn replace_worker_tasks(db: &DB, worker: &Addr<TownWorker>, worker_id: i64, tasks: &[NewTask]) {
+pub (crate) fn replace_worker_tasks(db: &DB, worker: &Addr<TownWorker>, worker_id: i64, tasks: &[NewTask], village_id: VillageKey) {
     db.flush_task_queue(worker_id);
     let _inserted = db.insert_tasks(tasks);
-    let current_task = execute_worker_tasks(db, worker_id).expect("Worker has no current task");
+    let current_task = execute_worker_tasks(db, worker_id, village_id).expect("Worker has no current task");
     if let Some(next_task) = db.earliest_future_task(worker_id) {
         let event = Event::WorkerTask{ task_id: current_task.id};
         worker.send(TownWorkerEventMsg(event, Utc.from_utc_datetime(&next_task.start_time))).wait().expect("Send msg to actor");
@@ -111,11 +115,10 @@ fn interrupt_task(current_task: &mut Task, worker: &Worker) -> Option<NaiveDateT
 }
 
 /// For the given worker, executes tasks on the DB that are due
-fn execute_worker_tasks(db: &DB, worker_id: i64) -> Option<Task> {
+fn execute_worker_tasks(db: &DB, worker_id: i64, village: VillageKey) -> Option<Task> {
     let mut tasks = db.past_worker_tasks(worker_id);
     let current_task = tasks.pop();
-    let village_id = 1; // TODO: Village id
-    let mut town = TownView::load_village(db, village_id);
+    let mut town = TownView::load_village(db, village);
     for task in tasks {
         finish_task(db, task.id, Some(task), Some(&mut town)).map_err(
             |e| println!("Executing task failed: {}", e)
@@ -138,7 +141,7 @@ pub (crate) fn finish_task(
             crate::worker_actions::simulate_finish_task(&task, town, &mut worker)?;
             apply_task_to_db(db, &task, &mut worker)?;
         } else {
-            let mut town = TownView::load_village(db, worker.home);
+            let mut town = TownView::load_village(db, VillageKey(worker.home));
             crate::worker_actions::simulate_finish_task(&task, &mut town, &mut worker)?;
             apply_task_to_db(db, &task, &mut worker)?;
         }

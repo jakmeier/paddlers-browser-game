@@ -1,5 +1,5 @@
-query ResourcesQuery{
-  village(villageId: 1) {
+query ResourcesQuery($village_id: Int!){
+  village(villageId: $village_id) {
     sticks
     feathers
     logs
