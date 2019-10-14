@@ -8,9 +8,9 @@ REPO=jakmeier/paddlers
 build-and-run: build
 	make run
 
-build: debug-game-master-container debug-db-interface-container debug-frontend-container
+build: debug-game-master-container debug-db-interface-container debug-frontend-container debug-keycloak-container
 
-release: game-master-container db-interface-container frontend-container
+release: game-master-container db-interface-container frontend-container keycloak-container
 
 run: docker-compose.local.yml
 	docker-compose -f $< up --no-start
@@ -43,3 +43,9 @@ debug-frontend-container: paddlers-frontend/debug.Dockerfile rust-container
 
 frontend-container: paddlers-frontend/Dockerfile rust-container
 	docker build --target WebServer -t $(REPO):frontend-snapshot -f $< .
+
+debug-keycloak-container: paddlers-keycloak/Dockerfile
+	docker build --target KeyCloak -t $(REPO):keycloak-snapshot -f $< .
+
+keycloak-container: paddlers-keycloak/Dockerfile
+	docker build --target KeyCloak -t $(REPO):keycloak-snapshot -f $< .

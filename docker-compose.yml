@@ -1,4 +1,7 @@
 version: "3.6"
+volumes:
+  keycloak_postgres_data:
+      driver: local
 services:
 # 
   db:
@@ -6,7 +9,7 @@ services:
     restart: always
     environment:
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
+      - POSTGRES_PASSWORD # Set this in env
     ports:
       - 5432:5432
 # 
@@ -18,7 +21,7 @@ services:
       - 8088:8088
     environment:
       - RUST_BACKTRACE=1
-      - DATABASE_URL=postgresql://postgres:password@db:5432
+      - DATABASE_URL # Set this in env
       - DATABASE_INIT=1
       - INSERT_TEST_DATA=1
       - RUST_LOG=actix_web=warn
@@ -34,10 +37,34 @@ services:
       - RUST_BACKTRACE=1
       - ROCKET_ADDRESS=0.0.0.0
       - ROCKET_PORT=65432
-      - ROCKET_DATABASES={game_db={url="postgresql://postgres:password@db:5432"}}
+      - ROCKET_DATABASES # Set this in env
 #
   frontend:
     image: jakmeier/paddlers:frontend-snapshot
     ports:
       - 80:80
-    
+#
+  keycloak-db:
+      image: postgres:latest
+      volumes:
+        - keycloak_postgres_data:/var/lib/postgresql/data
+      environment:
+        POSTGRES_DB: keycloak
+        POSTGRES_USER: keycloak
+        POSTGRES_PASSWORD # Set this in env
+#
+  keycloak:
+    image: jakmeier/paddlers:keycloak-snapshot
+    environment:
+      DB_VENDOR: POSTGRES
+      DB_ADDR: keycloak-db
+      DB_DATABASE: keycloak
+      DB_USER: keycloak
+      DB_SCHEMA: public
+      DB_PASSWORD # Set this in env
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD # Set this in env
+    ports:
+      - 10002:8080
+    depends_on:
+      - keycloak-db

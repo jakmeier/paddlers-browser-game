@@ -1,4 +1,7 @@
 version: "3.6"
+volumes:
+  keycloak_postgres_data:
+      driver: local
 services:
 # 
   db:
@@ -42,4 +45,28 @@ services:
     image: jakmeier/paddlers:frontend-snapshot
     ports:
       - 80:80
-    
+# 
+  keycloak-db:
+      image: postgres:latest
+      volumes:
+        - keycloak_postgres_data:/var/lib/postgresql/data
+      environment:
+        POSTGRES_DB: keycloak
+        POSTGRES_USER: keycloak
+        POSTGRES_PASSWORD: password
+#
+  keycloak:
+    image: jakmeier/paddlers:keycloak-snapshot
+    environment:
+      DB_VENDOR: POSTGRES
+      DB_ADDR: keycloak-db
+      DB_DATABASE: keycloak
+      DB_USER: keycloak
+      DB_SCHEMA: public
+      DB_PASSWORD: password
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: Pa55w0rd
+    ports:
+      - 10002:8080
+    depends_on:
+      - keycloak-db

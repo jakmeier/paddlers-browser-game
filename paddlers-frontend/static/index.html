@@ -16,10 +16,24 @@
     <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
     <meta name="msapplication-TileColor" content="#2b5797">
     <meta name="theme-color" content="#5bbad5">
+    <script src="/js/keycloak/keycloak.min.js"></script>
 </head>
 
 <body oncontextmenu="return false;" style="background-color: #444">
     <script src="paddlers-frontend.js"></script>
+    <p style="color: white;">Goto: <a href="#" onclick="keycloak.logout()" style="color: white;">logout</a> | <a href="#"
+            onclick="keycloak.accountManagement()" style="color: white;">manage acct</a></p>
+
+    <script>
+        var keycloak = Keycloak('js/keycloak/player.json');
+
+        keycloak.init({ onLoad: 'login-required' })
+            .success(() => { console.log("Login successful"); })
+            .error(function (errorData) {
+                console.error("Login Failed: ", errorData);
+            });
+
+    </script>
 </body>
 
 </html>
