@@ -1,0 +1,71 @@
+div.kc-logo-text {
+    background-image: url(../img/paddlers_logo.png);
+    background-repeat: no-repeat;
+    height: 180px;
+    width: 180px;
+    margin: 0 auto;
+}
+
+.card-pf {
+    background-color: #0c7f00;
+    color: white;
+}
+
+#kc-form-options .checkbox, .login-pf-page .login-pf-signup {
+    color: #c8d0db;
+}
+
+a, #kc-locale-dropdown a {
+    color: #4099e5;
+}
+
+body {
+    font-family: manjari, sans-serif;
+    font-size: 20px;
+    line-height: 1.0;
+    color: white;
+    background-color: #fff;
+}
+
+.login-pf-page .login-pf-header h1 {
+    font-size: 36px;
+    font-weight: 500;
+}
+
+#kc-info-wrapper {
+    font-size: 18px;
+}
+
+#kc-locale-dropdown {
+    width: min-content;
+    margin-left: auto;
+}
+
+#kc-locale-dropdown a {
+    background-color: #0088ce;
+    background-image: linear-gradient(to bottom, #39a5dc 0%, #0088ce 100%);
+    border-color: #00659c;
+    color: #fff;
+    box-shadow: 0 2px 3px rgba(3, 3, 3, 0.1);
+    padding: 6px 15px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.login-pf body {
+    background: url("../img/paddlers-bg.png") no-repeat center center fixed;
+    background-size: auto;
+    background-size: cover;
+}
+
+.login-pf-page .card-pf {
+    border-radius: 50px;
+}
+
+#kc-current-locale-link {
+    border-radius: 50px;
+}
+
+#kc-locale ul {
+    padding: 0;
+}

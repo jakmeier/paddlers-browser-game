@@ -1,7 +1,4 @@
 version: "3.6"
-volumes:
-  keycloak_postgres_data:
-      driver: local
 services:
 # 
   db:
@@ -48,8 +45,6 @@ services:
 # 
   keycloak-db:
       image: postgres:latest
-      volumes:
-        - keycloak_postgres_data:/var/lib/postgresql/data
       environment:
         POSTGRES_DB: keycloak
         POSTGRES_USER: keycloak

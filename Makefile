@@ -44,7 +44,7 @@ debug-frontend-container: paddlers-frontend/debug.Dockerfile rust-container
 frontend-container: paddlers-frontend/Dockerfile rust-container
 	docker build --target WebServer -t $(REPO):frontend-snapshot -f $< .
 
-debug-keycloak-container: paddlers-keycloak/Dockerfile
+debug-keycloak-container: paddlers-keycloak/debug.Dockerfile
 	docker build --target KeyCloak -t $(REPO):keycloak-snapshot -f $< .
 
 keycloak-container: paddlers-keycloak/Dockerfile
