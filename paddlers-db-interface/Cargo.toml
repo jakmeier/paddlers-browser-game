@@ -5,7 +5,7 @@ authors = ["Jakob Meier <inbox@jakobmeier.ch>"]
 edition = "2018"
 
 [dependencies]
-paddlers-shared-lib = { path = "../paddlers-shared-lib", features = ["graphql", "sql_db"] }
+paddlers-shared-lib = { path = "../paddlers-shared-lib", features = ["graphql", "sql_db", "user_authentication"] }
 
 rocket = "0.4"
 rocket_cors = "0.5"
@@ -14,9 +14,9 @@ serde = "1.0"
 serde_derive = "1.0"
 toml = "0.5"
 chrono = "0.4"
-juniper = "0.13"
-juniper_codegen = "0.13"
-juniper_rocket = "0.4"
+juniper = "0.14"
+juniper_codegen = "0.14"
+juniper_rocket = "0.5"
 
 [dependencies.rocket_contrib]
 version = "0.4"
