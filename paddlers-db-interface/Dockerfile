@@ -9,19 +9,10 @@ USER=root cargo init --lib paddlers-shared-lib
 COPY ./paddlers-db-interface/Cargo.toml ./paddlers-db-interface/
 COPY ./paddlers-shared-lib/Cargo.toml ./paddlers-shared-lib/
 COPY ./Cargo.lock ./paddlers-db-interface/
-RUN cargo build --manifest-path=paddlers-db-interface/Cargo.toml --release
-# Now replace shallow projects with actual source code and build again
-# First, the shared lib only to add another layer of caching
-RUN rm ./paddlers-shared-lib/src/*.rs
-RUN rm ./paddlers-db-interface/target/release/deps/paddlers_shared*
-RUN rm ./paddlers-db-interface/target/release/deps/libpaddlers_shared*
+# Only one compilation since this is the docker file to run on releases, usually on Dockerhub
 COPY ./paddlers-shared-lib/src ./paddlers-shared-lib/src
 COPY ./migrations ./migrations
-RUN cargo build --manifest-path=paddlers-db-interface/Cargo.toml --release
-# Second, the application binary
-RUN rm ./paddlers-db-interface/src/*.rs
 COPY ./paddlers-db-interface/src ./paddlers-db-interface/src
-RUN rm ./paddlers-db-interface/target/release/deps/paddlers_db*
 RUN cargo build --manifest-path=paddlers-db-interface/Cargo.toml --release
 
 FROM buildpack-deps:stretch as DbInterface

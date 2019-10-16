@@ -9,9 +9,8 @@ USER=root cargo init --lib paddlers-shared-lib
 COPY ./paddlers-frontend/Cargo.toml ./paddlers-frontend/
 COPY ./paddlers-shared-lib/Cargo.toml ./paddlers-shared-lib/
 COPY ./Cargo.lock ./paddlers-frontend/
-RUN cd paddlers-frontend; cargo web deploy --target=wasm32-unknown-unknown --release
-# Now replace shallow projects with actual source code and build again
 COPY ./paddlers-shared-lib/src ./paddlers-shared-lib/src
+# Only one compilation since this is the docker file to run on releases, usually on Dockerhub
 COPY ./paddlers-frontend/src ./paddlers-frontend/src
 COPY ./paddlers-frontend/api ./paddlers-frontend/api
 RUN rm ./paddlers-frontend/target/deploy/paddlers-frontend.*
