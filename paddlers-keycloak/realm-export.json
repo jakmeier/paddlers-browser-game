@@ -496,7 +496,8 @@
         "http://localhost/*"
       ],
       "webOrigins": [
-        "http://localhost"
+        "http://localhost",
+        "http://localhost:65432/graphql"
       ],
       "notBefore": 0,
       "bearerOnly": false,

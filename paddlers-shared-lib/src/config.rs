@@ -9,6 +9,7 @@ pub struct Config {
     pub frontend_origin: String,
     pub game_master_base_url: String,
     pub graphql_base_url: String,
+    pub keycloak_issuer: String,
 }
 
 impl Default for Config {
@@ -17,6 +18,7 @@ impl Default for Config {
             frontend_origin: "localhost".to_owned(),
             game_master_base_url: "localhost:8088".to_owned(),
             graphql_base_url: "localhost:65432".to_owned(),
+            keycloak_issuer: "http://localhost:10002/auth/realms/Paddlers".to_owned(),
         }
     } 
 }
@@ -30,6 +32,7 @@ impl Config {
                 frontend_origin: env::var("FRONTEND_ORIGIN").ok()?,
                 game_master_base_url: env::var("GAME_MASTER_BASE_URL").ok()?,
                 graphql_base_url: env::var("GRAPHQL_BASE_URL").ok()?,
+                keycloak_issuer: env::var("KEYCLOAK_ISSUER").ok()?,
             }
         )
     }

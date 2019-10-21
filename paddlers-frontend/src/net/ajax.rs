@@ -17,6 +17,7 @@ pub fn send(method: &str, uri: &str, request_body: &str) -> PadlResult<PromiseFu
             };
             xhr.open(@{method}, @{uri});
             xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+            xhr.setRequestHeader("Authorization", window.keycloak.token);
             xhr.onerror = reject;
             // xhr.onerror = function() {console.log("Error handled in JS")};
             xhr.send(@{request_body});

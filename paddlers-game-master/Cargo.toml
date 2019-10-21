@@ -5,7 +5,7 @@ authors = ["Jakob Meier <inbox@jakobmeier.ch>"]
 edition = "2018"
 
 [dependencies]
-paddlers-shared-lib = { path = "../paddlers-shared-lib", features = ["sql_db", "enum_utils", "game_mechanics"] }
+paddlers-shared-lib = { path = "../paddlers-shared-lib", features = ["sql_db", "enum_utils", "game_mechanics", "user_authentication"] }
 diesel = { version = "1.4", features = ["postgres", "chrono", "r2d2"] }
 r2d2 = "0.8"
 chrono = "0.4"
@@ -16,6 +16,6 @@ actix-cors = "0.1.0"
 futures = "0.1"
 serde = "1.0"
 toml = "0.5"
-env_logger = "0.6.2"
+env_logger = "0.7.1"
 log = "0.4.8"
-dotenv = "0.14.1"
+dotenv = "0.15.0"

@@ -26,7 +26,7 @@ fn main() {
     #[cfg(feature="local")]
     let allowed_origins = AllowedOrigins::all();
     #[cfg(not(feature="local"))]
-    let origin = config.frontend_origin;
+    let origin = config.frontend_origin.clone();
     #[cfg(not(feature="local"))]
     let allowed_origins = AllowedOrigins::some_exact(&[origin]);
 
@@ -45,6 +45,7 @@ fn main() {
 
     rocket::ignite()
         .manage(graphql::new_schema())
+        .manage(config)
         .attach(DbConn::fairing())
         .attach(cors)
         .mount(

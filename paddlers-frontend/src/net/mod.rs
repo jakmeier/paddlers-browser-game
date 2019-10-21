@@ -2,6 +2,7 @@ pub mod graphql;
 pub mod ajax;
 pub mod game_master_api;
 pub mod url;
+pub mod authentication;
 
 use graphql::{
     GraphQlState,
@@ -15,6 +16,7 @@ use futures::future::TryFutureExt;
 use std::sync::{
     Mutex,
     mpsc::Sender,
+    atomic::{AtomicBool, Ordering},
 };
 
 use crate::prelude::*;
@@ -35,11 +37,13 @@ pub enum NetUpdateRequest {
 
 struct NetState {
     interval_ms: u32,
+    logged_in: AtomicBool,
     chan: Option<Mutex<Sender<NetMsg>>>,
     gql_state: GraphQlState,
 }
 static mut STATIC_NET_STATE: NetState = NetState {
     interval_ms: 5_000,
+    logged_in: AtomicBool::new(false),
     chan: None,
     gql_state: GraphQlState::new(),
 };
@@ -49,8 +53,19 @@ static mut STATIC_NET_STATE: NetState = NetState {
 pub fn init_net(chan: Sender<NetMsg>) {
     unsafe{
         STATIC_NET_STATE.chan = Some(Mutex::new(chan));
+    }
+}
+#[js_export]
+/// Sets up continuous networking with the help of JS setTimeout
+/// Must be called from JS once the user is logged in 
+pub fn start_network_thread() {
+    unsafe{
+        STATIC_NET_STATE.logged_in.store(true, Ordering::Relaxed);
+        // Brute-force sync up with WASM initialization
+        while STATIC_NET_STATE.chan.is_none() {
+            // NOP
+        }
         STATIC_NET_STATE.work();
-
         // requests done only once
         STATIC_NET_STATE.spawn(STATIC_NET_STATE.gql_state.buildings_query());
         STATIC_NET_STATE.spawn(STATIC_NET_STATE.gql_state.workers_query());
@@ -58,7 +73,9 @@ pub fn init_net(chan: Sender<NetMsg>) {
 }
 pub fn request_map_read(min: i32, max: i32) {
     unsafe{
-        STATIC_NET_STATE.spawn(STATIC_NET_STATE.gql_state.map_query(min, max));
+        if STATIC_NET_STATE.logged_in.load(Ordering::Relaxed) {
+            STATIC_NET_STATE.spawn(STATIC_NET_STATE.gql_state.map_query(min, max));
+        }
     }
 }
 pub fn request_worker_tasks_update(unit_id: i64) {

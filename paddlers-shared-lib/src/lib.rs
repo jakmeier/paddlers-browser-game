@@ -28,5 +28,8 @@ pub mod sql_db;
 #[cfg(feature = "sql_db")]
 pub use sql_db::*; 
 
+#[cfg(feature = "user_authentication")]
+pub mod user_authentication;
+
 /// The default ID Type for referencing objects across the Paddlers services.
 pub type PadlId = i64;

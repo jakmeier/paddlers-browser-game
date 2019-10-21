@@ -34,6 +34,9 @@ COPY --from=GameMasterBuilder ./paddlers-game-master/target/debug/paddlers-game-
 COPY ./diesel.toml ./diesel.toml
 # Customize env file later if you need to 
 COPY ./local.env ./.env
+# Local build also needs a RSA key (must match keycloak setup)
+RUN mkdir /opt/keycloak
+COPY ./paddlers-keycloak/debug_pub_rsa.der /opt/keycloak/pub_rsa.der
 # Copy diesel CLI binary
 COPY --from=GameMasterBuilder /out/diesel /bin/
 COPY --from=GameMasterBuilder ./migrations ./migrations

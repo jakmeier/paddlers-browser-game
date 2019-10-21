@@ -30,6 +30,9 @@ COPY --from=DbInterfaceBuilder ./paddlers-db-interface/target/debug/paddlers-db-
 COPY ./diesel.toml ./diesel.toml
 # Customize env file later if you need to 
 COPY ./local.env ./.env
+# Local build also needs a RSA key (must match keycloak setup)
+RUN mkdir /opt/keycloak
+COPY ./paddlers-keycloak/debug_pub_rsa.der /opt/keycloak/pub_rsa.der
 COPY ./wait-for-it.sh ./wait-for-it.sh
 RUN chmod +x ./wait-for-it.sh
 CMD ["./wait-for-it.sh" , "game-master:8088" , "--strict" , "--timeout=60" , "--" , "./paddlers-db-interface"]
