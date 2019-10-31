@@ -29,7 +29,7 @@ pub (crate) fn validate_task_list(db: &DB, tl: &TaskList) -> Result<ValidatedTas
     let worker_id = tl.worker_id;
 
     // Load relevant data into memory 
-    let mut worker = db.worker(worker_id).ok_or("Worker does not exist")?;
+    let mut worker = db.worker_priv(worker_id).ok_or("Worker does not exist")?;
     let village_id = VillageKey(worker.home);
     let mut town = TownView::load_village(db, village_id);
 
@@ -52,7 +52,7 @@ pub (crate) fn validate_task_list(db: &DB, tl: &TaskList) -> Result<ValidatedTas
         validate_ability(db, task.task_type, worker_id, timestamp)?;
 
         let new_task = NewTask {
-            worker_id: worker_id,
+            worker_id: worker_id.num(),
             task_type: task.task_type,
             x: task.x as i32,
             y: task.y as i32,
@@ -71,7 +71,7 @@ pub (crate) fn validate_task_list(db: &DB, tl: &TaskList) -> Result<ValidatedTas
         }
     )
 }
-pub (crate) fn replace_worker_tasks(db: &DB, worker: &Addr<TownWorker>, worker_id: i64, tasks: &[NewTask], village_id: VillageKey) {
+pub (crate) fn replace_worker_tasks(db: &DB, worker: &Addr<TownWorker>, worker_id: WorkerKey, tasks: &[NewTask], village_id: VillageKey) {
     db.flush_task_queue(worker_id);
     let _inserted = db.insert_tasks(tasks);
     let current_task = execute_worker_tasks(db, worker_id, village_id).expect("Worker has no current task");
@@ -115,7 +115,7 @@ fn interrupt_task(current_task: &mut Task, worker: &Worker) -> Option<NaiveDateT
 }
 
 /// For the given worker, executes tasks on the DB that are due
-fn execute_worker_tasks(db: &DB, worker_id: i64, village: VillageKey) -> Option<Task> {
+fn execute_worker_tasks(db: &DB, worker_id: WorkerKey, village: VillageKey) -> Option<Task> {
     let mut tasks = db.past_worker_tasks(worker_id);
     let current_task = tasks.pop();
     let mut town = TownView::load_village(db, village);
@@ -136,7 +136,7 @@ pub (crate) fn finish_task(
 {
     let task = task.or_else(|| db.task(task_id));
     if let Some(task) = task {
-        let mut worker = db.worker(task.worker_id).ok_or("Task references non-existing worker")?;
+        let mut worker = db.worker_priv(task.worker()).ok_or("Task references non-existing worker")?;
         if let Some(town) = town {
             crate::worker_actions::simulate_finish_task(&task, town, &mut worker)?;
             apply_task_to_db(db, &task, &mut worker)?;
@@ -150,7 +150,7 @@ pub (crate) fn finish_task(
         db.update_worker_flag_timestamp_now(worker.key(), WorkerFlagType::Work);
         db.delete_task(&task);
 
-        Ok(Event::load_next_worker_task(db, task.worker_id))
+        Ok(Event::load_next_worker_task(db, task.worker()))
     } else {
         // Already executed.
         Ok(None)
@@ -261,7 +261,7 @@ fn worker_into_building(town: &mut TownView, _worker: &mut Worker, to: TileIndex
     tile_state.try_add_entity().map_err(|e| e.to_string())?;
     Ok(())
 }
-fn validate_ability(db: &DB, task_type: TaskType, worker_id: i64, now: chrono::NaiveDateTime) -> Result<(), String> {
+fn validate_ability(db: &DB, task_type: TaskType, worker_id: WorkerKey, now: chrono::NaiveDateTime) -> Result<(), String> {
     if let Some(ability_type) = AbilityType::from_task(&task_type)
     {
         // TODO: Range checks

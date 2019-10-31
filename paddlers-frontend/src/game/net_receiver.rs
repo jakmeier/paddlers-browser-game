@@ -19,6 +19,7 @@ impl Game<'_,'_> {
                 // println!("Received Network data!");
                 match msg {
                     NetMsg::Error(msg) => {
+                        // TODO: Handle user-not-created error (request player creation)
                         println!("Network Error: {}", msg);
                     }
                     NetMsg::Attacks(response) => {

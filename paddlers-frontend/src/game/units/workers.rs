@@ -12,6 +12,7 @@ use crate::gui::z::*;
 use crate::net::game_master_api::RestApiState;
 use crate::logging::ErrorQueue;
 use paddlers_shared_lib::api::tasks::*;
+use paddlers_shared_lib::prelude::WorkerKey;
 
 #[derive(Default, Component, Debug)]
 #[storage(HashMapStorage)]
@@ -72,7 +73,7 @@ impl Worker {
         town.check_task_constraints(job, destination, containers, mana)?;
         let tasks = town.build_task_chain(from, destination, &job)?;
         let msg = TaskList {
-            worker_id: self.netid,
+            worker_id: self.key(),
             tasks: tasks,
         };
         Ok(msg)
@@ -95,7 +96,7 @@ impl Worker {
             RawTask::new(TaskType::Idle, idx)
         ];
         Ok( TaskList {
-            worker_id: self.netid,
+            worker_id: self.key(),
             tasks: tasks,
         })
     }
@@ -160,4 +161,10 @@ pub fn move_worker_out_of_building<'a>(
     town.remove_entity_from_building(&tile).unwrap();
     town.remove_stateful_task(task).expect("Task has conflict in town state");
     Ok(())
+}
+
+impl Worker {
+    fn key(&self) -> WorkerKey {
+        WorkerKey(self.netid)
+    }
 }

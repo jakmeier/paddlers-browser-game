@@ -24,9 +24,9 @@ impl DB {
             self.init_map(server);
         }
         if env::var("INSERT_TEST_DATA").is_ok() {
-            self.new_player("Fred Feuerstein".to_owned());
-            self.new_player("Donald Duck".to_owned());
-            self.new_player("Queen Elizabeth".to_owned());
+            // self.new_player("Fred Feuerstein".to_owned());
+            // self.new_player("Donald Duck".to_owned());
+            // self.new_player("Queen Elizabeth".to_owned());
         }
         Ok(())
     }

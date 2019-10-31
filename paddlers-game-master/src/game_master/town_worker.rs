@@ -3,7 +3,7 @@ use super::event::*;
 use crate::db::*;
 use actix::prelude::*;
 use chrono::prelude::*;
-use paddlers_shared_lib::sql_db::sql::GameDB;
+use paddlers_shared_lib::prelude::*;
 
 /// Actor for moving around workers inside the town
 pub struct TownWorker {
@@ -36,7 +36,7 @@ impl TownWorker {
         // TODO [Village ids]
         for village_id in &[1] {
             for unit in db.workers(*village_id) {
-                if let Some((event, time)) = Event::load_next_worker_task(&db, unit.id) {
+                if let Some((event, time)) = Event::load_next_worker_task(&db, unit.key()) {
                     self.event_queue.add_event(event, time);
                 }
             }

@@ -11,15 +11,11 @@ struct Claims {
 }
 
 #[derive(Debug)]
+/// Authenticated user identity object
 pub struct PadlUser {
-    uuid: String,
-}
-
-#[derive(Debug)]
-pub enum AuthenticationError {
-    NoToken,
-    InvalidToken,
-    NoVerificationKey,
+    /// Minimal authenticated user identity. Must remain unique among all services.
+    pub uuid: uuid::Uuid,
+    private: (),
 }
 
 impl PadlUser {
@@ -36,8 +32,13 @@ impl PadlUser {
             |_| AuthenticationError::InvalidToken
         )?;
 
+        let uuid = uuid::Uuid::parse_str(&token_parsed.claims.sub).map_err(
+            |_| AuthenticationError::InvalidSubject
+        )?;
+
         Ok(PadlUser {
-            uuid: token_parsed.claims.sub,
+            uuid,
+            private: (),
         })
     }
 }
@@ -53,4 +54,19 @@ fn get_verification_key<'a>() -> Result<&'a [u8], AuthenticationError> {
         Ok(key)
     })
     .map(Vec::as_slice)
+}
+
+#[derive(Debug)]
+pub enum AuthenticationError {
+    NoToken,
+    InvalidToken,
+    InvalidSubject,
+    NoVerificationKey,
+}
+
+use std::fmt::{self, Display, Formatter};
+impl Display for AuthenticationError {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "{:?}", self)
+    }
 }

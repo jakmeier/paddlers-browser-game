@@ -13,6 +13,13 @@ pub trait GameDB {
             .optional()
             .expect("Error loading data")
     }
+    fn player_by_uuid(&self, uuid: uuid::Uuid) -> Option<Player> {
+        players::table
+            .filter(players::uuid.eq(uuid))
+            .first(self.dbconn())
+            .optional()
+            .expect("Error loading data")
+    }
     fn hobo(&self, hobo_id: i64) -> Option<Hobo> {
         let results = hobos::table
             .filter(hobos::id.eq(hobo_id))
@@ -29,10 +36,22 @@ pub trait GameDB {
             .expect("Error loading data");
         results
     }
-    fn worker(&self, worker_id: i64) -> Option<Worker> {
+    fn worker_priv(&self, worker_id: WorkerKey) -> Option<Worker> {
         let results = workers::table
-            .filter(workers::id.eq(worker_id))
+            .filter(workers::id.eq(worker_id.num()))
             .get_result::<Worker>(self.dbconn())
+            .optional()
+            .expect("Error loading data");
+        results
+    }
+    fn worker_auth_by_player(&self, worker_id: WorkerKey, player_id: PlayerKey) -> Option<Worker> {
+        let results = villages::table
+            .inner_join(workers::table)
+            .inner_join(players::table)
+            .filter(players::id.eq(player_id.num()))
+            .filter(workers::id.eq(worker_id.num()))
+            .select(workers::all_columns)
+            .first::<Worker>(self.dbconn())
             .optional()
             .expect("Error loading data");
         results
@@ -119,32 +138,32 @@ pub trait GameDB {
         .map(|res: Resource| res.amount)
         .unwrap_or(0)
     }
-    fn worker_tasks(&self, worker_id: i64) -> Vec<Task> {
+    fn worker_tasks(&self, worker_id: WorkerKey) -> Vec<Task> {
         let results = tasks::table
-        .filter(tasks::worker_id.eq(worker_id))
+        .filter(tasks::worker_id.eq(worker_id.num()))
         .limit(500)
         .load::<Task>(self.dbconn())
         .expect("Error loading data");
         results
     }
-    fn worker_abilities(&self, worker_id: i64) -> Vec<Ability> {
+    fn worker_abilities(&self, worker_id: WorkerKey) -> Vec<Ability> {
         let results = abilities::table
-        .filter(abilities::worker_id.eq(worker_id))
+        .filter(abilities::worker_id.eq(worker_id.num()))
         .limit(10)
         .load::<Ability>(self.dbconn())
         .expect("Error loading data");
         results
     }
-    fn worker_ability(&self, worker_id: i64, ability_type: AbilityType) -> Option<Ability> {
+    fn worker_ability(&self, worker_id: WorkerKey, ability_type: AbilityType) -> Option<Ability> {
         abilities::table
-        .find((ability_type, worker_id))
+        .find((ability_type, worker_id.num()))
         .first(self.dbconn())
         .optional()
         .expect("Error loading data")
     }
-    fn past_worker_tasks(&self, worker_id: i64) -> Vec<Task> {
+    fn past_worker_tasks(&self, worker_id: WorkerKey) -> Vec<Task> {
         let results = tasks::table
-            .filter(tasks::worker_id.eq(worker_id))
+            .filter(tasks::worker_id.eq(worker_id.num()))
             .filter(tasks::start_time.lt(diesel::dsl::now.at_time_zone("UTC")))
             .order(tasks::start_time.asc())
             .limit(500)
@@ -152,18 +171,18 @@ pub trait GameDB {
             .expect("Error loading data");
         results
     }
-    fn earliest_future_task(&self, worker_id: i64) -> Option<Task> {
+    fn earliest_future_task(&self, worker_id: WorkerKey) -> Option<Task> {
         tasks::table
-            .filter(tasks::worker_id.eq(worker_id))
+            .filter(tasks::worker_id.eq(worker_id.num()))
             .filter(tasks::start_time.ge(diesel::dsl::now.at_time_zone("UTC")))
             .order(tasks::start_time.asc())
             .first(self.dbconn())
             .optional()
             .expect("Error loading data")
     }
-    fn current_and_next_task(&self, worker_id: i64) -> (Option<Task>, Option<Task>) {
+    fn current_and_next_task(&self, worker_id: WorkerKey) -> (Option<Task>, Option<Task>) {
         let mut results = tasks::table
-            .filter(tasks::worker_id.eq(worker_id))
+            .filter(tasks::worker_id.eq(worker_id.num()))
             .order(tasks::start_time.asc())
             .limit(2)
             .load(self.dbconn())
@@ -252,5 +271,26 @@ pub trait GameDB {
             .load::<Effect>(self.dbconn())
             .expect("Error loading data");
         results
+    }
+    fn village_owned_by(&self, vid: VillageKey, uuid: uuid::Uuid) -> bool {
+        diesel::select(diesel::dsl::exists(
+            players::table
+                .inner_join(villages::table)
+                .filter(players::uuid.eq(uuid))
+                .filter(villages::id.eq(vid.num()))
+        ))
+        .get_result(self.dbconn())
+        .expect("Error in look up")
+    }
+    fn worker_owned_by(&self, wid: WorkerKey, uuid: uuid::Uuid) -> bool {
+        diesel::select(diesel::dsl::exists(
+            players::table
+                .inner_join(villages::table)
+                .inner_join(workers::table.on(workers::home.eq(villages::id)))
+                .filter(players::uuid.eq(uuid))
+                .filter(workers::id.eq(wid.num()))
+        ))
+        .get_result(self.dbconn())
+        .expect("Error in look up")
     }
 }

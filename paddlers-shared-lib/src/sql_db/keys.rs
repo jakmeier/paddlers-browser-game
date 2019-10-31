@@ -26,3 +26,9 @@ impl SqlKey<HoboKey> for Hobo {
         HoboKey(self.id)
     }
 }
+
+impl Task {
+    pub fn worker(&self) -> WorkerKey {
+        WorkerKey(self.worker_id)
+    }
+}

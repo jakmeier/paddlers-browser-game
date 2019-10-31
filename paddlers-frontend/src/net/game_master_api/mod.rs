@@ -2,7 +2,7 @@ use std::collections::VecDeque;
 use std::sync::{Mutex,mpsc::Sender};
 use crate::prelude::*;
 use crate::logging::AsyncErr;
-use super::{ajax, url::*, NetUpdateRequest};
+use super::{ajax, ajax::AjaxError, url::*, NetUpdateRequest};
 use specs::prelude::*;
 use futures_util::future::FutureExt;
 use stdweb::PromiseFuture;
@@ -14,7 +14,7 @@ use paddlers_shared_lib::api::{
 };
 
 pub struct RestApiState {
-    pub queue: VecDeque<(stdweb::PromiseFuture<std::string::String>, Option<NetUpdateRequest>)>,
+    pub queue: VecDeque<(stdweb::PromiseFuture<std::string::String, AjaxError>, Option<NetUpdateRequest>)>,
     err_chan: Mutex<Sender<PadlError>>,
 }
 
@@ -50,7 +50,7 @@ impl RestApiState {
     pub fn http_overwrite_tasks(&mut self, msg: TaskList) -> PadlResult<()>  {
         let request_string = &serde_json::to_string(&msg).unwrap();
         let promise = ajax::send("POST", &format!("{}/worker/overwriteTasks", game_master_url()?), request_string);
-        let afterwards = NetUpdateRequest::WorkerTasks(msg.worker_id);
+        let afterwards = NetUpdateRequest::WorkerTasks(msg.worker_id.num());
         self.push_promise(promise, Some(afterwards));
         Ok(())
     }
@@ -64,7 +64,7 @@ impl RestApiState {
 
     fn push_promise(
         &mut self, 
-        maybe_promise: PadlResult<PromiseFuture<String>>, 
+        maybe_promise: PadlResult<PromiseFuture<String, AjaxError>>, 
         afterwards: Option<NetUpdateRequest>,
 
     ) {
@@ -94,7 +94,7 @@ impl<'a> System<'a> for RestApiSystem {
                         if r.is_err() {
                             let err: PadlResult<()> = 
                             PadlErrorCode::RestAPI(
-                                format!("Rest API Error: {}", r.unwrap_err())
+                                format!("Rest API Error: {:?}", r.unwrap_err())
                             ).dev();
                             error_chan.send(err.unwrap_err()).expect("sending over mpsc");
                         }

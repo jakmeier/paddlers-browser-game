@@ -1,14 +1,21 @@
 use super::DbConn;
 
-use juniper_rocket;
 use rocket::response::content;
 use rocket::State;
 use rocket::Outcome;
 use rocket::http::Status;
 use rocket::request::{self, Request, FromRequest};
+use juniper_rocket::{self, GraphQLResponse, GraphQLRequest};
+use juniper::FieldError;
 
-use paddlers_shared_lib::prelude::Config;
+use paddlers_shared_lib::prelude::{Config, PadlApiError};
+use paddlers_shared_lib::user_authentication::*;
 use crate::graphql::Schema;
+
+#[derive(Debug)]
+pub struct UserInfo {
+    user: PadlUser,
+}
 
 #[get("/")]
 pub (crate) fn index() -> String {
@@ -25,28 +32,47 @@ pub fn graphiql() -> content::Html<String> {
 #[get("/?<request>")]
 pub fn get_graphql_handler(
     connection: DbConn,
-    request: juniper_rocket::GraphQLRequest,
+    request: GraphQLRequest,
     schema: State<Schema>,
     user_info: UserInfo,
-) -> juniper_rocket::GraphQLResponse {
-    request.execute(&schema, &connection.into())
+) -> GraphQLResponse {
+    generic_graphql_handler(connection, request, schema, user_info)
 }
 
 #[post("/", data = "<request>")]
 pub fn post_graphql_handler(
     connection: DbConn,
-    request: juniper_rocket::GraphQLRequest,
+    request: GraphQLRequest,
     schema: State<Schema>,
     user_info: UserInfo,
-) -> juniper_rocket::GraphQLResponse {
-    request.execute(&schema, &connection.into())
+) -> GraphQLResponse {
+    generic_graphql_handler(connection, request, schema, user_info)
 }
 
-use paddlers_shared_lib::user_authentication::*;
-
-#[derive(Debug)]
-pub struct UserInfo {
-    user: PadlUser,
+fn generic_graphql_handler(
+    connection: DbConn,
+    request: GraphQLRequest,
+    schema: State<Schema>,
+    user_info: UserInfo, // This only ensures a valid JWT for *some* user is sent
+) -> GraphQLResponse {
+    if let Some(player_ctx)  = crate::graphql::Context::new(connection, user_info.user) {
+        request.execute(&schema, &player_ctx)
+    } else {
+        // Lookup error code from shared lib that frontend understands
+        let n = PadlApiError::PlayerNotCreated as i32;
+        // Create a GQL error
+        let err = FieldError::new(
+            "Player is not in DB",
+            graphql_value!({ "padlcode": n })
+        );
+        // Pack GQL Error into a GQL response
+        // Note: Juniper will send this as BadRequest, although I think
+        //       the standard for GQL would be 200 OK
+        //       Either way, the HTTP code should not be considered by
+        //       the frontend too much, the errors in the response are
+        //       what really counts.
+        juniper_rocket::GraphQLResponse::error(err)
+    }
 }
 
 impl<'a, 'r> FromRequest<'a, 'r> for UserInfo {

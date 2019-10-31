@@ -9,7 +9,8 @@ paddlers-shared-lib = { path = "../paddlers-shared-lib", features = ["graphql", 
 
 rocket = "0.4"
 rocket_cors = "0.5"
-diesel = { version = "1.4", features = ["postgres", "chrono"] }
+diesel = { version = "1.4", features = ["postgres", "chrono", "uuidv07"] }
+uuid = "0.7.4" # Fixed version to work with diesel
 serde = "1.0"
 serde_derive = "1.0"
 toml = "0.5"

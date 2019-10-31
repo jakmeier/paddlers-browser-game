@@ -2,10 +2,11 @@ use paddlers_shared_lib::prelude::*;
 use crate::db::DB;
 
 impl DB {
-    pub (super) fn new_player(&self, display_name: String) -> Player {
+    pub (super) fn new_player(&self, display_name: String, uuid: uuid::Uuid) -> Player {
         let player = NewPlayer {
             display_name: Some(display_name),
             karma: 0,
+            uuid
         };
         let player = self.insert_player(&player);
         let village = self.new_village(player.key());

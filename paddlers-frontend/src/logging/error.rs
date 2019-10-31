@@ -1,6 +1,8 @@
 use std::{fmt};
 use crate::prelude::*;
 use crate::game::town::{TileType, TileIndex};
+use crate::stdweb::unstable::TryInto;
+use crate::net::ajax::AjaxError;
 
 pub type PadlResult<R> = Result<R, PadlError>;
 
@@ -74,6 +76,8 @@ pub enum PadlErrorCode {
     JsonParseError(serde_json::error::Error),
     UrlParseError(String),
     NoDataFromBrowser(&'static str),
+    BrowserError(String),
+    UserNotInDB,
 }
 
 impl fmt::Display for PadlErrorCode {
@@ -127,6 +131,10 @@ impl fmt::Display for PadlErrorCode {
                 write!(f, "Error while parsing browser URL: {}", cause),
             PadlErrorCode::NoDataFromBrowser(data) =>
                 write!(f, "Could not read data from browser: {}", data),
+            PadlErrorCode::BrowserError(s) => 
+                write!(f, "Unexpected browser error: {}", s),
+            PadlErrorCode::UserNotInDB =>
+                write!(f, "The user logged in is not present in the game database."),
         }
     }
 }
@@ -154,9 +162,25 @@ impl From<stdweb::web::error::Error> for PadlError {
         PadlError::dev_err(PadlErrorCode::StdWebGenericError(error))
     }
 }
+impl From<stdweb::Value> for PadlError {
+    fn from(val: stdweb::Value) -> Self {
+        let s : String = js!{ return String(@{val}); }.try_into()
+            .unwrap_or("Reading Browser Error Value failed".to_owned());
+        PadlError::dev_err(PadlErrorCode::BrowserError(s))
+    }
+}
 impl From<stdweb::web::error::SecurityError> for PadlError {
     fn from(error: stdweb::web::error::SecurityError) -> Self {
         PadlError::dev_err(PadlErrorCode::StdWebSecurityError(error))
+    }
+}
+impl From<AjaxError> for PadlError {
+    fn from(ajax: AjaxError) -> Self {
+        if let Some(e) = ajax.padl_error {
+            PadlError::dev_err(e)
+        } else {
+            PadlError::dev_err(PadlErrorCode::BrowserError(ajax.description))
+        }
     }
 }
 

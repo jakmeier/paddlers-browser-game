@@ -10,6 +10,7 @@ mod worker_actions;
 mod town_view;
 mod statistics;
 mod setup;
+mod authentication;
 
 use db::*;
 use game_master::{
@@ -56,7 +57,8 @@ fn main() {
 
     let config = Config::from_env()
         .unwrap_or(Config::default());
-    let origin = config.frontend_origin;
+    let origin = config.frontend_origin.clone();
+    let base_url = config.game_master_base_url.clone();
 
     let sys = actix::System::new("background-worker-example");
     let attack_worker = AttackSpawner::new(dbpool.clone()).start();
@@ -82,6 +84,7 @@ fn main() {
                     _econ_worker: econ_worker.clone(),
                     attack_worker: attack_worker.clone(),
                 })
+            .data(config.clone())
             .data(dbpool.clone())
             .route("/", web::get().to(api::index))
             .service(
@@ -106,7 +109,7 @@ fn main() {
             )
     })
     .disable_signals()
-    .bind(&config.game_master_base_url).expect("binding")
+    .bind(&base_url).expect("binding")
     .start();
 
     sys.run().unwrap();

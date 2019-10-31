@@ -1,3 +1,5 @@
+#![allow(unused_imports)]
+
 table! {
     use diesel::sql_types::*;
     use crate::models::*;
@@ -81,6 +83,7 @@ table! {
 
     players (id) {
         id -> Int8,
+        uuid -> Uuid,
         karma -> Int8,
         display_name -> Nullable<Varchar>,
     }

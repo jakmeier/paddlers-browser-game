@@ -48,8 +48,10 @@ pub enum UnitColor {
 
 #[cfg(feature = "sql_db")]
 #[derive(Debug, Queryable, Identifiable, AsChangeset)]
+#[table_name = "players"]
 pub struct Player {
     pub id: i64,
+    pub uuid: uuid::Uuid,
     pub karma: i64,
     pub display_name: Option<String>,
 }
@@ -58,6 +60,7 @@ pub struct Player {
 #[derive(Insertable)]
 #[table_name = "players"]
 pub struct NewPlayer {
+    pub uuid: uuid::Uuid,
     pub karma: i64,
     pub display_name: Option<String>,
 }

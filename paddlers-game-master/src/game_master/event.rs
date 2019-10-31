@@ -1,7 +1,7 @@
 use crate::db::*;
 use chrono::prelude::*;
 use crate::worker_actions::finish_task;
-use paddlers_shared_lib::sql_db::sql::GameDB;
+use paddlers_shared_lib::prelude::*;
 
 #[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Ord, Debug)]
 pub enum Event {
@@ -16,7 +16,7 @@ impl Event {
             }
         }
     }
-    pub (crate) fn load_next_worker_task(db: &DB, worker_id: i64) -> Option<(Self, DateTime<Utc>)> {
+    pub (crate) fn load_next_worker_task(db: &DB, worker_id: WorkerKey) -> Option<(Self, DateTime<Utc>)> {
         let (current, next) = db.current_and_next_task(worker_id);
         let current_task = current.expect("Units must always have a task");
         next.map( |next_task|

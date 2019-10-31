@@ -45,7 +45,7 @@ impl DB {
             .expect("Updating worker");
     }
     pub fn add_worker_mana(&self, w: WorkerKey, plus: i32, max: i32) {
-        let worker = self.worker(w.num()).expect("Invalid worker key");
+        let worker = self.worker_priv(w).expect("Invalid worker key");
         diesel::update(&worker)
             .set(workers::mana.eq( Some(max.min(worker.mana.unwrap_or(0) + plus)) ))
             .execute(self.dbconn())
@@ -111,9 +111,9 @@ impl DB {
             .execute(self.dbconn())
             .expect("Deleting task");
     }
-    pub fn flush_task_queue(&self, worker_id: i64) {
+    pub fn flush_task_queue(&self, worker_id: WorkerKey) {
         diesel::delete(tasks::table
-            .filter(tasks::worker_id.eq(worker_id)))
+            .filter(tasks::worker_id.eq(worker_id.num())))
             .filter(tasks::start_time.gt(diesel::dsl::now.at_time_zone("UTC")))
             .execute(self.dbconn())
             .expect("Deleting task");

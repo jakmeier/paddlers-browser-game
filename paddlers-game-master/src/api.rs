@@ -4,8 +4,10 @@ use actix_web::{HttpResponse, Responder, web};
 use paddlers_shared_lib::api::{
     shop::{BuildingPurchase, BuildingDeletion},
     tasks::{TaskList},
+    keys::{VillageKey, WorkerKey},
 };
 use paddlers_shared_lib::sql::GameDB;
+use crate::authentication::Authentication;
 
 pub fn index() -> impl Responder {
     HttpResponse::Ok().body("Game Master OK")
@@ -13,11 +15,17 @@ pub fn index() -> impl Responder {
 
 pub fn purchase_building(
     pool: web::Data<crate::db::Pool>, 
-    body: web::Json<BuildingPurchase>) 
+    body: web::Json<BuildingPurchase>,
+    auth: Authentication,
+    ) 
     -> impl Responder 
 {
     let db: crate::db::DB = pool.get_ref().into();
-    // TODO [user authentication]
+
+    if let Err(err) = check_owns_village(&db, &auth, body.village) {
+        return err;
+    }
+
     db.try_buy_building(body.building_type.into(), (body.x, body.y), body.village)
         .map_or_else(
             |e| HttpResponse::from(&e),
@@ -27,11 +35,16 @@ pub fn purchase_building(
 
 pub fn delete_building(
     pool: web::Data<crate::db::Pool>, 
-    body: web::Json<BuildingDeletion>
+    body: web::Json<BuildingDeletion>,
+    auth: Authentication,
 )-> impl Responder 
 {
     let db: crate::db::DB = pool.get_ref().into();
-    // TODO [user authentication]
+
+    if let Err(err) = check_owns_village(&db, &auth, body.village) {
+        return err;
+    }
+
     if let Some(building) = db.find_building_by_coordinates(body.x as i32, body.y as i32, body.village) {
         db.delete_building(&building);
         HttpResponse::Ok().into()
@@ -44,9 +57,15 @@ pub (super) fn overwrite_tasks(
     pool: web::Data<crate::db::Pool>, 
     body: web::Json<TaskList>,
     addr: web::Data<crate::ActorAddresses>,
+    auth: Authentication,
 )-> impl Responder 
 {
     let db: crate::db::DB = pool.get_ref().into();
+    
+    if let Err(err) = check_owns_worker(&db, &auth, body.worker_id) {
+        return err;
+    }
+
     match crate::worker_actions::validate_task_list(&db, &body.0) {
         Ok(validated) => {
             for upd in validated.update_tasks {
@@ -60,4 +79,19 @@ pub (super) fn overwrite_tasks(
         }
     }
     HttpResponse::Ok().into()
+}
+
+fn check_owns_worker(db: &crate::db::DB, auth: &Authentication, v: WorkerKey) -> Result<(), HttpResponse> {
+    if db.worker_owned_by(v, auth.user.uuid) {
+        Ok(())
+    } else {
+        Err(HttpResponse::Forbidden().body(format!("Worker not owned by player")))
+    }
+}
+fn check_owns_village(db: &crate::db::DB, auth: &Authentication, v: VillageKey) -> Result<(), HttpResponse> {
+    if db.village_owned_by(v, auth.user.uuid) {
+        Ok(())
+    } else {
+        Err(HttpResponse::Forbidden().body(format!("Village not owned by player")))
+    }
 }

@@ -1,12 +1,13 @@
 use serde::{Serialize, Deserialize};
 use crate::models::*;
 use crate::PadlId;
+use crate::api::keys::WorkerKey;
 #[cfg(feature = "game_mechanics")] 
 use crate::game_mechanics::town::TileIndex;
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct TaskList {
-    pub worker_id: i64,
+    pub worker_id: WorkerKey,
     pub tasks: Vec<RawTask>,
 }
 

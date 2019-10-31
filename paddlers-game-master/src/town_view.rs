@@ -36,7 +36,7 @@ impl TownView {
 
         let workers = db.workers(village_id);
         for worker in workers {
-            let tasks = db.worker_tasks(worker.id);
+            let tasks = db.worker_tasks(worker.key());
             for task in tasks {
                 state.register_task_begin(task.task_type).expect("Current DB state invalid");
             }
