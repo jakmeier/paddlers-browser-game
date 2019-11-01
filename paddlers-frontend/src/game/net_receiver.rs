@@ -18,10 +18,16 @@ impl Game<'_,'_> {
             Ok(msg) => {
                 // println!("Received Network data!");
                 match msg {
-                    NetMsg::Error(msg) => {
-                        // TODO: Handle user-not-created error (request player creation)
-                        println!("Network Error: {}", msg);
-                    }
+                    NetMsg::Error(e) => {
+                        match e.err {
+                            PadlErrorCode::UserNotInDB => {
+                                self.rest().http_create_player()?;
+                            },
+                            _ => {
+                                println!("Network Error: {}", e);
+                            } 
+                        }
+                    },
                     NetMsg::Attacks(response) => {
                         if let Some(data) = response.data {
                             for atk in data.village.attacks {

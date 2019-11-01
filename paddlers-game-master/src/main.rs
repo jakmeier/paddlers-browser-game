@@ -88,6 +88,10 @@ fn main() {
             .data(dbpool.clone())
             .route("/", web::get().to(api::index))
             .service(
+                web::resource("/player/create")
+                .route(web::post().to(api::new_player))
+            )
+            .service(
                 web::resource("/shop/building")
                 .data(web::Json::<BuildingPurchase>)
                 .route(web::post().to(api::purchase_building))

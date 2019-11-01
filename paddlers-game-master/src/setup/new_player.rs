@@ -1,17 +1,18 @@
+use diesel::QueryResult;
 use paddlers_shared_lib::prelude::*;
 use crate::db::DB;
 
 impl DB {
-    pub (super) fn new_player(&self, display_name: String, uuid: uuid::Uuid) -> Player {
+    pub (super) fn new_player(&self, display_name: String, uuid: uuid::Uuid) -> QueryResult<Player> {
         let player = NewPlayer {
             display_name: Some(display_name),
             karma: 0,
             uuid
         };
-        let player = self.insert_player(&player);
+        let player = self.insert_player(&player)?;
         let village = self.new_village(player.key());
         self.insert_hero(village.key());
-        player
+        Ok(player)
     }
 
 

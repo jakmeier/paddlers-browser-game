@@ -8,6 +8,7 @@ use paddlers_shared_lib::api::{
 };
 use paddlers_shared_lib::sql::GameDB;
 use crate::authentication::Authentication;
+use crate::setup::initialize_new_player_account;
 
 pub fn index() -> impl Responder {
     HttpResponse::Ok().body("Game Master OK")
@@ -79,6 +80,16 @@ pub (super) fn overwrite_tasks(
         }
     }
     HttpResponse::Ok().into()
+}
+
+/// Must be called by an identified user (via JWT) before using any other Game-Master or GQL services
+pub (super) fn new_player(
+    pool: web::Data<crate::db::Pool>, 
+    auth: Authentication,
+)-> impl Responder {
+    let db: crate::db::DB = pool.get_ref().into();
+    initialize_new_player_account(&db, auth.user.uuid)
+        .map_err(|e| HttpResponse::InternalServerError().body(e) )
 }
 
 fn check_owns_worker(db: &crate::db::DB, auth: &Authentication, v: WorkerKey) -> Result<(), HttpResponse> {

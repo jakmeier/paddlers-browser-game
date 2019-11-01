@@ -62,6 +62,13 @@ impl RestApiState {
         Ok(())
     }
 
+    pub fn http_create_player(&mut self) -> PadlResult<()>  {
+        let request_string = "";
+        let promise = ajax::send("POST", &format!("{}/player/create", game_master_url()?), request_string);
+        self.push_promise(promise, None);
+        Ok(())
+    }
+
     fn push_promise(
         &mut self, 
         maybe_promise: PadlResult<PromiseFuture<String, AjaxError>>, 

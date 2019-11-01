@@ -5,11 +5,10 @@ use paddlers_shared_lib::models::dsl;
 use super::*;
 
 impl DB {
-    pub fn insert_player(&self, u: &NewPlayer) -> Player {
+    pub fn insert_player(&self, u: &NewPlayer) -> QueryResult<Player> {
         diesel::insert_into(players::dsl::players)
             .values(u)
             .get_result(self.dbconn())
-            .expect("Inserting player")
     }
 
     pub fn delete_hobo(&self, hobo: &Hobo) {
