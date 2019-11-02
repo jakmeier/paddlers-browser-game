@@ -10,6 +10,7 @@ use crate::game::{
     components::*,
     town::{Town, town_shop::DefaultShop},
 };
+use crate::net::state::current_village;
 use crate::gui::input::{Grabbable, UiState, Clickable};
 use crate::gui::gui_components::{InteractiveTableArea, ClickOutput};
 use paddlers_shared_lib::api::shop::Cost;
@@ -101,7 +102,7 @@ impl Town {
             match grabbed {
                 Grabbable::NewBuilding(bt) => {
                     if let Some(pos) = self.get_buildable_tile(mouse_pos) {
-                        rest.http_place_building(pos, *bt, self.village_key).unwrap_or_else(
+                        rest.http_place_building(pos, *bt, current_village()).unwrap_or_else(
                             |e|
                             errq.push(e)
                         );

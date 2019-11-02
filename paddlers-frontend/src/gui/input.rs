@@ -5,7 +5,6 @@ use quicksilver::geom::{Vector, Rectangle};
 use quicksilver::prelude::MouseButton;
 use specs::prelude::*;
 use paddlers_shared_lib::prelude::*;
-use crate::game::state::*;
 
 pub mod pointer;
 pub mod drag;
@@ -33,7 +32,7 @@ pub struct UiState {
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum UiView {
-    Town(VillageKey),
+    Town,
     Map,
 }
 
@@ -55,7 +54,7 @@ impl Default for UiState {
             hovered_entity: None,
             main_area: Rectangle::default(),
             menu_box_area: Rectangle::default(),
-            current_view: UiView::Town(current_village()),
+            current_view: UiView::Town,
         }
     }
 }
@@ -63,8 +62,8 @@ impl UiState {
     pub fn toggle_view(&mut self) {
         self.reset_view();
         match self.current_view {
-            UiView::Map => self.current_view = UiView::Town(current_village()),
-            UiView::Town(_) => self.current_view = UiView::Map,
+            UiView::Map => self.current_view = UiView::Town,
+            UiView::Town => self.current_view = UiView::Map,
         }
     }
     pub fn set_view(&mut self, view: UiView) {

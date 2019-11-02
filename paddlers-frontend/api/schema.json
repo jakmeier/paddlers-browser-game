@@ -138,7 +138,7 @@
             {
               "args": [],
               "deprecationReason": null,
-              "description": null,
+              "description": "Field Visibility: public",
               "isDeprecated": false,
               "name": "controlPoints",
               "type": {
@@ -514,7 +514,7 @@
             {
               "args": [],
               "deprecationReason": null,
-              "description": null,
+              "description": "Field Visibility: public",
               "isDeprecated": false,
               "name": "displayName",
               "type": {
@@ -526,7 +526,7 @@
             {
               "args": [],
               "deprecationReason": null,
-              "description": null,
+              "description": "Field Visibility: user",
               "isDeprecated": false,
               "name": "karma",
               "type": {
@@ -542,7 +542,7 @@
             {
               "args": [],
               "deprecationReason": null,
-              "description": null,
+              "description": "Field Visibility: public",
               "isDeprecated": false,
               "name": "villages",
               "type": {
@@ -680,7 +680,23 @@
             {
               "args": [],
               "deprecationReason": null,
-              "description": null,
+              "description": "Field Visibility: public",
+              "isDeprecated": false,
+              "name": "id",
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "Int",
+                  "ofType": null
+                }
+              }
+            },
+            {
+              "args": [],
+              "deprecationReason": null,
+              "description": "Field Visibility: public",
               "isDeprecated": false,
               "name": "x",
               "type": {
@@ -696,7 +712,7 @@
             {
               "args": [],
               "deprecationReason": null,
-              "description": null,
+              "description": "Field Visibility: public",
               "isDeprecated": false,
               "name": "y",
               "type": {
@@ -712,7 +728,7 @@
             {
               "args": [],
               "deprecationReason": null,
-              "description": null,
+              "description": "Field Visibility: user",
               "isDeprecated": false,
               "name": "sticks",
               "type": {
@@ -728,7 +744,7 @@
             {
               "args": [],
               "deprecationReason": null,
-              "description": null,
+              "description": "Field Visibility: user",
               "isDeprecated": false,
               "name": "feathers",
               "type": {
@@ -744,7 +760,7 @@
             {
               "args": [],
               "deprecationReason": null,
-              "description": null,
+              "description": "Field Visibility: user",
               "isDeprecated": false,
               "name": "logs",
               "type": {
@@ -760,7 +776,7 @@
             {
               "args": [],
               "deprecationReason": null,
-              "description": null,
+              "description": "Field Visibility: user",
               "isDeprecated": false,
               "name": "workers",
               "type": {
@@ -784,7 +800,7 @@
             {
               "args": [],
               "deprecationReason": null,
-              "description": null,
+              "description": "Field Visibility: user",
               "isDeprecated": false,
               "name": "buildings",
               "type": {
@@ -819,7 +835,7 @@
                 }
               ],
               "deprecationReason": null,
-              "description": null,
+              "description": "Field Visibility: user",
               "isDeprecated": false,
               "name": "attacks",
               "type": {
@@ -878,13 +894,9 @@
                   "description": null,
                   "name": "playerId",
                   "type": {
-                    "kind": "NON_NULL",
-                    "name": null,
-                    "ofType": {
-                      "kind": "SCALAR",
-                      "name": "Int",
-                      "ofType": null
-                    }
+                    "kind": "SCALAR",
+                    "name": "Int",
+                    "ofType": null
                   }
                 }
               ],
@@ -1153,7 +1165,7 @@
             {
               "args": [],
               "deprecationReason": null,
-              "description": null,
+              "description": "Field Visibility: public",
               "isDeprecated": false,
               "name": "id",
               "type": {
@@ -1169,7 +1181,7 @@
             {
               "args": [],
               "deprecationReason": null,
-              "description": null,
+              "description": "Field Visibility: public",
               "isDeprecated": false,
               "name": "color",
               "type": {
@@ -1181,7 +1193,7 @@
             {
               "args": [],
               "deprecationReason": null,
-              "description": null,
+              "description": "Field Visibility: public",
               "isDeprecated": false,
               "name": "hp",
               "type": {
@@ -1197,7 +1209,7 @@
             {
               "args": [],
               "deprecationReason": null,
-              "description": null,
+              "description": "Field Visibility: public",
               "isDeprecated": false,
               "name": "speed",
               "type": {
@@ -1213,7 +1225,7 @@
             {
               "args": [],
               "deprecationReason": null,
-              "description": null,
+              "description": "Field Visibility: public",
               "isDeprecated": false,
               "name": "effects",
               "type": {
@@ -1799,13 +1811,13 @@
           "possibleTypes": null
         },
         {
-          "description": null,
+          "description": "Map data",
           "enumValues": null,
           "fields": [
             {
               "args": [],
               "deprecationReason": null,
-              "description": null,
+              "description": "Field Visibility: public",
               "isDeprecated": false,
               "name": "streams",
               "type": {
@@ -1829,7 +1841,7 @@
             {
               "args": [],
               "deprecationReason": null,
-              "description": null,
+              "description": "Field Visibility: public",
               "isDeprecated": false,
               "name": "villages",
               "type": {
@@ -1938,6 +1950,12 @@
               "description": null,
               "isDeprecated": false,
               "name": "MUTATION"
+            },
+            {
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
+              "name": "SUBSCRIPTION"
             },
             {
               "deprecationReason": null,

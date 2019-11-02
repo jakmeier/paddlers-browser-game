@@ -141,6 +141,17 @@ impl WorkerTaskEx {
 pub struct MapQuery;
 pub type MapResponse = Response<map_query::ResponseData>;
 
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "api/schema.json",
+    query_path = "api/queries/player_villages_query.graphql",
+)]
+pub struct PlayerVillagesQuery;
+#[allow(dead_code)]
+pub type PlayerVillagesRawResponse = Response<player_villages_query::ResponseData>;
+pub type PlayerVillagesResponse = player_villages_query::PlayerVillagesQueryPlayer;
+
+
 use paddlers_shared_lib::models::TaskType;
 impl Into<TaskType> for &WorkerTaskType {
     fn into(self) -> TaskType {

@@ -4,6 +4,7 @@ use juniper::IntoFieldError;
 #[derive(Debug)]
 pub enum ReadableInterfaceError {
     NotAllowed,
+    RequiresAuthentication,
 }
 
 impl IntoFieldError for ReadableInterfaceError {
@@ -12,6 +13,10 @@ impl IntoFieldError for ReadableInterfaceError {
             ReadableInterfaceError::NotAllowed => FieldError::new(
                 "Player not allowed to read this field.",
                 graphql_value!({ "internal_error": "Not allowed" }),
+            ),
+            ReadableInterfaceError::RequiresAuthentication => FieldError::new(
+                "Please authenticate before reading this field.",
+                graphql_value!({ "internal_error": "Authentication required" }),
             ),
         }
     }

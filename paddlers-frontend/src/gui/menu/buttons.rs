@@ -1,7 +1,6 @@
 use quicksilver::prelude::*;
 use specs::prelude::*;
 use crate::game::specs_resources::Now;
-use crate::game::state::*;
 use crate::gui::{
     sprites::*,
     gui_components::*,
@@ -25,7 +24,7 @@ impl MenuButtons {
 
         let town_button = Self::button_render(SingleSprite::TownButton, SingleSprite::TownButtonHov);
         ui_box.add(
-            UiElement::new(MenuButtonAction::SwitchToView(UiView::Town(current_village())))
+            UiElement::new(MenuButtonAction::SwitchToView(UiView::Town))
                 .with_render_variant(town_button)
         );
         

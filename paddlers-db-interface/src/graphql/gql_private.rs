@@ -13,7 +13,7 @@ impl GqlAttack {
     }
     fn units(&self, ctx: &Context) -> FieldResult<Vec<GqlHobo>> {
         Ok(ctx
-            .db
+            .db()
             .attack_hobos(&self.0)
             .into_iter()
             .map(GqlHobo)
@@ -137,7 +137,7 @@ impl GqlWorker {
     }
 
     pub fn tasks(&self, ctx: &Context) -> Vec<GqlTask> {
-        ctx.db
+        ctx.db()
             .worker_tasks(WorkerKey(self.0.id))
             .into_iter()
             .map(GqlTask::authorized ) // Inherited authorization
@@ -145,7 +145,7 @@ impl GqlWorker {
     }
 
     fn abilities(&self, ctx: &Context) -> Vec<GqlAbility> {
-        ctx.db
+        ctx.db()
             .worker_abilities(WorkerKey(self.0.id))
             .into_iter()
             .map( GqlAbility::authorized ) // Inherited authorization

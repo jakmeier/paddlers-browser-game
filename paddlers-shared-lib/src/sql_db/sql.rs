@@ -6,9 +6,9 @@ use diesel::prelude::*;
 pub trait GameDB {
     fn dbconn(&self) -> &PgConnection;
 
-    fn player(&self, player_id: i64) -> Option<Player> {
+    fn player(&self, player_id: PlayerKey) -> Option<Player> {
         players::table
-            .find(player_id)
+            .find(player_id.num())
             .first(self.dbconn())
             .optional()
             .expect("Error loading data")

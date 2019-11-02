@@ -14,7 +14,7 @@ use crate::graphql::Schema;
 
 #[derive(Debug)]
 pub struct UserInfo {
-    user: PadlUser,
+    user: Option<PadlUser>,
 }
 
 #[get("/")]
@@ -53,7 +53,7 @@ fn generic_graphql_handler(
     connection: DbConn,
     request: GraphQLRequest,
     schema: State<Schema>,
-    user_info: UserInfo, // This only ensures a valid JWT for *some* user is sent
+    user_info: UserInfo,
 ) -> GraphQLResponse {
     if let Some(player_ctx)  = crate::graphql::Context::new(connection, user_info.user) {
         request.execute(&schema, &player_ctx)
@@ -83,11 +83,11 @@ impl<'a, 'r> FromRequest<'a, 'r> for UserInfo {
             Some(s) => {
                 let config = request.guard::<State<Config>>().expect("Config broken");
                 match PadlUser::from_token(s, &config) {
-                    Ok(user) => Outcome::Success(UserInfo{ user }),
+                    Ok(user) => Outcome::Success(UserInfo{ user: Some(user) }),
                     Err(e) => Outcome::Failure((Status::Unauthorized, e)),
                 }
             },
-            None => Outcome::Failure((Status::BadRequest, AuthenticationError::NoToken)),
+            None => Outcome::Success(UserInfo{ user: None }),
         }
     }
 }

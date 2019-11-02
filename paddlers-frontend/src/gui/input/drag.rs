@@ -18,13 +18,13 @@ impl<'a> System<'a> for DragSystem {
             let in_menu_area = start.overlaps_rectangle(&(*ui_state).menu_box_area);
 
             match (ui_state.current_view, in_menu_area) {
-                (UiView::Town(_), true) => {
+                (UiView::Town, true) => {
                     // NOP
                 }
                 (UiView::Map, true) => {
                     // NOP
                 }
-                (UiView::Town(_), false) => {
+                (UiView::Town, false) => {
                     // NOP
                 }
                 (UiView::Map, false) => {

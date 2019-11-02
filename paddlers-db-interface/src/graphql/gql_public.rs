@@ -57,7 +57,7 @@ impl GqlPlayer {
     }
     /// Field Visibility: public
     fn villages(&self, ctx: &Context) -> Vec<GqlVillage> {
-        ctx.db
+        ctx.db()
             .player_villages(PlayerKey(self.0.id))
             .into_iter()
             .map(|t| GqlVillage(t))
@@ -67,6 +67,10 @@ impl GqlPlayer {
 
 #[juniper::object (Context = Context)]
 impl GqlVillage {
+    /// Field Visibility: public
+    fn id(&self) -> i32 {
+        self.0.id as i32
+    }
     /// Field Visibility: public
     fn x(&self) -> f64 {
         self.0.x as f64
@@ -79,28 +83,28 @@ impl GqlVillage {
     fn sticks(&self, ctx: &Context) -> FieldResult<i32> {
         ctx.check_village_key(self.0.key())?;
         Ok(
-            ctx.db.resource(ResourceType::Sticks, self.0.key()) as i32
+            ctx.db().resource(ResourceType::Sticks, self.0.key()) as i32
         )
     }
     /// Field Visibility: user
     fn feathers(&self, ctx: &Context) -> FieldResult<i32> {
         ctx.check_village_key(self.0.key())?;
         Ok(
-            ctx.db.resource(ResourceType::Feathers, self.0.key()) as i32
+            ctx.db().resource(ResourceType::Feathers, self.0.key()) as i32
         )
     }
     /// Field Visibility: user
     fn logs(&self, ctx: &Context) -> FieldResult<i32> {
         ctx.check_village_key(self.0.key())?;
         Ok(
-            ctx.db.resource(ResourceType::Logs, self.0.key()) as i32
+            ctx.db().resource(ResourceType::Logs, self.0.key()) as i32
         )
     }
     /// Field Visibility: user
     fn workers(&self, ctx: &Context) -> FieldResult<Vec<GqlWorker> >{
         ctx.check_village_key(self.0.key())?;
         Ok(
-            ctx.db
+            ctx.db()
                 .workers(self.0.id)
                 .into_iter()
                 .map(GqlWorker::authorized)
@@ -111,7 +115,7 @@ impl GqlVillage {
     fn buildings(&self, ctx: &Context) -> FieldResult<Vec<GqlBuilding>> {
         ctx.check_village_key(self.0.key())?;
         Ok(ctx
-            .db
+            .db()
             .buildings(self.0.key())
             .into_iter()
             .map(GqlBuilding::authorized)
@@ -124,7 +128,7 @@ impl GqlVillage {
     fn attacks(&self, ctx: &Context, min_id: Option<i32>) -> FieldResult<Vec<GqlAttack>> {
         ctx.check_village_key(self.0.key())?;
         Ok(ctx
-            .db
+            .db()
             .attacks(self.0.key(), min_id.map(i64::from))
             .into_iter()
             .map(GqlAttack::authorized)
@@ -154,7 +158,7 @@ impl GqlHobo {
     }
     /// Field Visibility: public
     pub fn effects(&self, ctx: &Context) -> Vec<GqlEffect> {
-        ctx.db
+        ctx.db()
             .effects_on_hobo(HoboKey(self.0.id))
             .into_iter()
             .map(GqlEffect::authorized )
@@ -170,7 +174,7 @@ impl GqlHobo {
 impl GqlMapSlice {
     /// Field Visibility: public
     fn streams(&self, ctx: &Context) -> Vec<GqlStream> {
-        ctx.db
+        ctx.db()
             .streams(self.low_x as f32, self.high_x as f32)
             .into_iter()
             .map(|t| GqlStream(t))
@@ -178,7 +182,7 @@ impl GqlMapSlice {
     }
     /// Field Visibility: public
     fn villages(&self, ctx: &Context) -> Vec<GqlVillage> {
-        ctx.db
+        ctx.db()
             .villages(self.low_x as f32, self.high_x as f32)
             .into_iter()
             .map(|t| GqlVillage(t))

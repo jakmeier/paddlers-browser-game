@@ -14,7 +14,6 @@ pub (crate) mod net_receiver;
 pub (crate) mod status_effects;
 pub (crate) mod mana;
 pub (crate) mod level;
-pub (crate) mod state;
 
 use crate::prelude::*;
 use crate::game::{
@@ -47,6 +46,7 @@ use std::sync::mpsc::{Receiver, channel};
 use town_resources::TownResources;
 use units::worker_system::WorkerSystem;
 use map::{GlobalMap, GlobalMapPrivateState};
+use crate::net::state::current_village;
 
 
 pub(crate) struct Game<'a, 'b> {
@@ -213,7 +213,7 @@ impl State for Game<'static, 'static> {
         std::mem::drop(ui_state);
         window.clear(Color::WHITE)?;
         match view {
-            UiView::Town(_) => {
+            UiView::Town => {
                 {
                     let (asset, town, ul) = (&mut self.sprites, &self.world.read_resource::<Town>(), self.unit_len.unwrap());
                     // asset.execute(|sprites| town.render(window, sprites, tick, ul))?;
@@ -282,7 +282,7 @@ impl State for Game<'static, 'static> {
                     let mut ui_state = self.world.write_resource::<UiState>();
                     let view = (*ui_state).current_view;
                     match view {
-                        UiView::Town(village_key) => {
+                        UiView::Town => {
                             if let Some(e) = ui_state.selected_entity {
                                 (*ui_state).selected_entity = None;
                                 
@@ -293,7 +293,7 @@ impl State for Game<'static, 'static> {
                                 let tile_index = self.town().tile(pos.area.center());
                                 std::mem::drop(pos_store);
 
-                                let r = self.rest().http_delete_building(tile_index, village_key);
+                                let r = self.rest().http_delete_building(tile_index, current_village());
                                 self.check(r);
 
                                 // Account for changes in aura total

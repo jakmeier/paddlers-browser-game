@@ -36,6 +36,11 @@
             .error(function (errorData) {
                 console.error("Login Failed: ", errorData);
             });
+            window.keycloak.onTokenExpired = () => {
+                window.keycloak.updateToken(300)
+                    .success(() => {})
+                    .error(() => { console.error('User token refresh failed') });
+            }
 
     </script>
 </body>

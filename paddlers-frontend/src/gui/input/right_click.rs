@@ -51,7 +51,7 @@ impl<'a> System<'a> for RightClickSystem {
             (UiView::Map, false) => {
                 // NOP
             },
-            (UiView::Town(_), false) => {
+            (UiView::Town, false) => {
                 if let Some(e) = (*ui_state).selected_entity {
                     if let Some(worker) = worker.get_mut(e) {
                         let maybe_job = worker.task_on_right_click(&mouse_pos, &town);

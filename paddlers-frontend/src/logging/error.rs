@@ -78,6 +78,7 @@ pub enum PadlErrorCode {
     NoDataFromBrowser(&'static str),
     BrowserError(String),
     UserNotInDB,
+    AuthorizationRequired,
 }
 
 impl fmt::Display for PadlErrorCode {
@@ -135,6 +136,8 @@ impl fmt::Display for PadlErrorCode {
                 write!(f, "Unexpected browser error: {}", s),
             PadlErrorCode::UserNotInDB =>
                 write!(f, "The user logged in is not present in the game database."),
+            PadlErrorCode::AuthorizationRequired =>
+                write!(f, "The requested resource permits authorized access only."),
         }
     }
 }

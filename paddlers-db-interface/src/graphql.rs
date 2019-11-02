@@ -20,30 +20,62 @@ use gql_public::*;
 pub struct Mutation;
 pub struct Query;
 
-pub struct Context {
+pub struct AuthenticatedContext {
     db: Arc<DbConn>,
     user: PlayerKey,
     villages: Vec<VillageKey>,
+}
+pub struct UnauthenticatedContext {
+    db: Arc<DbConn>,
+}
+pub enum Context {
+    Public(UnauthenticatedContext),
+    Authenticated(AuthenticatedContext),
 }
 // Necessary to make a DB connection available in GraphQL resolvers
 impl juniper::Context for Context {}
 
 impl Context {
-    pub fn new(db: DbConn, user: PadlUser) -> Option<Self> {
-        let id = db.player_by_uuid(user.uuid)?.key();
-        let vids = db.player_villages(id).into_iter().map(|v|v.key()).collect();
+    pub fn new(db: DbConn, user: Option<PadlUser>) -> Option<Self> {
         let conn = Arc::new(db);
-        Some(Context { db: conn, user: id, villages: vids })
+        if let Some(user) = user {
+            let id = conn.player_by_uuid(user.uuid)?.key();
+            let vids = conn.player_villages(id).into_iter().map(|v|v.key()).collect();
+            Some(Context::Authenticated( AuthenticatedContext { db: conn, user: id, villages: vids }))
+        } else {
+            Some(Context::Public(UnauthenticatedContext{ db: conn }))
+        }
+    }
+    pub fn db(&self) -> &Arc<DbConn> {
+        match self {
+            Context::Authenticated(ctx) => {
+                &ctx.db
+            },
+            Context::Public(ctx) => {
+                &ctx.db
+            }
+        }
+    }
+    pub fn authenticated(&self) -> Result<&AuthenticatedContext, ReadableInterfaceError> {
+        match self {
+            Context::Authenticated(ctx) => {
+                Ok(ctx)
+            },
+            Context::Public(_) => {
+                Err(ReadableInterfaceError::RequiresAuthentication)
+            }
+        }
+
     }
     fn check_user_key(&self, key: PlayerKey) -> Result<(), ReadableInterfaceError> {
-        if key.0 == self.user.0 {
+        if key.0 == self.authenticated()?.user.0 {
             Ok(())
         } else {
             Err(ReadableInterfaceError::NotAllowed)
         }
     }
     fn check_village_key(&self, key: VillageKey) -> Result<(), ReadableInterfaceError> {
-        if self.villages.contains(&key) {
+        if self.authenticated()?.villages.contains(&key) {
             Ok(())
         } else {
             Err(ReadableInterfaceError::NotAllowed)
@@ -59,27 +91,33 @@ pub fn new_schema() -> Schema {
 #[juniper::object(Context = Context)]
 impl Query {
     // Object Visibility: public
-    fn player(ctx: &Context, player_id: i32) -> FieldResult<GqlPlayer> {
-        let player = ctx.db.player(player_id as i64).ok_or("No such player")?;
+    fn player(ctx: &Context, player_id: Option<i32>) -> FieldResult<GqlPlayer> {
+        let key = 
+        if let Some(i) = player_id {
+            PlayerKey(i as i64)
+        } else {
+            ctx.authenticated()?.user
+        };
+        let player = ctx.db().player(key).ok_or("No such player")?;
         Ok(GqlPlayer(player))
     }
     // Object Visibility: public
     fn village(ctx: &Context, village_id: i32) -> FieldResult<GqlVillage> {
-        let village = ctx.db.village(village_id as i64).ok_or("No such village")?;
+        let village = ctx.db().village(village_id as i64).ok_or("No such village")?;
         Ok(GqlVillage(village))
     }
     // Object Visibility: user
     fn worker(ctx: &Context, worker_id: i32) -> FieldResult<GqlWorker> {
         Ok(GqlWorker::authorized(
-            ctx.db
-                .worker_auth_by_player(WorkerKey(worker_id as i64), ctx.user)
+            ctx.db()
+                .worker_auth_by_player(WorkerKey(worker_id as i64), ctx.authenticated()?.user)
                 .ok_or("No such unit visible")?,
         ))
     }
     // Object Visibility: user
     fn hobo(ctx: &Context, hobo_id: i32) -> FieldResult<GqlHobo> {
         Ok(GqlHobo(
-            ctx.db.hobo(hobo_id as i64).ok_or("No such unit exists")?,
+            ctx.db().hobo(hobo_id as i64).ok_or("No such unit exists")?,
         ))
     }
     // Object Visibility: public

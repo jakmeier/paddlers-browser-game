@@ -24,8 +24,6 @@ pub struct ValidatedTaskList {
     pub village_id: VillageKey,
 }
 pub (crate) fn validate_task_list(db: &DB, tl: &TaskList) -> Result<ValidatedTaskList, Box<dyn std::error::Error>> {
-    // TODO [user authentication]
-
     let worker_id = tl.worker_id;
 
     // Load relevant data into memory 

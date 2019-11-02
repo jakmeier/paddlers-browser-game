@@ -1,8 +1,9 @@
-pub mod graphql;
 pub mod ajax;
-pub mod game_master_api;
-pub mod url;
 pub mod authentication;
+pub mod game_master_api;
+pub mod graphql;
+pub mod state;
+pub mod url;
 
 use graphql::{
     GraphQlState,

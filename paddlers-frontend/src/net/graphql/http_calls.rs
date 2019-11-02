@@ -7,9 +7,10 @@ use crate::net::{
 use graphql_client::GraphQLQuery;
 use futures::Future;
 use futures_util::future::FutureExt;
+use paddlers_shared_lib::prelude::*;
 
-pub (super) fn http_read_incoming_attacks(min_attack_id: Option<i64>, village_id: i64) -> PadlResult<impl Future<Output = PadlResult<AttacksResponse>>> {
-    let request_body = AttacksQuery::build_query(attacks_query::Variables{min_attack_id, village_id});
+pub (super) fn http_read_incoming_attacks(min_attack_id: Option<i64>, village_id: VillageKey) -> PadlResult<impl Future<Output = PadlResult<AttacksResponse>>> {
+    let request_body = AttacksQuery::build_query(attacks_query::Variables{min_attack_id, village_id: village_id.num()});
     let request_string = &serde_json::to_string(&request_body)?;
     let promise = ajax::send("POST", &graphql_url()?, request_string)?;
     Ok(
@@ -21,8 +22,8 @@ pub (super) fn http_read_incoming_attacks(min_attack_id: Option<i64>, village_id
     )
 }
 
-pub (super) fn http_read_buildings(village_id: i64) -> PadlResult<impl Future<Output = PadlResult<BuildingsResponse>>> {
-    let request_body = BuildingsQuery::build_query(buildings_query::Variables{village_id});
+pub (super) fn http_read_buildings(village_id: VillageKey) -> PadlResult<impl Future<Output = PadlResult<BuildingsResponse>>> {
+    let request_body = BuildingsQuery::build_query(buildings_query::Variables{village_id: village_id.num()});
     let request_string = &serde_json::to_string(&request_body)?;
     let promise = ajax::send("POST", &graphql_url()?, request_string)?;
     Ok(
@@ -34,8 +35,8 @@ pub (super) fn http_read_buildings(village_id: i64) -> PadlResult<impl Future<Ou
     )
 }
 
-pub (super) fn http_read_resources(village_id: i64) -> PadlResult<impl Future<Output = PadlResult<ResourcesResponse>>> {
-    let request_body = ResourcesQuery::build_query(resources_query::Variables{ village_id });
+pub (super) fn http_read_resources(village_id: VillageKey) -> PadlResult<impl Future<Output = PadlResult<ResourcesResponse>>> {
+    let request_body = ResourcesQuery::build_query(resources_query::Variables{ village_id: village_id.num() });
     let request_string = &serde_json::to_string(&request_body)?;
     let promise = ajax::send("POST", &graphql_url()?, request_string)?;
     Ok(
@@ -47,8 +48,8 @@ pub (super) fn http_read_resources(village_id: i64) -> PadlResult<impl Future<Ou
     )
 }
 
-pub (super) fn http_read_workers(village_id: i64) ->  PadlResult<impl Future<Output = PadlResult<VillageUnitsResponse>>> {
-    let request_body = VillageUnitsQuery::build_query(village_units_query::Variables{village_id});
+pub (super) fn http_read_workers(village_id: VillageKey) ->  PadlResult<impl Future<Output = PadlResult<VillageUnitsResponse>>> {
+    let request_body = VillageUnitsQuery::build_query(village_units_query::Variables{village_id: village_id.num()});
     let request_string = &serde_json::to_string(&request_body)?;
     let promise = ajax::send("POST", &graphql_url()?, request_string)?;
     Ok(
@@ -80,6 +81,20 @@ pub (super) fn http_read_map(low_x: i64, high_x: i64) -> PadlResult<impl Future<
         promise.map(|x| {
             let response: MapResponse = 
                 serde_json::from_str(&x?)?;
+            Ok(response)
+        })
+    )
+}
+pub (super) fn http_read_own_villages() -> PadlResult<impl Future<Output = PadlResult<PlayerVillagesResponse>>> {
+    let request_body = PlayerVillagesQuery::build_query(player_villages_query::Variables);
+    let request_string = &serde_json::to_string(&request_body)?;
+    let promise = ajax::send("POST", &graphql_url()?, request_string)?;
+    Ok(
+        promise.map(|x| {
+            let raw_response: PlayerVillagesRawResponse = 
+                serde_json::from_str(&x?)?;
+            let response = raw_response.data.ok_or(PadlError::dev_err(PadlErrorCode::InvalidGraphQLData("own villages")))?;
+            let response = response.player;
             Ok(response)
         })
     )

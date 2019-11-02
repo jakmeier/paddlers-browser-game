@@ -10,7 +10,6 @@ use crate::gui::{
     sprites::*,
     z::{Z_TILE_SHADOW, Z_TEXTURE, Z_VISITOR}
 };
-use crate::game::state::*;
 pub use paddlers_shared_lib::game_mechanics::town::TileIndex;
 use paddlers_shared_lib::prelude::*;
 use crate::prelude::*;
@@ -21,7 +20,6 @@ pub type TileState = TileStateEx<specs::Entity>;
 
 #[derive(Debug)]
 pub struct Town {
-    pub village_key: VillageKey,
     map: TownMap,
     state: TownState<specs::Entity>,
     ul: f32,
@@ -46,7 +44,6 @@ impl Town {
             state: TownState::new(),
             ul: ul,
             total_ambience: 0,
-            village_key: current_village(),
         }
     }
 
