@@ -66,7 +66,7 @@ impl AttackSpawner {
         for _ in 0 .. n {
             let unit = NewHobo {
                 color: Some(UnitColor::Yellow),
-                hp: rng.gen_range(3, 6), 
+                hp: rng.gen_range(1, 10), 
                 speed: 0.1,
                 home: vid,
             };

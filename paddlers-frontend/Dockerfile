@@ -19,5 +19,6 @@ RUN cd paddlers-frontend; cargo web deploy --target=wasm32-unknown-unknown --rel
 FROM nginx:alpine as WebServer
 COPY --from=WasmBuilder ./paddlers-frontend/target/deploy/paddlers-frontend.* /usr/share/nginx/html/
 COPY ./paddlers-frontend/static /usr/share/nginx/html
+COPY ./paddlers-frontend/static/js/keycloak/player.demo.json /usr/share/nginx/html/js/keycloak/player.json
 COPY ./paddlers-frontend/nginx/mime.types ./paddlers-frontend/nginx/nginx.conf /etc/nginx/
-COPY ./paddlers-frontend/nginx/localhost.conf /etc/nginx/conf.d/
+COPY ./paddlers-frontend/nginx/demo.conf /etc/nginx/conf.d/

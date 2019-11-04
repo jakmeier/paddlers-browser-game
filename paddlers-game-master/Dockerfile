@@ -20,6 +20,8 @@ FROM buildpack-deps:stretch as GameMaster
 WORKDIR /app
 COPY --from=GameMasterBuilder ./paddlers-game-master/target/release/paddlers-game-master ./paddlers-game-master
 COPY ./diesel.toml ./diesel.toml
+RUN mkdir /opt/keycloak
+COPY ./paddlers-keycloak/demo_pub_rsa.der /opt/keycloak/pub_rsa.der
 # Customize env file later if you need to 
 COPY ./local.env ./.env
 CMD ["./paddlers-game-master"]

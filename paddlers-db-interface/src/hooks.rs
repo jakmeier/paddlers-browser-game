@@ -84,7 +84,10 @@ impl<'a, 'r> FromRequest<'a, 'r> for UserInfo {
                 let config = request.guard::<State<Config>>().expect("Config broken");
                 match PadlUser::from_token(s, &config) {
                     Ok(user) => Outcome::Success(UserInfo{ user: Some(user) }),
-                    Err(e) => Outcome::Failure((Status::Unauthorized, e)),
+                    Err(e) => {
+                        println!("{}", e);
+                        Outcome::Failure((Status::Unauthorized, e))
+                    },
                 }
             },
             None => Outcome::Success(UserInfo{ user: None }),
