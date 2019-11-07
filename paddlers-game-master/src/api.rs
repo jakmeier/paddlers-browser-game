@@ -88,8 +88,11 @@ pub (super) fn new_player(
     auth: Authentication,
 )-> impl Responder {
     let db: crate::db::DB = pool.get_ref().into();
-    initialize_new_player_account(&db, auth.user.uuid)
-        .map_err(|e| HttpResponse::InternalServerError().body(e) )
+    if let Err(msg) = initialize_new_player_account(&db, auth.user.uuid) {
+        HttpResponse::InternalServerError().body(msg)
+    } else {
+        HttpResponse::Ok().into()
+    }
 }
 
 fn check_owns_worker(db: &crate::db::DB, auth: &Authentication, v: WorkerKey) -> Result<(), HttpResponse> {
