@@ -49,3 +49,13 @@ debug-keycloak-container: paddlers-keycloak/debug.Dockerfile
 
 keycloak-container: paddlers-keycloak/Dockerfile
 	docker build --target KeyCloak -t $(REPO):keycloak-snapshot -f $< .
+
+# When container are alrady running, use these for partial update
+recreate-frontend: debug-frontend-container
+	docker-compose -f docker-compose.local.yml up -d --no-deps --build frontend
+
+recreate-db-interface: debug-db-interface-container
+	docker-compose -f docker-compose.local.yml up -d --no-deps --build db-interface
+
+recreate-game-master: debug-game-master-container
+	docker-compose -f docker-compose.local.yml up -d --no-deps --build game-master

@@ -58,7 +58,7 @@ fn main() {
     let config = Config::from_env()
         .unwrap_or(Config::default());
     let origin = config.frontend_origin.clone();
-    let base_url = config.game_master_base_url.clone();
+    let base_url = config.game_master_service_name.clone();
 
     let sys = actix::System::new("background-worker-example");
     let attack_worker = AttackSpawner::new(dbpool.clone()).start();
@@ -116,6 +116,8 @@ fn main() {
     .bind(&base_url).expect("binding")
     .start();
 
-    sys.run().unwrap();
+    println!("Listening on {}", base_url);
+
+    sys.run().expect("Actix system failure");
     println!("Web-Actix returned");
 }

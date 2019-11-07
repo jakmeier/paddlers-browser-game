@@ -21,9 +21,13 @@ RUN rm ./paddlers-frontend/target/wasm32-unknown-unknown/release/paddlers*
 RUN cd paddlers-frontend; cargo web deploy --target=wasm32-unknown-unknown --release --features=dev_view
 
 # A lightweight image to host application
-FROM nginx:alpine as WebServer
+FROM nginx:latest as WebServer
 COPY --from=WasmBuilder ./paddlers-frontend/target/deploy/paddlers-frontend.* /usr/share/nginx/html/
 COPY ./paddlers-frontend/static /usr/share/nginx/html
 COPY ./paddlers-frontend/static/js/keycloak/player.local.json /usr/share/nginx/html/js/keycloak/player.json
 COPY ./paddlers-frontend/nginx/mime.types ./paddlers-frontend/nginx/nginx.conf /etc/nginx/
-COPY ./paddlers-frontend/nginx/localhost.conf /etc/nginx/conf.d/
+COPY ./paddlers-frontend/nginx/localhost.conf /etc/nginx/conf.d/paddlers.conf
+COPY ./wait-for-it.sh ./wait-for-it.sh
+RUN chmod +x ./wait-for-it.sh
+CMD ["./wait-for-it.sh" , "db-interface:65432" , "--strict" , "--timeout=60" , "--" , "nginx", "-g daemon off;"]
+# CMD ["./wait-for-it.sh" , "db-interface:65432" , "--strict" , "--timeout=60" , "--" , "nginx", "g"]

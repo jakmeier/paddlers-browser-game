@@ -25,5 +25,5 @@ RUN mkdir /opt/keycloak
 COPY ./paddlers-keycloak/demo_pub_rsa.der /opt/keycloak/pub_rsa.der
 COPY ./wait-for-it.sh ./wait-for-it.sh
 RUN chmod +x ./wait-for-it.sh
-CMD ["./wait-for-it.sh" , "$GAME_MASTER_BASE_URL" , "--strict" , "--timeout=60" , "--" , "./paddlers-db-interface"]
+CMD ["./wait-for-it.sh" , "$GAME_MASTER_SERVICE_NAME" , "--strict" , "--timeout=60" , "--" , "./paddlers-db-interface"]
 EXPOSE 65432

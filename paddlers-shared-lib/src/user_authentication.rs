@@ -29,7 +29,7 @@ impl PadlUser {
 
         let key = get_verification_key()?;
         let token_parsed = decode::<Claims>(&token, &&key, &validation).map_err(
-            |_| AuthenticationError::InvalidToken
+            |e| AuthenticationError::InvalidToken(format!("{:?}", e))
         )?;
 
         let uuid = uuid::Uuid::parse_str(&token_parsed.claims.sub).map_err(
@@ -59,7 +59,7 @@ fn get_verification_key<'a>() -> Result<&'a [u8], AuthenticationError> {
 #[derive(Debug)]
 pub enum AuthenticationError {
     NoToken,
-    InvalidToken,
+    InvalidToken(String),
     InvalidSubject,
     NoVerificationKey,
 }

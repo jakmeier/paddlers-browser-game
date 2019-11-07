@@ -34,9 +34,6 @@ services:
       - 65432:65432
     environment:
       - RUST_BACKTRACE=1
-      - ROCKET_ADDRESS=0.0.0.0
-      - ROCKET_PORT=65432
-      - ROCKET_DATABASES={game_db={url="postgresql://postgres:password@db:5432"}}
 #
   frontend:
     image: jakmeier/paddlers:frontend-snapshot

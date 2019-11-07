@@ -32,6 +32,18 @@ fn main() {
     #[cfg(not(feature="local"))]
     let allowed_origins = AllowedOrigins::some_exact(&[origin]);
 
+    let mut databse_config_table = std::collections::BTreeMap::new();
+    let mut inner_table = std::collections::BTreeMap::<std::string::String, String>::new();
+    inner_table.insert("url".to_owned(), config.db_url.to_owned().into());
+    databse_config_table.insert("game_db".to_owned(), inner_table.into());
+
+    let rocket_config = rocket::config::Config::build(rocket::config::Environment::Production)
+    .address(config.graphql_service_name.clone())
+    .port(config.graphql_port)
+    .extra("databases", rocket::config::Value::Table(databse_config_table))
+    .finalize().expect("Check Configuration");
+
+
     let cors = rocket_cors::CorsOptions {
         allowed_origins,
         #[cfg(feature="local")]
@@ -45,7 +57,7 @@ fn main() {
     }
     .to_cors().expect("CORS creation failed");
 
-    rocket::ignite()
+    rocket::custom(rocket_config)
         .manage(graphql::new_schema())
         .manage(config)
         .attach(DbConn::fairing())
