@@ -1149,9 +1149,9 @@
   },
   "smtpServer": {},
   "loginTheme": "paddlers",
-  "accountTheme": "paddlers",
-  "adminTheme": "paddlers",
-  "emailTheme": "paddlers",
+  "accountTheme": "keycloak",
+  "adminTheme": "keycloak",
+  "emailTheme": "keycloak",
   "eventsEnabled": false,
   "eventsListeners": [
     "jboss-logging"

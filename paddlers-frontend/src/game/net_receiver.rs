@@ -40,6 +40,8 @@ impl Game<'_,'_> {
                     }
                     NetMsg::Buildings(response) => {
                         if let Some(data) = response.data {
+                            self.flush_buildings()?;
+                            self.world.maintain();
                             data.create_entities(self);
                         }
                         else {
@@ -75,6 +77,8 @@ impl Game<'_,'_> {
                         }
                     }
                     NetMsg::Workers(response) => {
+                        self.flush_workers()?;
+                        self.world.maintain();
                         let now = self.world.read_resource::<Now>().0;
                         let results = create_worker_entities(&response, &mut self.world, now);
                         let mut q = self.world.write_resource::<ErrorQueue>();

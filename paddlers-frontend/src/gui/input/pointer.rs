@@ -4,7 +4,6 @@ use specs::prelude::*;
 use quicksilver::prelude::*;
 use crate::prelude::*;
 use super::{MouseState, LeftClickSystem, RightClickSystem, HoverSystem, drag::*};
-use crate::net::game_master_api::RestApiSystem;
 
 // Tolerance thresholds
 const DOUBLE_CLICK_DELAY: i64 = 400_000; // [us]
@@ -31,7 +30,6 @@ impl PointerManager<'_,'_> {
         let mut click_dispatcher = DispatcherBuilder::new()
             .with(LeftClickSystem, "lc", &[])
             .with(RightClickSystem, "rc", &[])
-            .with(RestApiSystem, "rest", &["lc", "rc"])
             .build();
         click_dispatcher.setup(&mut world);
 

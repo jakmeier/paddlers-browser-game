@@ -1,5 +1,5 @@
 use std::collections::VecDeque;
-use std::sync::{Mutex,mpsc::Sender};
+use std::sync::{Mutex,mpsc::Sender, atomic::AtomicBool};
 use crate::prelude::*;
 use crate::logging::AsyncErr;
 use super::{ajax, ajax::AjaxError, url::*, NetUpdateRequest};
@@ -12,6 +12,8 @@ use paddlers_shared_lib::api::{
     tasks::TaskList,
     statistics::*,
 };
+
+static SENT_PLAYER_CREATION: AtomicBool = AtomicBool::new(false);
 
 pub struct RestApiState {
     pub queue: VecDeque<(stdweb::PromiseFuture<std::string::String, AjaxError>, Option<NetUpdateRequest>)>,
@@ -62,10 +64,14 @@ impl RestApiState {
         Ok(())
     }
 
+
     pub fn http_create_player(&mut self) -> PadlResult<()>  {
-        let request_string = "";
-        let promise = ajax::send("POST", &format!("{}/player/create", game_master_url()?), request_string);
-        self.push_promise(promise, None);
+        if !SENT_PLAYER_CREATION.load(std::sync::atomic::Ordering::Relaxed) {
+            let request_string = "{}";
+            let promise = ajax::send("POST", &format!("{}/player/create", game_master_url()?), request_string);
+            self.push_promise(promise, Some(NetUpdateRequest::CompleteReload));
+            SENT_PLAYER_CREATION.store(true, std::sync::atomic::Ordering::Relaxed)
+        }
         Ok(())
     }
 
@@ -110,6 +116,8 @@ impl<'a> System<'a> for RestApiSystem {
                                 match req {
                                     NetUpdateRequest::WorkerTasks(unit_id) 
                                         =>  crate::net::request_worker_tasks_update(unit_id),
+                                    NetUpdateRequest::CompleteReload 
+                                        => crate::net::request_client_state(),
                                 }
                             }
                         }

@@ -17,11 +17,13 @@ pub use super::map::{VillageMetaInfo, MapPosition};
 pub use super::status_effects::{StatusEffects};
 pub use super::mana::Mana;
 pub use super::level::Level;
+pub use super::buildings::Building;
 
 
 
 pub fn register_components(world: &mut World) {
     world.register::<AnimationState>();
+    world.register::<Building>();
     world.register::<Clickable>();
     world.register::<EntityContainer>();
     world.register::<ForestComponent>();

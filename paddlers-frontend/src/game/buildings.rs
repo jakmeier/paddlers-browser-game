@@ -23,6 +23,10 @@ use paddlers_shared_lib::{
     graphql_types::*,
 };
 
+#[derive(Default, Debug, Component)]
+#[storage(NullStorage)]
+pub struct Building;
+
 impl Town {
     pub fn insert_new_bulding(&mut self, entities: &EntitiesRes, lazy: &LazyUpdate, pos: TileIndex, bt: BuildingType) -> Entity {
        self. insert_bulding(entities, lazy, pos, bt, bt.attack_power(), bt.attacks_per_cycle(), bt.range(), crate::wasm_setup::utc_now())
@@ -47,6 +51,7 @@ impl Town {
             .with(Renderable {
                 kind: RenderVariant::ImgWithImgBackground(bt.sprite(), SingleSprite::Grass)
             })
+            .with(Building)
             .with(Clickable);
 
         if let Some(r) = range {

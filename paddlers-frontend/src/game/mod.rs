@@ -47,7 +47,7 @@ use town_resources::TownResources;
 use units::worker_system::WorkerSystem;
 use map::{GlobalMap, GlobalMapPrivateState};
 use crate::net::state::current_village;
-
+use crate::net::game_master_api::RestApiSystem;
 
 pub(crate) struct Game<'a, 'b> {
     dispatcher: Dispatcher<'a, 'b>,
@@ -115,6 +115,7 @@ impl State for Game<'static, 'static> {
             .with(MoveSystem, "move", &["work"])
             .with(FightSystem::default(), "fight", &["move"])
             .with(ForestrySystem, "forest", &[])
+            .with(RestApiSystem, "rest", &[])
             .build();
         dispatcher.setup(&mut world);
 
@@ -375,6 +376,24 @@ impl Game<'_,'_> {
         }
         std::mem::drop(p);
         self.world.delete_entities(&dead).expect("Something bad happened when deleting dead entities");
+    }
+    /// Deletes all building entities (lazy, requires world.maintain())
+    fn flush_buildings(&self) -> PadlResult<()> {
+        let b = self.world.read_storage::<buildings::Building>();
+        for (entity, _marker) in (&self.world.entities(), &b).join() {
+            self.world.entities().delete(entity)
+                .map_err(|_| PadlError::dev_err(PadlErrorCode::SpecsError("Delete building")))?;
+        }
+        Ok(())
+    }
+    /// Deletes all worker entities (lazy, requires world.maintain())
+    fn flush_workers(&self) -> PadlResult<()> {
+        let w = self.world.read_storage::<units::workers::Worker>();
+        for (entity, _marker) in (&self.world.entities(), &w).join() {
+            self.world.entities().delete(entity)
+                .map_err(|_| PadlError::dev_err(PadlErrorCode::SpecsError("Delete worker")))?;
+        }
+        Ok(())
     }
     fn worker_entity_by_net_id(&self, net_id: i64) -> PadlResult<Entity> {
         // TODO: Efficient NetId lookup

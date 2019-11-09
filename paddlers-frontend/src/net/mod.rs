@@ -33,6 +33,7 @@ pub enum NetMsg {
 }
 
 pub enum NetUpdateRequest {
+    CompleteReload,
     WorkerTasks(i64),
 }
 
@@ -67,7 +68,12 @@ pub fn start_network_thread() {
             // NOP
         }
         STATIC_NET_STATE.work();
-        // requests done only once
+        request_client_state();
+    }
+}
+/// Sends all requests out necessary for the client state
+pub fn request_client_state() {
+    unsafe {
         STATIC_NET_STATE.spawn(STATIC_NET_STATE.gql_state.buildings_query());
         STATIC_NET_STATE.spawn(STATIC_NET_STATE.gql_state.workers_query());
     }

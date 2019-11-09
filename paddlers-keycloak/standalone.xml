@@ -571,7 +571,7 @@
         <subsystem xmlns="urn:jboss:domain:undertow:9.0" default-server="default-server" default-virtual-host="default-host" default-servlet-container="default" default-security-domain="other" statistics-enabled="${wildfly.undertow.statistics-enabled:${wildfly.statistics-enabled:false}}">
             <buffer-cache name="default"/>
             <server name="default-server">
-                <http-listener name="default" socket-binding="http" redirect-socket="https" proxy-address-forwarding="true" enable-http2="true"/>
+                <http-listener name="default" socket-binding="http" redirect-socket="proxy-https" proxy-address-forwarding="true" enable-http2="true"/>
                 <https-listener name="https" socket-binding="https" proxy-address-forwarding="true" security-realm="ApplicationRealm" enable-http2="true"/>
                 <host name="default-host" alias="localhost">
                     <location name="/" handler="welcome-content"/>
@@ -602,6 +602,7 @@
         <socket-binding name="ajp" port="${jboss.ajp.port:8009}"/>
         <socket-binding name="http" port="${jboss.http.port:8080}"/>
         <socket-binding name="https" port="${jboss.https.port:8443}"/>
+        <socket-binding name="proxy-https" port="443"/>
         <socket-binding name="txn-recovery-environment" port="4712"/>
         <socket-binding name="txn-status-manager" port="4713"/>
         <outbound-socket-binding name="mail-smtp">
