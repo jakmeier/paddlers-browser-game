@@ -12,7 +12,6 @@ impl TownView {
     pub (crate) fn load_village(db: &DB, village: VillageKey) -> Self {
         let mut map = TownMap::basic_map();
         let mut state = TownState::new();
-        let village_id = 1;
         let now = chrono::Utc::now().naive_utc();
 
         let buildings = db.buildings(village);
@@ -25,7 +24,7 @@ impl TownView {
                 BuildingType::SawMill => TaskType::ChopTree,
                 _ => TaskType::Idle,
             };
-            let entity_count = db.count_workers_at_pos_doing_job(village_id, b.x, b.y, task_type);
+            let entity_count = db.count_workers_at_pos_doing_job(village, b.x, b.y, task_type);
             state.insert(idx, TileState::new_building(b.id, capacity, entity_count));
             let forest_supply = match b.building_type {
                 BuildingType::Tree => tree_size(now - b.creation), 
@@ -34,11 +33,13 @@ impl TownView {
             state.forest_size += forest_supply;
         }
 
-        let workers = db.workers(village_id);
+        let workers = db.workers(village);
         for worker in workers {
-            let tasks = db.worker_tasks(worker.key());
-            for task in tasks {
+            if let Some(task) = db.current_task(worker.key()) {
                 state.register_task_begin(task.task_type).expect("Current DB state invalid");
+            }
+            else {
+                println!("Warning: worker without task: {:?}", worker);
             }
         }
 

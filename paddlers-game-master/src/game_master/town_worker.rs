@@ -33,9 +33,8 @@ impl TownWorker {
     }
     fn with_filled_event_queue(mut self) -> Self {
         let db = self.db();
-        // TODO [Village ids]
-        for village_id in &[1] {
-            for unit in db.workers(*village_id) {
+        for village in db.all_player_villages() {
+            for unit in db.workers(village.key()) {
                 if let Some((event, time)) = Event::load_next_worker_task(&db, unit.key()) {
                     self.event_queue.add_event(event, time);
                 }

@@ -22,7 +22,7 @@ impl EconomyWorker {
 
         for village in db.all_player_villages() {
             let village_id = village.key();
-            let workers = db.workers(village_id.num());
+            let workers = db.workers(village_id);
             let now = chrono::Utc::now().naive_utc();
             for w in workers {
                 for flag in db.worker_flags(w.key()) {

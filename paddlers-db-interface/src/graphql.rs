@@ -103,7 +103,7 @@ impl Query {
     }
     // Object Visibility: public
     fn village(ctx: &Context, village_id: i32) -> FieldResult<GqlVillage> {
-        let village = ctx.db().village(village_id as i64).ok_or("No such village")?;
+        let village = ctx.db().village(VillageKey(village_id as i64)).ok_or("No such village")?;
         Ok(GqlVillage(village))
     }
     // Object Visibility: user

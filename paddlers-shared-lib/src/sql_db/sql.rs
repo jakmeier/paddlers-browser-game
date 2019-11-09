@@ -28,9 +28,9 @@ pub trait GameDB {
             .expect("Error loading data");
         results
     }
-    fn hobos(&self, village_id: i64) -> Vec<Hobo> {
+    fn hobos(&self, village: VillageKey) -> Vec<Hobo> {
         let results = hobos::table
-            .filter(hobos::home.eq(village_id))
+            .filter(hobos::home.eq(village.num()))
             .limit(500)
             .load::<Hobo>(self.dbconn())
             .expect("Error loading data");
@@ -56,18 +56,18 @@ pub trait GameDB {
             .expect("Error loading data");
         results
     }
-    fn workers(&self, village_id: i64) -> Vec<Worker> {
+    fn workers(&self, village: VillageKey) -> Vec<Worker> {
         let results = workers::table
-            .filter(workers::home.eq(village_id))
+            .filter(workers::home.eq(village.num()))
             .limit(500)
             .load::<Worker>(self.dbconn())
             .expect("Error loading data");
         results
     }
-    fn workers_with_job(&self, village_id: i64, jobs: &[TaskType]) -> Vec<Worker> {
+    fn workers_with_job(&self, village: VillageKey, jobs: &[TaskType]) -> Vec<Worker> {
         let results = workers::table
             .inner_join(tasks::table)
-            .filter(workers::home.eq(village_id))
+            .filter(workers::home.eq(village.num()))
             .filter(tasks::task_type.eq_any(jobs))
             .filter(tasks::start_time.lt(diesel::dsl::now.at_time_zone("UTC")))
             .select(workers::all_columns)
@@ -76,11 +76,11 @@ pub trait GameDB {
             .expect("Error loading data");
         results
     }
-    fn count_workers_at_pos_doing_job(&self, village_id: i64, x: i32, y: i32, job: TaskType ) -> usize {
+    fn count_workers_at_pos_doing_job(&self, village: VillageKey, x: i32, y: i32, job: TaskType ) -> usize {
         workers::table
             .inner_join(tasks::table)
             .filter(tasks::task_type.eq(job))
-            .filter(workers::home.eq(village_id))
+            .filter(workers::home.eq(village.num()))
             .filter(tasks::x.eq(x))
             .filter(tasks::y.eq(y))
             .select(diesel::dsl::count(workers::id))
@@ -219,9 +219,9 @@ pub trait GameDB {
             .expect("Error loading data");
         results
     }
-    fn village(&self, village_id: i64) -> Option<Village> {
+    fn village(&self, village: VillageKey) -> Option<Village> {
         villages::table
-            .find(village_id)
+            .find(village.num())
             .first(self.dbconn())
             .optional()
             .expect("Error loading village")

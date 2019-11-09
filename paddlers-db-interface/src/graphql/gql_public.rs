@@ -105,7 +105,7 @@ impl GqlVillage {
         ctx.check_village_key(self.0.key())?;
         Ok(
             ctx.db()
-                .workers(self.0.id)
+                .workers(self.0.key())
                 .into_iter()
                 .map(GqlWorker::authorized)
                 .collect()
