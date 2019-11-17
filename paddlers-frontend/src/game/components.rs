@@ -1,46 +1,18 @@
-use crate::game::units::workers::Worker;
-use specs::prelude::*;
-use crate::prelude::*;
-use crate::gui::{
-    utils::*,
-    gui_components::{UiBox, UiElement},
-};
-pub use crate::gui::{
-    animation::AnimationState,
-    render::Renderable,
-    input::Clickable,
-};
-pub use super::movement::{Moving, Position};
+pub use super::buildings::Building;
 pub use super::fight::{Health, Range};
 pub use super::forestry::ForestComponent;
-pub use super::map::{VillageMetaInfo, MapPosition};
-pub use super::status_effects::{StatusEffects};
-pub use super::mana::Mana;
 pub use super::level::Level;
-pub use super::buildings::Building;
-
-
-
-pub fn register_components(world: &mut World) {
-    world.register::<AnimationState>();
-    world.register::<Building>();
-    world.register::<Clickable>();
-    world.register::<EntityContainer>();
-    world.register::<ForestComponent>();
-    world.register::<Health>();
-    world.register::<Level>();
-    world.register::<Mana>();
-    world.register::<MapPosition>();
-    world.register::<Moving>();
-    world.register::<NetObj>();
-    world.register::<Position>();
-    world.register::<Range>();
-    world.register::<Renderable>();
-    world.register::<StatusEffects>();
-    world.register::<UiMenu>();
-    world.register::<VillageMetaInfo>();
-    world.register::<Worker>();
-}
+pub use super::mana::Mana;
+pub use super::map::{MapPosition, VillageMetaInfo};
+pub use super::movement::{Moving, Position};
+pub use super::status_effects::StatusEffects;
+pub use crate::gui::{animation::AnimationState, input::Clickable, render::Renderable};
+use crate::gui::{
+    gui_components::{UiBox, UiElement},
+    utils::*,
+};
+use crate::prelude::*;
+use specs::prelude::*;
 
 /// Required to give NetObj values a context
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -70,20 +42,37 @@ impl NetObj {
             typ: NetObjType::Worker,
         }
     }
-    pub fn lookup_hobo(net_id: i64, net_ids: &ReadStorage<NetObj>, entities: &Entities) -> PadlResult<Entity> {
+    pub fn lookup_hobo(
+        net_id: i64,
+        net_ids: &ReadStorage<NetObj>,
+        entities: &Entities,
+    ) -> PadlResult<Entity> {
         Self::lookup_entity(net_id, NetObjType::Hobo, net_ids, entities)
     }
-    pub fn lookup_worker(net_id: i64, net_ids: &ReadStorage<NetObj>, entities: &Entities) -> PadlResult<Entity> {
+    pub fn lookup_worker(
+        net_id: i64,
+        net_ids: &ReadStorage<NetObj>,
+        entities: &Entities,
+    ) -> PadlResult<Entity> {
         Self::lookup_entity(net_id, NetObjType::Worker, net_ids, entities)
     }
-    fn lookup_entity(net_id: i64, net_type: NetObjType, net_ids: &ReadStorage<NetObj>, entities: &Entities) -> PadlResult<Entity> {
+    fn lookup_entity(
+        net_id: i64,
+        net_type: NetObjType,
+        net_ids: &ReadStorage<NetObj>,
+        entities: &Entities,
+    ) -> PadlResult<Entity> {
         // TODO: Efficient NetId lookup
         for (e, n) in (entities, net_ids).join() {
             if n.id == net_id && n.typ == net_type {
                 return Ok(e);
             }
         }
-        PadlErrorCode::UnknownNetObj(NetObj{ id: net_id, typ: net_type }).dev()
+        PadlErrorCode::UnknownNetObj(NetObj {
+            id: net_id,
+            typ: net_type,
+        })
+        .dev()
     }
 }
 
@@ -117,16 +106,13 @@ impl EntityContainer {
     pub fn add_entity_unchecked(&mut self, e: Entity, rend: &Renderable, ui: &mut UiMenu) {
         self.children.push(e);
         let style = match rend.kind {
-            RenderVariant::ImgWithImgBackground(img, _) 
+            RenderVariant::ImgWithImgBackground(img, _)
             | RenderVariant::ImgWithColBackground(img, _)
             | RenderVariant::Img(img)
-            | RenderVariant::ImgWithHoverAlternative(img,_)
-            => {
+            | RenderVariant::ImgWithHoverAlternative(img, _) => {
                 RenderVariant::ImgWithColBackground(img, GREY)
-            },
-            RenderVariant::Hide => {
-                RenderVariant::Hide
             }
+            RenderVariant::Hide => RenderVariant::Hide,
         };
         ui.ui.add(UiElement::new(e).with_render_variant(style));
     }
@@ -141,7 +127,7 @@ impl EntityContainer {
 impl UiMenu {
     pub fn new_entity_container() -> Self {
         UiMenu {
-            ui: UiBox::new(3,3, 0.0, 1.0)
+            ui: UiBox::new(3, 3, 0.0, 1.0),
         }
     }
 }

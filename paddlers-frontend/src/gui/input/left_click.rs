@@ -1,4 +1,5 @@
-use super::{Clickable, MouseState, UiState, UiView};
+use super::{Clickable, MouseState, UiView};
+use crate::gui::ui_state::UiState;
 use crate::game::{
     components::*,
     map::{GlobalMapSharedState, MapPosition},

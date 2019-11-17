@@ -1,10 +1,10 @@
 use quicksilver::prelude::*;
 use specs::prelude::*;
-use crate::game::specs_resources::Now;
 use crate::gui::{
     sprites::*,
     gui_components::*,
-    input::{UiState, UiView},
+    input::UiView,
+    ui_state::{UiState, Now},
     utils::*,
 };
 

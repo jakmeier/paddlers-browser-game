@@ -1,12 +1,11 @@
 pub mod animation;
-pub mod loading;
 pub mod paths;
 
 use quicksilver::prelude::*;
 use quicksilver::graphics::Image;
 use crate::gui::utils::*;
 use animation::AnimatedObject;
-use loading::*;
+use crate::init::loading::start_loading_animations;
 
 /// Manager of all sprites.
 /// Cannot easily be in a component because Image is thread local.
@@ -121,6 +120,8 @@ pub enum SingleSprite {
     FrameGreen2,
     #[allow(dead_code)]
     FrameGreen3,
+    PresentA,
+    PresentB,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -172,6 +173,8 @@ impl WithSprite for BuildingType {
             BuildingType::Tree => SpriteSet::Simple(SingleSprite::Sapling),
             BuildingType::BundlingStation => SpriteSet::Simple(SingleSprite::BundlingStation),
             BuildingType::SawMill => SpriteSet::Simple(SingleSprite::SawMill),
+            BuildingType::PresentA => SpriteSet::Simple(SingleSprite::PresentA),
+            BuildingType::PresentB => SpriteSet::Simple(SingleSprite::PresentB),
         }
     }
 }

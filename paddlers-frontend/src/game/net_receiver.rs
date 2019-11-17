@@ -12,7 +12,7 @@ use specs::prelude::*;
 use super::*;
 
 impl Game<'_,'_> {
-    pub (super) fn update_net(&mut self) -> PadlResult<()> {
+    pub fn update_net(&mut self) -> PadlResult<()> {
         use std::sync::mpsc::TryRecvError;
         match self.net.as_ref().unwrap().try_recv() {
             Ok(msg) => {

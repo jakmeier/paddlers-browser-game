@@ -29,6 +29,8 @@ impl DefaultShop {
         result.add_building(BuildingType::Tree);
         result.add_building(BuildingType::BundlingStation);
         result.add_building(BuildingType::SawMill);
+        result.add_building(BuildingType::PresentA);
+        result.add_building(BuildingType::PresentB);
         result
     }
 

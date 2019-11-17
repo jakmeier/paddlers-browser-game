@@ -1,5 +1,6 @@
 use specs::prelude::*;
 use specs::world::EntitiesRes;
+use crate::prelude::*;
 use crate::gui::{
     render::Renderable,
     sprites::*,
@@ -29,7 +30,7 @@ pub struct Building;
 
 impl Town {
     pub fn insert_new_bulding(&mut self, entities: &EntitiesRes, lazy: &LazyUpdate, pos: TileIndex, bt: BuildingType) -> Entity {
-       self. insert_bulding(entities, lazy, pos, bt, bt.attack_power(), bt.attacks_per_cycle(), bt.range(), crate::wasm_setup::utc_now())
+       self. insert_bulding(entities, lazy, pos, bt, bt.attack_power(), bt.attacks_per_cycle(), bt.range(), utc_now())
     }
 
     fn insert_bulding(
@@ -114,6 +115,8 @@ impl buildings_query::BuildingsQueryVillageBuildings {
             buildings_query::BuildingType::TREE => BuildingType::Tree,
             buildings_query::BuildingType::BUNDLING_STATION => BuildingType::BundlingStation,
             buildings_query::BuildingType::SAW_MILL => BuildingType::SawMill,
+            buildings_query::BuildingType::PRESENT_A => BuildingType::PresentA,
+            buildings_query::BuildingType::PRESENT_B => BuildingType::PresentB,
             _ => panic!("Unexpected BuildingType"),
         };
         let created = GqlTimestamp::from_string(&self.creation).unwrap().0;

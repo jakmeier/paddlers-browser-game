@@ -8,7 +8,8 @@ use crate::game::{
     components::*,
 };
 use crate::logging::ErrorQueue;
-use super::{UiState, UiView, MouseState};
+use super::{UiView, MouseState};
+use crate::gui::ui_state::UiState;
 
 pub struct RightClickSystem;
 

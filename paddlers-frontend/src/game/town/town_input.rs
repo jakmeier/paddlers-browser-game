@@ -11,7 +11,8 @@ use crate::game::{
     town::{Town, town_shop::DefaultShop},
 };
 use crate::net::state::current_village;
-use crate::gui::input::{Grabbable, UiState, Clickable};
+use crate::gui::input::{Grabbable, Clickable};
+use crate::gui::ui_state::*;
 use crate::gui::gui_components::{InteractiveTableArea, ClickOutput};
 use paddlers_shared_lib::api::shop::Cost;
 use paddlers_shared_lib::prelude::*;

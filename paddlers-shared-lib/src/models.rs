@@ -154,6 +154,8 @@ pub enum BuildingType {
     Tree,
     BundlingStation,
     SawMill,
+    PresentA,
+    PresentB,
 }
 
 #[cfg(feature = "sql_db")]

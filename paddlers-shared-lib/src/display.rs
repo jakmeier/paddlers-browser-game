@@ -15,6 +15,10 @@ impl Display for BuildingType {
                 write!(f, "bundling station"),
             BuildingType::SawMill =>
                 write!(f, "saw mill"),
+            BuildingType::PresentA =>
+                write!(f, "Red present"),
+            BuildingType::PresentB =>
+                write!(f, "Orange present"),
         }
     }
 

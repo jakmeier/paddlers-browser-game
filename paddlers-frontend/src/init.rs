@@ -1,11 +1,25 @@
+//! This module collects setup code that is executed only once when loading.
+
+/// Sets up some bindings to the browser to make things like println!() possible.
+#[macro_use]
+pub mod wasm_setup;
+
+/// Handles the loading phase when all assets are downloaded
+pub mod loading;
+
+// doc comment inlined 
+mod quicksilver_integration;
+
+/// Boiler-plate code for initializing SPECS
+pub mod specs_registration;
+
 use crate::prelude::*;
-use crate::game::components::*;
+use crate::game::town::{Town, TOWN_RATIO};
 use crate::net::NetMsg;
 use quicksilver::prelude::*;
 use specs::prelude::*;
-use super::town::{Town, TOWN_RATIO};
 use std::sync::mpsc::Receiver;
-use super::specs_resources::insert_resources;
+use specs_registration::{insert_resources, register_components};
 
 const MENU_BOX_WIDTH: f32 = 300.0;
 
@@ -28,15 +42,15 @@ pub fn run(width: f32, height: f32, net_chan: Receiver<NetMsg>) {
         (TOWN_RATIO * height, height)
     };
 
-    let ul = tw / super::town::X as f32;
+    let ul = tw / crate::game::town::X as f32;
     let menu_box_area = Rectangle::new((tw,0),(MENU_BOX_WIDTH, th));
     let main_area = Rectangle::new((0,0),(tw, th));
-    quicksilver::lifecycle::run_with::<super::Game, _>(
+    quicksilver::lifecycle::run_with::<crate::game::Game, _>(
         "Paddlers", 
         Vector::new(tw + MENU_BOX_WIDTH, th), 
         Settings::default(), 
         || Ok(
-            super::Game::new().expect("Game initialization")
+            crate::game::Game::new().expect("Game initialization")
                 .with_town(Town::new(ul)) // TODO: Think of a better way to handle unit lengths in general
                 .with_unit_length(ul)
                 .with_ui_division(main_area, menu_box_area)

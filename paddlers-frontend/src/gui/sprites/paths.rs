@@ -1,9 +1,9 @@
 use super::*;
 use super::animation::{AnimatedObjectDef,AnimationVariantDef};
 
-pub (super) const SPRITE_PATHS_NUM: usize = 38;
-pub (super) const SPRITE_PATHS : [&'static str; SPRITE_PATHS_NUM] = [
-    "textures/grass.png",
+pub const SPRITE_PATHS_NUM: usize = 40;
+pub const SPRITE_PATHS : [&'static str; SPRITE_PATHS_NUM] = [
+    "textures/grass.png", // 0
     "textures/water.png",
     "ducks/yellow_sad.png",
     "plants/red_flowers.png",
@@ -33,7 +33,7 @@ pub (super) const SPRITE_PATHS : [&'static str; SPRITE_PATHS_NUM] = [
     "gui/town_button.png",
     "gui/town_button_hov.png",
     "gui/steps.png",
-    "gui/abilities/work.png",
+    "gui/abilities/work.png", // 30
     "gui/abilities/welcome.png",
     "gui/abilities/blue_frame_1.png",
     "gui/abilities/blue_frame_2.png",
@@ -41,6 +41,9 @@ pub (super) const SPRITE_PATHS : [&'static str; SPRITE_PATHS_NUM] = [
     "gui/abilities/green_frame_1.png",
     "gui/abilities/green_frame_2.png",
     "gui/abilities/green_frame_3.png",
+    "buildings/red_present.png",
+    "buildings/orange_present.png",
+    // 40
 ];
 
 impl SingleSprite {
@@ -80,6 +83,8 @@ impl SingleSprite {
             SingleSprite::FrameGreen1 => 35,
             SingleSprite::FrameGreen2 => 36,
             SingleSprite::FrameGreen3 => 37,
+            SingleSprite::PresentA => 38,
+            SingleSprite::PresentB => 39,
         }
     }
 }
@@ -95,8 +100,8 @@ impl DirectedSprite {
     }
 }
 
-pub (super) const ANIMATION_NUM: usize = 1;
-pub (super) const ANIMATION_DEFS : [AnimatedObjectDef; ANIMATION_NUM] = [
+pub const ANIMATION_NUM: usize = 1;
+pub const ANIMATION_DEFS : [AnimatedObjectDef; ANIMATION_NUM] = [
     AnimatedObjectDef {
         up: AnimationVariantDef::Animated("ducks/animations/roger_back.png"),
         left: AnimationVariantDef::Animated("ducks/animations/roger_left.png"),

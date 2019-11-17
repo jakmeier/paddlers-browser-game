@@ -198,6 +198,18 @@
               "description": null,
               "isDeprecated": false,
               "name": "SAW_MILL"
+            },
+            {
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
+              "name": "PRESENT_A"
+            },
+            {
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
+              "name": "PRESENT_B"
             }
           ],
           "fields": null,

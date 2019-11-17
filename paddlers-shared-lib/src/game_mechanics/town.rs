@@ -82,6 +82,8 @@ impl TownTileType {
                 => match bt {
                     BuildingType::BundlingStation 
                     | BuildingType::SawMill 
+                    | BuildingType::PresentA
+                    | BuildingType::PresentB
                         => true,
                     _ => false,
                 },

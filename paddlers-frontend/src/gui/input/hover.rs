@@ -3,7 +3,8 @@ use specs::prelude::*;
 use crate::game::{
     movement::*,
 };
-use super::{UiState, UiView, MouseState};
+use super::{UiView, MouseState};
+use crate::gui::ui_state::UiState;
 
 pub struct HoverSystem;
 

@@ -4,7 +4,8 @@ mod map_tesselation;
 mod village_meta;
 
 use crate::gui::{
-    input::{Clickable, UiState},
+    input::{Clickable},
+    ui_state::*,
     render::Renderable,
     sprites::*,
     utils::*,

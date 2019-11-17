@@ -1,7 +1,8 @@
 use crate::game::map::GlobalMapSharedState;
 use quicksilver::prelude::*;
 use specs::prelude::*;
-use super::{UiState, UiView};
+use super::UiView;
+use crate::gui::ui_state::UiState;
 
 /// Consumes dragging movements and applies them to the game state.
 pub struct DragSystem;

@@ -1,4 +1,4 @@
-use super::{
+use crate::gui::sprites::{
     animation::{AnimatedObject, AnimatedObjectDef, AnimationVariantDef},
     paths::{ANIMATION_DEFS, SPRITE_PATHS},
     Sprites,
@@ -7,14 +7,14 @@ use crate::game::Game;
 use crate::gui::utils::*;
 use quicksilver::prelude::*;
 
-pub struct Preloading {
+pub struct LoadingState {
     images: Vec<Asset<Image>>,
 }
 
-impl Preloading {
+impl LoadingState {
     pub fn new() -> Self {
         let images = start_loading_sprites();
-        Preloading { images }
+        LoadingState { images }
     }
     pub fn progress(&mut self) -> f32 {
         let total = self.images.len() as f32;
@@ -105,10 +105,10 @@ fn load_animation(
 }
 
 impl Game<'static, 'static> {
-    pub fn update_preloading(&mut self, _window: &mut Window) -> Result<()> {
+    pub fn update_loading(&mut self, _window: &mut Window) -> Result<()> {
         Ok(())
     }
-    pub fn draw_preloading(&mut self, window: &mut Window) -> Result<()> {
+    pub fn draw_loading(&mut self, window: &mut Window) -> Result<()> {
         let progress = self.preload.as_mut().unwrap().progress();
         if progress < 1.0 {
             self.draw_progress(window, progress);

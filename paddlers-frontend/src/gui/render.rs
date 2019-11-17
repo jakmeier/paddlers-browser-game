@@ -1,21 +1,24 @@
 use quicksilver::prelude::*;
 use quicksilver::graphics::Color;
+use quicksilver::input::MouseCursor;
 use specs::prelude::*;
 use crate::game::{
     Game,
     movement::Position,
     fight::{Health, Range},
     town::Town,
+    map::GlobalMap,
 };
 use crate::gui::{
     sprites::*,
     z::*,
     utils::*,
     animation::AnimationState,
-    input::Grabbable,
+    input::{Grabbable, UiView},
+    ui_state::*,
 };
 use crate::logging::text_to_user::TextBoard;
-use crate::game::ClockTick;
+use crate::gui::ui_state::ClockTick;
 
 #[derive(Component, Debug)]
 #[storage(VecStorage)]
@@ -24,6 +27,55 @@ pub struct Renderable {
 }
 
 impl Game<'_, '_> {
+    pub fn draw_main(&mut self, window: &mut Window) -> Result<()> {
+        let tick = self.world.read_resource::<ClockTick>().0;
+        let ui_state = self.world.read_resource::<UiState>();
+        let hovered_entity = ui_state.hovered_entity;
+        let grabbed_item = ui_state.grabbed_item.clone();
+        let view = ui_state.current_view;
+        let main_area = Rectangle::new(
+            (0,0), 
+            (ui_state.menu_box_area.x(), window.screen_size().y)
+        );
+        std::mem::drop(ui_state);
+        window.clear(Color::WHITE)?;
+        match view {
+            UiView::Town => {
+                {
+                    let (asset, town, ul) = (&mut self.sprites, &self.world.read_resource::<Town>(), self.unit_len.unwrap());
+                    town.render(window, asset.as_mut().unwrap(), tick, ul)?;
+                }
+                self.render_entities(window)?;
+            },
+            UiView::Map => {
+                let (sprites, mut map) = (
+                    &mut self.sprites, 
+                    GlobalMap::combined(
+                        self.map.as_mut().unwrap(),
+                        self.world.write_resource()
+                    )
+                );
+                map.render(window, &mut sprites.as_mut().unwrap(), &main_area)?;
+            }
+        }
+        
+        self.render_menu_box(window)?;
+        self.render_text_messages(window)?;
+
+        if let Some(entity) = hovered_entity {
+            self.render_hovering(window, entity)?;
+        }
+        if let Some(grabbed) = grabbed_item {
+            self.render_grabbed_item(window, &grabbed)?;
+            window.set_cursor(MouseCursor::None);
+        } else {
+            window.set_cursor(MouseCursor::Default);
+        }
+        #[cfg(feature="dev_view")]
+        self.draw_dev_view(window);
+        Ok(())
+    }
+
     pub fn render_entities(&mut self, window: &mut Window) -> Result<()> {
         let world = &self.world;
         let pos_store = world.read_storage::<Position>();

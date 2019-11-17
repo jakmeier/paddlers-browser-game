@@ -1,6 +1,6 @@
 pub mod buttons;
 
-use crate::game::specs_resources::Now;
+use crate::gui::ui_state::Now;
 use crate::game::components::UiMenu;
 use quicksilver::prelude::*;
 use specs::prelude::*;
@@ -15,7 +15,8 @@ use crate::game::{
 use crate::gui::{
     sprites::{SpriteIndex, SingleSprite},
     z::*,
-    input::{UiState, UiView},
+    input::UiView,
+    ui_state::UiState,
     utils::*,
     gui_components::*,
     render::Renderable,

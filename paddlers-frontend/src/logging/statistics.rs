@@ -21,7 +21,7 @@ impl Statistician {
     }
 
     /// Call this once per frame to keep track of FPS and occasionally log data back to server
-    pub fn run(&mut self, rest: &mut RestApiState, now: Timestamp) -> PadlResult<()> {
+    pub fn track_frame(&mut self, rest: &mut RestApiState, now: Timestamp) -> PadlResult<()> {
         self.frames += 1;
         if self.last_sent + INTERVAL_SECONDS * 1_000_000 < now {
             self.send(rest, now)?;

@@ -23,7 +23,7 @@ pub struct Animation {
 }
 
 /// Defines a sprite sheet to be downloaded as AnimatedObject
-pub(super) struct AnimatedObjectDef {
+pub struct AnimatedObjectDef {
     pub up: AnimationVariantDef,
     pub left: AnimationVariantDef,
     pub down: AnimationVariantDef,
@@ -33,7 +33,7 @@ pub(super) struct AnimatedObjectDef {
     /// Is displayed until animation has been downloaded
     pub alternative: SingleSprite,
 }
-pub(super) enum AnimationVariantDef {
+pub enum AnimationVariantDef {
     Animated(&'static str),
     Static(&'static str),
 }
