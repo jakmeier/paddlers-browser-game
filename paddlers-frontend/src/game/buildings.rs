@@ -49,9 +49,10 @@ impl Town {
         let mut builder = 
             lazy.create_entity(entities)
             .with(Position::new(area.pos, area.size, Z_BUILDINGS))
-            .with(Renderable {
-                kind: RenderVariant::ImgWithImgBackground(bt.sprite(), SingleSprite::Grass)
-            })
+            .with(Renderable::new_transformed(
+                RenderVariant::ImgWithImgBackground(bt.sprite(), SingleSprite::Grass),
+                building_ingame_scaling(bt),
+            ))
             .with(Building)
             .with(Clickable);
 
@@ -91,6 +92,19 @@ impl Town {
         self.place_building(tile_index, bt, builder.entity);
 
         builder.build()
+    }
+}
+
+fn building_ingame_scaling(b: BuildingType) -> f32 {
+    match b {
+        BuildingType::PresentA |
+        BuildingType::PresentB
+        => 0.5,
+        BuildingType::BlueFlowers
+        => 0.6,
+        BuildingType::RedFlowers
+        => 0.45,
+        _ => std::f32::NAN
     }
 }
 

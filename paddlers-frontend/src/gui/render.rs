@@ -24,6 +24,22 @@ use crate::gui::ui_state::ClockTick;
 #[storage(VecStorage)]
 pub struct Renderable {
     pub kind: RenderVariant,
+    /// Size factor is applied when rendering in main window, not in menu
+    in_game_transformation: f32, 
+}
+impl Renderable {
+    pub fn new(kind: RenderVariant) -> Self {
+        Renderable {
+            kind,
+            in_game_transformation: std::f32::NAN,
+        }
+    }
+    pub fn new_transformed(kind: RenderVariant, in_game_transformation: f32) -> Self {
+        Renderable {
+            kind,
+            in_game_transformation,
+        }
+    }
 }
 
 impl Game<'_, '_> {
@@ -45,7 +61,7 @@ impl Game<'_, '_> {
                     let (asset, town, ul) = (&mut self.sprites, &self.world.read_resource::<Town>(), self.unit_len.unwrap());
                     town.render(window, asset.as_mut().unwrap(), tick, ul)?;
                 }
-                self.render_entities(window)?;
+                self.render_town_entities(window)?;
             },
             UiView::Map => {
                 let (sprites, mut map) = (
@@ -76,7 +92,7 @@ impl Game<'_, '_> {
         Ok(())
     }
 
-    pub fn render_entities(&mut self, window: &mut Window) -> Result<()> {
+    pub fn render_town_entities(&mut self, window: &mut Window) -> Result<()> {
         let world = &self.world;
         let pos_store = world.read_storage::<Position>();
         let rend_store = world.read_storage::<Renderable>();
@@ -85,12 +101,16 @@ impl Game<'_, '_> {
         let entities = self.world.entities();
         let tick = self.world.read_resource::<ClockTick>();
         for (e, pos, r) in (&entities, &pos_store, &rend_store).join() {
+            let mut area = pos.area;
+            if r.in_game_transformation.is_normal() {
+                area = area.shrink_to_center(r.in_game_transformation);
+            }
             match r.kind {
                 RenderVariant::ImgWithImgBackground(i, _) => {
                     if let Some(animation) = animation_store.get(e) {
-                        draw_animated_sprite(sprites.as_mut().unwrap(), window, &pos.area, i, pos.z, FitStrategy::TopLeft, animation, tick.0)?;
+                        draw_animated_sprite(sprites.as_mut().unwrap(), window, &area, i, pos.z, FitStrategy::TopLeft, animation, tick.0)?;
                     } else {
-                        draw_static_image(sprites.as_mut().unwrap(), window, &pos.area, i.default(), pos.z, FitStrategy::TopLeft)?;
+                        draw_static_image(sprites.as_mut().unwrap(), window, &area, i.default(), pos.z, FitStrategy::TopLeft)?;
                     }
                 },
                 _ => { panic!("Not implemented")}

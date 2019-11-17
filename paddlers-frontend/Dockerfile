@@ -24,7 +24,7 @@ RUN cd /tmp/; \
 git clone https://github.com/Neilpang/acme.sh.git; \
 cd acme.sh/; \
 ./acme.sh --install; \
-D=/var/www/localhost/htdocs; \
+D=/usr/share/nginx/html; \
 mkdir -vp ${D}/.well-known/acme-challenge/; \
 chmod -R 0555 ${D}/.well-known/acme-challenge/; \
 mkdir -p /etc/nginx/ssl/letsencrypt/demo.paddlers.ch/; \
@@ -32,7 +32,7 @@ cd /etc/nginx/ssl/letsencrypt/demo.paddlers.ch/; \
 openssl dhparam -dsaparam -out dhparams.pem 4096;
 
 # Later on the machine, to actually install (for now, manually only):
-# D=/var/www/localhost/htdocs;
+# D=/usr/share/nginx/html;
 # /tmp/acme.sh/acme.sh --issue -w $D -d demo.paddlers.ch -k 4096;
 # /tmp/acme.sh/acme.sh  --installcert -d demo.paddlers.ch \
 # --keypath /etc/nginx/ssl/letsencrypt/demo.paddlers.ch/demo.paddlers.ch.key \

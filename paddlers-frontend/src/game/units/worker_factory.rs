@@ -47,9 +47,10 @@ pub fn with_unit_base<B: Builder>(
 pub fn with_hero<B: Builder>( builder: B ) -> B 
 {
     builder.with(
-        Renderable {
-            kind: RenderVariant::ImgWithImgBackground(SpriteSet::Animated(AnimatedSprite::Roger), SingleSprite::Grass),
-        }
+        Renderable::new_transformed(
+            RenderVariant::ImgWithImgBackground(SpriteSet::Animated(AnimatedSprite::Roger), SingleSprite::Grass),
+            0.75,
+        )
     )
 }
 
@@ -66,9 +67,10 @@ pub fn with_basic_worker<B: Builder>( builder: B, color: UnitColor ) -> B
         UnitColor::Camo => SingleSprite::CamoDuck,
     };
     builder.with(
-        Renderable {
-            kind: RenderVariant::ImgWithImgBackground(SpriteSet::Simple(sprite_index), SingleSprite::Grass),
-        }
+        Renderable::new_transformed(
+            RenderVariant::ImgWithImgBackground(SpriteSet::Simple(sprite_index), SingleSprite::Grass),
+            0.75,
+        )
     )
 }
 pub fn with_worker<B: Builder, T: IntoIterator<Item = WorkerTask>>(builder: B, tasks: T, netid: i64) -> B {

@@ -224,12 +224,12 @@ impl GlobalMapPrivateState {
             world
                 .create_entity()
                 .with(MapPosition::new(village.coordinates))
-                .with(Renderable {
-                    kind: RenderVariant::ImgWithColBackground(
+                .with(Renderable::new(
+                    RenderVariant::ImgWithColBackground(
                         SpriteSet::Simple(SingleSprite::Shack),
                         GREEN,
                     ),
-                })
+                ))
                 .with(Clickable)
                 .with((*village).clone())
                 .build();

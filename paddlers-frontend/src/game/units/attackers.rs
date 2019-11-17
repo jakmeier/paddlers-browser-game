@@ -39,9 +39,9 @@ pub fn insert_duck(
         .with(Position::new(pos, size, Z_VISITOR))
         .with(Moving::new(birth_time, pos, speed, speed.len()))
         .with(
-            Renderable {
-                kind: RenderVariant::ImgWithImgBackground(SpriteSet::Simple(SingleSprite::Duck), SingleSprite::Water),
-            }
+            Renderable::new (
+                RenderVariant::ImgWithImgBackground(SpriteSet::Simple(SingleSprite::Duck), SingleSprite::Water),
+            )
         )
         .with(Clickable)
         .with(status_effects)

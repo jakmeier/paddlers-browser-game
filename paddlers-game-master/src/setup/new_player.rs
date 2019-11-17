@@ -74,9 +74,19 @@ impl DB {
 
     fn insert_initial_resources(&self, vid: VillageKey) {
         self.init_resources(vid);
+        
         self.add_resource(ResourceType::Feathers, vid, 50).expect("Adding initial resources");
         self.add_resource(ResourceType::Sticks, vid, 50).expect("Adding initial resources");
-        self.add_resource(ResourceType::Logs, vid, 50).expect("Adding initial resources");
+        #[cfg(debug_assertions)]
+        self.insert_dev_resources(vid);
     }
+    #[cfg(debug_assertions)]
+    fn insert_dev_resources(&self, vid: VillageKey) {
+        self.add_resource(ResourceType::Feathers, vid, 1000).expect("Adding dev resources");
+        self.add_resource(ResourceType::Sticks, vid, 1000).expect("Adding dev resources");
+        self.add_resource(ResourceType::Logs, vid, 1000).expect("Adding dev resources");
+    }
+    
+
 }
 

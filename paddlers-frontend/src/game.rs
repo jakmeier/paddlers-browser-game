@@ -229,14 +229,14 @@ impl Game<'_,'_> {
         }
     }
     #[cfg(feature="dev_view")]
-    fn draw_dev_view(&self, window: &mut Window) {
+    pub fn draw_dev_view(&self, window: &mut Window) {
         if self.palette {
             let area = Rectangle::new((0,0),window.screen_size()).padded(100.0);
             crate::gui::utils::colors::palette::draw_color_palette(window, area);
         }
     }
     #[cfg(feature="dev_view")]
-    fn dev_view_event(&mut self, event: &Event) {
+    pub fn dev_view_event(&mut self, event: &Event) {
         match event {
             Event::Key(key, state) 
             if *key == Key::Space && *state == ButtonState::Pressed => {
