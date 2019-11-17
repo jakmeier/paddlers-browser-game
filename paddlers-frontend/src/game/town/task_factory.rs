@@ -41,13 +41,15 @@ impl Town {
                     }
                 }
             }
-            TaskType::Idle | TaskType::Walk => {},
             TaskType::WelcomeAbility => {
                 if mana.map(|o| o.mana).unwrap_or(0) < AbilityType::Welcome.mana_cost() {
                     return PadlErrorCode::NotEnoughMana.usr();
                 }
             },
             TaskType::Defend  => { panic!("NIY") },
+            TaskType::Idle
+            | TaskType::CollectReward
+            | TaskType::Walk => {},
         }
 
         // Check global supply constraints
@@ -66,7 +68,10 @@ impl Town {
                     BuildingType::BundlingStation 
                         => vec![TaskType::GatherSticks],
                     BuildingType::SawMill 
-                        => vec![TaskType::ChopTree],
+                    => vec![TaskType::ChopTree],
+                    BuildingType::PresentA |
+                    BuildingType::PresentB
+                    => vec![TaskType::CollectReward],
                     _ => vec![],
                 }
             }
@@ -111,7 +116,8 @@ fn raw_job_execution_tasks(job: &NewTaskDescriptor, place: TileIndex) -> Vec<Raw
       | TaskType::Walk => {
             // NOP
         },
-        TaskType::WelcomeAbility => {
+        TaskType::CollectReward
+      | TaskType::WelcomeAbility => {
             tasks.push(RawTask::new(TaskType::Idle, place));
         },
         TaskType::Defend  => {

@@ -109,9 +109,10 @@ impl<I: Eq + std::hash::Hash + Clone + Copy + std::fmt::Debug> TownState<I> {
         self.tiles.insert(tile, state);
         self.entity_locations.insert(e, tile);
     }
-    pub fn remove(&mut self, tile: &TileIndex) {
-        let state = self.tiles.remove(tile);
-        self.entity_locations.remove(&state.unwrap().entity);
+    pub fn remove(&mut self, tile: &TileIndex) -> TileState<I> {
+        let state = self.tiles.remove(tile).unwrap();
+        self.entity_locations.remove(&state.entity);
+        state
     }
     pub fn get(&self, tile: &TileIndex) -> Option<&TileState<I>> {
         self.tiles.get(tile)

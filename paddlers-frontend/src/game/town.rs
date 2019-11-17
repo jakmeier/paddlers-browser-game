@@ -117,10 +117,10 @@ impl Town {
         let state = TileState::new_building(id, bt.capacity(), 0);
         self.state.insert(i, state);
     }
-    pub fn remove_building(&mut self, i: TileIndex) {
+    pub fn remove_building(&mut self, i: TileIndex) -> specs::Entity {
         let tile = self.map.tile_type_mut(i);
         *tile.unwrap() = TileType::EMPTY;
-        self.state.remove(&i);
+        self.state.remove(&i).entity
     }
     pub fn building_type(&self, i: TileIndex) -> PadlResult<BuildingType> {
         match self.map.tile_type(i) {

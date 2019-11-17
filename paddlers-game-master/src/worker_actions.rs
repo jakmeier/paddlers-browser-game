@@ -85,6 +85,7 @@ fn interrupt_task(current_task: &mut Task, worker: &Worker) -> Option<NaiveDateT
         | TaskType::ChopTree
         | TaskType::Defend
         | TaskType::GatherSticks
+        | TaskType::CollectReward
         => 
         {
             let now = chrono::Utc::now().naive_utc();
@@ -174,11 +175,32 @@ fn apply_task_to_db(
             db.update_ability_used_timestamp(WorkerKey(worker.id), a);
             *worker.mana.as_mut().unwrap() -= AbilityType::Welcome.mana_cost();
         },
+        TaskType::CollectReward => {
+            if let Some(building) = db.find_building_by_coordinates(task.x, task.y, worker.home()) {
+                match building.building_type.reward_exp() {
+                    Some(exp)
+                    => {
+                        println!("Adding exp {} to {:?}", exp, worker);
+                        worker.exp += exp;
+                        db.delete_building(&building);
+                        // TODO: Level up
+                    }
+                    None => {
+                        return Err(format!("Tried to collect {} as reward", building.building_type));
+                    }
+                }
+            } else {
+                return Err(format!("No reward to collect at {},{}", task.x, task.y));
+            }
+        },
         _ => { /* NOP */ },
     }
     Ok(())
 }
 
+/// (Try to) apply changes to village state that happen when a worker stops doing a given task.
+/// E.g. remove unit from building.
+/// Returns the time it takes until the task is actually finished.
 fn simulate_finish_task<T: WorkerAction> (
     task: &T, 
     town: &mut TownView, 
@@ -200,9 +222,18 @@ fn simulate_finish_task<T: WorkerAction> (
             let duration = a.busy_duration();
             Ok(duration)
         },
-        _ => Err("Task not implemented".to_owned())
+        TaskType::CollectReward => {
+            // Lookup object to be collected, then delete it in TownView
+            // Note: DB update is separate
+            let index = (task.x() as usize, task.y() as usize);
+            town.state.remove(&index);
+            Ok(Duration::milliseconds(0))
+        },
+        TaskType::Defend => Err("Task not implemented".to_owned())
     }
 }
+/// (Try to) apply changes to village state that happen when a worker starts a given task.
+/// E.g. add unit to a building, or pay required price (only if it is TownView), ...
 fn simulate_begin_task<T: WorkerAction> (
     task: &T, 
     town: &mut TownView, 
@@ -210,7 +241,9 @@ fn simulate_begin_task<T: WorkerAction> (
 ) -> Result<(), String> 
 {
     match task.task_type() {
-        TaskType::Idle | TaskType::Walk 
+        TaskType::Idle 
+        | TaskType::Walk
+        | TaskType::CollectReward
             => Ok(()),
         TaskType::GatherSticks 
         | TaskType::ChopTree 
@@ -232,7 +265,7 @@ fn simulate_begin_task<T: WorkerAction> (
                 Err("Worker has no mana but tries to use welcome ability".to_owned())
             }
         },
-        _ => Err("Task not implemented".to_owned())
+        TaskType::Defend => Err("Task not implemented".to_owned())
     }
 }
 

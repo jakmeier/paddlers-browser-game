@@ -122,6 +122,12 @@
               "description": null,
               "isDeprecated": false,
               "name": "WELCOME_ABILITY"
+            },
+            {
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
+              "name": "COLLECT_REWARD"
             }
           ],
           "fields": null,

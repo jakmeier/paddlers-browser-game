@@ -32,3 +32,9 @@ impl Task {
         WorkerKey(self.worker_id)
     }
 }
+
+impl Worker {
+    pub fn home(&self) -> VillageKey {
+        VillageKey(self.home)
+    }
+}

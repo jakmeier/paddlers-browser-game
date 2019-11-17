@@ -162,6 +162,7 @@ impl Into<TaskType> for &WorkerTaskType {
             WorkerTaskType::CHOP_TREE => TaskType::ChopTree,
             WorkerTaskType::DEFEND => TaskType::Defend,
             WorkerTaskType::WELCOME_ABILITY => TaskType::WelcomeAbility,
+            WorkerTaskType::COLLECT_REWARD => TaskType::CollectReward,
             _ => panic!("Unexpected task type")
         }
     }
@@ -180,6 +181,7 @@ impl Into<TaskType> for &VillageUnitsTaskType {
             VillageUnitsTaskType::CHOP_TREE => TaskType::ChopTree,
             VillageUnitsTaskType::DEFEND => TaskType::Defend,
             VillageUnitsTaskType::WELCOME_ABILITY => TaskType::WelcomeAbility,
+            VillageUnitsTaskType::COLLECT_REWARD => TaskType::CollectReward,
             _ => panic!("Unexpected task type")
         }
     }

@@ -3,7 +3,7 @@ use crate::game::{
     Now,
     movement::Moving,
     units::workers::*,
-    town::Town,
+    town::{Town, TileIndex},
     components::*,
     abilities::use_welcome_ability,
 };
@@ -29,6 +29,7 @@ impl<'a> System<'a> for WorkerSystem {
         WriteStorage<'a, EntityContainer>,
         WriteStorage<'a, UiMenu>,
         WriteStorage<'a, Mana>,
+        WriteStorage<'a, Level>,
         ReadStorage<'a, Renderable>,
         Write<'a, Town>,
         Write<'a, ErrorQueue>,
@@ -46,6 +47,7 @@ impl<'a> System<'a> for WorkerSystem {
         mut container,
         mut ui_menus,
         mut mana,
+        mut levels,
         rend,
         mut town,
         mut errq,
@@ -95,6 +97,14 @@ impl<'a> System<'a> for WorkerSystem {
                             update_cooldown(&mut *ui, AbilityType::Welcome, now.0);
                         }
                     }
+                    TaskType::CollectReward => {
+                        mov.stand_still(task.start_time);
+                        let worker_exp = levels.get_mut(e);
+                        let e = collect_reward(&mut town, task.position, &entities, worker_exp);
+                        if let Err(e) = e {
+                            errq.push(e)
+                        }
+                    }
                     _ => {debug_assert!(false, "Unexpected task")},
                 }
             }
@@ -109,3 +119,20 @@ fn update_cooldown(ui: &mut UiMenu, ability: AbilityType, now: Timestamp) {
     }
 }
 
+fn collect_reward(town: &mut Town, position: TileIndex, entities: &Entities, level: Option<&mut Level>) 
+-> PadlResult<()> 
+{
+    let bt = town.building_type(position)?;
+    let collected_building = town.remove_building(position);
+    if let Err(_e) = entities.delete(collected_building) {
+        return PadlErrorCode::SpecsError("Deleting collected reward building").dev();
+    }
+    let level = level.ok_or(
+        PadlError::dev_err(PadlErrorCode::SpecsError("No experience pool given to add to"))
+    )?;
+    if let Some(reward) = bt.reward_exp() {
+        level.exp += reward;
+    }
+    Ok(())
+    // TODO: Level up
+}

@@ -218,6 +218,7 @@ pub enum TaskType {
     GatherSticks,
     ChopTree,
     WelcomeAbility,
+    CollectReward,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Queryable, Identifiable, AsChangeset)]

@@ -26,3 +26,14 @@ impl BuildingType {
         }
     }
 }
+
+impl BuildingType {
+    /// Experience gained when collection the building as a reward
+    pub fn reward_exp(&self) -> Option<i32> {
+        match self {
+            BuildingType::PresentA => Some(10),
+            BuildingType::PresentB => Some(30),
+            _ => None,
+        }
+    }
+}
