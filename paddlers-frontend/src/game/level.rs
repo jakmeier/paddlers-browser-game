@@ -22,6 +22,13 @@ impl Level {
         );
         vec![row]
     }
+    pub fn add_exp(&mut self, n: i32) {
+        self.exp += n;
+        while self.exp >= self.exp_to_next_lvl() {
+            self.exp -= self.exp_to_next_lvl();
+            self.lvl += 1;
+        }
+    }
     fn exp_to_next_lvl(&self) -> i32 {
         paddlers_shared_lib::game_mechanics::worker::hero_level_exp(self.lvl)
     }

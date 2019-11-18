@@ -131,7 +131,7 @@ fn collect_reward(town: &mut Town, position: TileIndex, entities: &Entities, lev
         PadlError::dev_err(PadlErrorCode::SpecsError("No experience pool given to add to"))
     )?;
     if let Some(reward) = bt.reward_exp() {
-        level.exp += reward;
+        level.add_exp(reward);
     }
     Ok(())
     // TODO: Level up
