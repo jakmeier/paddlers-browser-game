@@ -7,6 +7,7 @@ use specs::prelude::*;
 use crate::logging::error::*;
 use crate::game::components::*;
 use paddlers_shared_lib::models::AbilityType;
+use crate::game::game_event_manager::EventPool;
 
 pub fn use_welcome_ability<'a>(
     user: Entity,
@@ -14,6 +15,7 @@ pub fn use_welcome_ability<'a>(
     health: &mut WriteStorage<'a, Health>,
     status_effects: &mut WriteStorage<StatusEffects>,
     mana: &mut WriteStorage<Mana>,
+    ep: &EventPool,
 ) -> PadlResult<()>
 {
     let h = health.get_mut(target)
@@ -27,7 +29,7 @@ pub fn use_welcome_ability<'a>(
     let strength = a.apply().1;
     let mana_cost = a.mana_cost();
 
-    h.make_happy(strength as i64);
+    h.make_happy(strength as i64, target, ep);
     se.add_health_reduction(strength);
     m.mana -= mana_cost;
 

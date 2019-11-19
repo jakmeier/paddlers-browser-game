@@ -122,6 +122,9 @@ pub enum SingleSprite {
     FrameGreen3,
     PresentA,
     PresentB,
+    DuckHappy,
+    CamoDuckHappy,
+    WhiteDuckHappy,
 }
 
 #[derive(Debug, Clone, Copy)]

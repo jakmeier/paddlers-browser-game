@@ -51,6 +51,13 @@ pub fn insert_duck(
     Ok(entity)
 }
 
+pub fn change_duck_sprite_to_happy(r: &mut Renderable) {
+    r.kind = RenderVariant::ImgWithImgBackground(
+        SpriteSet::Simple(SingleSprite::DuckHappy), 
+        SingleSprite::Water
+    );
+}
+
 use crate::net::graphql::attacks_query::{AttacksQueryVillageAttacksUnits,AttacksQueryVillageAttacks};
 impl AttacksQueryVillageAttacks {
     pub fn create_entities(&self, world: &mut World, ul: f32) -> PadlResult<Vec<Entity>> {

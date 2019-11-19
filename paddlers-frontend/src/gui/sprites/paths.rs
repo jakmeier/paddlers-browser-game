@@ -1,7 +1,7 @@
 use super::*;
 use super::animation::{AnimatedObjectDef,AnimationVariantDef};
 
-pub const SPRITE_PATHS_NUM: usize = 40;
+pub const SPRITE_PATHS_NUM: usize = 43;
 pub const SPRITE_PATHS : [&'static str; SPRITE_PATHS_NUM] = [
     "textures/grass.png", // 0
     "textures/water.png",
@@ -43,7 +43,9 @@ pub const SPRITE_PATHS : [&'static str; SPRITE_PATHS_NUM] = [
     "gui/abilities/green_frame_3.png",
     "buildings/red_present.png",
     "buildings/orange_present.png",
-    // 40
+    "ducks/yellow_duck_happy.png", // 40
+    "ducks/camo_duck_happy.png", 
+    "ducks/white_duck_happy.png", 
 ];
 
 impl SingleSprite {
@@ -85,6 +87,9 @@ impl SingleSprite {
             SingleSprite::FrameGreen3 => 37,
             SingleSprite::PresentA => 38,
             SingleSprite::PresentB => 39,
+            SingleSprite::DuckHappy => 40,
+            SingleSprite::CamoDuckHappy => 41,
+            SingleSprite::WhiteDuckHappy => 42,
         }
     }
 }

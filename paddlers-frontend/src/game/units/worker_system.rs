@@ -14,8 +14,18 @@ use crate::gui::render::Renderable;
 use crate::prelude::*;
 use crate::logging::ErrorQueue;
 use quicksilver::geom::about_equal;
+use crate::game::game_event_manager::EventPool;
 
-pub struct WorkerSystem;
+pub struct WorkerSystem {
+    event_pool: EventPool,
+}
+impl WorkerSystem {
+    pub fn new(event_pool: EventPool) -> Self {
+        WorkerSystem {
+            event_pool
+        }
+    }
+}
 
 impl<'a> System<'a> for WorkerSystem {
     type SystemData = (
@@ -89,6 +99,7 @@ impl<'a> System<'a> for WorkerSystem {
                             &mut health,
                             &mut status_effects,
                             &mut mana,
+                            &self.event_pool,
                         );
                         if let Err(e) = err {
                             errq.push(e);

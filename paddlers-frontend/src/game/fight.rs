@@ -6,6 +6,7 @@ use crate::game::{
     movement::Position,
     town::Town,
     UnitLength,
+    game_event_manager::{EventPool, GameEvent},
 };
 
 #[derive(Component, Debug)]
@@ -57,14 +58,27 @@ impl Health {
             aura_effects: vec![],
         }
     }
-    pub fn make_happy(&mut self, amount: i64) {
-        self.hp -= amount;
+    pub fn make_happy(&mut self, amount: i64, id: Entity, ep: &EventPool) {
+        let new_hp = 0.max(self.hp - amount);
+        if new_hp == 0 && self.hp != 0 {
+            ep.send(GameEvent::HoboSatisfied(id)).expect("sending event");
+        }
+        self.hp = new_hp;
     }
 }
 
-#[derive(Default,Clone,Copy)]
+#[derive(Clone)]
 pub struct FightSystem {
-    counter: usize, 
+    counter: usize,
+    event_pool: EventPool,
+}
+impl FightSystem {
+    pub fn new(event_pool: EventPool) -> Self {
+        FightSystem {
+            counter: 0,
+            event_pool
+        }
+    }
 }
 
 impl<'a> System<'a> for FightSystem {
@@ -88,15 +102,15 @@ impl<'a> System<'a> for FightSystem {
         // n can be arbitrarily large in late game
         // m will most likely remain limited by the map size
         // t is always smaller than the map lane size
-        for (id, a) in (&entities, &aura).join() { // m
-            for (p, mut h) in (&position, &mut health).join() { // n
+        for (aid, a) in (&entities, &aura).join() { // m
+            for (hid, p, h) in (&entities, &position, &mut health).join() { // n
                 let tile = Town::find_tile(p.area.pos, ul.0);
                 if a.affected_tiles.binary_search(&tile).is_ok() { // log t
-                    match h.aura_effects.binary_search(&id.id()) { // log m
+                    match h.aura_effects.binary_search(&aid.id()) { // log m
                         Ok(_) => {/* Aura already active*/},
                         Err(i) => { 
-                            (*h).hp = 0.max(h.hp - a.effect);
-                            (*h).aura_effects.insert(i, id.id()); // [Theoretically O(m) but not considered above]
+                            (*h).make_happy(a.effect, hid, &self.event_pool);
+                            (*h).aura_effects.insert(i, aid.id()); // [Theoretically O(m) but not considered above]
                         }
                     }
                 }

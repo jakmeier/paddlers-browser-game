@@ -1,17 +1,18 @@
-pub (crate) mod buildings;
-pub (crate) mod units;
-pub (crate) mod movement;
-pub (crate) mod map;
-pub (crate) mod town;
-pub (crate) mod town_resources;
-pub (crate) mod fight;
-pub (crate) mod components;
-pub (crate) mod forestry;
 pub (crate) mod abilities;
+pub (crate) mod buildings;
+pub (crate) mod components;
+pub (crate) mod fight;
+pub (crate) mod forestry;
+pub (crate) mod game_event_manager;
+pub (crate) mod level;
+pub (crate) mod mana;
+pub (crate) mod map;
+pub (crate) mod movement;
 pub (crate) mod net_receiver;
 pub (crate) mod status_effects;
-pub (crate) mod mana;
-pub (crate) mod level;
+pub (crate) mod town;
+pub (crate) mod town_resources;
+pub (crate) mod units;
 
 use std::sync::mpsc::{channel, Receiver};
 use specs::prelude::*;
@@ -41,7 +42,7 @@ use quicksilver::prelude::*;
 use town::{Town, town_shop::DefaultShop};
 use town_resources::TownResources;
 use map::{GlobalMap, GlobalMapPrivateState};
-
+use game_event_manager::GameEvent;
 
 
 pub(crate) struct Game<'a, 'b> {
@@ -58,6 +59,7 @@ pub(crate) struct Game<'a, 'b> {
     pub time_zero: Timestamp,
     pub total_updates: u64,
     pub async_err_receiver: Receiver<PadlError>,
+    pub game_event_receiver: Receiver<GameEvent>,
     pub stats: Statistician,
     pub map: Option<GlobalMapPrivateState>,
     #[cfg(feature="dev_view")]
@@ -72,12 +74,13 @@ impl Game<'_,'_> {
         let bold_font = Asset::new(Font::load("fonts/Manjari-Bold.ttf"));
 
         let (err_send, err_recv) = channel();
+        let (game_evt_send, game_evt_recv) = channel();
         let mut world = crate::init::init_world(err_send);
         
         let mut dispatcher = DispatcherBuilder::new()
-            .with(WorkerSystem, "work", &[])
+            .with(WorkerSystem::new(game_evt_send.clone()), "work", &[])
             .with(MoveSystem, "move", &["work"])
-            .with(FightSystem::default(), "fight", &["move"])
+            .with(FightSystem::new(game_evt_send.clone()), "fight", &["move"])
             .with(ForestrySystem, "forest", &[])
             .with(RestApiSystem, "rest", &[])
             .build();
@@ -100,6 +103,7 @@ impl Game<'_,'_> {
             resources: TownResources::default(),
             total_updates: 0,
             async_err_receiver: err_recv,
+            game_event_receiver: game_evt_recv,
             stats: Statistician::new(now),
             map: None,
             #[cfg(feature="dev_view")]
@@ -122,6 +126,7 @@ impl Game<'_,'_> {
         }
         self.update_time_reference();
         self.dispatcher.dispatch(&mut self.world);
+        self.handle_game_events();
         if self.total_updates % 300 == 15 {
             self.reaper(&Rectangle::new_sized(window.screen_size()));
         }
