@@ -125,6 +125,7 @@ pub enum SingleSprite {
     DuckHappy,
     CamoDuckHappy,
     WhiteDuckHappy,
+    Temple,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -178,6 +179,7 @@ impl WithSprite for BuildingType {
             BuildingType::SawMill => SpriteSet::Simple(SingleSprite::SawMill),
             BuildingType::PresentA => SpriteSet::Simple(SingleSprite::PresentA),
             BuildingType::PresentB => SpriteSet::Simple(SingleSprite::PresentB),
+            BuildingType::Temple => SpriteSet::Simple(SingleSprite::Temple),
         }
     }
 }

@@ -14,22 +14,14 @@ impl Attributes for BuildingType {
         match self {
             BuildingType::BlueFlowers => Some(2.0),
             BuildingType::RedFlowers => Some(1.0),
-            BuildingType::Tree => None,
-            BuildingType::BundlingStation => None,
-            BuildingType::SawMill => None,
-            BuildingType::PresentA => None,
-            BuildingType::PresentB => None,
+            _ => None,
         }
     }
     fn attack_power(&self) -> Option<i64> {
         match self {
             BuildingType::BlueFlowers => Some(1),
             BuildingType::RedFlowers => Some(3),
-            BuildingType::Tree => None,
-            BuildingType::BundlingStation => None,
-            BuildingType::SawMill => None,
-            BuildingType::PresentA => None,
-            BuildingType::PresentB => None,
+            _ => None,
         }
     }
     fn attacks_per_cycle(&self) -> Option<i64>{
@@ -41,6 +33,7 @@ impl Attributes for BuildingType {
             BuildingType::SawMill => None,
             BuildingType::PresentA => None,
             BuildingType::PresentB => None,
+            BuildingType::Temple => None,
         }
     }
     fn size(&self) -> (usize,usize) {

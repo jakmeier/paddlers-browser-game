@@ -39,6 +39,12 @@ impl Cost for BuildingType {
                 => vec![
                     (ResourceType::Sticks, 50),
                     (ResourceType::Logs, 50),
+                    ],
+            BuildingType::Temple
+                => vec![
+                    (ResourceType::Feathers, 10000),
+                    (ResourceType::Logs, 10000),
+                    (ResourceType::Sticks, 10000),
                 ],
         }
     }

@@ -1,6 +1,7 @@
 use diesel::QueryResult;
 use paddlers_shared_lib::prelude::*;
 use crate::db::DB;
+use crate::buildings::BuildingFactory;
 
 impl DB {
     pub (super) fn new_player(&self, display_name: String, uuid: uuid::Uuid) -> QueryResult<Player> {
@@ -11,13 +12,19 @@ impl DB {
         };
         let player = self.insert_player(&player)?;
         let village = self.new_village(player.key());
+        let building = BuildingFactory::new(
+            BuildingType::Temple,
+            (4,2),
+            village.key(),
+        );
+        self.insert_building(&building);
         self.insert_hero(village.key());
         Ok(player)
     }
 
 
     fn insert_hero(&self, vid: VillageKey) -> Worker {
-        let (x,y) = (2,2);
+        let (x,y) = (5,2);
         let worker = NewWorker {
             unit_type: UnitType::Hero,
             x: x,

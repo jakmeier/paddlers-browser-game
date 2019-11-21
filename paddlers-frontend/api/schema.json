@@ -216,6 +216,12 @@
               "description": null,
               "isDeprecated": false,
               "name": "PRESENT_B"
+            },
+            {
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
+              "name": "TEMPLE"
             }
           ],
           "fields": null,

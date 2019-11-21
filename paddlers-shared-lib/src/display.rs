@@ -19,6 +19,8 @@ impl Display for BuildingType {
                 write!(f, "Red present"),
             BuildingType::PresentB =>
                 write!(f, "Orange present"),
+            BuildingType::Temple =>
+                write!(f, "Temple"),
         }
     }
 

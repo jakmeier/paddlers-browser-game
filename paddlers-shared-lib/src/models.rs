@@ -156,6 +156,7 @@ pub enum BuildingType {
     SawMill,
     PresentA,
     PresentB,
+    Temple,
 }
 
 #[cfg(feature = "sql_db")]

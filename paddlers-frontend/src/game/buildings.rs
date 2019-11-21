@@ -131,6 +131,7 @@ impl buildings_query::BuildingsQueryVillageBuildings {
             buildings_query::BuildingType::SAW_MILL => BuildingType::SawMill,
             buildings_query::BuildingType::PRESENT_A => BuildingType::PresentA,
             buildings_query::BuildingType::PRESENT_B => BuildingType::PresentB,
+            buildings_query::BuildingType::TEMPLE => BuildingType::Temple,
             _ => panic!("Unexpected BuildingType"),
         };
         let created = GqlTimestamp::from_string(&self.creation).unwrap().0;
