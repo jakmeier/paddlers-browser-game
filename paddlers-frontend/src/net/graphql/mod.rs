@@ -113,6 +113,15 @@ impl GraphQlState {
             )
         )
     }
+    
+    pub fn player_info_query(&self) -> PadlResult<impl Future<Output = PadlResult<NetMsg>>> {
+        let fp = http_read_player_info()?;
+        Ok(
+            fp.map(
+                move |response| Ok(NetMsg::Player(response?.into())),
+            )
+        )
+    }
 }
 
 pub fn own_villages_query() -> PadlResult<impl TryFuture<Ok = Vec<VillageKey>, Error = PadlError>> {

@@ -9,6 +9,7 @@ pub (crate) mod mana;
 pub (crate) mod map;
 pub (crate) mod movement;
 pub (crate) mod net_receiver;
+pub (crate) mod player_info;
 pub (crate) mod status_effects;
 pub (crate) mod town;
 pub (crate) mod town_resources;
@@ -22,6 +23,7 @@ use crate::game::{
     fight::*,
     units::worker_system::WorkerSystem,
     forestry::ForestrySystem,
+    player_info::PlayerInfo,
 };
 use crate::gui::{
     input,
@@ -178,6 +180,9 @@ impl Game<'_,'_> {
     }
     pub fn rest(&mut self) -> specs::shred::FetchMut<RestApiState> {
         self.world.write_resource()
+    }
+    pub fn player(&self) -> specs::shred::Fetch<PlayerInfo> {
+        self.world.read_resource()
     }
     pub fn update_time_reference(&mut self) {
         if self.time_zero != 0 {

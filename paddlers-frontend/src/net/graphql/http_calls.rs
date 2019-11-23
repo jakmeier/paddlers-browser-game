@@ -99,3 +99,17 @@ pub (super) fn http_read_own_villages() -> PadlResult<impl Future<Output = PadlR
         })
     )
 }
+pub (super) fn http_read_player_info() -> PadlResult<impl Future<Output = PadlResult<PlayerQueryResponse>>> {
+    let request_body = PlayerQuery::build_query(player_query::Variables);
+    let request_string = &serde_json::to_string(&request_body)?;
+    let promise = ajax::send("POST", &graphql_url()?, request_string)?;
+    Ok(
+        promise.map(|x| {
+            let raw_response: PlayerQueryRawResponse = 
+                serde_json::from_str(&x?)?;
+            let response = raw_response.data.ok_or(PadlError::dev_err(PadlErrorCode::InvalidGraphQLData("player info")))?;
+            let response = response.player;
+            Ok(response)
+        })
+    )
+}

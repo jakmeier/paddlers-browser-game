@@ -138,6 +138,13 @@ impl Game<'_, '_> {
             }
         }
 
+        if let Some(temple) = self.town().temple {
+            if e  == temple{
+                let karma = self.player().karma;
+                table.extend(temple_details(karma));
+            }
+        }
+
         let health = self.world.read_storage::<Health>();
         if let Some(health) = health.get(e) {
             table.push(health_details(health));
@@ -259,5 +266,14 @@ fn village_details<'a>(info: &VillageMetaInfo) -> Vec<TableRow<'a>> {
     let row0 = TableRow::Text("Village".to_owned());
     let text = format!("<{}:{}>", info.coordinates.0, info.coordinates.1);
     let row1 = TableRow::Text(text);
+    vec![row0, row1]
+}
+fn temple_details<'a>(karma: i64) -> Vec<TableRow<'a>> {
+    let row0 = TableRow::Text("TEMPLE".to_owned());
+    let text = format!("{} Karma", karma);
+    let row1 = TableRow::TextWithImage(
+        text,
+        SpriteIndex::Simple(SingleSprite::Karma),
+    );
     vec![row0, row1]
 }

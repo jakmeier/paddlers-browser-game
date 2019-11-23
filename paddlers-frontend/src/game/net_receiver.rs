@@ -68,6 +68,9 @@ impl Game<'_,'_> {
                             println!("No map data available");
                         }
                     },
+                    NetMsg::Player(player_info) => {
+                        *self.world.write_resource() = player_info;
+                    },
                     NetMsg::Resources(response) => {
                         if let Some(data) = response.data {
                             self.resources.update(data);

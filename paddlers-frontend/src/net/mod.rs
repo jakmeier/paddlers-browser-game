@@ -9,6 +9,7 @@ use graphql::{
     GraphQlState,
     query_types::*,
 };
+use crate::game::player_info::PlayerInfo;
 
 use stdweb::{spawn_local};
 
@@ -27,6 +28,7 @@ pub enum NetMsg {
     Buildings(BuildingsResponse),
     Error(PadlError),
     Map(MapResponse, i32, i32),
+    Player(PlayerInfo),
     Resources(ResourcesResponse),
     UpdateWorkerTasks(WorkerTasksResponse),
     Workers(WorkerResponse),
@@ -76,6 +78,7 @@ pub fn request_client_state() {
     unsafe {
         STATIC_NET_STATE.spawn(STATIC_NET_STATE.gql_state.buildings_query());
         STATIC_NET_STATE.spawn(STATIC_NET_STATE.gql_state.workers_query());
+        request_player_update();
     }
 }
 pub fn request_map_read(min: i32, max: i32) {
@@ -88,6 +91,11 @@ pub fn request_map_read(min: i32, max: i32) {
 pub fn request_worker_tasks_update(unit_id: i64) {
     unsafe{
         STATIC_NET_STATE.spawn(STATIC_NET_STATE.gql_state.worker_tasks_query(unit_id));
+    }
+}
+pub fn request_player_update() {
+    unsafe{
+        STATIC_NET_STATE.spawn(STATIC_NET_STATE.gql_state.player_info_query());
     }
 }
 impl NetState {

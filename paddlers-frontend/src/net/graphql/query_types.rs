@@ -132,6 +132,14 @@ impl WorkerTaskEx {
         })
     }
 }
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "api/schema.json",
+    query_path = "api/queries/player_query.graphql",
+)]
+pub struct PlayerQuery;
+pub type PlayerQueryRawResponse = Response<player_query::ResponseData>;
+pub type PlayerQueryResponse = player_query::PlayerQueryPlayer;
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -147,7 +155,6 @@ pub type MapResponse = Response<map_query::ResponseData>;
     query_path = "api/queries/player_villages_query.graphql",
 )]
 pub struct PlayerVillagesQuery;
-#[allow(dead_code)]
 pub type PlayerVillagesRawResponse = Response<player_villages_query::ResponseData>;
 pub type PlayerVillagesResponse = player_villages_query::PlayerVillagesQueryPlayer;
 

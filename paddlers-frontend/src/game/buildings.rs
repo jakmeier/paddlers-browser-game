@@ -88,10 +88,18 @@ impl Town {
             }
             _ => { }
         }
-
+        
         self.place_building(tile_index, bt, builder.entity);
-
-        builder.build()
+        
+        let entity = builder.build();
+        
+        match bt {
+            BuildingType::Temple => {
+                self.temple = Some(entity);
+            },
+            _ => { }
+        }
+        entity
     }
 }
 
