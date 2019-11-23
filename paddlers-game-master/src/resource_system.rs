@@ -8,13 +8,17 @@ use crate::{
 };
 
 impl DB {
-    pub fn collect_reward<'a, I>(&self, units: I, village: VillageKey) 
+    pub fn collect_reward<'a, I>(&self, units: I, village: VillageKey, player: Option<PlayerKey>)
     where
-        I: IntoIterator<Item = &'a Hobo>,
+        I: IntoIterator<Item = &'a Hobo> + Clone,
     {
         use std::ops::Add;
-        let feathers = units.into_iter().map(reward_feathers).fold(0, i64::add);
+        let feathers = units.clone().into_iter().map(reward_feathers).fold(0, i64::add);
         self.add_resource(ResourceType::Feathers, village, feathers).expect("Adding feathers.");
+        if let Some(player) = player {
+            let karma = units.into_iter().map(reward_karma).fold(0, i64::add);
+            self.add_karma(player, karma).expect("Adding karma.");
+        }
     }
 
     pub fn init_resources(&self, vid: VillageKey) {
@@ -60,4 +64,7 @@ fn reward_feathers(unit: &Hobo) -> i64 {
     let f = (1.0 + unit.hp as f32 * unit.speed / 4.0).log2().ceil() as i64;
     // println!("{:#?} gives {} feathers", &unit, f);
     f
+}
+fn reward_karma(_unit: &Hobo) -> i64 {
+    1
 }

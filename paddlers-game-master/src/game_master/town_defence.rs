@@ -30,7 +30,8 @@ impl DB {
             .map(|(a, hp)| (a, hp - self.damage_from_effects(a)) )
             .filter(|(_, hp)| *hp <= 0 )
             .map(|(a, _)| a );
-        self.collect_reward(defeated_units.clone(), village);
+        let player = self.village(village).expect("Village of fight").owner();
+        self.collect_reward(defeated_units.clone(), village, player);
         defeated_units.for_each(|u| self.delete_hobo(u));
 
         // TODO: Move survivors back

@@ -38,3 +38,9 @@ impl Worker {
         VillageKey(self.home)
     }
 }
+
+impl Village {
+    pub fn owner(&self) -> Option<PlayerKey> {
+        Some(PlayerKey(self.player_id?))
+    }
+}

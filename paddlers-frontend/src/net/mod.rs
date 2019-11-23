@@ -110,6 +110,7 @@ impl NetState {
     fn work(&'static self){
         self.spawn(self.gql_state.attacks_query());
         self.spawn(self.gql_state.resource_query());
+        self.spawn(self.gql_state.player_info_query());
         self.register_networking();
     }
 

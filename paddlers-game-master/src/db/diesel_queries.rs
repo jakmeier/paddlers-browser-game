@@ -73,6 +73,12 @@ impl DB {
             .set(resources::amount.eq(resources::amount + plus))
             .get_result(self.dbconn())
     }
+    pub fn add_karma(&self, p: PlayerKey, plus: i64) -> QueryResult<Player> {
+        let target = players::table.find(p.num());
+        diesel::update(target)
+            .set(players::karma.eq(players::karma + plus))
+            .get_result(self.dbconn())
+    }
     pub fn insert_building(&self, new_building: &NewBuilding) -> Building {
         diesel::insert_into(buildings::dsl::buildings)
             .values(new_building)
