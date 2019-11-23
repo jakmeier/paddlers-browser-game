@@ -198,3 +198,15 @@ impl Into<TaskType> for VillageUnitsTaskType {
         (&self).into()
     }
 }
+
+impl Into<UnitColor> for &attacks_query::UnitColor {
+    fn into(self) -> UnitColor {
+        match self {
+            attacks_query::UnitColor::YELLOW => UnitColor::Yellow,
+            attacks_query::UnitColor::WHITE => UnitColor::White,
+            attacks_query::UnitColor::CAMO => UnitColor::Camo,
+            attacks_query::UnitColor::PROPHET => UnitColor::Prophet,
+            _ => panic!("Unexpected unit color")
+        }
+    }
+}

@@ -127,6 +127,7 @@ pub enum SingleSprite {
     WhiteDuckHappy,
     Temple,
     Karma,
+    Prophet,
 }
 
 #[derive(Debug, Clone, Copy)]

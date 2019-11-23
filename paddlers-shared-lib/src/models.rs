@@ -43,6 +43,7 @@ pub enum UnitColor {
     Yellow,
     White,
     Camo,
+    Prophet,
 }
 
 

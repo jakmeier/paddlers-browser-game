@@ -65,7 +65,7 @@ impl AttackSpawner {
         let n = rng.gen_range(2,5);
         for _ in 0 .. n {
             let unit = NewHobo {
-                color: Some(UnitColor::Yellow),
+                color: Some(Self::gen_color(&mut rng)),
                 hp: rng.gen_range(1, 10), 
                 speed: 0.1,
                 home: vid,
@@ -76,6 +76,17 @@ impl AttackSpawner {
                 hobo_id: u.id
             };
             self.db().insert_attack_to_hobo(&atu);
+        }
+    }
+
+    fn gen_color<R>(rng: &mut R) -> UnitColor 
+    where R: Rng
+    {
+        match rng.gen_range(0,3) {
+            0 => UnitColor::Yellow,
+            1 => UnitColor::Camo,
+            2 => UnitColor::White,
+            _ => panic!("RNG bug?")
         }
     }
 

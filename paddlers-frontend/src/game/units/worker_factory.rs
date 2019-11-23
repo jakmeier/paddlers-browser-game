@@ -65,6 +65,7 @@ pub fn with_basic_worker<B: Builder>( builder: B, color: UnitColor ) -> B
         UnitColor::Yellow => SingleSprite::Duck,
         UnitColor::White => SingleSprite::WhiteDuck,
         UnitColor::Camo => SingleSprite::CamoDuck,
+        UnitColor::Prophet => SingleSprite::Prophet,
     };
     builder.with(
         Renderable::new_transformed(

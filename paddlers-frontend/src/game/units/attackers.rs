@@ -24,6 +24,7 @@ const ATTACKER_SIZE_FACTOR_Y: f32 = 0.4;
 pub fn insert_duck(
     world: &mut World, 
     pos: impl Into<Vector>, 
+    color: UnitColor,
     birth_time: Timestamp, 
     speed: impl Into<Vector>, 
     hp: i64, 
@@ -40,7 +41,7 @@ pub fn insert_duck(
         .with(Moving::new(birth_time, pos, speed, speed.len()))
         .with(
             Renderable::new (
-                RenderVariant::ImgWithImgBackground(SpriteSet::Simple(SingleSprite::Duck), SingleSprite::Water),
+                hobo_sprite_sad(color)
             )
         )
         .with(Clickable)
@@ -52,10 +53,24 @@ pub fn insert_duck(
 }
 
 pub fn change_duck_sprite_to_happy(r: &mut Renderable) {
-    r.kind = RenderVariant::ImgWithImgBackground(
-        SpriteSet::Simple(SingleSprite::DuckHappy), 
-        SingleSprite::Water
-    );
+    match r.kind {
+        RenderVariant::ImgWithImgBackground(SpriteSet::Simple(ref mut img), _bkg)
+        => {
+            match img {
+                SingleSprite::Duck => {
+                    *img = SingleSprite::DuckHappy;
+                }
+                SingleSprite::CamoDuck => {
+                    *img = SingleSprite::CamoDuckHappy;
+                }
+                SingleSprite::WhiteDuck => {
+                    *img = SingleSprite::WhiteDuckHappy;
+                }
+                _ => { }
+            }
+        },
+        _ => { }
+    }
 }
 
 use crate::net::graphql::attacks_query::{AttacksQueryVillageAttacksUnits,AttacksQueryVillageAttacks};
@@ -79,7 +94,8 @@ impl AttacksQueryVillageAttacksUnits {
         let pos = Vector::new(x,y) + attacker_position_rank_offset(pos_rank, ul);
         let hp = self.hp;
         let netid = self.id.parse().expect("Parsing id");
-        insert_duck(world, pos, birth, (v as f32, 0.0), hp, ul, netid, &self.effects)
+        let color = self.color.as_ref().map(|c|c.into()).unwrap_or(UnitColor::Yellow);
+        insert_duck(world, pos, color, birth, (v as f32, 0.0), hp, ul, netid, &self.effects)
     }
 }
 
@@ -87,4 +103,14 @@ fn attacker_position_rank_offset(pr: usize, ul: f32) -> Vector {
     let y = if pr % 2 == 1 { ul * 0.5 } else { 0.0 };
     let x = ul * 0.3 * pr as f32;
     (x,y).into()
+}
+
+fn hobo_sprite_sad(color: UnitColor) -> RenderVariant {
+    let sprite_index = match color {
+        UnitColor::Yellow => SingleSprite::Duck,
+        UnitColor::White => SingleSprite::WhiteDuck,
+        UnitColor::Camo => SingleSprite::CamoDuck,
+        UnitColor::Prophet => SingleSprite::Prophet,
+    };
+    RenderVariant::ImgWithImgBackground(SpriteSet::Simple(sprite_index), SingleSprite::Water)
 }
