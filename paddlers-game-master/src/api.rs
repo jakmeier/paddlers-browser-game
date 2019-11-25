@@ -1,17 +1,43 @@
 mod shop;
 
+use futures::Future;
 use actix_web::{HttpResponse, Responder, web};
+use actix_web::error::BlockingError;
 use paddlers_shared_lib::api::{
-    shop::{BuildingPurchase, BuildingDeletion},
+    shop::{BuildingPurchase, BuildingDeletion, ProphetPurchase},
     tasks::{TaskList},
     keys::{VillageKey, WorkerKey},
 };
 use paddlers_shared_lib::sql::GameDB;
 use crate::authentication::Authentication;
 use crate::setup::initialize_new_player_account;
+use crate::StringErr;
 
 pub fn index() -> impl Responder {
     HttpResponse::Ok().body("Game Master OK")
+}
+
+pub fn purchase_prophet(
+    pool: web::Data<crate::db::Pool>, 
+    body: web::Json<ProphetPurchase>,
+    auth: Authentication,
+) -> impl Future<Item = HttpResponse, Error = ()> {
+    let village = body.village;
+    std::mem::drop(body);
+    
+    web::block(move || {
+        let db: crate::db::DB = pool.get_ref().into();
+        check_owns_village0(&db, &auth, village)?;
+        let result = db.try_buy_prophet(village);
+        result
+    })
+    .then( |result: Result<(), BlockingError<std::string::String>> |
+        match result {
+            Err(BlockingError::Error(msg)) => Ok(HttpResponse::Forbidden().body(msg).into()),
+            Err(BlockingError::Canceled) => Ok(HttpResponse::InternalServerError().into()),
+            Ok(()) => Ok(HttpResponse::Ok().into()),
+        }
+    )
 }
 
 pub fn purchase_building(
@@ -102,10 +128,16 @@ fn check_owns_worker(db: &crate::db::DB, auth: &Authentication, v: WorkerKey) ->
         Err(HttpResponse::Forbidden().body(format!("Worker not owned by player")))
     }
 }
-fn check_owns_village(db: &crate::db::DB, auth: &Authentication, v: VillageKey) -> Result<(), HttpResponse> {
+fn check_owns_village0(db: &crate::db::DB, auth: &Authentication, v: VillageKey) -> StringErr {
     if db.village_owned_by(v, auth.user.uuid) {
         Ok(())
     } else {
-        Err(HttpResponse::Forbidden().body(format!("Village not owned by player")))
+        Err("Village not owned by player".to_owned())
     }
+}
+fn check_owns_village(db: &crate::db::DB, auth: &Authentication, v: VillageKey) -> Result<(), HttpResponse> {
+    check_owns_village0(db, auth, v).map_err(
+        |msg|
+        HttpResponse::Forbidden().body(msg)
+    )
 }

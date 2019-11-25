@@ -19,7 +19,6 @@ use game_master::{
     economy_worker::EconomyWorker,
     attack_spawn::AttackSpawner,
 };
-
 use actix::prelude::*;
 use actix_web::{
     http::header, 
@@ -28,7 +27,7 @@ use actix_web::{
 use actix_cors::Cors;
 use paddlers_shared_lib::{
     api::{
-        shop::{BuildingPurchase, BuildingDeletion},
+        shop::{BuildingPurchase, BuildingDeletion, ProphetPurchase},
         tasks::TaskList,
         statistics::FrontendRuntimeStatistics,
     },
@@ -100,6 +99,11 @@ fn main() {
                 web::resource("/shop/building/delete")
                 .data(web::Json::<BuildingDeletion>)
                 .route(web::post().to(api::delete_building))
+            )
+            .service(
+                web::resource("/shop/unit/prophet")
+                .data(web::Json::<ProphetPurchase>)
+                .route(web::post().to_async(api::purchase_prophet))
             )
             .service(
                 web::resource("/worker/overwriteTasks")
