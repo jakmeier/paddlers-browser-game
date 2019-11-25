@@ -17,10 +17,11 @@ pub fn index() -> impl Responder {
     HttpResponse::Ok().body("Game Master OK")
 }
 
-pub fn purchase_prophet(
-    pool: web::Data<crate::db::Pool>, 
+pub (crate) fn purchase_prophet(
+    pool: web::Data<crate::db::Pool>,
+    actors: web::Data<crate::ActorAddresses>,
     body: web::Json<ProphetPurchase>,
-    auth: Authentication,
+    mut auth: Authentication,
 ) -> impl Future<Item = HttpResponse, Error = ()> {
     let village = body.village;
     std::mem::drop(body);
@@ -28,7 +29,11 @@ pub fn purchase_prophet(
     web::block(move || {
         let db: crate::db::DB = pool.get_ref().into();
         check_owns_village0(&db, &auth, village)?;
-        let result = db.try_buy_prophet(village);
+        let result = db.try_buy_prophet(
+            village,
+            &actors,
+            auth.player_object(&db).ok_or("No such player".to_owned())?
+        );
         result
     })
     .then( |result: Result<(), BlockingError<std::string::String>> |

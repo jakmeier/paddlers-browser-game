@@ -42,7 +42,8 @@ struct ActorAddresses {
     _game_master: Addr<GameMaster>,
     town_worker: Addr<TownWorker>,
     _econ_worker: Addr<EconomyWorker>,
-    attack_worker: Addr<AttackSpawner>,
+    _attack_worker: Addr<AttackSpawner>,
+    db_actor: Addr<DbActor>,
 }
 
 fn main() {
@@ -64,6 +65,7 @@ fn main() {
     let gm_actor = GameMaster::new(dbpool.clone(), &attack_worker).start();
     let town_worker_actor = TownWorker::new(dbpool.clone()).start();
     let econ_worker = EconomyWorker::new(dbpool.clone()).start();
+    let db_actor = DbActor::new(dbpool.clone()).start();
 
     HttpServer::new(move || {
         App::new()
@@ -81,7 +83,8 @@ fn main() {
                     _game_master: gm_actor.clone(),
                     town_worker: town_worker_actor.clone(),
                     _econ_worker: econ_worker.clone(),
-                    attack_worker: attack_worker.clone(),
+                    _attack_worker: attack_worker.clone(),
+                    db_actor: db_actor.clone(),
                 })
             .data(config.clone())
             .data(dbpool.clone())

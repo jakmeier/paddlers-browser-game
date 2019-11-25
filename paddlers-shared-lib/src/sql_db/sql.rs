@@ -293,4 +293,22 @@ pub trait GameDB {
         .get_result(self.dbconn())
         .expect("Error in look up")
     }
+    fn player_prophets_count(&self, uuid: uuid::Uuid) -> i64 {
+        players::table
+        .inner_join(villages::table)
+        .inner_join(workers::table.on(workers::home.eq(villages::id)))
+        .filter(players::uuid.eq(uuid))
+        .filter(workers::color.eq(UnitColor::Prophet))
+        .select(diesel::dsl::count(workers::id))
+        .first(self.dbconn())
+        .expect("Error in look up")
+    }
+    fn player_village_count(&self, uuid: uuid::Uuid) -> i64 {
+        players::table
+        .inner_join(villages::table)
+        .filter(players::uuid.eq(uuid))
+        .select(diesel::dsl::count(villages::id))
+        .first(self.dbconn())
+        .expect("Error in look up")
+    }
 }

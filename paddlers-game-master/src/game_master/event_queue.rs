@@ -38,6 +38,7 @@ impl EventQueue {
         }
         None
     }
+    #[allow(dead_code)]
     pub fn time_of_next_event(&self) -> Option<&DateTime<Utc>> {
         self.queue.peek().map(|te| &te.time)
     }

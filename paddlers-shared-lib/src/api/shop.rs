@@ -69,12 +69,3 @@ pub struct BuildingDeletion {
 pub struct ProphetPurchase {
     pub village: VillageKey,
 }
-
-pub fn prophet_cost() -> Price {
-    // TODO price scaling
-    Price(vec![
-        (ResourceType::Feathers, 1000),
-        (ResourceType::Sticks, 1000),
-        (ResourceType::Logs, 500),
-    ])
-}

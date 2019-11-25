@@ -5,6 +5,8 @@ use paddlers_shared_lib::{
 };
 pub mod diesel_queries;
 pub use diesel_queries::*;
+mod db_actor;
+pub use db_actor::{DbActor, DeferredDbStatement};
 type Manager = ConnectionManager<PgConnection>;
 pub type Pool = r2d2::Pool<Manager>;
 pub (crate) struct DB (r2d2::PooledConnection<Manager>);
