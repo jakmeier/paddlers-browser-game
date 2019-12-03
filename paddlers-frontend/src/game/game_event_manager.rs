@@ -9,20 +9,23 @@
 //! 
 //! Try to keep computations in here short and simple.
 
+use std::sync::mpsc::Sender;
+use specs::prelude::*;
 use crate::prelude::*;
 use crate::game::{
     Game,
     components::*,
     units::attackers::change_duck_sprite_to_happy,
+    player_info::PlayerInfo,
     };
-use specs::prelude::*;
-use std::sync::mpsc::Sender;
 
 /// The SPECS systems' endpoint
 pub type EventPool = Sender<GameEvent>;
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum GameEvent {
     HoboSatisfied(Entity),
+    HttpBuyProphet,
 }
 
 impl Game<'_,'_> {
@@ -39,6 +42,10 @@ impl Game<'_,'_> {
                 if let Some(mut rend) = rend_store.get_mut(id) {
                     change_duck_sprite_to_happy(&mut rend);
                 }
+            },
+            GameEvent::HttpBuyProphet => {
+                let player : PlayerInfo = *self.player().clone();
+                crate::game::town::purchase_prophet(&mut *self.rest(), &player)?;
             }
         }
         Ok(())

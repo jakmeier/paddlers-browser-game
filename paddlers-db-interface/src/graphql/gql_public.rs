@@ -63,6 +63,16 @@ impl GqlPlayer {
             .map(|t| GqlVillage(t))
             .collect()
     }
+    /// Field Visibility: public
+    fn village_count(&self, ctx: &Context) -> i32 {
+        ctx.db().player_village_count(PlayerKey(self.0.id)) as i32
+    }
+    /// Number of (hobo) prophets that are currently owned by the player
+    /// Field Visibility: user
+    fn prophet_count(&self, ctx: &Context) -> FieldResult<i32> {
+        ctx.check_user_key(self.0.key())?;
+        Ok(ctx.db().player_prophets_count(self.0.uuid) as i32)
+    }
 }
 
 #[juniper::object (Context = Context)]

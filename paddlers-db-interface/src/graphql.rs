@@ -22,7 +22,7 @@ pub struct Query;
 
 pub struct AuthenticatedContext {
     db: Arc<DbConn>,
-    user: PlayerKey,
+    user: Player,
     villages: Vec<VillageKey>,
 }
 pub struct UnauthenticatedContext {
@@ -39,9 +39,9 @@ impl Context {
     pub fn new(db: DbConn, user: Option<PadlUser>) -> Option<Self> {
         let conn = Arc::new(db);
         if let Some(user) = user {
-            let id = conn.player_by_uuid(user.uuid)?.key();
-            let vids = conn.player_villages(id).into_iter().map(|v|v.key()).collect();
-            Some(Context::Authenticated( AuthenticatedContext { db: conn, user: id, villages: vids }))
+            let player = conn.player_by_uuid(user.uuid)?;
+            let vids = conn.player_villages(player.key()).into_iter().map(|v|v.key()).collect();
+            Some(Context::Authenticated( AuthenticatedContext { db: conn, user: player, villages: vids }))
         } else {
             Some(Context::Public(UnauthenticatedContext{ db: conn }))
         }
@@ -68,7 +68,7 @@ impl Context {
 
     }
     fn check_user_key(&self, key: PlayerKey) -> Result<(), ReadableInterfaceError> {
-        if key.0 == self.authenticated()?.user.0 {
+        if key.0 == self.authenticated()?.user.id {
             Ok(())
         } else {
             Err(ReadableInterfaceError::NotAllowed)
@@ -92,14 +92,14 @@ pub fn new_schema() -> Schema {
 impl Query {
     // Object Visibility: public
     fn player(ctx: &Context, player_id: Option<i32>) -> FieldResult<GqlPlayer> {
-        let key = 
         if let Some(i) = player_id {
-            PlayerKey(i as i64)
+            let key = PlayerKey(i as i64);
+            let player = ctx.db().player(key).ok_or("No such player")?;
+            Ok(GqlPlayer(player))
         } else {
-            ctx.authenticated()?.user
-        };
-        let player = ctx.db().player(key).ok_or("No such player")?;
-        Ok(GqlPlayer(player))
+            let player = ctx.authenticated()?.user.clone();
+            Ok(GqlPlayer(player))
+        }
     }
     // Object Visibility: public
     fn village(ctx: &Context, village_id: i32) -> FieldResult<GqlVillage> {
@@ -110,7 +110,7 @@ impl Query {
     fn worker(ctx: &Context, worker_id: i32) -> FieldResult<GqlWorker> {
         Ok(GqlWorker::authorized(
             ctx.db()
-                .worker_auth_by_player(WorkerKey(worker_id as i64), ctx.authenticated()?.user)
+                .worker_auth_by_player(WorkerKey(worker_id as i64), ctx.authenticated()?.user.key())
                 .ok_or("No such unit visible")?,
         ))
     }

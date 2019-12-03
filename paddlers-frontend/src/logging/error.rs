@@ -15,7 +15,7 @@ pub struct PadlError {
 #[derive(Debug, Clone, Copy)]
 pub (super) enum ErrorChannel {
     UserFacing,
-    Technical
+    Technical,
 }
 
 impl PadlError {
@@ -56,8 +56,11 @@ pub enum PadlErrorCode {
     // User
     BuildingFull(Option<BuildingType>),
     ForestTooSmall(usize),
+    NotEnoughResources,
     NotEnoughSupply,
     NotEnoughMana,
+    NotEnoughKarma,
+    NotReadyYet,
     PathBlocked,
     NoNetwork,
     // Dev only
@@ -94,10 +97,16 @@ impl fmt::Display for PadlErrorCode {
                 write!(f, "Building is full."),
             PadlErrorCode::ForestTooSmall(amount) =>
                 write!(f, "Missing {} forest flora size.", amount),
+            PadlErrorCode::NotReadyYet =>
+                write!(f, "Patience! This is not ready, yet."),
+            PadlErrorCode::NotEnoughResources =>
+                write!(f, "Need more resources."),
             PadlErrorCode::NotEnoughSupply =>
                 write!(f, "Requires more supplies."),
             PadlErrorCode::NotEnoughMana =>
                 write!(f, "Not enough mana."),
+            PadlErrorCode::NotEnoughKarma =>
+                write!(f, "Not enough karma."),
             PadlErrorCode::PathBlocked =>
                 write!(f, "The path is blocked."),
             PadlErrorCode::NoNetwork =>

@@ -48,7 +48,7 @@ pub enum UnitColor {
 
 
 #[cfg(feature = "sql_db")]
-#[derive(Debug, Queryable, Identifiable, AsChangeset)]
+#[derive(Debug, Queryable, Identifiable, AsChangeset, Clone)]
 #[table_name = "players"]
 pub struct Player {
     pub id: i64,

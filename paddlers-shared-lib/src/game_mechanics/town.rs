@@ -84,6 +84,8 @@ impl TownTileType {
                     | BuildingType::SawMill 
                     | BuildingType::PresentA
                     | BuildingType::PresentB
+                    | BuildingType::RedFlowers
+                    | BuildingType::BlueFlowers
                         => true,
                     _ => false,
                 },

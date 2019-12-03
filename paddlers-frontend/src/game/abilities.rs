@@ -42,7 +42,7 @@ impl AbilitySet {
         )
     }
     pub fn construct_ui_box(&self) -> UiBox {
-        let rows = 2;
+        let rows = 1;
         let mut ui = UiBox::new(MAX_ABILITIES / rows, rows, 15.0, 5.0);
         for i in 0..MAX_ABILITIES {
             let a = self.abilities[i];

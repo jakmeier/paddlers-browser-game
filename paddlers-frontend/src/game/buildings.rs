@@ -30,7 +30,7 @@ pub struct Building;
 
 impl Town {
     pub fn insert_new_bulding(&mut self, entities: &EntitiesRes, lazy: &LazyUpdate, pos: TileIndex, bt: BuildingType) -> Entity {
-       self. insert_bulding(entities, lazy, pos, bt, bt.attack_power(), bt.attacks_per_cycle(), bt.range(), utc_now())
+       self.insert_bulding(entities, lazy, pos, bt, bt.attack_power(), bt.attacks_per_cycle(), bt.range(), utc_now())
     }
 
     fn insert_bulding(
@@ -71,6 +71,9 @@ impl Town {
         }
 
         match bt {
+            BuildingType::Temple => {
+                builder = builder.with(UiMenu::new_shop_menu());
+            },
             BuildingType::BundlingStation => {
                 builder = builder.with(
                     EntityContainer::new(bt.capacity(), TaskType::GatherSticks)

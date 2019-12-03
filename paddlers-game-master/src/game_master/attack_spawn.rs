@@ -82,11 +82,11 @@ impl AttackSpawner {
     fn gen_color<R>(rng: &mut R) -> UnitColor 
     where R: Rng
     {
-        match rng.gen_range(0,3) {
-            0 => UnitColor::Yellow,
-            1 => UnitColor::Camo,
-            2 => UnitColor::White,
-            _ => panic!("RNG bug?")
+        match rng.gen_range(0,100) {
+            0..85  => UnitColor::Yellow,
+            85..99 => UnitColor::Camo,
+            99     => UnitColor::White,
+            _      => panic!("RNG bug?")
         }
     }
 

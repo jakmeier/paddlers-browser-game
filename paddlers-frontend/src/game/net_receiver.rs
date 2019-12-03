@@ -3,6 +3,7 @@ use crate::game::{
     units::worker_factory::create_worker_entities,
     units::workers::Worker,
     components::*,
+    town::new_temple_menu,
     };
 use crate::net::{
     NetMsg, 
@@ -69,6 +70,12 @@ impl Game<'_,'_> {
                         }
                     },
                     NetMsg::Player(player_info) => {
+                        if let Some(temple) = self.town().temple {
+                            let mut menus = self.world.write_storage::<UiMenu>();
+                            // This insert overwrites existing entries
+                            menus.insert(temple, new_temple_menu(&player_info))
+                                .map_err(|_| PadlError::dev_err(PadlErrorCode::SpecsError("Temple menu insertion failed")))?;
+                        }
                         *self.world.write_resource() = player_info;
                     },
                     NetMsg::Resources(response) => {

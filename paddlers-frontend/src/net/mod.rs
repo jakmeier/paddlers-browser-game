@@ -37,6 +37,7 @@ pub enum NetMsg {
 pub enum NetUpdateRequest {
     CompleteReload,
     WorkerTasks(i64),
+    PlayerInfo,
 }
 
 struct NetState {

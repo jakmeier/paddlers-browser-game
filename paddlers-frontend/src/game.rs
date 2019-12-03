@@ -41,7 +41,7 @@ use crate::logging::{
 };
 use movement::*;
 use quicksilver::prelude::*;
-use town::{Town, town_shop::DefaultShop};
+use town::{Town, DefaultShop};
 use town_resources::TownResources;
 use map::{GlobalMap, GlobalMapPrivateState};
 use game_event_manager::GameEvent;
@@ -88,7 +88,7 @@ impl Game<'_,'_> {
             .build();
         dispatcher.setup(&mut world);
 
-        let pm = PointerManager::init(&mut world);
+        let pm = PointerManager::init(&mut world, game_evt_send);
         let now = utc_now();
 
         Ok(Game {

@@ -49,6 +49,14 @@ impl RestApiState {
         Ok(())
     }
 
+    pub fn http_buy_prophet(&mut self, msg: ProphetPurchase) -> PadlResult<()>  {
+        let request_string = &serde_json::to_string(&msg).unwrap();
+        let promise = ajax::send("POST", &format!("{}/shop/unit/prophet", game_master_url()?), request_string);
+        let afterwards = NetUpdateRequest::PlayerInfo;
+        self.push_promise(promise, Some(afterwards));
+        Ok(())
+    }
+
     pub fn http_overwrite_tasks(&mut self, msg: TaskList) -> PadlResult<()>  {
         let request_string = &serde_json::to_string(&msg).unwrap();
         let promise = ajax::send("POST", &format!("{}/worker/overwriteTasks", game_master_url()?), request_string);
@@ -118,6 +126,8 @@ impl<'a> System<'a> for RestApiSystem {
                                         =>  crate::net::request_worker_tasks_update(unit_id),
                                     NetUpdateRequest::CompleteReload 
                                         => crate::net::request_client_state(),
+                                    NetUpdateRequest::PlayerInfo
+                                        => crate::net::request_player_update(),
                                 }
                             }
                         }

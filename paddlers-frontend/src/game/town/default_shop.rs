@@ -1,4 +1,5 @@
 use paddlers_shared_lib::api::shop::*;
+use crate::prelude::*;
 use crate::gui::{
     utils::*,
     gui_components::*,
@@ -39,17 +40,21 @@ impl DefaultShop {
             UiElement::new(b)
                 .with_image(b.sprite())
                 .with_background_color(LIGHT_BLUE)
-                .with_cost(b.cost())
+                .with_cost(b.price())
         );
     }
 
-    pub fn click(&self, mouse: impl Into<Vector>) -> Option<Grabbable> {
-        let buy_this = self.ui.click(mouse.into());
-        if let Some(ClickOutput::BuildingType(building_type)) = buy_this {
-            return Some(
-                Grabbable::NewBuilding(building_type)
-            )
-        }
-        None
+    pub fn click(&self, mouse: impl Into<Vector>) -> PadlResult<Option<(Grabbable, Option<Condition>)>> {
+        self.ui.click(mouse.into())
+            .map(|buy_this| {
+                if let Some((ClickOutput::BuildingType(building_type), condition)) = buy_this {
+                    Some((
+                        Grabbable::NewBuilding(building_type),
+                        condition
+                    ))
+                } else {
+                    None
+                }
+            })
     }
 }

@@ -1,9 +1,13 @@
 pub mod town_input;
-pub mod town_shop;
 pub mod town_render;
 pub mod task_factory;
 pub mod tiling;
 pub mod path_finding;
+mod default_shop;
+mod temple_shop;
+pub use default_shop::*;
+pub use temple_shop::*;
+
 
 use quicksilver::prelude::*;
 use crate::gui::{

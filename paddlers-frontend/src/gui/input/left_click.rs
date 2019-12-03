@@ -4,9 +4,10 @@ use crate::game::{
     components::*,
     map::{GlobalMapSharedState, MapPosition},
     movement::*,
-    town::{town_shop::DefaultShop, Town},
+    town::{DefaultShop, Town},
     town_resources::TownResources,
     units::workers::*,
+    game_event_manager::EventPool,
 };
 use crate::gui::menu::buttons::MenuButtons;
 use crate::logging::ErrorQueue;
@@ -14,8 +15,16 @@ use crate::net::game_master_api::RestApiState;
 use quicksilver::prelude::*;
 use specs::prelude::*;
 use crate::prelude::*;
-
-pub struct LeftClickSystem;
+pub struct LeftClickSystem {
+    event_pool: EventPool,
+}
+impl LeftClickSystem {
+    pub fn new(event_pool: EventPool) -> Self {
+        LeftClickSystem {
+            event_pool
+        }
+    }
+}
 
 impl<'a> System<'a> for LeftClickSystem {
     type SystemData = (
@@ -74,7 +83,8 @@ impl<'a> System<'a> for LeftClickSystem {
         let active_entity = ui_state.selected_entity;
 
         // Always visible buttons
-        buttons.click(mouse_pos, &mut *ui_state);
+        buttons.click(mouse_pos, &mut *ui_state)
+            .unwrap_or_else(|e| errq.push(e));
 
         // Demultiplex signal to views
         let in_menu_area = mouse_pos.overlaps_rectangle(&(*ui_state).menu_box_area);
@@ -83,12 +93,14 @@ impl<'a> System<'a> for LeftClickSystem {
                 if let Some(entity) = (*ui_state).selected_entity {
                     if let Some(ui_menu) = ui_menus.get_mut(entity) {
                         town.left_click_on_menu(
-                            entity, mouse_pos, ui_state, position, workers, containers, ui_menu, lazy, errq, rest,
+                            entity, mouse_pos, ui_state, position, workers, 
+                            containers, ui_menu, lazy, &*resources, errq, rest, &self.event_pool,
                         );
                     }
                 }
                 else {
-                    Town::click_default_shop(mouse_pos, ui_state, shop, resources);
+                    Town::click_default_shop(mouse_pos, ui_state, shop, resources)
+                        .unwrap_or_else(|e| errq.push(e));
                 }
             }
             (UiView::Map, true) => {

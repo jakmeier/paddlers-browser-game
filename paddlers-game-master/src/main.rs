@@ -1,4 +1,5 @@
 #![feature(result_map_or_else)]
+#![feature(exclusive_range_pattern)]
 extern crate env_logger;
 
 mod db;

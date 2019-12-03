@@ -6,7 +6,7 @@ impl DB {
     fn check_prophet_conditions(&self, p: &Player) -> Result<Price, String> {
         let karma = p.karma;
         let prophets_alive = self.player_prophets_count(p.uuid);
-        let villlages_owned = self.player_village_count(p.uuid);
+        let villlages_owned = self.player_village_count(p.key());
 
         let total_prophets = prophets_alive + villlages_owned;
         if prophets_allowed(karma) <= total_prophets {

@@ -1,5 +1,7 @@
 query PlayerQuery {
     player {
         karma
+        villageCount
+        prophetCount
     }
 }

@@ -2,6 +2,7 @@ use crate::api::keys::VillageKey;
 use crate::models::*;
 use serde::{Serialize, Deserialize};
 
+#[derive(Debug, Clone)]
 pub struct Price(pub Vec<(ResourceType, i64)>);
 pub trait Cost {
     fn cost(&self) -> Vec<(ResourceType, i64)>;

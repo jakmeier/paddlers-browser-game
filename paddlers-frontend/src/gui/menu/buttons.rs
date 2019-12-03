@@ -1,5 +1,6 @@
 use quicksilver::prelude::*;
 use specs::prelude::*;
+use crate::prelude::*;
 use crate::gui::{
     sprites::*,
     gui_components::*,
@@ -46,14 +47,15 @@ impl MenuButtons {
             SpriteSet::Simple(hover),
         )
     }
-    pub fn click(&self, mouse: impl Into<Vector>, ui_state: &mut UiState) {
-        if let Some(ClickOutput::MenuButtonAction(action)) = self.ui.click(mouse.into()) {
+    pub fn click(&self, mouse: impl Into<Vector>, ui_state: &mut UiState) -> PadlResult<()> {
+        if let Some((ClickOutput::MenuButtonAction(action), _)) = self.ui.click(mouse.into())? {
             match action {
                 MenuButtonAction::SwitchToView(v) => {
                     ui_state.set_view(v);
                 }
             }
         }
+        Ok(())
     }
 }
 

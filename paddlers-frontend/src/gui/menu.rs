@@ -9,11 +9,12 @@ use crate::game::{
     fight::{Health, Aura},
     components::*,
     forestry::ForestComponent,
-    town::town_shop::DefaultShop,
+    town::DefaultShop,
     map::VillageMetaInfo,
+    player_info::PlayerInfo,
 };
 use crate::gui::{
-    sprites::{SpriteIndex, SingleSprite},
+    sprites::{SpriteIndex, SingleSprite, Sprites},
     z::*,
     input::UiView,
     ui_state::UiState,
@@ -90,7 +91,7 @@ impl Game<'_, '_> {
                 self.render_entity_details(window, area, id)?;
             },
             None => {
-                self.render_shop(window, area)?;
+                self.render_default_shop(window, area)?;
             },
         }
         Ok(())
@@ -129,6 +130,7 @@ impl Game<'_, '_> {
     }
 
     fn draw_entity_details_table(&mut self, window: &mut Window, e: Entity, area: &Rectangle) -> Result<()> {
+        let mut area = *area;
         let mut table = vec![];
 
         let villages = self.world.read_storage::<VillageMetaInfo>();
@@ -138,12 +140,6 @@ impl Game<'_, '_> {
             }
         }
 
-        if let Some(temple) = self.town().temple {
-            if e  == temple{
-                let karma = self.player().karma;
-                table.extend(temple_details(karma));
-            }
-        }
 
         let health = self.world.read_storage::<Health>();
         if let Some(health) = health.get(e) {
@@ -177,13 +173,14 @@ impl Game<'_, '_> {
             );
         }
 
-        let mut ui_area = self.world.write_storage::<UiMenu>();
-        if let Some(ui) = ui_area.get_mut(e) {
-            table.push(
-                TableRow::InteractiveArea(&mut ui.ui)
-            );
+        let temple = self.town().temple;
+        if let Some(temple) = temple {
+            if e  == temple {
+                let player_info = self.player();
+                table.extend(temple_details(&player_info));
+            }
         }
-
+        
         let effects = self.world.read_storage::<StatusEffects>();
         if let Some(ef) = effects.get(e) {
             let list = ef.menu_table_infos();
@@ -192,30 +189,44 @@ impl Game<'_, '_> {
                 table.extend(list);
             }
         }
-
+        
+        let mut ui_area = self.world.write_storage::<UiMenu>();
+        if let Some(ui) = ui_area.get_mut(e) {
+            Self::draw_shop_prices(window, &mut area, &mut ui.ui, self.sprites.as_mut().unwrap(), &mut self.bold_font)?;
+            table.push(
+                TableRow::InteractiveArea(&mut ui.ui)
+            );
+        }
+        
         draw_table(window, self.sprites.as_mut().unwrap(), &mut table, 
-            &area, &mut self.font, 40.0, Z_MENU_TEXT, self.world.read_resource::<Now>().0)?;
+        &area, &mut self.font, 40.0, Z_MENU_TEXT, self.world.read_resource::<Now>().0)?;
         Ok(())
     }
-
-    pub fn render_shop(&mut self, window: &mut Window, area: &Rectangle) -> Result<()> {
+    
+    fn render_default_shop(&mut self, window: &mut Window, area: &Rectangle) -> Result<()> {
         let mut table = vec![];
+        let mut area = *area;
         table.push(forest_details(self.town().forest_size(), self.town().forest_usage()));
         table.push(total_aura_details(self.town().ambience()));
-
-        let mut shop = self.world.write_resource::<DefaultShop>();
-        let sprites = &mut self.sprites;
-        let price_tag_h = 50.0;
-
+        
+        let shop = &mut self.world.write_resource::<DefaultShop>();
+        Self::draw_shop_prices(window, &mut area, &mut shop.ui, self.sprites.as_mut().unwrap(), &mut self.bold_font)?;
 
         table.push(
-            TableRow::InteractiveArea(&mut (*shop).ui)
+            TableRow::InteractiveArea(&mut shop.ui)
         );
 
+        draw_table(window, self.sprites.as_mut().unwrap(), &mut table, 
+            &area, &mut self.font, 60.0, Z_MENU_TEXT, self.world.read_resource::<Now>().0)
+    }
+    
+    fn draw_shop_prices(window: &mut Window, area: &mut Rectangle, ui: &mut UiBox,
+        sprites: &mut Sprites, font: &mut Asset<Font>,
+    ) -> Result<()> {
+        let price_tag_h = 50.0;
         let (shop_area, price_tag_area) = area.cut_horizontal(area.height() - price_tag_h);
-        draw_table(window, sprites.as_mut().unwrap(), &mut table, 
-            &shop_area, &mut self.font, 60.0, Z_MENU_TEXT, self.world.read_resource::<Now>().0)?;
-        (*shop).ui.draw_hover_info(window, sprites.as_mut().unwrap(), &mut self.bold_font, &price_tag_area)
+        *area = shop_area;
+        ui.draw_hover_info(window, sprites, font, &price_tag_area)
     }
 
     pub fn render_resources(&mut self, window: &mut Window, area: &Rectangle) -> Result<()> {
@@ -268,12 +279,18 @@ fn village_details<'a>(info: &VillageMetaInfo) -> Vec<TableRow<'a>> {
     let row1 = TableRow::Text(text);
     vec![row0, row1]
 }
-fn temple_details<'a>(karma: i64) -> Vec<TableRow<'a>> {
-    let row0 = TableRow::Text("TEMPLE".to_owned());
-    let text = format!("{} Karma", karma);
+fn temple_details<'a>(player: &PlayerInfo) -> Vec<TableRow<'a>> {
+    let karma = player.karma();
     let row1 = TableRow::TextWithImage(
-        text,
+        format!("{} Karma", karma),
         SpriteIndex::Simple(SingleSprite::Karma),
     );
-    vec![row0, row1]
+    let prophets = player.prophets_available();
+    let max_prophets = player.prophets_limit();
+    
+    let row2 = TableRow::TextWithImage(
+        format!("{} / {}", prophets, max_prophets),
+        SpriteIndex::Simple(SingleSprite::Prophet),
+    );
+    vec![row1, row2]
 }

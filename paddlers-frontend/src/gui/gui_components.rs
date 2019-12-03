@@ -4,8 +4,10 @@ mod ui_box;
 pub use ui_box::*;
 
 use paddlers_shared_lib::prelude::AbilityType;
+use paddlers_shared_lib::api::shop::Price;
 use crate::gui::{sprites::*, utils::*, menu::buttons::MenuButtonAction, z::*};
 use crate::prelude::*;
+use crate::game::game_event_manager::GameEvent;
 use quicksilver::prelude::*;
 
 pub enum TableRow<'a> {
@@ -22,18 +24,24 @@ pub trait InteractiveTableArea {
     /// Draw the area on a specified area
     fn draw(&mut self, window: &mut Window, sprites: &mut Sprites, now: Timestamp, area: &Rectangle) -> Result<()>;
     /// Check if the mouse hits somthing on the area
-    fn click(&self, mouse: Vector) -> Option<ClickOutput>;
+    fn click(&self, mouse: Vector) -> PadlResult<Option<(ClickOutput, Option<Condition>)>>;
     /// Remove one of the clickable options
     fn remove(&mut self, output: ClickOutput);
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
-/// Elements than can be produces by a lick in a interactive area
+#[derive(Clone, Debug, PartialEq)]
+/// Elements than can be produces by a click in a interactive area
 pub enum ClickOutput {
     Entity(specs::Entity),
     BuildingType(BuildingType),
     Ability(AbilityType),
     MenuButtonAction(MenuButtonAction),
+    Event(GameEvent),
+}
+#[derive(Clone, Debug)]
+/// Represents a checkable condition. Used to check it later when the state is not available inside a system, for example.
+pub enum Condition {
+    HasResources(Price)
 }
 
 pub fn draw_table(
@@ -203,5 +211,10 @@ impl From<AbilityType> for ClickOutput {
 impl From<MenuButtonAction> for ClickOutput {
     fn from(a: MenuButtonAction) -> Self {
         ClickOutput::MenuButtonAction(a)
+    }
+}
+impl From<GameEvent> for ClickOutput {
+    fn from(evt: GameEvent) -> Self {
+        ClickOutput::Event(evt)
     }
 }

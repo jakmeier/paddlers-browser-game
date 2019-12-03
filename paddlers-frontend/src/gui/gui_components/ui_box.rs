@@ -8,7 +8,7 @@ pub struct UiElement {
     display: RenderVariant,
     // Extend with enum and more variants once necessary (for overlay and hover info)
     pub overlay: Option<(Timestamp, Timestamp)>,
-    hover_info: Option<Vec<(ResourceType, i64)>>,
+    condition: Option<Condition>,
     on_click: Option<ClickOutput>,
 }
 #[derive(Clone, Debug)]
@@ -85,11 +85,12 @@ impl InteractiveTableArea for UiBox {
 
         Ok(())
     }
-    fn click(&self, mouse: Vector) -> Option<ClickOutput> {
-        self.find_element_under_mouse(mouse)
-            .filter(|el| el.is_active())
-            .and_then(|el| el.on_click.clone())
-            .map(Into::into)
+    fn click(&self, mouse: Vector) -> PadlResult<Option<(ClickOutput, Option<Condition>)>> {
+        if let Some(el) = self.find_element_under_mouse(mouse) {
+            el.click()
+        } else {
+            Ok(None)
+        }
     }
     fn remove(&mut self, output: ClickOutput) {
         self.remove_with_on_click(output);
@@ -144,8 +145,8 @@ impl UiBox {
     ) -> Result<()> {
         let mouse = window.mouse().pos();
         if let Some(el) = self.find_element_under_mouse(mouse) {
-            if let Some(cost) = &el.hover_info {
-                draw_resources(window, sprites, &cost, area, font, Z_MENU_RESOURCES)?;
+            if let Some(Condition::HasResources(cost)) = &el.condition {
+                draw_resources(window, sprites, &cost.0, area, font, Z_MENU_RESOURCES)?;
             }
         }
         Ok(())
@@ -194,21 +195,27 @@ impl UiElement {
             }
         }
     }
-    fn is_active(&self) -> bool {
+    fn click(&self) -> PadlResult<Option<(ClickOutput, Option<Condition>)>> {
+        self.is_active()?;
+        Ok(
+            self.on_click.as_ref().map(|c| (c.clone().into(), self.condition.clone()) )
+        )
+    }
+    fn is_active(&self) -> PadlResult<()> {
         if let Some((start, end)) = self.overlay {
             let now = utc_now();
             if start < now && now < end {
-                return false;
+                return PadlErrorCode::NotReadyYet.usr();
             }
         }
-        true
+        Ok(())
     }
 
     pub fn new<T: Into<ClickOutput> + Clone> (on_click: T) -> Self {
         UiElement {
             display: RenderVariant::Hide,
             overlay: None,
-            hover_info: None,
+            condition: None,
             on_click: Some(on_click.into()),
         }
     }
@@ -233,8 +240,8 @@ impl UiElement {
         }
         self
     }
-    pub fn with_cost(mut self, cost: Vec<(ResourceType, i64)>) -> Self {
-        self.hover_info = Some(cost);
+    pub fn with_cost(mut self, cost: Price) -> Self {
+        self.condition = Some(Condition::HasResources(cost));
         self
     }
 
@@ -242,7 +249,7 @@ impl UiElement {
         UiElement {
             display: RenderVariant::Hide,
             overlay: None,
-            hover_info: None,
+            condition: None,
             on_click: None,
         }
     }

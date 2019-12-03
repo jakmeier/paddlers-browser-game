@@ -8,9 +8,11 @@ pub use super::movement::{Moving, Position};
 pub use super::status_effects::StatusEffects;
 pub use crate::gui::{animation::AnimationState, input::Clickable, render::Renderable};
 use crate::gui::{
-    gui_components::{UiBox, UiElement},
+    gui_components::{UiBox, UiElement, ClickOutput},
     utils::*,
+    sprites::SpriteSet,
 };
+use paddlers_shared_lib::api::shop::Price;
 use crate::prelude::*;
 use specs::prelude::*;
 
@@ -129,5 +131,24 @@ impl UiMenu {
         UiMenu {
             ui: UiBox::new(3, 3, 0.0, 1.0),
         }
+    }
+    pub fn new_shop_menu() -> Self {
+        UiMenu {
+            ui: UiBox::new(3, 1, 0.0, 1.0),
+        }
+    }
+    pub fn with_shop_item<T: Into<ClickOutput> + Clone>(
+        mut self, 
+        c: T, 
+        sprite: SpriteSet,
+        cost: Price,
+    ) -> Self {
+        self.ui.add(
+            UiElement::new(c)
+                .with_image(sprite)
+                .with_background_color(LIGHT_BLUE)
+                .with_cost(cost)
+        );
+        self
     }
 }
