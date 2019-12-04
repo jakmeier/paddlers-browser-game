@@ -8,7 +8,7 @@ impl DB {
         let prophets_alive = self.player_prophets_count(p.uuid);
         let villlages_owned = self.player_village_count(p.key());
 
-        let total_prophets = prophets_alive + villlages_owned;
+        let total_prophets = prophets_alive + villlages_owned - 1;
         if prophets_allowed(karma) <= total_prophets {
             return Err("Not enough Karma".to_owned());
         }
@@ -17,8 +17,8 @@ impl DB {
 
     pub fn try_buy_prophet(&self, village: VillageKey, addrs: &ActorAddresses, p: &Player) -> StringErr {
         self.check_prophet_conditions(p)
-            .map(|cost| self.try_spend(&cost, village))
-            .and_then(|_| {
+            .and_then(|cost| self.try_spend(&cost, village))
+            .and_then(|()| {
                 addrs
                     .db_actor
                     .try_send(DeferredDbStatement::NewProphet(village))
