@@ -35,13 +35,13 @@ pub (super) fn http_read_buildings(village_id: VillageKey) -> PadlResult<impl Fu
     )
 }
 
-pub (super) fn http_read_resources(village_id: VillageKey) -> PadlResult<impl Future<Output = PadlResult<ResourcesResponse>>> {
-    let request_body = ResourcesQuery::build_query(resources_query::Variables{ village_id: village_id.num() });
+pub (super) fn http_read_resources(village_id: VillageKey) -> PadlResult<impl Future<Output = PadlResult<VolatileVillageInfoResponse>>> {
+    let request_body = VolatileVillageInfoQuery::build_query(volatile_village_info_query::Variables{ village_id: village_id.num() });
     let request_string = &serde_json::to_string(&request_body)?;
     let promise = ajax::send("POST", &graphql_url()?, request_string)?;
     Ok(
         promise.map(|x| {
-            let response: ResourcesResponse = 
+            let response: VolatileVillageInfoResponse = 
                 serde_json::from_str(&x?)?;
             Ok(response)
         })

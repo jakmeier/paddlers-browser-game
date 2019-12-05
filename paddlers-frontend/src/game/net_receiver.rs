@@ -1,3 +1,4 @@
+use std::convert::TryInto;
 use crate::prelude::*;
 use crate::game::{
     units::worker_factory::create_worker_entities,
@@ -75,11 +76,13 @@ impl Game<'_,'_> {
                             // This insert overwrites existing entries
                             menus.insert(temple, new_temple_menu(&player_info))
                                 .map_err(|_| PadlError::dev_err(PadlErrorCode::SpecsError("Temple menu insertion failed")))?;
-                        }
-                        *self.world.write_resource() = player_info;
-                    },
-                    NetMsg::Resources(response) => {
-                        if let Some(data) = response.data {
+                            }
+                            *self.world.write_resource() = player_info;
+                        },
+                        NetMsg::VillageInfo(response) => {
+                            if let Some(data) = response.data {
+                            self.town_mut().faith = data.village.faith.try_into()
+                                .map_err(|_| PadlError::dev_err(PadlErrorCode::InvalidGraphQLData("Faith does not fit u8")))?;
                             self.resources.update(data);
                         }
                         else {

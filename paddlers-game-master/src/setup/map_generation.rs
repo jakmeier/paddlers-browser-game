@@ -127,6 +127,7 @@ impl DB {
                         x,
                         y,
                         player_id: Some(pid.num()),
+                        faith: None, // Start with default value
                     };
                     return Ok(self.insert_villages(&[v])[0]);
                 }
@@ -156,6 +157,7 @@ impl DB {
                     x,
                     y,
                     player_id: None,
+                    faith: None, // Start with default value
                 };
                 self.insert_villages(&[v]);
             }

@@ -271,6 +271,7 @@ pub struct Village {
     pub y: f32,
     pub stream_id: i64,
     pub player_id: Option<i64>,
+    pub faith: i16,
 }
 
 #[derive(Insertable, Debug)]
@@ -281,6 +282,7 @@ pub struct NewVillage {
     pub y: f32,
     pub stream_id: i64,
     pub player_id: Option<i64>,
+    pub faith: Option<i16>,
 }
 
 #[derive(Debug, Clone, Copy, Queryable, AsChangeset)]

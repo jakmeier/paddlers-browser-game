@@ -1,7 +1,8 @@
-query ResourcesQuery($village_id: Int!){
+query VolatileVillageInfoQuery($village_id: Int!){
   village(villageId: $village_id) {
     sticks
     feathers
     logs
+    faith
   }
 }

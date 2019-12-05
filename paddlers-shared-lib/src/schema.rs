@@ -1,5 +1,3 @@
-#![allow(unused_imports)]
-
 table! {
     use diesel::sql_types::*;
     use crate::models::*;
@@ -136,6 +134,7 @@ table! {
         y -> Float4,
         stream_id -> Int8,
         player_id -> Nullable<Int8>,
+        faith -> Int2,
     }
 }
 

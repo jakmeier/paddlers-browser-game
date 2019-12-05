@@ -89,6 +89,10 @@ impl GqlVillage {
     fn y(&self) -> f64 {
         self.0.y as f64
     }
+    /// Field Visibility: public
+    fn faith(&self) -> i32 {
+        self.0.faith as i32
+    }
     /// Field Visibility: user
     fn sticks(&self, ctx: &Context) -> FieldResult<i32> {
         ctx.check_village_key(self.0.key())?;

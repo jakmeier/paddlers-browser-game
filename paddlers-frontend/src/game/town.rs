@@ -30,6 +30,7 @@ pub struct Town {
     // Could possibly be added to TownState, depends on further developments of the backend.
     pub total_ambience: i64,
     pub temple: Option<specs::Entity>,
+    pub faith: u8,
 }
 impl Default for Town {
     fn default() -> Self {
@@ -50,6 +51,7 @@ impl Town {
             ul: ul,
             total_ambience: 0,
             temple: None,
+            faith: 100,
         }
     }
 

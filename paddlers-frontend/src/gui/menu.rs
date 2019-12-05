@@ -206,6 +206,7 @@ impl Game<'_, '_> {
     fn render_default_shop(&mut self, window: &mut Window, area: &Rectangle) -> Result<()> {
         let mut table = vec![];
         let mut area = *area;
+        table.push(faith_details(self.town().faith));
         table.push(forest_details(self.town().forest_size(), self.town().forest_usage()));
         table.push(total_aura_details(self.town().ambience()));
         
@@ -293,4 +294,8 @@ fn temple_details<'a>(player: &PlayerInfo) -> Vec<TableRow<'a>> {
         SpriteIndex::Simple(SingleSprite::Prophet),
     );
     vec![row1, row2]
+}
+fn faith_details<'a>(faith: u8) -> TableRow<'a> {
+    let text = format!("{}% faith of Paddlers", faith);
+    TableRow::Text(text)
 }

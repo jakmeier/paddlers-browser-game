@@ -1,6 +1,6 @@
 use crate::prelude::*;
 use paddlers_shared_lib::api::shop::*;
-use crate::net::graphql::resources_query;
+use crate::net::graphql::volatile_village_info_query;
 
 #[derive(Default,Debug, Clone, Copy)]
 pub struct TownResources {
@@ -24,7 +24,7 @@ impl TownResources {
             ResourceType::Logs=> &mut self.logs,
         }
     }
-    pub fn update(&mut self, data: resources_query::ResponseData) {
+    pub fn update(&mut self, data: volatile_village_info_query::ResponseData) {
         self.feathers = data.village.feathers;
         self.sticks = data.village.sticks;
         self.logs = data.village.logs;

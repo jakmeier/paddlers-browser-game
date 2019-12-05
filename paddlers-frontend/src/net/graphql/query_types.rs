@@ -57,10 +57,10 @@ pub type BuildingsResponse = Response<buildings_query::ResponseData>;
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "api/schema.json",
-    query_path = "api/queries/resources_query.graphql",
+    query_path = "api/queries/volatile_village_info_query.graphql",
 )]
-pub struct ResourcesQuery;
-pub type ResourcesResponse = Response<resources_query::ResponseData>;
+pub struct VolatileVillageInfoQuery;
+pub type VolatileVillageInfoResponse = Response<volatile_village_info_query::ResponseData>;
 
 #[derive(GraphQLQuery)]
 #[graphql(

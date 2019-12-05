@@ -55,7 +55,7 @@ impl GraphQlState {
                         .expect("Query building error")
                 ).map(
                     |response|
-                    Ok(NetMsg::Resources(response?))
+                    Ok(NetMsg::VillageInfo(response?))
                 )
             )
     }

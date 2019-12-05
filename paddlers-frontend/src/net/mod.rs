@@ -29,7 +29,7 @@ pub enum NetMsg {
     Error(PadlError),
     Map(MapResponse, i32, i32),
     Player(PlayerInfo),
-    Resources(ResourcesResponse),
+    VillageInfo(VolatileVillageInfoResponse),
     UpdateWorkerTasks(WorkerTasksResponse),
     Workers(WorkerResponse),
 }
