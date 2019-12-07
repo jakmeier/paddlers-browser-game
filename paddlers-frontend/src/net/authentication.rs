@@ -9,3 +9,10 @@ pub fn read_jwt() -> Option<String> {
     println!("Encoded JWT: {:?}", jwt);
     jwt.into_string()
 }
+
+pub fn read_jwt_preferred_username() -> Option<String> {
+    let name = js!{
+        return window.keycloak.tokenParsed.preferred_username;
+    };
+    name.into_string()
+}

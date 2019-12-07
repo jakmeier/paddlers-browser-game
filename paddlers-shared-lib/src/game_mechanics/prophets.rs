@@ -1,6 +1,4 @@
-use crate::api::keys::VillageKey;
 use crate::models::*;
-use serde::{Serialize, Deserialize};
 use crate::api::shop::Price;
 
 pub fn prophets_allowed(karma: i64) -> i64 {

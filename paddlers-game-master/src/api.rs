@@ -7,6 +7,7 @@ use paddlers_shared_lib::api::{
     shop::{BuildingPurchase, BuildingDeletion, ProphetPurchase},
     tasks::{TaskList},
     keys::{VillageKey, WorkerKey},
+    PlayerInitData,
 };
 use paddlers_shared_lib::sql::GameDB;
 use crate::authentication::Authentication;
@@ -117,9 +118,10 @@ pub (super) fn overwrite_tasks(
 pub (super) fn new_player(
     pool: web::Data<crate::db::Pool>, 
     auth: Authentication,
+    body: web::Json<PlayerInitData>,
 )-> impl Responder {
     let db: crate::db::DB = pool.get_ref().into();
-    if let Err(msg) = initialize_new_player_account(&db, auth.user.uuid) {
+    if let Err(msg) = initialize_new_player_account(&db, auth.user.uuid, &body) {
         HttpResponse::InternalServerError().body(msg)
     } else {
         HttpResponse::Ok().into()

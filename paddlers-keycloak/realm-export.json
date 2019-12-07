@@ -1637,7 +1637,7 @@
         },
         {
           "authenticator": "registration-profile-action",
-          "requirement": "REQUIRED",
+          "requirement": "DISABLED",
           "priority": 40,
           "userSetupAllowed": false,
           "autheticatorFlow": false

@@ -12,12 +12,12 @@ use diesel::result::{Error, DatabaseErrorKind};
 use paddlers_shared_lib::{
     prelude::*,
     sql_db::run_db_migrations,
+    api::PlayerInitData,
 };
 use crate::db::DB;
 
-pub (crate) fn initialize_new_player_account(db: &DB, uuid: uuid::Uuid) -> Result<(), String> {
-    // TODO: Player display name
-    let result = db.new_player("Player Display Name (TODO)".to_owned(), uuid);
+pub (crate) fn initialize_new_player_account(db: &DB, uuid: uuid::Uuid, info: &PlayerInitData) -> Result<(), String> {
+    let result = db.new_player(info.display_name.clone(), uuid);
     if let Err(Error::DatabaseError(DatabaseErrorKind::UniqueViolation, _info)) = result {
         println!("Warning: Tried to create player account that already exists");
         Ok(())

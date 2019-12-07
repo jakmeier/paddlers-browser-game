@@ -429,8 +429,8 @@
                 <staticMaxAge>2592000</staticMaxAge>
                 <cacheThemes>true</cacheThemes>
                 <cacheTemplates>true</cacheTemplates>
-                <welcomeTheme>paddlers</welcomeTheme>
-                <default>paddlers</default>
+                <welcomeTheme>keycloak</welcomeTheme>
+                <default>keycloak</default>
                 <dir>${jboss.home.dir}/themes</dir>
                 <modules>
                     <module>ch.paddlers.login.themes</module>

@@ -2,7 +2,7 @@ use std::collections::VecDeque;
 use std::sync::{Mutex,mpsc::Sender, atomic::AtomicBool};
 use crate::prelude::*;
 use crate::logging::AsyncErr;
-use super::{ajax, ajax::AjaxError, url::*, NetUpdateRequest};
+use super::{ajax, ajax::AjaxError, url::*, NetUpdateRequest, authentication::read_jwt_preferred_username};
 use specs::prelude::*;
 use futures_util::future::FutureExt;
 use stdweb::PromiseFuture;
@@ -11,6 +11,7 @@ use paddlers_shared_lib::api::{
     shop::*,
     tasks::TaskList,
     statistics::*,
+    PlayerInitData,
 };
 
 static SENT_PLAYER_CREATION: AtomicBool = AtomicBool::new(false);
@@ -75,7 +76,9 @@ impl RestApiState {
 
     pub fn http_create_player(&mut self) -> PadlResult<()>  {
         if !SENT_PLAYER_CREATION.load(std::sync::atomic::Ordering::Relaxed) {
-            let request_string = "{}";
+            let display_name = read_jwt_preferred_username().unwrap_or("Unnamed Player".to_owned());
+            let msg = PlayerInitData { display_name };
+            let request_string = &serde_json::to_string(&msg).unwrap();
             let promise = ajax::send("POST", &format!("{}/player/create", game_master_url()?), request_string);
             self.push_promise(promise, Some(NetUpdateRequest::CompleteReload));
             SENT_PLAYER_CREATION.store(true, std::sync::atomic::Ordering::Relaxed)
