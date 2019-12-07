@@ -54,7 +54,7 @@ pub struct Player {
     pub id: i64,
     pub uuid: uuid::Uuid,
     pub karma: i64,
-    pub display_name: Option<String>,
+    pub display_name: String,
 }
 
 #[cfg(feature = "sql_db")]
@@ -63,7 +63,7 @@ pub struct Player {
 pub struct NewPlayer {
     pub uuid: uuid::Uuid,
     pub karma: i64,
-    pub display_name: Option<String>,
+    pub display_name: String,
 }
 
 #[cfg(feature = "sql_db")]

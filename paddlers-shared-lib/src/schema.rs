@@ -83,7 +83,7 @@ table! {
         id -> Int8,
         uuid -> Uuid,
         karma -> Int8,
-        display_name -> Nullable<Varchar>,
+        display_name -> Varchar,
     }
 }
 

@@ -47,12 +47,11 @@ pub struct GqlWorker(pub paddlers_shared_lib::models::Worker, PrivacyGuard);
 #[juniper::object (Context = Context)]
 impl GqlPlayer {
     /// Field Visibility: public
-    fn display_name(&self) -> Option<&String> {
-        self.0.display_name.as_ref()
+    fn display_name(&self) -> &str {
+        &self.0.display_name
     }
-    /// Field Visibility: user
+    /// Field Visibility: public
     fn karma(&self, ctx: &Context) -> FieldResult<i32> {
-        ctx.check_user_key(self.0.key())?;
         Ok(self.0.karma as i32)
     }
     /// Field Visibility: public
@@ -147,6 +146,18 @@ impl GqlVillage {
             .into_iter()
             .map(GqlAttack::authorized)
             .collect())
+    }
+    /// Field Visibility: public
+    fn owner(&self, ctx: &Context) -> FieldResult<Option<GqlPlayer>> {
+        Ok(
+            if let Some(owner) = self.0.player_id {
+                let key = PlayerKey(owner as i64);
+                let player = ctx.db().player(key).ok_or("Invalid owner key on village")?;
+                Some(GqlPlayer(player))
+            } else {
+                None
+            }
+        )
     }
 }
 

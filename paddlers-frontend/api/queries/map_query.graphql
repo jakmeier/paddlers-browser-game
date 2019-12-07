@@ -6,6 +6,10 @@ query MapQuery($lowX: Int!, $highX: Int!){
         villages {
             x
             y
+            owner {
+                displayName
+                karma
+            }
         }
     }
 }

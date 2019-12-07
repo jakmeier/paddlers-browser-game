@@ -6,7 +6,7 @@ use crate::buildings::BuildingFactory;
 impl DB {
     pub (super) fn new_player(&self, display_name: String, uuid: uuid::Uuid) -> QueryResult<Player> {
         let player = NewPlayer {
-            display_name: Some(display_name),
+            display_name: display_name,
             karma: 0,
             uuid
         };

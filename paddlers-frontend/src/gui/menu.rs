@@ -135,7 +135,7 @@ impl Game<'_, '_> {
 
         let villages = self.world.read_storage::<VillageMetaInfo>();
         if let Some(v) = villages.get(e) {
-            for row in village_details(v).into_iter() {
+            for row in v.village_details().into_iter() {
                 table.push(row);
             }
         }
@@ -273,12 +273,6 @@ fn total_aura_details<'a>(aura_size: i64,) -> TableRow<'a> {
         text,
         SpriteIndex::Simple(SingleSprite::Ambience),
     )
-}
-fn village_details<'a>(info: &VillageMetaInfo) -> Vec<TableRow<'a>> {
-    let row0 = TableRow::Text("Village".to_owned());
-    let text = format!("<{}:{}>", info.coordinates.0, info.coordinates.1);
-    let row1 = TableRow::Text(text);
-    vec![row0, row1]
 }
 fn temple_details<'a>(player: &PlayerInfo) -> Vec<TableRow<'a>> {
     let karma = player.karma();
