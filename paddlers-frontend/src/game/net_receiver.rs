@@ -8,6 +8,7 @@ use crate::game::{
     };
 use crate::net::{
     NetMsg, 
+    graphql::query_types::HobosQueryUnitColor,
 };
 
 use specs::prelude::*;
@@ -49,7 +50,15 @@ impl Game<'_,'_> {
                         else {
                             println!("No buildings available");
                         }
-                    }
+                    },
+                    NetMsg::Hobos(hobos) => {
+                        let idle_prophets = hobos
+                            .iter()
+                            .filter(|h| h.color == Some(HobosQueryUnitColor::PROPHET))
+                            .filter(|h| h.idle)
+                            .fold(0, |acc,_| acc + 1);
+                        self.town_mut().idle_prophets = idle_prophets;
+                    },
                     NetMsg::Map(response, min, max) => {
                         if let Some(data) = response.data {
                             let streams = data.map.streams.iter()

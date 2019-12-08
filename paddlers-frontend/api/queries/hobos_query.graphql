@@ -1,0 +1,8 @@
+query HobosQuery($village_id: Int!) {
+  village(villageId: $village_id) {
+    hobos {
+      color
+      idle
+    }
+  }
+}

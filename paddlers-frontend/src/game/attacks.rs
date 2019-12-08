@@ -18,7 +18,8 @@ impl Game<'_,'_> {
             to: target,
             units: vec![prophet],
         };
-        self.rest().http_send_attack(atk)
-        // TODO: Update available town prophets
+        self.rest().http_send_attack(atk)?;
+        self.town_mut().idle_prophets -= 1;
+        Ok(())
     }
 }

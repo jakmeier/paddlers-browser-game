@@ -132,6 +132,17 @@ impl WorkerTaskEx {
         })
     }
 }
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "api/schema.json",
+    query_path = "api/queries/hobos_query.graphql",
+)]
+pub struct HobosQuery;
+pub type HobosQueryRawResponse = Response<hobos_query::ResponseData>;
+pub type HobosQueryResponse = Vec<hobos_query::HobosQueryVillageHobos>;
+pub type HobosQueryUnitColor = hobos_query::UnitColor;
+
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "api/schema.json",

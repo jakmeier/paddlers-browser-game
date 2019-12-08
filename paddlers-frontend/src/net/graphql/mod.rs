@@ -90,6 +90,18 @@ impl GraphQlState {
                 )
             )
     }
+    pub (super) fn hobos_query(&self) -> PadlResult<impl Future<Output = PadlResult<NetMsg>>> {
+        current_village_async()
+            .map(|fut|
+                fut.and_then(move |village: VillageKey|
+                    http_read_hobos(village)
+                        .expect("Query building error")
+                ).map(
+                    |response|
+                    Ok(NetMsg::Hobos(response?))
+                )
+            )
+    }
     pub (super) fn worker_tasks_query(&self, unit_id: i64) -> PadlResult<impl Future<Output = PadlResult<NetMsg>>> {
         let fp = http_read_worker_tasks(unit_id)?;
         Ok(

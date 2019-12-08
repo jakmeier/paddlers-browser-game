@@ -159,6 +159,17 @@ impl GqlVillage {
             }
         )
     }
+    /// Field Visibility: user
+    fn hobos(&self, ctx: &Context) -> FieldResult<Vec<GqlHobo>> {
+        ctx.check_village_key(self.0.key())?; 
+        Ok(
+            ctx.db()
+                .village_hobos(self.0.key())
+                .into_iter()
+                .map(GqlHobo)
+                .collect()
+        )
+    }
 }
 
 #[juniper::object (Context = Context)]
@@ -188,6 +199,10 @@ impl GqlHobo {
             .into_iter()
             .map(GqlEffect::authorized )
             .collect()
+    }
+    /// Field Visibility: public
+    pub fn idle(&self, ctx: &Context) -> bool {
+        !ctx.db().hobo_is_attacking(self.0.key())
     }
 }
 

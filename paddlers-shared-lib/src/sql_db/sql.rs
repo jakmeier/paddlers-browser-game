@@ -264,6 +264,15 @@ pub trait GameDB {
             .expect("Error loading data");
         results
     }
+    fn village_hobos(&self, v: VillageKey) -> Vec<Hobo> {
+        let results = hobos::table
+            .filter(hobos::home.eq(v.num()))
+            .select(hobos::all_columns)
+            .limit(500)
+            .load::<Hobo>(self.dbconn())
+            .expect("Error loading data");
+        results
+    }
     fn effects_on_hobo(&self, hobo: HoboKey) -> Vec<Effect> {
         let results = effects::table
             .filter(effects::hobo_id.eq(hobo.num()))
@@ -271,6 +280,17 @@ pub trait GameDB {
             .load::<Effect>(self.dbconn())
             .expect("Error loading data");
         results
+    }
+    fn hobo_is_attacking(&self, hid: HoboKey) -> bool {
+        diesel::select(diesel::dsl::exists(
+            attacks_to_hobos::table
+            .inner_join(hobos::table)
+            .inner_join(attacks::table)
+            .filter(hobos::id.eq(hid.num()))
+            .filter(attacks::id.is_not_null())
+        ))
+        .get_result(self.dbconn())
+        .expect("Error in lookup")
     }
     fn village_owned_by(&self, vid: VillageKey, uuid: uuid::Uuid) -> bool {
         diesel::select(diesel::dsl::exists(

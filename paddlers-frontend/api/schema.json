@@ -560,7 +560,7 @@
             {
               "args": [],
               "deprecationReason": null,
-              "description": "Field Visibility: user",
+              "description": "Field Visibility: public",
               "isDeprecated": false,
               "name": "karma",
               "type": {
@@ -948,6 +948,30 @@
                 "kind": "OBJECT",
                 "name": "GqlPlayer",
                 "ofType": null
+              }
+            },
+            {
+              "args": [],
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
+              "name": "hobos",
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "LIST",
+                  "name": null,
+                  "ofType": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "OBJECT",
+                      "name": "GqlHobo",
+                      "ofType": null
+                    }
+                  }
+                }
               }
             }
           ],
@@ -1337,6 +1361,22 @@
                       "ofType": null
                     }
                   }
+                }
+              }
+            },
+            {
+              "args": [],
+              "deprecationReason": null,
+              "description": "Field Visibility: public",
+              "isDeprecated": false,
+              "name": "idle",
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "Boolean",
+                  "ofType": null
                 }
               }
             }

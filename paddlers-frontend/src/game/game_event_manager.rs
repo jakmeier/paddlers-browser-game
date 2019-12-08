@@ -52,10 +52,10 @@ impl Game<'_,'_> {
                 if self.town().idle_prophets == 0 {
                     return PadlErrorCode::NotEnoughUnits.usr();
                 }
-                println!("Attacking village <{}:{}>", x, y);
                 self.send_prophet_attack((x,y))?;
-                // TODO: Display this only if it's really okay
-                self.confirm_to_user("Attack sent".to_owned());
+                // TODO: Only confirm if HTTP OK is returned 
+                // (Probably do this after cleaning pu network and promise handling)
+                self.confirm_to_user(format!("Attacking village <{}:{}>", x, y));
             }
         }
         Ok(())

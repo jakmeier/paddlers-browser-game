@@ -61,6 +61,20 @@ pub (super) fn http_read_workers(village_id: VillageKey) ->  PadlResult<impl Fut
     )
 }
 
+pub (super) fn http_read_hobos(village_id: VillageKey) ->  PadlResult<impl Future<Output = PadlResult<HobosQueryResponse>>> {
+    let request_body = HobosQuery::build_query(hobos_query::Variables{village_id: village_id.num()});
+    let request_string = &serde_json::to_string(&request_body)?;
+    let promise = ajax::send("POST", &graphql_url()?, request_string)?;
+    Ok(
+        promise.map(|x| {
+            let raw_response: HobosQueryRawResponse = 
+                serde_json::from_str(&x?)?;
+            let data = raw_response.data.ok_or(PadlError::dev_err(PadlErrorCode::InvalidGraphQLData("village hobos")))?;
+            Ok(data.village.hobos)
+        })
+    )
+}
+
 pub (super) fn http_read_worker_tasks(unit_id: i64) -> PadlResult<impl Future<Output = PadlResult<WorkerTasksRawResponse>>> {
     let request_body = WorkerTasksQuery::build_query(worker_tasks_query::Variables{ worker_id: unit_id });
     let request_string = &serde_json::to_string(&request_body)?;

@@ -52,7 +52,7 @@ impl Town {
             ul: ul,
             total_ambience: 0,
             temple: None,
-            idle_prophets: 0, // TODO: Update this
+            idle_prophets: 0,
             faith: 100,
         }
     }
