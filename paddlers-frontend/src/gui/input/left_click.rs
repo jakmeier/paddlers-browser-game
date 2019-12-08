@@ -89,7 +89,7 @@ impl<'a> System<'a> for LeftClickSystem {
         // Demultiplex signal to views
         let in_menu_area = mouse_pos.overlaps_rectangle(&(*ui_state).menu_box_area);
         match (ui_state.current_view, in_menu_area) {
-            (UiView::Town, true) => {
+            (any_view, true) => {
                 if let Some(entity) = (*ui_state).selected_entity {
                     if let Some(ui_menu) = ui_menus.get_mut(entity) {
                         town.left_click_on_menu(
@@ -99,12 +99,11 @@ impl<'a> System<'a> for LeftClickSystem {
                     }
                 }
                 else {
-                    Town::click_default_shop(mouse_pos, ui_state, shop, resources)
-                        .unwrap_or_else(|e| errq.push(e));
+                    if any_view == UiView::Town {
+                        Town::click_default_shop(mouse_pos, ui_state, shop, resources)
+                            .unwrap_or_else(|e| errq.push(e));
+                    }
                 }
-            }
-            (UiView::Map, true) => {
-                // NOP
             }
             (UiView::Town, false) => {
                 let maybe_job =

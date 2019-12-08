@@ -25,7 +25,7 @@ impl PlayerInfo {
     pub fn karma(&self) -> i64 {
         self.karma
     }
-    /// Count of current hobo prophets available to the player, either idle or on am mission
+    /// Count of current hobo prophets available to the player, either idle or on a mission
     #[inline]
     pub fn prophets_available(&self) -> i64 {
         self.prophets

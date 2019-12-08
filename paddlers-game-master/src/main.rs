@@ -31,6 +31,7 @@ use paddlers_shared_lib::{
         shop::{BuildingPurchase, BuildingDeletion, ProphetPurchase},
         tasks::TaskList,
         statistics::FrontendRuntimeStatistics,
+        attacks::AttackDescriptor,
     },
     config::{
         Config,
@@ -113,6 +114,11 @@ fn main() {
                 web::resource("/worker/overwriteTasks")
                 .data(web::Json::<TaskList>)
                 .route(web::post().to(api::overwrite_tasks))
+            )
+            .service(
+                web::resource("/attacks/create")
+                .data(web::Json::<AttackDescriptor>)
+                .route(web::post().to_async(api::create_attack))
             )
             .service(
                 web::resource("/stats")

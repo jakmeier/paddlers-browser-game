@@ -12,6 +12,7 @@ use paddlers_shared_lib::api::{
     tasks::TaskList,
     statistics::*,
     PlayerInitData,
+    attacks::*,
 };
 
 static SENT_PLAYER_CREATION: AtomicBool = AtomicBool::new(false);
@@ -83,6 +84,13 @@ impl RestApiState {
             self.push_promise(promise, Some(NetUpdateRequest::CompleteReload));
             SENT_PLAYER_CREATION.store(true, std::sync::atomic::Ordering::Relaxed)
         }
+        Ok(())
+    }
+
+    pub fn http_send_attack(&mut self, msg: AttackDescriptor) -> PadlResult<()>  {
+        let request_string = &serde_json::to_string(&msg).unwrap();
+        let promise = ajax::send("POST", &format!("{}/attacks/create", game_master_url()?), request_string);
+        self.push_promise(promise, None);
         Ok(())
     }
 

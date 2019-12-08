@@ -8,6 +8,7 @@ use paddlers_shared_lib::api::{
     tasks::{TaskList},
     keys::{VillageKey, WorkerKey},
     PlayerInitData,
+    attacks::AttackDescriptor,
 };
 use paddlers_shared_lib::sql::GameDB;
 use crate::authentication::Authentication;
@@ -127,6 +128,26 @@ pub (super) fn new_player(
         HttpResponse::Ok().into()
     }
 }
+
+pub (crate) fn create_attack(
+    pool: web::Data<crate::db::Pool>,
+    actors: web::Data<crate::ActorAddresses>,
+    body: web::Json<AttackDescriptor>,
+    mut auth: Authentication,
+) -> impl Future<Item = HttpResponse, Error = ()> {
+    
+    web::block(move || {
+        // let db: crate::db::DB = pool.get_ref().into();
+        // check_owns_village0(&db, &auth, village)?;
+        println!("Sending attack now");
+        // TODO: Perform checks, enqueue attack in attack spawner
+        Ok(())
+    })
+    .then( |result: Result<(), BlockingError<std::string::String>> |
+        Ok(HttpResponse::Ok().into()),
+    )
+}
+
 
 fn check_owns_worker(db: &crate::db::DB, auth: &Authentication, v: WorkerKey) -> Result<(), HttpResponse> {
     if db.worker_owned_by(v, auth.user.uuid) {

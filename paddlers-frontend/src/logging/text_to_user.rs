@@ -1,7 +1,7 @@
 use crate::prelude::*;
 use quicksilver::prelude::*;
 use crate::gui::{
-    utils::{write_text_col, FitStrategy, GREY},
+    utils::{write_text_col, FitStrategy, GREY, BLUE},
     z::*,
 };
 
@@ -25,6 +25,9 @@ impl TextBoard {
     #[allow(dead_code)]
     pub fn display_debug_message(&mut self, msg: String) {
         self.display_message(msg, GREY, 8_000_000);
+    }
+    pub fn display_confirmation(&mut self, msg: String) {
+        self.display_message(msg, BLUE, 3_000_000);
     }
     fn display_message(&mut self, msg: String, col: Color, time_us: i64) {
         let t = utc_now() + time_us;

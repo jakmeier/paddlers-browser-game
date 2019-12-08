@@ -26,6 +26,7 @@ pub type EventPool = Sender<GameEvent>;
 pub enum GameEvent {
     HoboSatisfied(Entity),
     HttpBuyProphet,
+    SendProphetAttack((i32,i32)),
 }
 
 impl Game<'_,'_> {
@@ -46,6 +47,15 @@ impl Game<'_,'_> {
             GameEvent::HttpBuyProphet => {
                 let player : PlayerInfo = *self.player().clone();
                 crate::game::town::purchase_prophet(&mut *self.rest(), &player)?;
+            },
+            GameEvent::SendProphetAttack((x,y)) => {
+                if self.town().idle_prophets == 0 {
+                    return PadlErrorCode::NotEnoughUnits.usr();
+                }
+                println!("Attacking village <{}:{}>", x, y);
+                self.send_prophet_attack((x,y))?;
+                // TODO: Display this only if it's really okay
+                self.confirm_to_user("Attack sent".to_owned());
             }
         }
         Ok(())

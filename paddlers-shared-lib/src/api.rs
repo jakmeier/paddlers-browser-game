@@ -1,8 +1,9 @@
-pub mod shop;
-pub mod tasks;
-pub mod statistics;
-pub mod keys;
+pub mod attacks;
 pub mod error;
+pub mod keys;
+pub mod shop;
+pub mod statistics;
+pub mod tasks;
 
 use serde::*;
 

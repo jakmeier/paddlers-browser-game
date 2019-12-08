@@ -34,6 +34,9 @@ impl From<MapQueryMapVillages> for VillageMetaInfo {
 }
 
 impl VillageMetaInfo {
+    pub fn player_name(&self) -> Option<&str> {
+        self.player.as_ref().map(|s| s.name.as_str())
+    }
     pub fn village_details<'a>(&self) -> Vec<TableRow<'a>> {
         let text = format!("Village <{}:{}>", self.coordinates.0, self.coordinates.1);
         let row0 = TableRow::Text(text);

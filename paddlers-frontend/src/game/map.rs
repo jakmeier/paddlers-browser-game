@@ -10,7 +10,11 @@ use crate::gui::{
     sprites::*,
     utils::*,
     z::*,
+    gui_components::{UiBox, UiElement, ClickOutput},
 };
+use crate::game::components::UiMenu;
+use crate::game::GameEvent;
+use crate::net::authentication::read_jwt_preferred_username;
 use map_position::*;
 use map_segment::MapSegment;
 use map_tesselation::*;
@@ -220,7 +224,10 @@ impl GlobalMapPrivateState {
         segment.tesselate_rivers();
         self.segments.push(segment);
 
+        let my_name = read_jwt_preferred_username().unwrap();
         for village in villages.iter() {
+            let owner_name = village.player_name();
+            let is_mine = owner_name.is_some() && owner_name.unwrap() == my_name; // TODO: Better check not relying on unique display names
             world
                 .create_entity()
                 .with(MapPosition::new(village.coordinates))
@@ -232,6 +239,7 @@ impl GlobalMapPrivateState {
                 ))
                 .with(Clickable)
                 .with((*village).clone())
+                .with(UiMenu::new_village_menu(village.coordinates, is_mine))
                 .build();
         }
 
@@ -255,5 +263,21 @@ impl GlobalMapSharedState {
         let map_coordinates = Vector::new(mouse_pos.x / r, mouse_pos.y / r);
 
         ui_state.selected_entity = map_position_lookup(map_coordinates, entities, position, clickable);
+    }
+}
+
+impl UiMenu {
+    pub fn new_village_menu(village: (i32,i32), owned: bool) -> Self {
+        let mut menu = UiMenu {
+            ui: UiBox::new(2, 1, 10.0, 2.0),
+        };
+        if !owned {
+            menu.ui.add(
+                UiElement::new(ClickOutput::Event(GameEvent::SendProphetAttack(village)))
+                .with_image(SpriteSet::Simple(SingleSprite::Prophet))
+                .with_background_color(RED)
+            );
+        }
+        menu
     }
 }

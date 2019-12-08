@@ -1,4 +1,5 @@
 pub (crate) mod abilities;
+pub (crate) mod attacks;
 pub (crate) mod buildings;
 pub (crate) mod components;
 pub (crate) mod fight;
@@ -38,6 +39,7 @@ use crate::net::{
 use crate::logging::{
     ErrorQueue,
     statistics::Statistician,
+    text_to_user::TextBoard,
 };
 use movement::*;
 use quicksilver::prelude::*;
@@ -237,6 +239,10 @@ impl Game<'_,'_> {
         else {
             Some(res.unwrap())
         }
+    }
+    pub fn confirm_to_user(&mut self, msg: String) {
+        let mut tb = self.world.write_resource::<TextBoard>();
+        tb.display_confirmation(msg);
     }
     #[cfg(feature="dev_view")]
     pub fn draw_dev_view(&self, window: &mut Window) {

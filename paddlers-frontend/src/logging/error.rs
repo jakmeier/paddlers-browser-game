@@ -60,6 +60,7 @@ pub enum PadlErrorCode {
     NotEnoughSupply,
     NotEnoughMana,
     NotEnoughKarma,
+    NotEnoughUnits,
     NotReadyYet,
     PathBlocked,
     NoNetwork,
@@ -107,6 +108,8 @@ impl fmt::Display for PadlErrorCode {
                 write!(f, "Not enough mana."),
             PadlErrorCode::NotEnoughKarma =>
                 write!(f, "Not enough karma."),
+            PadlErrorCode::NotEnoughUnits =>
+                write!(f, "Require more units."),
             PadlErrorCode::PathBlocked =>
                 write!(f, "The path is blocked."),
             PadlErrorCode::NoNetwork =>

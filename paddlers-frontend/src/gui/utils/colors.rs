@@ -12,6 +12,8 @@ pub const LIGHT_BLUE:  Color = Color {r: 0.250, g: 0.600, b: 0.900, a: 1.0};
 pub const BLUE:        Color = Color {r: 0.000, g: 0.059, b: 0.631, a: 1.0};
 pub const DARK_BLUE:   Color = Color {r: 0.000, g: 0.047, b: 0.498, a: 1.0}; 
 
+/* Other colors */
+
 pub const BLACK: Color = Color {
     r: 0.0,
     g: 0.0,
@@ -38,7 +40,13 @@ pub const WHITE: Color = Color {
 };
 pub const YELLOW: Color = Color {
     r: 1.0,
-    g: 1.0,
+    g: 0.9,
+    b: 0.25,
+    a: 1.0
+};
+pub const RED: Color = Color {
+    r: 1.0,
+    g: 0.0,
     b: 0.0,
-    a: 1.0,
+    a: 1.0
 };
