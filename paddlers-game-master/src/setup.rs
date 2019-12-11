@@ -36,9 +36,14 @@ impl DB {
             self.init_map(server);
         }
         if env::var("INSERT_TEST_DATA").is_ok() {
-            // self.new_player("Fred Feuerstein".to_owned());
-            // self.new_player("Donald Duck".to_owned());
-            // self.new_player("Queen Elizabeth".to_owned());
+            if let Ok(player) = self.new_player(
+                "jakob".to_owned(),
+                uuid::Uuid::parse_str("5766984a-684b-45da-800d-663192dae9ce").unwrap()
+            ) {
+                let village = self.player_villages(player.key())[0];
+                self.add_prophet(village.key());
+                self.add_karma(player.key(), 50000).unwrap();
+            }
         }
         Ok(())
     }

@@ -122,17 +122,18 @@ pub struct Attack {
     pub id: i64,
     pub departure: NaiveDateTime,
     pub arrival: NaiveDateTime,
-    pub origin_village_id: i64,
+    pub origin_village_id: Option<i64>,
     pub destination_village_id: i64,
 }
 
+#[derive(Debug)]
 #[cfg(feature = "sql_db")]
 #[derive(Insertable)]
 #[table_name = "attacks"]
 pub struct NewAttack {
     pub departure: NaiveDateTime,
     pub arrival: NaiveDateTime,
-    pub origin_village_id: i64,
+    pub origin_village_id: Option<i64>,
     pub destination_village_id: i64,
 }
 

@@ -49,7 +49,7 @@ impl Game<'_,'_> {
                 crate::game::town::purchase_prophet(&mut *self.rest(), &player)?;
             },
             GameEvent::SendProphetAttack((x,y)) => {
-                if self.town().idle_prophets == 0 {
+                if self.town().idle_prophets.len() == 0 {
                     return PadlErrorCode::NotEnoughUnits.usr();
                 }
                 self.send_prophet_attack((x,y))?;

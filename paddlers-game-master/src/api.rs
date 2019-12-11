@@ -1,8 +1,10 @@
 mod shop;
 
 use futures::Future;
+use futures::future::Either;
 use actix_web::{HttpResponse, Responder, web};
 use actix_web::error::BlockingError;
+use paddlers_shared_lib::sql_db::keys::SqlKey;
 use paddlers_shared_lib::api::{
     shop::{BuildingPurchase, BuildingDeletion, ProphetPurchase},
     tasks::{TaskList},
@@ -11,6 +13,7 @@ use paddlers_shared_lib::api::{
     attacks::AttackDescriptor,
 };
 use paddlers_shared_lib::sql::GameDB;
+use crate::game_master::attack_funnel::PlannedAttack;
 use crate::authentication::Authentication;
 use crate::setup::initialize_new_player_account;
 use crate::StringErr;
@@ -128,24 +131,38 @@ pub (super) fn new_player(
         HttpResponse::Ok().into()
     }
 }
-
+use futures::future::IntoFuture;
 pub (crate) fn create_attack(
     pool: web::Data<crate::db::Pool>,
     actors: web::Data<crate::ActorAddresses>,
     body: web::Json<AttackDescriptor>,
     mut auth: Authentication,
-) -> impl Future<Item = HttpResponse, Error = ()> {
-    
-    web::block(move || {
-        // let db: crate::db::DB = pool.get_ref().into();
-        // check_owns_village0(&db, &auth, village)?;
+) -> impl Future<Item = HttpResponse, Error = actix_web::Error> {
+    let db: crate::db::DB = pool.get_ref().into();
+    let attack = body.0;
+    let (x,y) = attack.to;
+    let destination = db.village_at(x as f32, y as f32);
+    if destination.is_none() {
+        return Either::A(HttpResponse::from("Invalid traget village").into_future());
+    }
+    let village = attack.from;
+    let pa = PlannedAttack {
+        origin_village: Some(village),
+        destination_village: destination.unwrap().key(),
+        hobos: attack.units,
+    };
+
+    Either::B(web::block(move || {
+        check_owns_village0(&db, &auth, village)?;
         println!("Sending attack now");
-        // TODO: Perform checks, enqueue attack in attack spawner
+        // TODO: Perform validity checks?
+        actors.attack_funnel.try_send(pa).map_err(|e|format!("{}",e))?;
+        println!("Sent");
         Ok(())
     })
     .then( |result: Result<(), BlockingError<std::string::String>> |
         Ok(HttpResponse::Ok().into()),
-    )
+    ))
 }
 
 

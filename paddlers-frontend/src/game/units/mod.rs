@@ -1,3 +1,4 @@
+pub mod hobos;
 pub mod workers;
 pub mod worker_system;
 pub mod attackers;

@@ -30,7 +30,7 @@ pub struct Town {
     // Could possibly be added to TownState, depends on further developments of the backend.
     pub total_ambience: i64,
     pub temple: Option<specs::Entity>,
-    pub idle_prophets: u16,
+    pub idle_prophets: Vec<specs::Entity>,
     pub faith: u8,
 }
 impl Default for Town {
@@ -52,7 +52,7 @@ impl Town {
             ul: ul,
             total_ambience: 0,
             temple: None,
-            idle_prophets: 0,
+            idle_prophets: vec![],
             faith: 100,
         }
     }

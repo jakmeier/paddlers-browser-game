@@ -1,5 +1,6 @@
 #![feature(result_map_or_else)]
 #![feature(exclusive_range_pattern)]
+#![feature(associated_type_bounds)]
 extern crate env_logger;
 
 mod db;
@@ -19,6 +20,7 @@ use game_master::{
     town_worker::TownWorker,
     economy_worker::EconomyWorker,
     attack_spawn::AttackSpawner,
+    attack_funnel::AttackFunnel,
 };
 use actix::prelude::*;
 use actix_web::{
@@ -46,6 +48,7 @@ struct ActorAddresses {
     _econ_worker: Addr<EconomyWorker>,
     _attack_worker: Addr<AttackSpawner>,
     db_actor: Addr<DbActor>,
+    attack_funnel: Addr<AttackFunnel>,
 }
 
 fn main() {
@@ -62,13 +65,21 @@ fn main() {
     let origin = config.frontend_origin.clone();
     let base_url = config.game_master_service_name.clone();
 
-    let sys = actix::System::new("background-worker-example");
-    let attack_worker = AttackSpawner::new(dbpool.clone()).start();
+    // This starts an actix runtime in the current thread that can be used from now on. 
+    let sys = actix::System::new("Actix Main System");
+
+    // Start some DB actors in separate threads - they will be blocking
+    let db = dbpool.clone();
+    let db_actor = SyncArbiter::start(2, move || DbActor::new(db.clone()));
+
+    // Spawn all "normal" actors onto the actix system
+    let attack_funnel = AttackFunnel::new(dbpool.clone(), db_actor.clone()).start();
+    let attack_worker = AttackSpawner::new(dbpool.clone(), db_actor.clone(), attack_funnel.clone()).start();
     let gm_actor = GameMaster::new(dbpool.clone(), &attack_worker).start();
     let town_worker_actor = TownWorker::new(dbpool.clone()).start();
     let econ_worker = EconomyWorker::new(dbpool.clone()).start();
-    let db_actor = DbActor::new(dbpool.clone()).start();
 
+    // Also spawn the HTTP server on the same runtime
     HttpServer::new(move || {
         App::new()
             .wrap(
@@ -87,6 +98,7 @@ fn main() {
                     _econ_worker: econ_worker.clone(),
                     _attack_worker: attack_worker.clone(),
                     db_actor: db_actor.clone(),
+                    attack_funnel: attack_funnel.clone(),
                 })
             .data(config.clone())
             .data(dbpool.clone())

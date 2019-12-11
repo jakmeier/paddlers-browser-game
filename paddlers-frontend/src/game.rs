@@ -223,6 +223,15 @@ impl Game<'_,'_> {
         }
         Ok(())
     }
+    /// Deletes all hobo entities (lazy, requires world.maintain())
+    fn flush_hobos(&self) -> PadlResult<()> {
+        let w = self.world.read_storage::<units::hobos::Hobo>();
+        for (entity, _marker) in (&self.world.entities(), &w).join() {
+            self.world.entities().delete(entity)
+                .map_err(|_| PadlError::dev_err(PadlErrorCode::SpecsError("Delete hobo")))?;
+        }
+        Ok(())
+    }
     fn worker_entity_by_net_id(&self, net_id: i64) -> PadlResult<Entity> {
         // TODO: Efficient NetId lookup
         let net = self.world.read_storage::<NetObj>();

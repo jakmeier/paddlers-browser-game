@@ -1,7 +1,7 @@
 use crate::prelude::*;
 use specs::prelude::*;
 
-use crate::game::{components::*, town_resources::TownResources, units::workers::Worker, player_info::PlayerInfo};
+use crate::game::{components::*, town_resources::TownResources, units::hobos::Hobo, units::workers::Worker, player_info::PlayerInfo};
 use crate::gui::{menu::buttons::MenuButtons, ui_state::*};
 use crate::logging::{text_to_user::TextBoard, AsyncErr, ErrorQueue};
 use crate::net::game_master_api::RestApiState;
@@ -27,6 +27,7 @@ pub fn register_components(world: &mut World) {
     world.register::<EntityContainer>();
     world.register::<ForestComponent>();
     world.register::<Health>();
+    world.register::<Hobo>();
     world.register::<Level>();
     world.register::<Mana>();
     world.register::<MapPosition>();

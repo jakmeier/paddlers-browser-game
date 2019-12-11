@@ -1,3 +1,6 @@
+mod messages;
+pub use messages::*;
+
 use crate::db::*;
 use actix::prelude::*;
 
@@ -7,25 +10,32 @@ pub struct DbActor {
     dbpool: Pool,
 }
 
-#[derive(Debug)]
-/// Deferred DB requests should not be dependent on the state of the DB
-/// and instead be logically guaranteed to work. For example, the resource 
-/// price should already be payed before-hand.
-pub enum DeferredDbStatement {
-    NewProphet(VillageKey),
-}
-
-impl Message for DeferredDbStatement {
-    type Result = ();
-}
 impl Handler<DeferredDbStatement> for DbActor {
     type Result = ();
-    fn handle(&mut self, msg: DeferredDbStatement, _ctx: &mut Context<Self>) {
+    fn handle(&mut self, msg: DeferredDbStatement, _ctx: &mut SyncContext<Self>) {
         match msg {
             DeferredDbStatement::NewProphet(village) => {
                 self.db().add_prophet(village);
+            },
+            DeferredDbStatement::NewAttack(planned_atk) => {
+                let attack = self.db().insert_attack(&planned_atk.attack);
+                for hobo in planned_atk.hobos.iter() {
+                    let atu = AttackToHobo {
+                        attack_id: attack.id,
+                        hobo_id: hobo.num()
+                    };
+                    self.db().insert_attack_to_hobo(&atu);
+                }
             }
         }
+    }
+}
+
+impl Handler<NewHoboMessage> for DbActor {
+    type Result = NewHoboResponse;
+    fn handle(&mut self, msg: NewHoboMessage, _ctx: &mut SyncContext<Self>) -> Self::Result {
+        let key = self.db().insert_hobo(&msg.0).key();
+        NewHoboResponse(key)
     }
 }
 
@@ -41,11 +51,11 @@ impl DbActor {
 }
 
 impl Actor for DbActor {
-    type Context = Context<Self>;
-    fn started(&mut self, _ctx: &mut Context<Self>) {
+    type Context = SyncContext<Self>;
+    fn started(&mut self, _ctx: &mut SyncContext<Self>) {
     }
 
-    fn stopped(&mut self, _ctx: &mut Context<Self>) {
+    fn stopped(&mut self, _ctx: &mut SyncContext<Self>) {
         eprintln!("Stopped DB actor");
     }
 }

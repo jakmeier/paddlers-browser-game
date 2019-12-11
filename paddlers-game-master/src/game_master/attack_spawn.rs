@@ -1,12 +1,16 @@
-use paddlers_shared_lib::prelude::*;
-use crate::db::DB;
-use rand::Rng;
+//! Spawns random attacks on villages
 
+use paddlers_shared_lib::prelude::*;
 use actix::prelude::*;
+use futures::future::join_all;
 use crate::db::*;
+use crate::game_master::attack_funnel::{AttackFunnel, PlannedAttack};
+use rand::Rng;
 
 pub struct AttackSpawner {
     dbpool: Pool,
+    db_actor: Addr<DbActor>,
+    attack_funnel_actor: Addr<AttackFunnel>,
 }
 
 impl Actor for AttackSpawner {
@@ -37,9 +41,11 @@ impl Handler<AttackTarget> for AttackSpawner {
 
 
 impl AttackSpawner {
-    pub fn new(dbpool: Pool) -> Self {
+    pub fn new(dbpool: Pool, db_actor: Addr<DbActor>, attack_funnel_actor: Addr<AttackFunnel>) -> Self {
         AttackSpawner {
-            dbpool: dbpool,
+            dbpool,
+            db_actor,
+            attack_funnel_actor,
         }
     }
     fn db(&self) -> DB {
@@ -47,36 +53,41 @@ impl AttackSpawner {
     }
 
     fn spawn_random_attack(&self, village: VillageKey) {
-        let vid = village.num();
-        let now = chrono::Utc::now().naive_utc();
-        use std::ops::Add;
-        let arrival = now.add(chrono::Duration::seconds(15));
-        let new_attack = NewAttack {
-            departure: now,
-            arrival: arrival,
-            origin_village_id: vid,
-            destination_village_id: vid,
-        };
-        let attack = self.db().insert_attack(&new_attack);
-
-
-
         let mut rng = rand::thread_rng();
         let n = rng.gen_range(2,5);
-        for _ in 0 .. n {
-            let unit = NewHobo {
-                color: Some(Self::gen_color(&mut rng)),
-                hp: rng.gen_range(1, 10), 
-                speed: 0.1,
-                home: vid,
-            };
-            let u = self.db().insert_hobo(&unit);
-            let atu = AttackToHobo {
-                attack_id: attack.id,
-                hobo_id: u.id
-            };
-            self.db().insert_attack_to_hobo(&atu);
-        }
+
+        let futures: Vec<Request<DbActor, NewHoboMessage>>
+            = (0..n).map(|_| {
+                let hobo = NewHobo {
+                    color: Some(Self::gen_color(&mut rng)),
+                    hp: rng.gen_range(1, 10), 
+                    speed: 0.1,
+                    home: village.num(), // TODO: anarchists home
+                };
+                let msg = NewHoboMessage(hobo);
+                self.db_actor.send(msg)
+            }).collect();
+
+        let attack_funnel = self.attack_funnel_actor.clone();
+        Arbiter::spawn(
+            join_all(futures)
+                .map_err( |e| eprintln!("Attack spawn failed: {:?}", e))
+                .map(
+                    move |hobos|{
+                        let hobos = hobos
+                            .iter()
+                            .map(|h|h.0)
+                            .collect();
+
+                        let pa = PlannedAttack {
+                            origin_village: None,
+                            destination_village: village,
+                            hobos: hobos,
+                        };
+                        attack_funnel.try_send(pa).expect("Spawning attack failed");
+                    }
+                )
+            );
     }
 
     fn gen_color<R>(rng: &mut R) -> UnitColor 

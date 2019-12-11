@@ -8,7 +8,6 @@ use crate::game::{
     };
 use crate::net::{
     NetMsg, 
-    graphql::query_types::HobosQueryUnitColor,
 };
 
 use specs::prelude::*;
@@ -52,12 +51,8 @@ impl Game<'_,'_> {
                         }
                     },
                     NetMsg::Hobos(hobos) => {
-                        let idle_prophets = hobos
-                            .iter()
-                            .filter(|h| h.color == Some(HobosQueryUnitColor::PROPHET))
-                            .filter(|h| h.idle)
-                            .fold(0, |acc,_| acc + 1);
-                        self.town_mut().idle_prophets = idle_prophets;
+                        self.flush_hobos()?;
+                        self.insert_hobos(hobos)?;
                     },
                     NetMsg::Map(response, min, max) => {
                         if let Some(data) = response.data {

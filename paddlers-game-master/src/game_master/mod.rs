@@ -1,5 +1,6 @@
 mod town_defence;
 mod event_queue;
+pub (super) mod attack_funnel;
 pub (super) mod attack_spawn;
 pub (super) mod event;
 pub (super) mod town_worker;
@@ -52,7 +53,7 @@ impl GameMaster {
         if now - self.last_attack >= chrono::Duration::seconds(40) {
             self.last_attack = now;
             for village in db.all_player_villages() {
-                self.attacker_addr.do_send(AttackTarget(village.key()));
+                self.attacker_addr.try_send(AttackTarget(village.key())).expect("send failed");
             }
         }
 
