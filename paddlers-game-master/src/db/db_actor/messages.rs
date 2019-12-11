@@ -20,7 +20,7 @@ pub struct ScheduledAttack {
 }
 
 pub struct NewHoboMessage(pub NewHobo);
-pub struct NewHoboResponse(pub HoboKey);
+pub struct NewHoboResponse(pub Hobo);
 impl Message for NewHoboMessage {
     type Result = NewHoboResponse;
 }

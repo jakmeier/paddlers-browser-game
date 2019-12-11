@@ -69,19 +69,20 @@ impl AttackSpawner {
             }).collect();
 
         let attack_funnel = self.attack_funnel_actor.clone();
+        let db = self.db();
         Arbiter::spawn(
             join_all(futures)
                 .map_err( |e| eprintln!("Attack spawn failed: {:?}", e))
                 .map(
                     move |hobos|{
                         let hobos = hobos
-                            .iter()
+                            .into_iter()
                             .map(|h|h.0)
                             .collect();
 
                         let pa = PlannedAttack {
                             origin_village: None,
-                            destination_village: village,
+                            destination_village: db.village(village).unwrap(),
                             hobos: hobos,
                         };
                         attack_funnel.try_send(pa).expect("Spawning attack failed");

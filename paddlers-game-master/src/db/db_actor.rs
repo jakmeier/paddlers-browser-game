@@ -34,8 +34,8 @@ impl Handler<DeferredDbStatement> for DbActor {
 impl Handler<NewHoboMessage> for DbActor {
     type Result = NewHoboResponse;
     fn handle(&mut self, msg: NewHoboMessage, _ctx: &mut SyncContext<Self>) -> Self::Result {
-        let key = self.db().insert_hobo(&msg.0).key();
-        NewHoboResponse(key)
+        let hobo = self.db().insert_hobo(&msg.0);
+        NewHoboResponse(hobo)
     }
 }
 

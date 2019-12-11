@@ -91,6 +91,7 @@ pub trait GameDB {
         let results = attacks::table
             .filter(attacks::destination_village_id.eq(village.num()))
             .filter(attacks::id.ge(min_id.unwrap_or(0)))
+            .order_by(attacks::arrival)
             .limit(500)
             .load::<Attack>(self.dbconn())
             .expect("Error loading data");
