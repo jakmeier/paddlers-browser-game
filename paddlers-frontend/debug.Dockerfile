@@ -9,6 +9,7 @@ USER=root cargo init --lib paddlers-shared-lib
 COPY ./paddlers-frontend/Cargo.toml ./paddlers-frontend/
 COPY ./paddlers-shared-lib/Cargo.toml ./paddlers-shared-lib/
 COPY ./Cargo.lock ./paddlers-frontend/
+# COPY ./quicksilver ./quicksilver
 RUN cd paddlers-frontend; cargo web deploy --target=wasm32-unknown-unknown --release
 # Now replace shallow projects with actual source code and build again
 COPY ./paddlers-shared-lib/src ./paddlers-shared-lib/src

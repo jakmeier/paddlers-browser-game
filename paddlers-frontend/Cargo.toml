@@ -10,8 +10,8 @@ paddlers-shared-lib = { path = "../paddlers-shared-lib", features = ["enum_utils
 # quicksilver = { version = "0.3", default-features = false, features = ["fonts", "complex_shapes"] }
 # Waiting for PR with bugfix to be accepted
 quicksilver = { git = "https://github.com/jakmeier/quicksilver", branch= "cross-browser-touch", default-features = false, features = ["fonts", "complex_shapes"] }
-# quicksilver = { path = "../../quicksilver", default-features = false, features = ["fonts"] }
-stdweb = {version = "0.4.19", features = ["experimental_features_which_may_break_on_minor_version_bumps"] }
+# quicksilver = { path = "../quicksilver", default-features = false, features = ["fonts", "complex_shapes"] }
+stdweb = {version = "0.4.20", features = ["experimental_features_which_may_break_on_minor_version_bumps"] }
 specs = { version = "=0.15.0", default-features = false } # parallel not supported in wasm
 # Dependency only defined to wrok around some bug with specs 0.15.1 / shred 0.9.3 without parallelism
 shred = { version = "=0.9.2", default-features = false }

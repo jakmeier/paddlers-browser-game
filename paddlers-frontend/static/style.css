@@ -1,0 +1,12 @@
+body {
+    font-family: manjari;
+    color: white;
+}
+#game-root {
+    position: relative;
+}
+.on-canvas {
+    position: absolute;
+    display: unset;
+    z-index: 1;
+}
