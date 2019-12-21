@@ -31,6 +31,7 @@ pub struct MouseState(pub Vector, pub Option<MouseButton>);
 pub enum UiView {
     Town,
     Map,
+    Attacks,
 }
 
 #[derive(Default, Debug, Component)]
@@ -60,7 +61,8 @@ impl UiState {
         self.reset_view();
         match self.current_view {
             UiView::Map => self.current_view = UiView::Town,
-            UiView::Town => self.current_view = UiView::Map,
+            UiView::Town => self.current_view = UiView::Attacks,
+            UiView::Attacks => self.current_view = UiView::Map,
         }
     }
     pub fn set_view(&mut self, view: UiView) {

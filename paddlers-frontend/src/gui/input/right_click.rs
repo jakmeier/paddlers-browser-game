@@ -68,6 +68,9 @@ impl<'a> System<'a> for RightClickSystem {
                     }
                 }
             },
+            (UiView::Attacks, false) => {
+                // NOP
+            },
         }
     }
 }

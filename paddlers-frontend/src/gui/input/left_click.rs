@@ -137,6 +137,7 @@ impl<'a> System<'a> for LeftClickSystem {
                 }
             }
             (UiView::Map, false) => map.left_click_on_main_area(mouse_pos, ui_state, entities, map_position, clickable),
+            (UiView::Attacks, false) =>{/* NOP */},
         }
     }
 }

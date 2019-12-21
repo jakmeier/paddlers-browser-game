@@ -128,6 +128,8 @@ pub enum SingleSprite {
     Temple,
     Karma,
     Prophet,
+    AttacksButton,
+    AttacksButtonHov,
 }
 
 #[derive(Debug, Clone, Copy)]

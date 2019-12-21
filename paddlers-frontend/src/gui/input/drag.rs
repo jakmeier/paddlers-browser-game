@@ -19,10 +19,7 @@ impl<'a> System<'a> for DragSystem {
             let in_menu_area = start.overlaps_rectangle(&(*ui_state).menu_box_area);
 
             match (ui_state.current_view, in_menu_area) {
-                (UiView::Town, true) => {
-                    // NOP
-                }
-                (UiView::Map, true) => {
+                (_, true) => {
                     // NOP
                 }
                 (UiView::Town, false) => {
@@ -31,6 +28,9 @@ impl<'a> System<'a> for DragSystem {
                 (UiView::Map, false) => {
                     let v = end - start;
                     map.drag(v * 0.02);
+                }
+                (UiView::Attacks, false) => {
+                    // NOP
                 }
             }
         }

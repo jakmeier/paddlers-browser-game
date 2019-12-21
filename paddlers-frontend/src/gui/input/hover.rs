@@ -31,7 +31,8 @@ impl<'a> System<'a> for HoverSystem {
                         break;
                     }
                 }
-            }
+            },
+            UiView::Attacks => {},
         }
     }
 }

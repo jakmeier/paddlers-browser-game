@@ -34,8 +34,12 @@ impl MenuButtons {
             UiElement::new(MenuButtonAction::SwitchToView(UiView::Map))
                 .with_render_variant(map_button)
         );
-        
-        ui_box.add(UiElement::empty());
+
+        let atk_button = Self::button_render(SingleSprite::AttacksButton, SingleSprite::AttacksButtonHov);
+        ui_box.add(
+            UiElement::new(MenuButtonAction::SwitchToView(UiView::Attacks))
+                .with_render_variant(atk_button)
+        );
         
         MenuButtons {
             ui: ui_box
