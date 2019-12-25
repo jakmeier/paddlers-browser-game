@@ -953,7 +953,7 @@
             {
               "args": [],
               "deprecationReason": null,
-              "description": null,
+              "description": "Field Visibility: user",
               "isDeprecated": false,
               "name": "hobos",
               "type": {
@@ -1935,6 +1935,18 @@
                   "name": "GqlTimestamp",
                   "ofType": null
                 }
+              }
+            },
+            {
+              "args": [],
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
+              "name": "attacker",
+              "type": {
+                "kind": "OBJECT",
+                "name": "GqlPlayer",
+                "ofType": null
               }
             }
           ],

@@ -25,6 +25,21 @@ impl GqlAttack {
     fn arrival(&self) -> FieldResult<GqlTimestamp> {
         datetime(&self.0.arrival)
     }
+    fn attacker(&self, ctx: &Context) -> FieldResult<Option<GqlPlayer>> {
+        let db = ctx.db();
+        Ok(
+            self.0.origin_village_id
+            .and_then(
+                |vid| db.village(VillageKey(vid))
+            ).and_then(
+                |village| village.owner()
+            ).and_then(
+                |pid| db.player(pid)
+            ).map(
+                |player| GqlPlayer(player)
+            )
+        )
+    }
 }
 
 
