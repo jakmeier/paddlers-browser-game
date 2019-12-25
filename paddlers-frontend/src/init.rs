@@ -59,9 +59,9 @@ pub fn run(width: f32, height: f32, net_chan: Receiver<NetMsg>) {
                 .with_town(Town::new(ul)) // TODO: Think of a better way to handle unit lengths in general
                 .with_unit_length(ul)
                 .with_ui_division(main_area, menu_box_area)
-                .with_network_chan(net_chan)
                 .init_map()
                 .init_views()
+                .with_network_chan(net_chan)
             )
     );
 }

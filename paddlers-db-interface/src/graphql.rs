@@ -124,6 +124,14 @@ impl Query {
     fn map(low_x: i32, high_x: i32) -> GqlMapSlice {
         GqlMapSlice { low_x, high_x }
     }
+    // Object Visibility: public
+    // Returns up to 100 players starting from the given rank upwards
+    fn scoreboard(ctx: &Context, rank_offset: i32) -> Vec<GqlPlayer> {
+        ctx.db().players_sorted_by_karma(rank_offset as i64, 100)
+            .into_iter()
+            .map(GqlPlayer)
+            .collect()
+    }
 }
 
 #[juniper::object(

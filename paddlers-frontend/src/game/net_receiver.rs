@@ -5,6 +5,7 @@ use crate::game::{
     units::workers::Worker,
     components::*,
     town::new_temple_menu,
+    leaderboard::*,
     };
 use crate::net::{
     NetMsg, 
@@ -15,6 +16,9 @@ use super::*;
 
 impl Game<'_,'_> {
     pub fn update_net(&mut self) -> PadlResult<()> {
+        if self.net.is_none() {
+            return Ok(());
+        }
         use std::sync::mpsc::TryRecvError;
         match self.net.as_ref().unwrap().try_recv() {
             Ok(msg) => {
@@ -54,6 +58,13 @@ impl Game<'_,'_> {
                         self.flush_hobos()?;
                         self.insert_hobos(hobos)?;
                     },
+                    NetMsg::Leaderboard(offset, list) => {
+                        let leaderboard = self.world.read_resource::<Leaderboard>();
+                        leaderboard.clear()?;
+                        for (i,(name, karma)) in list.into_iter().enumerate() {
+                            leaderboard.insert_row(offset + i, &name, karma)?;
+                        }
+                    }
                     NetMsg::Map(response, min, max) => {
                         if let Some(data) = response.data {
                             let streams = data.map.streams.iter()

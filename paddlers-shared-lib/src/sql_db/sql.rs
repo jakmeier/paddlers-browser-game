@@ -332,4 +332,13 @@ pub trait GameDB {
         .first(self.dbconn())
         .expect("Error in look up")
     }
+    fn players_sorted_by_karma(&self, start_index: i64, limit: i64) -> Vec<Player> {
+            let results = players::table
+                .order_by(players::karma.desc())
+                .offset(start_index)
+                .limit(limit)
+                .load::<Player>(self.dbconn())
+                .expect("Error loading data");
+            results
+    }
 }

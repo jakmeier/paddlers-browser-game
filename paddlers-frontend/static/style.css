@@ -13,3 +13,8 @@ div.attack-table {
 div.attack-table >:first-child {
     grid-column: 1 / 4; /* span from grid column line 1 to 4 (3 columns) */
 }
+section.leaderboard {
+    display: grid;
+    grid-template-columns: 1fr 2fr 2fr;
+    padding: 20px;
+}

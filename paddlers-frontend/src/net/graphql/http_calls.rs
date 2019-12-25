@@ -127,3 +127,18 @@ pub (super) fn http_read_player_info() -> PadlResult<impl Future<Output = PadlRe
         })
     )
 }
+
+pub (super) fn http_read_leaderboard() -> PadlResult<impl Future<Output = PadlResult<LeaderboardResponse>>> {
+    let request_body = LeaderboardQuery::build_query(leaderboard_query::Variables{ offset: 0 });
+    let request_string = &serde_json::to_string(&request_body)?;
+    let promise = ajax::send("POST", &graphql_url()?, request_string)?;
+    Ok(
+        promise.map(|x| {
+            let raw_response: LeaderboardRawResponse = 
+                serde_json::from_str(&x?)?;
+            let response = raw_response.data.ok_or(PadlError::dev_err(PadlErrorCode::InvalidGraphQLData("leaderboard")))?;
+            let response = response.scoreboard;
+            Ok(response)
+        })
+    )
+}

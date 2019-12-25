@@ -134,6 +134,20 @@ impl GraphQlState {
             )
         )
     }
+
+    pub fn leaderboard_query(&self) -> PadlResult<impl Future<Output = PadlResult<NetMsg>>> {
+        let fp = http_read_leaderboard()?;
+        Ok(
+            fp.map(
+                move |response| Ok(NetMsg::Leaderboard(1,
+                    response?.into_iter()
+                        .map(|player|(player.display_name, player.karma))
+                        .collect()
+                    )
+                ),
+            )
+        )
+    }
 }
 
 pub fn own_villages_query() -> PadlResult<impl TryFuture<Ok = Vec<VillageKey>, Error = PadlError>> {

@@ -221,3 +221,12 @@ impl Into<UnitColor> for &attacks_query::UnitColor {
         }
     }
 }
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "api/schema.json",
+    query_path = "api/queries/leaderboard_query.graphql",
+)]
+pub struct LeaderboardQuery;
+pub type LeaderboardRawResponse = Response<leaderboard_query::ResponseData>;
+pub type LeaderboardResponse = Vec<leaderboard_query::LeaderboardQueryScoreboard>;

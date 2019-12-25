@@ -28,6 +28,7 @@ pub enum NetMsg {
     Buildings(BuildingsResponse),
     Error(PadlError),
     Hobos(HobosQueryResponse),
+    Leaderboard(usize, Vec<(String, i64)>),
     Map(MapResponse, i32, i32),
     Player(PlayerInfo),
     VillageInfo(VolatileVillageInfoResponse),
@@ -81,6 +82,7 @@ pub fn request_client_state() {
         STATIC_NET_STATE.spawn(STATIC_NET_STATE.gql_state.buildings_query());
         STATIC_NET_STATE.spawn(STATIC_NET_STATE.gql_state.workers_query());
         STATIC_NET_STATE.spawn(STATIC_NET_STATE.gql_state.hobos_query());
+        STATIC_NET_STATE.spawn(STATIC_NET_STATE.gql_state.leaderboard_query());
         request_player_update();
     }
 }

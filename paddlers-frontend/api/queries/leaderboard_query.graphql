@@ -1,0 +1,6 @@
+query LeaderboardQuery($offset: Int!) {
+    scoreboard(rankOffset: $offset) {
+        displayName,
+        karma,
+    }
+}

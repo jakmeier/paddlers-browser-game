@@ -27,6 +27,7 @@ use crate::game::{
     forestry::ForestrySystem,
     player_info::PlayerInfo,
     attacks::new_attack_view_dispatcher,
+    leaderboard::Leaderboard,
 };
 use crate::gui::{
     input,
@@ -175,10 +176,11 @@ impl Game<'_,'_> {
     }
     pub fn init_views(mut self) -> Self {
         let mut ui = self.world.write_resource::<UiState>();
-        ui.init_leaderboard().expect("Init leaderboard failed");
+        let leaderboard : Leaderboard = ui.init_leaderboard().expect("Init leaderboard failed");
         let atk_disp = new_attack_view_dispatcher(&mut ui).expect("Init dispatcher failed");
         self.view_manager.add_dispatcher(UiView::Attacks, atk_disp);
         std::mem::drop(ui);
+        self.world.insert(leaderboard);
         self
     }
 
