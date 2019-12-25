@@ -1,5 +1,5 @@
 #![recursion_limit="512"]
-#![feature(is_sorted, associated_type_bounds, vec_remove_item)]
+#![feature(is_sorted, associated_type_bounds, vec_remove_item, option_flattening)]
 extern crate quicksilver;
 #[macro_use]
 extern crate stdweb;
@@ -15,6 +15,7 @@ mod gui;
 mod net;
 mod prelude;
 mod logging;
+mod view;
 
 #[cfg(target_arch = "wasm32")]
 use init::wasm_setup::setup_wasm;
@@ -32,3 +33,8 @@ pub fn main() {
 
 /// Micro second precision
 pub type Timestamp = i64;
+
+#[inline]
+pub fn seconds(t: Timestamp) -> i64 {
+    t / 1_000_000
+}

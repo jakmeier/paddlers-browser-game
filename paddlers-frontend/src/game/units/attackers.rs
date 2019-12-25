@@ -13,6 +13,7 @@ use crate::game::{
     fight::Health,
     components::NetObj,
     status_effects::StatusEffects,
+    attacks::Attack,
 };
 use crate::net::graphql::query_types::HoboEffect;
 use paddlers_shared_lib::graphql_types::*;
@@ -77,6 +78,15 @@ use crate::net::graphql::attacks_query::{AttacksQueryVillageAttacksUnits,Attacks
 impl AttacksQueryVillageAttacks {
     pub fn create_entities(&self, world: &mut World, ul: f32) -> PadlResult<Vec<Entity>> {
         let birth_time = GqlTimestamp::from_string(&self.arrival).unwrap().0;
+
+        let description = self.attacker.as_ref()
+            .map(|a| &a.display_name)
+            .map(|player|format!("From {}", player))
+            .unwrap_or("Anarchists".to_owned());
+        let size = self.units.len() as u32;
+        let atk = Attack::new(birth_time, description, size);
+        world.create_entity().with(atk).build();
+
         self.units
             .iter()
             .enumerate()

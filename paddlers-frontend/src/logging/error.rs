@@ -78,6 +78,8 @@ pub enum PadlErrorCode {
     StdWebGenericError(stdweb::web::error::Error),
     StdWebConversion(stdweb::private::ConversionError),
     StdWebSecurityError(stdweb::web::error::SecurityError),
+    InvalidDom(&'static str),
+    PanesError(String),
     JsonParseError(serde_json::error::Error),
     UrlParseError(String),
     NoDataFromBrowser(&'static str),
@@ -141,6 +143,10 @@ impl fmt::Display for PadlErrorCode {
                 write!(f, "A conversion error in the web std library occurred: {}", cause),
             PadlErrorCode::StdWebSecurityError(cause) =>
                 write!(f, "A security error in the web std library occurred: {}", cause),
+            PadlErrorCode::InvalidDom(cause) =>
+                write!(f, "DOM error: {}", cause),
+            PadlErrorCode::PanesError(cause) =>
+                write!(f, "Panes error: {}", cause),
             PadlErrorCode::JsonParseError(cause) =>
                 write!(f, "Error while parsing JSON data: {}", cause),
             PadlErrorCode::UrlParseError(cause) =>
@@ -199,6 +205,11 @@ impl From<AjaxError> for PadlError {
         } else {
             PadlError::dev_err(PadlErrorCode::BrowserError(ajax.description))
         }
+    }
+}
+impl From<panes::PanesError> for PadlError {
+    fn from(error: panes::PanesError) -> Self {
+        PadlError::dev_err(PadlErrorCode::PanesError(error.to_string()))
     }
 }
 

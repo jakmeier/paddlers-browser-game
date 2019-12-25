@@ -7,7 +7,6 @@ use crate::game::{
     town::{DefaultShop, Town},
     town_resources::TownResources,
     units::workers::*,
-    game_event_manager::EventPool,
 };
 use crate::gui::menu::buttons::MenuButtons;
 use crate::logging::ErrorQueue;
@@ -83,8 +82,12 @@ impl<'a> System<'a> for LeftClickSystem {
         let active_entity = ui_state.selected_entity;
 
         // Always visible buttons
-        buttons.click(mouse_pos, &mut *ui_state)
-            .unwrap_or_else(|e| errq.push(e));
+        match buttons.click(mouse_pos) {
+            Err(e) => errq.push(e),
+            Ok(Some(event)) => self.event_pool.send(event).expect("sending event failed"),
+            Ok(None) => {}
+        }
+        
 
         // Demultiplex signal to views
         let in_menu_area = mouse_pos.overlaps_rectangle(&(*ui_state).menu_box_area);

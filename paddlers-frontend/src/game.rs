@@ -25,9 +25,11 @@ use crate::game::{
     units::worker_system::WorkerSystem,
     forestry::ForestrySystem,
     player_info::PlayerInfo,
+    attacks::new_attack_view_dispatcher,
 };
 use crate::gui::{
     input,
+    input::UiView,
     input::pointer::PointerManager,
     ui_state::*,
     sprites::*,
@@ -47,10 +49,11 @@ use town::{Town, DefaultShop};
 use town_resources::TownResources;
 use map::{GlobalMap, GlobalMapPrivateState};
 use game_event_manager::GameEvent;
-
+use crate::view::ViewManager;
 
 pub(crate) struct Game<'a, 'b> {
     pub dispatcher: Dispatcher<'a, 'b>,
+    pub view_manager: ViewManager<'a, 'b>,
     pub pointer_manager: PointerManager<'a, 'b>,
     pub world: World,
     pub sprites: Option<Sprites>,
@@ -95,6 +98,7 @@ impl Game<'_,'_> {
 
         Ok(Game {
             dispatcher: dispatcher,
+            view_manager: Default::default(),
             pointer_manager: pm,
             world: world,
             sprites: None,
@@ -130,6 +134,8 @@ impl Game<'_,'_> {
         }
         self.update_time_reference();
         self.dispatcher.dispatch(&mut self.world);
+        let view = self.world.fetch::<UiState>().current_view;
+        self.view_manager.update(&mut self.world, view);
         self.handle_game_events();
         if self.total_updates % 300 == 15 {
             self.reaper(&Rectangle::new_sized(window.screen_size()));
@@ -165,6 +171,13 @@ impl Game<'_,'_> {
         let (private, shared) = GlobalMap::new(main_area.size());
         self.map = Some(private);
         self.world.insert(shared);
+        self
+    }
+    pub fn init_views(mut self) -> Self {
+        let mut ui = self.world.write_resource::<UiState>();
+        let atk_disp = new_attack_view_dispatcher(&mut ui).expect("Init dispatcher failed");
+        self.view_manager.add_dispatcher(UiView::Attacks, atk_disp);
+        std::mem::drop(ui);
         self
     }
 

@@ -5,7 +5,7 @@ pub use ui_box::*;
 
 use paddlers_shared_lib::prelude::AbilityType;
 use paddlers_shared_lib::api::shop::Price;
-use crate::gui::{sprites::*, utils::*, menu::buttons::MenuButtonAction, z::*};
+use crate::gui::{sprites::*, utils::*, z::*};
 use crate::prelude::*;
 use crate::game::game_event_manager::GameEvent;
 use quicksilver::prelude::*;
@@ -35,7 +35,6 @@ pub enum ClickOutput {
     Entity(specs::Entity),
     BuildingType(BuildingType),
     Ability(AbilityType),
-    MenuButtonAction(MenuButtonAction),
     Event(GameEvent),
 }
 #[derive(Clone, Debug)]
@@ -206,11 +205,6 @@ impl From<BuildingType> for ClickOutput {
 impl From<AbilityType> for ClickOutput {
     fn from(a: AbilityType) -> Self {
         ClickOutput::Ability(a)
-    }
-}
-impl From<MenuButtonAction> for ClickOutput {
-    fn from(a: MenuButtonAction) -> Self {
-        ClickOutput::MenuButtonAction(a)
     }
 }
 impl From<GameEvent> for ClickOutput {

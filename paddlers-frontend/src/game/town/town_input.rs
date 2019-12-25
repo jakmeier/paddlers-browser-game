@@ -10,7 +10,6 @@ use crate::game::{
     units::workers::*,
     components::*,
     town::{Town, DefaultShop},
-    game_event_manager::EventPool,
 };
 use crate::net::state::current_village;
 use crate::gui::input::{Grabbable, Clickable};

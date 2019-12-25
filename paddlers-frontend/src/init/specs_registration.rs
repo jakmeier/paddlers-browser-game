@@ -1,7 +1,7 @@
 use crate::prelude::*;
 use specs::prelude::*;
 
-use crate::game::{components::*, town_resources::TownResources, units::hobos::Hobo, units::workers::Worker, player_info::PlayerInfo};
+use crate::game::{components::*, town_resources::TownResources, units::hobos::Hobo, units::workers::Worker, player_info::PlayerInfo, attacks::Attack};
 use crate::gui::{menu::buttons::MenuButtons, ui_state::*};
 use crate::logging::{text_to_user::TextBoard, AsyncErr, ErrorQueue};
 use crate::net::game_master_api::RestApiState;
@@ -22,6 +22,7 @@ pub(super) fn insert_resources(world: &mut World, err_send: std::sync::mpsc::Sen
 
 pub fn register_components(world: &mut World) {
     world.register::<AnimationState>();
+    world.register::<Attack>();
     world.register::<Building>();
     world.register::<Clickable>();
     world.register::<EntityContainer>();

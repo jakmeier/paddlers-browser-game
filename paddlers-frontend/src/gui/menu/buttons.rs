@@ -5,17 +5,12 @@ use crate::gui::{
     sprites::*,
     gui_components::*,
     input::UiView,
-    ui_state::{UiState, Now},
+    ui_state::Now,
     utils::*,
 };
 
 pub struct MenuButtons {
     ui: UiBox,
-}
-
-#[derive(Debug,Clone, PartialEq, Eq)]
-pub enum MenuButtonAction {
-    SwitchToView(UiView),
 }
 
 impl MenuButtons {
@@ -25,19 +20,19 @@ impl MenuButtons {
 
         let town_button = Self::button_render(SingleSprite::TownButton, SingleSprite::TownButtonHov);
         ui_box.add(
-            UiElement::new(MenuButtonAction::SwitchToView(UiView::Town))
+            UiElement::new(GameEvent::SwitchToView(UiView::Town))
                 .with_render_variant(town_button)
         );
         
         let map_button = Self::button_render(SingleSprite::MapButton, SingleSprite::MapButtonHov);
         ui_box.add(
-            UiElement::new(MenuButtonAction::SwitchToView(UiView::Map))
+            UiElement::new(GameEvent::SwitchToView(UiView::Map))
                 .with_render_variant(map_button)
         );
 
         let atk_button = Self::button_render(SingleSprite::AttacksButton, SingleSprite::AttacksButtonHov);
         ui_box.add(
-            UiElement::new(MenuButtonAction::SwitchToView(UiView::Attacks))
+            UiElement::new(GameEvent::SwitchToView(UiView::Attacks))
                 .with_render_variant(atk_button)
         );
         
@@ -51,15 +46,11 @@ impl MenuButtons {
             SpriteSet::Simple(hover),
         )
     }
-    pub fn click(&self, mouse: impl Into<Vector>, ui_state: &mut UiState) -> PadlResult<()> {
-        if let Some((ClickOutput::MenuButtonAction(action), _)) = self.ui.click(mouse.into())? {
-            match action {
-                MenuButtonAction::SwitchToView(v) => {
-                    ui_state.set_view(v);
-                }
-            }
+    pub fn click(&self, mouse: impl Into<Vector>) -> PadlResult<Option<GameEvent>> {
+        match self.ui.click(mouse.into())? {
+            Some((ClickOutput::Event(event), _)) => Ok(Some(event)),
+            _ => Ok(None)
         }
-        Ok(())
     }
 }
 

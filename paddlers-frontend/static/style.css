@@ -5,8 +5,11 @@ body {
 #game-root {
     position: relative;
 }
-.on-canvas {
-    position: absolute;
-    display: unset;
-    z-index: 1;
+div.attack-table {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    padding: 10px;
+}
+div.attack-table >:first-child {
+    grid-column: 1 / 4; /* span from grid column line 1 to 4 (3 columns) */
 }

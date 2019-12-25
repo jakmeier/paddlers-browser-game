@@ -18,6 +18,7 @@ use crate::game::{
     units::attackers::change_duck_sprite_to_happy,
     player_info::PlayerInfo,
     };
+use crate::gui::input::UiView;
 
 /// The SPECS systems' endpoint
 pub type EventPool = Sender<GameEvent>;
@@ -27,6 +28,7 @@ pub enum GameEvent {
     HoboSatisfied(Entity),
     HttpBuyProphet,
     SendProphetAttack((i32,i32)),
+    SwitchToView(UiView),
 }
 
 impl Game<'_,'_> {
@@ -56,7 +58,10 @@ impl Game<'_,'_> {
                 // TODO: Only confirm if HTTP OK is returned 
                 // (Probably do this after cleaning pu network and promise handling)
                 self.confirm_to_user(format!("Attacking village <{}:{}>", x, y));
-            }
+            },
+            GameEvent::SwitchToView(view) => {
+                self.switch_view(view)?;
+            },
         }
         Ok(())
     }

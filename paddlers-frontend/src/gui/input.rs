@@ -2,7 +2,7 @@
 /// redirect it to suitable modules to handle the input
 
 use quicksilver::prelude::*;
-use quicksilver::geom::{Vector, Rectangle};
+use quicksilver::geom::Vector;
 use specs::prelude::*;
 use paddlers_shared_lib::prelude::*;
 use crate::prelude::*;
@@ -27,7 +27,7 @@ use crate::gui::ui_state::UiState;
 #[derive(Default, Clone, Copy)]
 pub struct MouseState(pub Vector, pub Option<MouseButton>);
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum UiView {
     Town,
     Map,
@@ -42,37 +42,6 @@ pub struct Clickable;
 pub enum Grabbable {
     NewBuilding(BuildingType),
     Ability(AbilityType),
-}
-
-impl Default for UiState {
-    fn default() -> Self {
-        UiState {
-            grabbed_item: None,
-            selected_entity: None,
-            hovered_entity: None,
-            main_area: Rectangle::default(),
-            menu_box_area: Rectangle::default(),
-            current_view: UiView::Town,
-        }
-    }
-}
-impl UiState {
-    pub fn toggle_view(&mut self) {
-        self.reset_view();
-        match self.current_view {
-            UiView::Map => self.current_view = UiView::Town,
-            UiView::Town => self.current_view = UiView::Attacks,
-            UiView::Attacks => self.current_view = UiView::Map,
-        }
-    }
-    pub fn set_view(&mut self, view: UiView) {
-        self.reset_view();
-        self.current_view = view;
-    }
-    fn reset_view(&mut self) {
-        self.selected_entity = None;
-        self.grabbed_item = None;
-    }
 }
 
 impl crate::game::Game<'_, '_> {
@@ -153,8 +122,8 @@ impl crate::game::Game<'_, '_> {
             Event::Key(key, state) 
                 if *key == Key::Tab && *state == ButtonState::Pressed =>
                 {
-                    let mut ui_state = self.world.write_resource::<UiState>();
-                    ui_state.toggle_view();
+                    let r = self.toggle_view();
+                    self.check(r);
                 },
             _evt => {
                 // println!("Event: {:#?}", _evt)
