@@ -16,7 +16,6 @@ pub struct MenuButtons {
 impl MenuButtons {
     pub fn new() -> Self {
         let mut ui_box = UiBox::new(4, 1, 0.0, 5.0);
-        ui_box.add(UiElement::empty());
 
         let town_button = Self::button_render(SingleSprite::TownButton, SingleSprite::TownButtonHov);
         ui_box.add(
@@ -34,6 +33,12 @@ impl MenuButtons {
         ui_box.add(
             UiElement::new(GameEvent::SwitchToView(UiView::Attacks))
                 .with_render_variant(atk_button)
+        );
+
+        let leaderboard_button = Self::button_render(SingleSprite::LeaderboardButton, SingleSprite::LeaderboardButtonHov);
+        ui_box.add(
+            UiElement::new(GameEvent::SwitchToView(UiView::Leaderboard))
+                .with_render_variant(leaderboard_button)
         );
         
         MenuButtons {

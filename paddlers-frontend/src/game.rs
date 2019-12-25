@@ -5,6 +5,7 @@ pub (crate) mod components;
 pub (crate) mod fight;
 pub (crate) mod forestry;
 pub (crate) mod game_event_manager;
+pub (crate) mod leaderboard;
 pub (crate) mod level;
 pub (crate) mod mana;
 pub (crate) mod map;
@@ -174,6 +175,7 @@ impl Game<'_,'_> {
     }
     pub fn init_views(mut self) -> Self {
         let mut ui = self.world.write_resource::<UiState>();
+        ui.init_leaderboard().expect("Init leaderboard failed");
         let atk_disp = new_attack_view_dispatcher(&mut ui).expect("Init dispatcher failed");
         self.view_manager.add_dispatcher(UiView::Attacks, atk_disp);
         std::mem::drop(ui);

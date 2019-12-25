@@ -33,6 +33,7 @@ impl<'a> System<'a> for HoverSystem {
                 }
             },
             UiView::Attacks => {},
+            UiView::Leaderboard => {},
         }
     }
 }

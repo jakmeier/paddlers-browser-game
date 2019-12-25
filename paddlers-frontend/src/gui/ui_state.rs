@@ -1,7 +1,6 @@
 use specs::prelude::*;
 use quicksilver::prelude::*;
 use crate::prelude::*;
-use crate::game::Game;
 use crate::gui::input::*;
 
 // #[derive(Clone)]
@@ -39,40 +38,11 @@ impl Default for UiState {
         }
     }
 }
-impl Game<'_,'_> {
-    pub fn switch_view(&mut self, view: UiView) -> PadlResult<()> {
-        self.leave_view()?;
-        self.enter_view(view)?;
-        Ok(())
-    }
-    pub fn toggle_view(&mut self) -> PadlResult<()> {
-        let ui: shred::Fetch<UiState> = self.world.fetch();
-        let next =
-        match (*ui).current_view {
-            UiView::Map => UiView::Town,
-            UiView::Town => UiView::Attacks,
-            UiView::Attacks => UiView::Map,
-        };
-        std::mem::drop(ui);
 
-        self.switch_view(next)
-    }
-    fn enter_view(&mut self, view: UiView) -> PadlResult<()> {
-        let ui: &mut UiState = &mut *self.world.fetch_mut();
-        ui.current_view = view;
-        for (v,pane) in ui.view_panes.iter_mut() {
-            if *v == ui.current_view {
-                pane.show()?;
-            } else {
-                pane.hide()?;
-            }
-        }
-        Ok(())
-    }
-    fn leave_view(&mut self) -> PadlResult<()> {
-        let ui: &mut UiState = &mut *self.world.fetch_mut();
-        ui.selected_entity = None;
-        ui.grabbed_item = None;
-        Ok(())
+
+impl UiState {
+    pub fn leave_view(&mut self) {
+        self.selected_entity = None;
+        self.grabbed_item = None;
     }    
 }

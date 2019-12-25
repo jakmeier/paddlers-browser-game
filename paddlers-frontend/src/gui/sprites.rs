@@ -130,6 +130,8 @@ pub enum SingleSprite {
     Prophet,
     AttacksButton,
     AttacksButtonHov,
+    LeaderboardButton,
+    LeaderboardButtonHov,
 }
 
 #[derive(Debug, Clone, Copy)]

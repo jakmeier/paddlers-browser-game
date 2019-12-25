@@ -29,9 +29,10 @@ pub struct MouseState(pub Vector, pub Option<MouseButton>);
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum UiView {
-    Town,
-    Map,
     Attacks,
+    Leaderboard,
+    Map,
+    Town
 }
 
 #[derive(Default, Debug, Component)]

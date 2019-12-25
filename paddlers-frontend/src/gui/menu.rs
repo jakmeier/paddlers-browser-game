@@ -81,7 +81,10 @@ impl Game<'_, '_> {
                 self.render_town_menu(window, entity, &menu_area)?;
             },
             UiView::Attacks => {
-                // TODO
+                // NOP
+            },
+            UiView::Leaderboard => {
+                // NOP
             },
         }
 

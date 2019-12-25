@@ -32,6 +32,9 @@ impl<'a> System<'a> for DragSystem {
                 (UiView::Attacks, false) => {
                     // NOP
                 }
+                (UiView::Leaderboard, false) => {
+                    // NOP
+                }
             }
         }
     }

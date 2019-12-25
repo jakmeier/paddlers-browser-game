@@ -74,9 +74,10 @@ impl Game<'_, '_> {
                 map.render(window, &mut sprites.as_mut().unwrap(), &main_area)?;
             },
             UiView::Attacks => {
-                // TODO
                 window.draw_ex(&main_area, Col(LIGHT_BLUE), Transform::IDENTITY, Z_TEXTURE);
-                
+            },
+            UiView::Leaderboard => {
+                window.draw_ex(&main_area, Col(DARK_BLUE), Transform::IDENTITY, Z_TEXTURE);
             },
         }
         

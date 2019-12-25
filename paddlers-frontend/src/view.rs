@@ -1,5 +1,8 @@
 use std::collections::HashMap;
+use crate::prelude::*;
+use crate::game::Game;
 use crate::gui::input::UiView;
+use crate::gui::ui_state::UiState;
 use specs::{Dispatcher, World};
 
 #[derive(Default)]
@@ -19,4 +22,42 @@ impl<'a,'b> ViewManager<'a,'b> {
             }
         }
     }
+}
+
+impl Game<'_,'_> {
+    pub fn switch_view(&mut self, view: UiView) -> PadlResult<()> {
+        self.leave_view()?;
+        self.enter_view(view)?;
+        Ok(())
+    }
+    pub fn toggle_view(&mut self) -> PadlResult<()> {
+        let ui: shred::Fetch<UiState> = self.world.fetch();
+        let next =
+        match (*ui).current_view {
+            UiView::Map => UiView::Town,
+            UiView::Town => UiView::Attacks,
+            UiView::Attacks => UiView::Leaderboard,
+            UiView::Leaderboard => UiView::Map,
+        };
+        std::mem::drop(ui);
+
+        self.switch_view(next)
+    }
+    fn enter_view(&mut self, view: UiView) -> PadlResult<()> {
+        let ui: &mut UiState = &mut *self.world.fetch_mut();
+        ui.current_view = view;
+        for (v,pane) in ui.view_panes.iter_mut() {
+            if *v == ui.current_view {
+                pane.show()?;
+            } else {
+                pane.hide()?;
+            }
+        }
+        Ok(())
+    }
+    fn leave_view(&mut self) -> PadlResult<()> {
+        let ui: &mut UiState = &mut *self.world.fetch_mut();
+        ui.leave_view();
+        Ok(())
+    }    
 }

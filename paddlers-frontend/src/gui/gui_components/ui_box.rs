@@ -245,6 +245,7 @@ impl UiElement {
         self
     }
 
+    #[allow(dead_code)]
     pub fn empty() -> Self {
         UiElement {
             display: RenderVariant::Hide,
