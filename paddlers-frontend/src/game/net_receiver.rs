@@ -81,6 +81,7 @@ impl Game<'_,'_> {
                             menus.insert(temple, new_temple_menu(&player_info))
                                 .map_err(|_| PadlError::dev_err(PadlErrorCode::SpecsError("Temple menu insertion failed")))?;
                             }
+                            *self.world.write_resource() = DefaultShop::new(player_info.karma());
                             *self.world.write_resource() = player_info;
                         },
                         NetMsg::VillageInfo(response) => {

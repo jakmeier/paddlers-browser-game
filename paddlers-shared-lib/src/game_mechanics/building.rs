@@ -37,3 +37,30 @@ impl BuildingType {
         }
     }
 }
+
+// Definition of which buildings are available to a player
+impl BuildingType {
+    pub fn player_can_build(&self, karma: i64) -> bool {
+        match self {
+            BuildingType::BlueFlowers => true,
+            BuildingType::BundlingStation => true,
+            BuildingType::PresentA => karma >= 200,
+            BuildingType::PresentB => karma >= 2000,
+            BuildingType::RedFlowers => karma >= 1000,
+            BuildingType::SawMill => karma >= 100,
+            BuildingType::Temple => false,
+            BuildingType::Tree => true,
+        }
+    }
+    pub fn default_shop_buildings<'a>() -> impl Iterator<Item = &'a BuildingType> {
+        [
+            BuildingType::BlueFlowers,
+            BuildingType::BundlingStation,
+            BuildingType::PresentA,
+            BuildingType::PresentB,
+            BuildingType::RedFlowers,
+            BuildingType::SawMill,
+            BuildingType::Tree,
+        ].into_iter()
+    }
+}

@@ -153,9 +153,8 @@ impl Game<'_,'_> {
         self.world.insert(UnitLength(ul));
         self
     }
-    pub fn with_ui_division(mut self, main_area: Rectangle, menu_area: Rectangle) -> Self {
+    pub fn with_ui_division(self, main_area: Rectangle, menu_area: Rectangle) -> Self {
         {
-            self.world.insert(DefaultShop::new());
             let mut data = self.world.write_resource::<UiState>();
             (*data).main_area = main_area;
             (*data).menu_box_area = menu_area;

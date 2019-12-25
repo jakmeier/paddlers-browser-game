@@ -108,7 +108,7 @@ impl AttackViewSystem {
         let mut attack = AttackViewSystem {
             incoming_attacks_table: table,
         };
-        attack.add_row("<h2>Incoming Visitors</h2>");
+        attack.add_row("<h2>Incoming Visitors</h2>")?;
         pane.hide()?;
         let panes = vec![pane];
         Ok((attack, panes))

@@ -23,15 +23,13 @@ impl Default for DefaultShop {
     }
 }
 impl DefaultShop {
-    pub fn new() -> Self {
+    pub fn new(karma: i64) -> Self {
         let mut result = DefaultShop::default();
-        result.add_building(BuildingType::BlueFlowers);
-        result.add_building(BuildingType::RedFlowers);
-        result.add_building(BuildingType::Tree);
-        result.add_building(BuildingType::BundlingStation);
-        result.add_building(BuildingType::SawMill);
-        result.add_building(BuildingType::PresentA);
-        result.add_building(BuildingType::PresentB);
+        for b in BuildingType::default_shop_buildings()
+            .filter(|b| b.player_can_build(karma))
+        {
+            result.add_building(*b);
+        }
         result
     }
 
