@@ -126,9 +126,9 @@ fn execute_worker_tasks(db: &DB, worker_id: WorkerKey, village: VillageKey) -> O
     let current_task = tasks.pop();
     let mut town = TownView::load_village(db, village);
     for task in tasks {
-        finish_task(db, task.id, Some(task), Some(&mut town)).map_err(
-            |e| println!("Executing task failed: {}", e)
-        ).unwrap();
+        if let Err(e) =  finish_task(db, task.id, Some(task), Some(&mut town)) {
+            println!("Executing task failed: {}", e)
+        }
     }
     current_task
 }

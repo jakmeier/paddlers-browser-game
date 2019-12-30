@@ -12,7 +12,13 @@ impl Event {
     pub (super) fn run(&self, db: &DB) -> Option<(Event, DateTime<Utc>)> {
         match self {
             Event::WorkerTask{ task_id } => {
-                finish_task(db, *task_id, None, None).expect("Task execution failed.")
+                let res = finish_task(db, *task_id, None, None);
+                if let Err(e) = res {
+                    println!("Task execution failed: {}", e);
+                    None
+                } else {
+                    res.unwrap()
+                }
             }
         }
     }
