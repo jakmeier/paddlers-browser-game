@@ -16,6 +16,8 @@ pub (crate) mod status_effects;
 pub (crate) mod town;
 pub (crate) mod town_resources;
 pub (crate) mod units;
+#[cfg(feature="dev_view")]
+pub (crate) mod dev_view;
 
 use std::sync::mpsc::{channel, Receiver};
 use specs::prelude::*;
@@ -52,6 +54,7 @@ use town_resources::TownResources;
 use map::{GlobalMap, GlobalMapPrivateState};
 use game_event_manager::GameEvent;
 use crate::view::ViewManager;
+use stdweb::unstable::TryInto;
 
 pub(crate) struct Game<'a, 'b> {
     pub dispatcher: Dispatcher<'a, 'b>,
@@ -73,6 +76,8 @@ pub(crate) struct Game<'a, 'b> {
     pub map: Option<GlobalMapPrivateState>,
     #[cfg(feature="dev_view")]
     pub palette: bool,
+    #[cfg(feature="dev_view")]
+    pub active_test: Option<Box<crate::game::dev_view::benchmark::TestData>>,
 }
 
 impl Game<'_,'_> {
@@ -118,6 +123,8 @@ impl Game<'_,'_> {
             map: None,
             #[cfg(feature="dev_view")]
             palette: false,
+            #[cfg(feature="dev_view")]
+            active_test: None,
         })
     }
 
@@ -239,12 +246,23 @@ impl Game<'_,'_> {
         }
         Ok(())
     }
-    /// Deletes all hobo entities (lazy, requires world.maintain())
-    fn flush_hobos(&self) -> PadlResult<()> {
+    /// Deletes all home hobo entities (lazy, requires world.maintain())
+    fn flush_home_hobos(&self) -> PadlResult<()> {
         let w = self.world.read_storage::<units::hobos::Hobo>();
         for (entity, _marker) in (&self.world.entities(), &w).join() {
             self.world.entities().delete(entity)
                 .map_err(|_| PadlError::dev_err(PadlErrorCode::SpecsError("Delete hobo")))?;
+        }
+        Ok(())
+    }
+    /// Deletes all hobo entities (lazy, requires world.maintain())
+    fn flush_hobos(&self) -> PadlResult<()> {
+        let w = self.world.read_storage::<components::NetObj>();
+        for (entity, netid) in (&self.world.entities(), &w).join() {
+            if netid.is_hobo() {
+                self.world.entities().delete(entity)
+                    .map_err(|_| PadlError::dev_err(PadlErrorCode::SpecsError("Delete hobo")))?;
+            }
         }
         Ok(())
     }
@@ -268,22 +286,5 @@ impl Game<'_,'_> {
     pub fn confirm_to_user(&mut self, msg: String) {
         let mut tb = self.world.write_resource::<TextBoard>();
         tb.display_confirmation(msg);
-    }
-    #[cfg(feature="dev_view")]
-    pub fn draw_dev_view(&self, window: &mut Window) {
-        if self.palette {
-            let area = Rectangle::new((0,0),window.screen_size()).padded(100.0);
-            crate::gui::utils::colors::palette::draw_color_palette(window, area);
-        }
-    }
-    #[cfg(feature="dev_view")]
-    pub fn dev_view_event(&mut self, event: &Event) {
-        match event {
-            Event::Key(key, state) 
-            if *key == Key::Space && *state == ButtonState::Pressed => {
-                self.palette = !self.palette;
-            },
-            _ => {},
-        }
     }
 }

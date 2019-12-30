@@ -55,7 +55,7 @@ impl Game<'_,'_> {
                         }
                     },
                     NetMsg::Hobos(hobos) => {
-                        self.flush_hobos()?;
+                        self.flush_home_hobos()?;
                         self.insert_hobos(hobos)?;
                     },
                     NetMsg::Leaderboard(offset, list) => {

@@ -58,6 +58,9 @@ impl NetObj {
     ) -> PadlResult<Entity> {
         Self::lookup_entity(net_id, NetObjType::Worker, net_ids, entities)
     }
+    pub fn is_hobo(&self) -> bool {
+        self.typ == NetObjType::Hobo
+    }
     fn lookup_entity(
         net_id: i64,
         net_type: NetObjType,

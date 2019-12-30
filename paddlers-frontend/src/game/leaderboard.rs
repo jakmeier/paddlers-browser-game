@@ -2,7 +2,7 @@ use crate::prelude::*;
 use crate::gui::ui_state::UiState;
 use crate::gui::input::UiView;
 use stdweb::web::*;
-use stdweb::unstable::TryInto;
+// use stdweb::unstable::TryInto;
 
 pub struct Leaderboard(Node);
 

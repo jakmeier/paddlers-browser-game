@@ -135,7 +135,7 @@ impl Town {
                             errq.push(e)
                         );
                         resources.spend(&bt.price());
-                        self.insert_new_bulding(&entities, &lazy, pos, *bt);
+                        self.insert_new_building(&entities, &lazy, pos, *bt);
                         (*ui_state).grabbed_item = None;
                     }
                 },

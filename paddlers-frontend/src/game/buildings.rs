@@ -29,11 +29,11 @@ use paddlers_shared_lib::{
 pub struct Building;
 
 impl Town {
-    pub fn insert_new_bulding(&mut self, entities: &EntitiesRes, lazy: &LazyUpdate, pos: TileIndex, bt: BuildingType) -> Entity {
-       self.insert_bulding(entities, lazy, pos, bt, bt.attack_power(), bt.attacks_per_cycle(), bt.range(), utc_now())
+    pub fn insert_new_building(&mut self, entities: &EntitiesRes, lazy: &LazyUpdate, pos: TileIndex, bt: BuildingType) -> Entity {
+       self.insert_building(entities, lazy, pos, bt, bt.attack_power(), bt.attacks_per_cycle(), bt.range(), utc_now())
     }
 
-    fn insert_bulding(
+    fn insert_building(
         &mut self, 
         entities: &EntitiesRes, 
         lazy: &LazyUpdate, 
@@ -150,6 +150,6 @@ impl buildings_query::BuildingsQueryVillageBuildings {
         let entities = game.world.entities();
         let lazy = game.world.read_resource::<LazyUpdate>();
         let mut town = game.world.write_resource::<Town>();
-        town.insert_bulding(&entities, &lazy, coordinates, bt, maybe_ap, self.attacks_per_cycle, maybe_range, created)
+        town.insert_building(&entities, &lazy, coordinates, bt, maybe_ap, self.attacks_per_cycle, maybe_range, created)
     }
 }

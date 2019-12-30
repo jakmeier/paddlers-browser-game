@@ -23,6 +23,7 @@ serde_json = "1.0"
 chrono = "0.4"
 pathfinding = "2.0.3"
 url = "2.1.0"
+statistical = { version = "1.0", optional = true }
 
 futures-preview = "0.3.0-alpha.18"
 futures-util-preview = "0.3.0-alpha.18"
@@ -30,4 +31,4 @@ futures-util-preview = "0.3.0-alpha.18"
 
 [features]
 mobile_debug = []
-dev_view = []
+dev_view = ["statistical"]

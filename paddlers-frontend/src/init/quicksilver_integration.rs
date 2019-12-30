@@ -28,8 +28,9 @@ impl State for Game<'static, 'static> {
     }
 
     fn update(&mut self, window: &mut Window) -> Result<()> {
+        #[cfg(feature="dev_view")]
+        self.start_update();
         self.total_updates += 1;
-        window.set_draw_rate(33.3); // 33ms delay between frames  => 30 fps
         window.set_max_updates(1); // 1 update per frame is enough
         // window.set_fullscreen(true);
         self.update_time_reference();
@@ -53,10 +54,15 @@ impl State for Game<'static, 'static> {
             self.update_loading(window)
         } else {
             self.main_update_loop(window)
-        }
+        }?;
+        #[cfg(feature="dev_view")]
+        self.end_update();
+        Ok(())
     }
 
     fn draw(&mut self, window: &mut Window) -> Result<()> {
+        #[cfg(feature="dev_view")]
+        self.start_draw();
         {
             let mut rest = self.world.write_resource::<RestApiState>();
             let err = self.stats.track_frame(&mut *rest, utc_now());
@@ -66,7 +72,10 @@ impl State for Game<'static, 'static> {
             self.draw_loading(window)
         } else {
             self.draw_main(window)
-        }
+        }?;
+        #[cfg(feature="dev_view")]
+        self.end_draw();
+        Ok(())
     }
 
     fn event(&mut self, event: &Event, window: &mut Window) -> Result<()> {
