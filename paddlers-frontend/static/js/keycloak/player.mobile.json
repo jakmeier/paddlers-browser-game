@@ -1,0 +1,8 @@
+{
+  "realm": "Paddlers",
+  "auth-server-url": "http://10.42.0.1/auth/",
+  "ssl-required": "external",
+  "resource": "PaddlersFrontend",
+  "public-client": true,
+  "confidential-port": 0
+}

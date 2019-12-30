@@ -10,17 +10,20 @@ build-and-run: build
 
 build: debug-game-master-container debug-db-interface-container debug-frontend-container debug-keycloak-container
 
+mobile: debug-game-master-container debug-db-interface-container mobile-frontend-container mobile-keycloak-container
+	make run
+
 release: game-master-container db-interface-container frontend-container keycloak-container
 
 run: docker-compose.local.yml
 	docker-compose -f $< up --no-start
-ifeq ($(ENV_EXISTS),1)
-	docker cp ./.env paddlers_game-master_1:/app/.env
-	docker cp ./.env paddlers_db-interface_1:/app/.env
-else
+# ifeq ($(ENV_EXISTS),1)
+# 	docker cp ./.env paddlers_game-master_1:/app/.env
+# 	docker cp ./.env paddlers_db-interface_1:/app/.env
+# else
 	docker cp ./local.env paddlers_game-master_1:/app/.env
 	docker cp ./local.env paddlers_db-interface_1:/app/.env
-endif
+# endif
 	docker-compose -f $< up --no-recreate --no-build
 
 rust-container: Dockerfile
@@ -44,10 +47,16 @@ debug-frontend-container: paddlers-frontend/debug.Dockerfile rust-container
 frontend-container: paddlers-frontend/Dockerfile rust-container
 	docker build --target WebServer -t $(REPO):frontend-snapshot -f $< .
 
+mobile-frontend-container: paddlers-frontend/mobile.Dockerfile rust-container
+	docker build --target WebServer -t $(REPO):frontend-snapshot -f $< .
+
 debug-keycloak-container: paddlers-keycloak/debug.Dockerfile
 	docker build --target KeyCloak -t $(REPO):keycloak-snapshot -f $< .
 
 keycloak-container: paddlers-keycloak/Dockerfile
+	docker build --target KeyCloak -t $(REPO):keycloak-snapshot -f $< .
+
+mobile-keycloak-container: paddlers-keycloak/mobile.Dockerfile
 	docker build --target KeyCloak -t $(REPO):keycloak-snapshot -f $< .
 
 # When container are alrady running, use these for partial update

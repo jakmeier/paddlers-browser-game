@@ -112,7 +112,7 @@ impl TestData {
         let (update_min, update_max, update_median) = min_max_median(&self.update_intervals);
 
         let missed = self.draw_intervals.iter().filter(|dt| **dt > self.draw_frame_target_us).fold(0,|acc,_| acc + 1);
-        let missed = 100.0 * missed as f64 / self.update_intervals.len() as f64;
+        let missed = 100.0 * missed as f64 / self.draw_intervals.len() as f64;
 
         format!("{:.02}FPS = {:.02}ms, {:.02}ms {:.02}ms {:.02}ms |DRAW| {:.02}ms {:.02}ms {:.02}ms, {:.03}% missed |UPDATE| {:.02}ms {:.02}ms {:.02}ms",
             fps, avg, min, median, max,
