@@ -61,7 +61,8 @@ impl State for Game<'static, 'static> {
 
         // TODO (optimization): Refactor to make this call event-based
         if self.total_updates % 50 == 0 {
-            crate::window::adapt_window_size(window);
+            let err = crate::window::adapt_window_size(window);
+            self.check(err);
         }
 
         {

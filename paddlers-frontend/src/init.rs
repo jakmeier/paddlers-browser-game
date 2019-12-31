@@ -47,7 +47,7 @@ pub fn run(width: f32, height: f32, net_chan: Receiver<NetMsg>) {
     let main_area = Rectangle::new((0,0),(tw, th));
 
     // Initialize panes
-    panes::init_ex("game-root", 0, 0, tw as u32, th as u32).expect("Panes initialization failed");
+    panes::init_ex(Some("game-root"), (0,0), Some((tw as u32, th as u32))).expect("Panes initialization failed");
     
     // Load quicksilver canvas and loop
     let mut settings = Settings::default();

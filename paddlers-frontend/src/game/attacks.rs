@@ -102,7 +102,7 @@ impl AttackViewSystem {
             h as u32,
             r#"<div class="attack-table"></div>"#,
         ).expect("Pane not set up properly");
-        let table = pane.get_first_inner_node()?
+        let table = pane.first_inner_node()?
             .try_into()
             .map_err(|_|PadlError::dev_err(PadlErrorCode::InvalidDom("No table in pane")))?;
         let mut attack = AttackViewSystem {

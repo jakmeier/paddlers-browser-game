@@ -1,10 +1,11 @@
 use quicksilver::prelude::{Window, Vector};
 use stdweb::unstable::TryFrom;
-use crate::stdweb::web::IHtmlElement;
+use stdweb::web::IHtmlElement;
 use stdweb::web::html_element::CanvasElement;
 use stdweb::traits::*;
+use crate::prelude::*;
 
-pub fn adapt_window_size(window: &mut Window) {
+pub fn adapt_window_size(window: &mut Window) -> PadlResult<()> {
 
     // TODO: (optimization) cache canvas
     let canvas: CanvasElement =
@@ -22,8 +23,15 @@ pub fn adapt_window_size(window: &mut Window) {
 
     // Check what the actual size is after CSS messes with the canvas
     let size_in_browser = canvas.get_bounding_client_rect();
-    let x = size_in_browser.get_width() as f32;
-    let y = size_in_browser.get_height() as f32;
-    let size_in_browser = Vector::new(x,y);
+    let x = size_in_browser.get_width();
+    let y = size_in_browser.get_height();
+    let size_in_browser = Vector::new(x as f32, y as f32);
     window.set_size(size_in_browser);
+
+    // Update panes
+    let Vector{x,y} = window.screen_offset();
+    panes::reposition(x as u32, y as u32)?;
+    let Vector{x,y} = window.screen_size();
+    panes::resize(x as u32, y as u32)?;
+    Ok(())
 }

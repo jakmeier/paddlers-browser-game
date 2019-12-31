@@ -11,7 +11,7 @@ impl UiState {
         let r = self.main_area;
         let pane = panes::new_pane(r.x() as u32, r.y() as u32, r.width() as u32, r.height() as u32, 
         r#"<section class="leaderboard"></section>"#)?;
-        let node = pane.get_first_inner_node()?;
+        let node = pane.first_inner_node()?;
 
         // TODO Debug why this didn't work:
         

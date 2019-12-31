@@ -74,7 +74,6 @@ impl PointerManager<'_,'_> {
     }
 
     pub fn move_pointer(&mut self, mut world: &mut World, position: &Vector) {
-        println!("Move {:?}", position);
         Self::update(world, position, None);
         self.hover_dispatcher.dispatch(&mut world);
         if let Some((pos_before, t)) = self.pointer_down {
@@ -89,7 +88,6 @@ impl PointerManager<'_,'_> {
     }
 
     pub fn button_event(&mut self, now: Timestamp, pos: &Vector, button: MouseButton, state: ButtonState) {
-        println!("IN {:?} {:?} {:?}", pos, button, state);
         match (state, button) {
             (ButtonState::Pressed, MouseButton::Left) => {
                 self.pointer_down = Some((*pos, now));
