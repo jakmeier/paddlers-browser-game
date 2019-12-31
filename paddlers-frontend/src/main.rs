@@ -16,6 +16,7 @@ mod net;
 mod prelude;
 mod logging;
 mod view;
+pub (crate) mod window;
 
 #[cfg(target_arch = "wasm32")]
 use init::wasm_setup::setup_wasm;

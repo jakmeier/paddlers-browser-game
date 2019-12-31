@@ -21,7 +21,6 @@ use crate::gui::ui_state::*;
 use quicksilver::prelude::*;
 use crate::specs::WorldExt;
 
-
 impl State for Game<'static, 'static> {
     fn new() -> Result<Self> {
         Self::load_game()
@@ -32,14 +31,10 @@ impl State for Game<'static, 'static> {
         self.start_update();
         self.total_updates += 1;
         window.set_max_updates(1); // 1 update per frame is enough
-        // window.set_fullscreen(true);
         self.update_time_reference();
-        let now = self.world.read_resource::<Now>().0;
+        self.pointer_manager.run(&mut self.world);
         {
-            self.pointer_manager.run(&mut self.world, now)
-        }
-
-        {
+            let now = self.world.read_resource::<Now>().0;
             let mut tick = self.world.write_resource::<ClockTick>();
             let us_draw_rate = 1_000_000/ 60;
             *tick = ClockTick((now / us_draw_rate) as u32);
@@ -63,6 +58,12 @@ impl State for Game<'static, 'static> {
     fn draw(&mut self, window: &mut Window) -> Result<()> {
         #[cfg(feature="dev_view")]
         self.start_draw();
+
+        // TODO (optimization): Refactor to make this call event-based
+        if self.total_updates % 50 == 0 {
+            crate::window::adapt_window_size(window);
+        }
+
         {
             let mut rest = self.world.write_resource::<RestApiState>();
             let err = self.stats.track_frame(&mut *rest, utc_now());

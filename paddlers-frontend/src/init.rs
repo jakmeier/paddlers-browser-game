@@ -50,10 +50,12 @@ pub fn run(width: f32, height: f32, net_chan: Receiver<NetMsg>) {
     panes::init_ex("game-root", 0, 0, tw as u32, th as u32).expect("Panes initialization failed");
     
     // Load quicksilver canvas and loop
+    let mut settings = Settings::default();
+    settings.root_id = Some("game-root");
     quicksilver::lifecycle::run_with::<crate::game::Game, _>(
         "Paddlers", 
         Vector::new(tw + MENU_BOX_WIDTH, th), 
-        Settings::default(), 
+        settings, 
         || Ok(
             crate::game::Game::new().expect("Game initialization")
                 .with_town(Town::new(ul)) // TODO: Think of a better way to handle unit lengths in general

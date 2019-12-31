@@ -54,7 +54,6 @@ use town_resources::TownResources;
 use map::{GlobalMap, GlobalMapPrivateState};
 use game_event_manager::GameEvent;
 use crate::view::ViewManager;
-use stdweb::unstable::TryInto;
 
 pub(crate) struct Game<'a, 'b> {
     pub dispatcher: Dispatcher<'a, 'b>,
@@ -256,6 +255,7 @@ impl Game<'_,'_> {
         Ok(())
     }
     /// Deletes all hobo entities (lazy, requires world.maintain())
+    #[allow(dead_code)]
     fn flush_hobos(&self) -> PadlResult<()> {
         let w = self.world.read_storage::<components::NetObj>();
         for (entity, netid) in (&self.world.entities(), &w).join() {

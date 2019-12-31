@@ -1,9 +1,17 @@
-body {
+body, a {
     font-family: manjari;
     color: white;
 }
 #game-root {
     position: relative;
+}
+#game-root {
+    max-width: 100%;
+    max-height: 100%;
+}
+#game-root canvas {
+    max-width: 100%;
+    max-height: 100%;
 }
 div.attack-table {
     display: grid;

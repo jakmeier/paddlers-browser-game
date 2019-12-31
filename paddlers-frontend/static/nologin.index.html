@@ -17,17 +17,21 @@
     <link rel="stylesheet" href="style.css">
     <meta name="msapplication-TileColor" content="#2b5797">
     <meta name="theme-color" content="#5bbad5">
+    <script src="/js/main.js"></script>
 </head>
 
 <body oncontextmenu="return false;" style="background-color: #444">
     <script src="paddlers-frontend.js"></script>
-    <p>Goto: <a href="#" onclick="keycloak.logout()" style="color: white;">logout</a> | <a href="#"
-        onclick="keycloak.accountManagement()" style="color: white;">manage acct</a></p>
+    <p> 
+        <a href="#" onclick="openFullscreen()">Fullscreen</a> 
+    </p>
     <main id="game-root">
     </main>
 
     <script>
-        wasm.start_network_thread();
+        Rust.paddlers_frontend.then( function( wasm ) {
+            wasm.start_network_thread();
+        });
     </script>
 </body>
 

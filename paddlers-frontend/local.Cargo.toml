@@ -11,7 +11,7 @@ categories = ["wasm", "game"]
 paddlers-shared-lib = { path = "../paddlers-shared-lib", features = ["enum_utils", "game_mechanics"] }
 panes = { git = "https://github.com/jakmeier/panes" }
 # quicksilver = { version = "0.3", default-features = false, features = ["fonts", "complex_shapes"] }
-quicksilver = { git = "https://github.com/jakmeier/quicksilver", default-features = false, features = ["fonts", "complex_shapes"], rev = "1239ab75c37cc8dd168f0a1dc04b19333a1bbd43" }
+quicksilver = { path = "../quicksilver", default-features = false, features = ["fonts", "complex_shapes"] }
 stdweb = {version = "0.4.20", features = ["experimental_features_which_may_break_on_minor_version_bumps"] }
 specs = { version = "0.15.1", default-features = false } # parallel not supported in wasm
 shred = { version = "0.9.4", default-features = false }

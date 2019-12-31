@@ -7,20 +7,24 @@ use super::{MouseState, LeftClickSystem, RightClickSystem, HoverSystem, drag::*}
 use crate::game::game_event_manager::EventPool;
 
 // Tolerance thresholds
-const DOUBLE_CLICK_DELAY: i64 = 400_000; // [us]
-const DOUBLE_CLICK_DISTANCE_2: f32 = 1000.0; // [browser pixel coordinates]
-const CLICK_DISTANCE_2: f32 = 1000.0; // [browser pixel coordinates]
+const LONG_CLICK_DELAY: i64 = 500_000; // [us]
+const MIN_DRAG_DISTANCE_2: f32 = 1000.0; // [browser pixel coordinates^2]
 
 pub struct PointerManager<'a, 'b> {
     click_dispatcher: Dispatcher<'a, 'b>,
     hover_dispatcher: Dispatcher<'a, 'b>,
     drag_dispatcher: Dispatcher<'a, 'b>,
-    // for double-tap detection
-    tentative_left_click: Option<(Vector, Timestamp)>,
-    definitive_click: Option<(Vector, MouseButton)>,
-    // for dragging
-    moved: bool,
-    left_down: Option<Vector>,
+    buffered_click: Option<(Vector, PointerButton)>,
+    dragging: bool,
+    pointer_down: Option<(Vector, Timestamp)>,
+}
+
+#[derive(Debug,Clone,Copy,PartialEq,Eq)]
+enum PointerButton {
+    // Left click or short tap
+    Primary,
+    // Right click or long tap
+    Secondary,
 }
 
 impl PointerManager<'_,'_> {
@@ -49,27 +53,19 @@ impl PointerManager<'_,'_> {
             click_dispatcher,
             hover_dispatcher,
             drag_dispatcher,
-            tentative_left_click: None,
-            definitive_click: None,
-            moved: false,
-            left_down: None,
+            buffered_click: None,
+            dragging: false,
+            pointer_down: None,
         }
     }
 
-    pub fn run(&mut self, mut world: &mut World, now: Timestamp) {
-        if let Some((pos, t)) = self.tentative_left_click {
-            if t + DOUBLE_CLICK_DELAY < now {
-                Self::update(world, &pos, Some(MouseButton::Left));
-                self.click_dispatcher.dispatch(&mut world);
-                self.tentative_left_click = None;
-            }
-        }
+    pub fn run(&mut self, mut world: &mut World) {
         
-        if let Some((pos, button)) = self.definitive_click {
+        if let Some((pos, button)) = self.buffered_click {
                 Self::update(world, &pos, Some(button));
                 self.click_dispatcher.dispatch(&mut world);
         }
-        self.definitive_click = None;
+        self.buffered_click = None;
 
         if world.read_resource::<Drag>().is_some() {
             self.drag_dispatcher.dispatch(&mut world);
@@ -78,75 +74,71 @@ impl PointerManager<'_,'_> {
     }
 
     pub fn move_pointer(&mut self, mut world: &mut World, position: &Vector) {
+        println!("Move {:?}", position);
         Self::update(world, position, None);
         self.hover_dispatcher.dispatch(&mut world);
-        if let Some(pos_before) = self.left_down {
-            if position.distance_2(&pos_before) >= CLICK_DISTANCE_2 {
-                self.moved = true;
+        if let Some((pos_before, t)) = self.pointer_down {
+            if position.distance_2(&pos_before) >= MIN_DRAG_DISTANCE_2 {
+                self.dragging = true;
             }
-            if self.moved {
+            if self.dragging {
                 world.write_resource::<Drag>().add(pos_before, *position);
-                self.left_down = Some(*position);
+                self.pointer_down = Some((*position, t));
             }
         }
     }
 
     pub fn button_event(&mut self, now: Timestamp, pos: &Vector, button: MouseButton, state: ButtonState) {
+        println!("IN {:?} {:?} {:?}", pos, button, state);
         match (state, button) {
             (ButtonState::Pressed, MouseButton::Left) => {
-                self.left_down = Some(*pos);
+                self.pointer_down = Some((*pos, now));
             },
             (ButtonState::Pressed, _) => {
-                self.new_click(now, pos, button);
+                self.queue_click(pos, PointerButton::Secondary);
             },
             (ButtonState::Released, MouseButton::Left) => {
-                if !self.moved {
-                    self.new_click(now, pos, button);
+                if let Some((start_pos, start_t)) = self.pointer_down {
+                    if !self.dragging 
+                        && start_pos.distance_2(pos) < MIN_DRAG_DISTANCE_2 
+                    {
+                        let key = 
+                        if now - start_t < LONG_CLICK_DELAY {
+                            PointerButton::Primary
+                        } else {
+                            PointerButton::Secondary
+                        };
+                        self.queue_click(pos, key);
+                    }
+                    self.dragging = false;
+                    self.pointer_down = None;
                 }
-                self.moved = false;
-                self.left_down = None;
             },
             _ => { /* NOP */ }
         }
     }
 
-    fn update(world: &mut World, position: &Vector, button: Option<MouseButton>) {
+    fn update(world: &mut World, position: &Vector, button: Option<PointerButton>) {
+        let key = button.map(|button|
+        match button {
+            PointerButton::Primary => {
+                MouseButton::Left
+            },
+            PointerButton::Secondary => {
+                MouseButton::Right
+            }
+        });
         let mut ms = world.write_resource::<MouseState>();
-        *ms = MouseState(*position, button);
+        *ms = MouseState(*position, key);
     }
 
-    fn new_click(&mut self, now: Timestamp, position: &Vector, button: MouseButton) {
-        if self.definitive_click.is_some() {
+    // Current implementation only queues a single click and drops what doesn't fit
+    fn queue_click(&mut self, position: &Vector, button: PointerButton) {
+        if self.buffered_click.is_some() {
             // Cannot handle inputs so fast
             return;
         }
-        match button {
-            MouseButton::Left => {
-                // Double-click handling
-                if let Some((p, _)) = self.tentative_left_click {
-                    if position.distance_2(&p) < DOUBLE_CLICK_DISTANCE_2 {
-                        // println!("Double click");
-                        self.definitive_click = Self::double_click(p);
-                        self.tentative_left_click = None;
-                    }
-                    else {
-                        // println!("Distance2 too big: {}", position.distance_2(&p));
-                        self.tentative_left_click = Some((*position, now));
-                    }
-                } else {
-                    self.tentative_left_click = Some((*position, now));
-                }
-            }
-            MouseButton::Right
-            | MouseButton::Middle 
-            => {
-                self.definitive_click = Some((*position, button));
-            }
-        }
-    }
-    // Map all double-clicks to same events as right-clicks
-    const fn double_click(position: Vector) -> Option<(Vector, MouseButton)> {
-        Some((position, MouseButton::Right))
+        self.buffered_click = Some((*position, button));
     }
 }
 

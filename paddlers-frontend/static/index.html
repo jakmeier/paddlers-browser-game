@@ -17,13 +17,17 @@
     <link rel="stylesheet" href="style.css">
     <meta name="msapplication-TileColor" content="#2b5797">
     <meta name="theme-color" content="#5bbad5">
+    <script src="/js/main.js"></script>
     <script src="/js/keycloak/keycloak.min.js"></script>
 </head>
 
 <body oncontextmenu="return false;" style="background-color: #444">
     <script src="paddlers-frontend.js"></script>
-    <p>Goto: <a href="#" onclick="keycloak.logout()" style="color: white;">logout</a> | <a href="#"
-        onclick="keycloak.accountManagement()" style="color: white;">manage acct</a></p>
+    <p> 
+        <a href="#" onclick="openFullscreen()">Fullscreen</a> |
+        <a href="#" onclick="keycloak.logout()">logout</a> | 
+        <a href="#" onclick="keycloak.accountManagement()">manage acct</a>
+    </p>
     <main id="game-root">
     </main>
 

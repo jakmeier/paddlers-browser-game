@@ -1,4 +1,5 @@
 use crate::game::*;
+use stdweb::unstable::TryInto;
 
 impl Game<'_,'_> {
     #[cfg(feature="dev_view")]

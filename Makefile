@@ -63,6 +63,9 @@ mobile-keycloak-container: paddlers-keycloak/mobile.Dockerfile
 recreate-frontend: debug-frontend-container
 	docker-compose -f docker-compose.local.yml up -d --no-deps --build frontend
 
+recreate-frontend-mobile: mobile-frontend-container
+	docker-compose -f docker-compose.local.yml up -d --no-deps --build frontend
+
 recreate-db-interface: debug-db-interface-container
 	docker-compose -f docker-compose.local.yml up -d --no-deps --build db-interface
 
