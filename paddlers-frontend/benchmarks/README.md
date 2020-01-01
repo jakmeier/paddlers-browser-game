@@ -1,3 +1,5 @@
+# Collecting data (at least once per version)
+
 ## Manual frame delay benchmarks
 This benchmark must be triggered manually on different devices.
 The output should then be copy-pasted  without modification to [frame_delays.manual.data](./frame_delays.manual.data).
@@ -13,4 +15,9 @@ The output should then be copy-pasted  without modification to [frame_delays.man
  4) Connect to computer using remote debugging console and type 
 ```
 document.dispatchEvent(new KeyboardEvent('keydown', {'key': '1', 'code': 'Digit1'}))
+```
+
+## Application size statistics
+```
+./paddlers-frontend/benchmarks/app_size_stats.sh
 ```
