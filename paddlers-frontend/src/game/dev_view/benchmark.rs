@@ -38,7 +38,7 @@ impl TestData {
                     Test::Vanilla => { unreachable!() }
                     Test::Empty => { /* NOP */ }
                     Test::StandardVillage => 
-                        standard_village::insert_hobos(&mut game.world, game.unit_len.expect("unit len not defined")).expect("inserting test hobos"),
+                        standard_village::insert_hobos(&mut game.world).expect("inserting test hobos"),
                 }
                 let mut town = game.world.fetch_mut();
                 let entities = game.world.entities();

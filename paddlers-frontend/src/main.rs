@@ -17,6 +17,7 @@ mod prelude;
 mod logging;
 mod view;
 pub (crate) mod window;
+pub (crate) mod resolution;
 
 #[cfg(target_arch = "wasm32")]
 use init::wasm_setup::setup_wasm;
@@ -27,7 +28,7 @@ pub fn main() {
     #[cfg(target_arch = "wasm32")]
     setup_wasm();
     let (net_sender, net_receiver) = channel();
-    init::run(1500.0, 600.0, net_receiver); // is cut to right ratio inside of game
+    init::run(net_receiver);
     net::init_net(net_sender);
 }
 

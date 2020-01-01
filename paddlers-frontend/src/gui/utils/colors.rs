@@ -24,7 +24,7 @@ pub const TRANSPARENT_BLACK: Color = Color {
     r: 0.0,
     g: 0.0,
     b: 0.0,
-    a: 0.2,
+    a: 0.175,
 };
 pub const GREY: Color = Color {
     r: 0.75,

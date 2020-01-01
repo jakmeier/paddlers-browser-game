@@ -19,9 +19,6 @@ pub struct UiState {
 /// Global animation ticker
 pub struct ClockTick(pub u32);
 #[derive(Default)]
-/// Used for UI scaling. To be removed in favour of better options.
-pub struct UnitLength(pub f32);
-#[derive(Default)]
 /// Real-time timestamp of frame rendering
 pub struct Now(pub Timestamp);
 

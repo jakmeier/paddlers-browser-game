@@ -50,7 +50,7 @@ pub fn tesselate_map_background(base_shape: Rectangle, w: i32, h: i32) -> Mesh {
     let height = base_shape.height();
     let dx =  width / w as f32;
     let dy = height / h as f32;
-    let thickness = 1.0;
+    let thickness = 1.5;
     
     for x in 0..w+2 {
         let x = dx * x as f32;

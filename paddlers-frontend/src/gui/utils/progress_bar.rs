@@ -7,7 +7,8 @@ pub fn draw_progress_bar(
     area: Rectangle,
     progress: f32,
     text: &str,
-) {
+) -> Result<()>
+{
     let text_h = (area.height() * 0.5).max(50.0);
     let (text_area, bar_area) = area.cut_horizontal(text_h);
 
@@ -21,12 +22,12 @@ pub fn draw_progress_bar(
         FitStrategy::Center,
         &text,
         Color::WHITE,
-    )
-    .unwrap();
+    )?;
 
     window.draw(&bar_area, Col(Color::WHITE));
     let mut bar = bar_area.padded(3.0);
     window.draw(&bar, Col(DARK_GREEN));
     bar.size.x *= progress;
     window.draw(&bar, Col(LIGHT_GREEN));
+    Ok(())
 }

@@ -5,7 +5,8 @@ impl Town {
    
 
     pub fn tile(&self, pos: impl Into<Vector>) -> (usize, usize) {
-        Self::find_tile(pos, self.ul)
+        let ul = self.resolution.unit_length();
+        Self::find_tile(pos, ul)
     }
     pub fn find_tile(pos: impl Into<Vector>, ul: f32) -> (usize, usize) {
         let v = pos.into();
@@ -14,22 +15,24 @@ impl Town {
         (x,y)
     }
     pub fn tile_area(&self, i: TileIndex) -> Rectangle {
-        Rectangle::new(Vector::from((i.0 as u32, i.1 as u32)) * self.ul, (self.ul, self.ul))
+        let ul = self.resolution.unit_length();
+        Rectangle::new(Vector::from((i.0 as u32, i.1 as u32)) * ul, (ul, ul))
     }
     pub fn next_tile_in_direction(&self, pos: impl Into<Vector>, dir: impl Into<Vector>) -> (usize, usize) {
         let dir = dir.into();
         let mut pos = pos.into();
+        let ul = self.resolution.unit_length();
         if dir.x < 0.0 {
-            pos.x = (pos.x / self.ul).floor() * self.ul;       
+            pos.x = (pos.x / ul).floor() * ul;       
         } else if dir.x > 0.0 {
-            pos.x = (pos.x / self.ul).ceil() * self.ul;       
+            pos.x = (pos.x / ul).ceil() * ul;       
         }
         if dir.y < 0.0 {
-            pos.y = (pos.y / self.ul).floor() * self.ul;       
+            pos.y = (pos.y / ul).floor() * ul;       
         } else if dir.y > 0.0 {
-            pos.y = (pos.y / self.ul).ceil() * self.ul;       
+            pos.y = (pos.y / ul).ceil() * ul;       
         }
-        Self::find_tile(pos, self.ul)
+        Self::find_tile(pos, ul)
     }
     
     pub fn tile_state(&self, i: TileIndex) -> Option<&TileState> {

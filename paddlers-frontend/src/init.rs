@@ -14,14 +14,12 @@ mod quicksilver_integration;
 pub mod specs_registration;
 
 use crate::prelude::*;
-use crate::game::town::{Town, TOWN_RATIO};
+use crate::game::town::Town;
 use crate::net::NetMsg;
 use quicksilver::prelude::*;
 use specs::prelude::*;
 use std::sync::mpsc::Receiver;
 use specs_registration::{insert_resources, register_components};
-
-const MENU_BOX_WIDTH: f32 = 300.0;
 
 pub (super) fn init_world(err_send: std::sync::mpsc::Sender<PadlError>) -> World {
     let mut world = World::new();
@@ -33,18 +31,12 @@ pub (super) fn init_world(err_send: std::sync::mpsc::Sender<PadlError>) -> World
     insert_resources(&mut world, err_send);
     world
 }
-pub fn run(width: f32, height: f32, net_chan: Receiver<NetMsg>) {
-    // Cut window ratio to something that does not distort the geometry
-    let max_town_width = width - MENU_BOX_WIDTH;
-    let (tw, th) = if max_town_width / height <= TOWN_RATIO {
-        (max_town_width, max_town_width / TOWN_RATIO)
-    } else {
-        (TOWN_RATIO * height, height)
-    };
+pub fn run(net_chan: Receiver<NetMsg>) {
 
-    let ul = tw / crate::game::town::X as f32;
-    let menu_box_area = Rectangle::new((tw,0),(MENU_BOX_WIDTH, th));
-    let main_area = Rectangle::new((0,0),(tw, th));
+    let resolution = crate::window::estimate_screen_size();
+
+    let (w,h) = resolution.pixels();
+    let (tw,th) = resolution.main_area();
 
     // Initialize panes
     panes::init_ex(Some("game-root"), (0,0), Some((tw as u32, th as u32))).expect("Panes initialization failed");
@@ -54,13 +46,12 @@ pub fn run(width: f32, height: f32, net_chan: Receiver<NetMsg>) {
     settings.root_id = Some("game-root");
     quicksilver::lifecycle::run_with::<crate::game::Game, _>(
         "Paddlers", 
-        Vector::new(tw + MENU_BOX_WIDTH, th), 
+        Vector::new(w,h), 
         settings, 
         || Ok(
             crate::game::Game::new().expect("Game initialization")
-                .with_town(Town::new(ul)) // TODO: Think of a better way to handle unit lengths in general
-                .with_unit_length(ul)
-                .with_ui_division(main_area, menu_box_area)
+                .with_town(Town::new(resolution))
+                .with_resolution(resolution)
                 .init_map()
                 .init_views()
                 .with_network_chan(net_chan)

@@ -76,7 +76,8 @@ pub fn change_duck_sprite_to_happy(r: &mut Renderable) {
 
 use crate::net::graphql::attacks_query::{AttacksQueryVillageAttacksUnits,AttacksQueryVillageAttacks};
 impl AttacksQueryVillageAttacks {
-    pub fn create_entities(&self, world: &mut World, ul: f32) -> PadlResult<Vec<Entity>> {
+    pub fn create_entities(&self, world: &mut World) -> PadlResult<Vec<Entity>> {
+        let ul = world.fetch::<ScreenResolution>().unit_length();
         let birth_time = GqlTimestamp::from_string(&self.arrival).unwrap().0;
 
         let description = self.attacker.as_ref()

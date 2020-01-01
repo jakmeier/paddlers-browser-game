@@ -26,7 +26,7 @@ pub type TileState = TileStateEx<specs::Entity>;
 pub struct Town {
     map: TownMap,
     state: TownState<specs::Entity>,
-    ul: f32,
+    resolution: ScreenResolution,
     // Could possibly be added to TownState, depends on further developments of the backend.
     pub total_ambience: i64,
     pub temple: Option<specs::Entity>,
@@ -35,21 +35,20 @@ pub struct Town {
 }
 impl Default for Town {
     fn default() -> Self {
-        Town::new(50.0)
+        Town::new(ScreenResolution::Mid)
     }
 }
 
 pub const X: usize = TOWN_X;
 const Y: usize = TOWN_Y;
-pub const TOWN_RATIO: f32 = X as f32 / Y as f32;
 
 impl Town {
-    pub fn new(ul: f32) -> Self {
+    pub fn new(resolution: ScreenResolution) -> Self {
         let map = TownMap::basic_map();
         Town {
             map: map,
             state: TownState::new(),
-            ul: ul,
+            resolution: resolution,
             total_ambience: 0,
             temple: None,
             idle_prophets: vec![],

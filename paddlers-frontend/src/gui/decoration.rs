@@ -13,26 +13,28 @@ use crate::gui::{
     sprites::*,
 };
 
-pub fn draw_leaf_border(window: &mut Window, sprites: &mut Sprites, area: &Rectangle) {
+pub fn draw_leaf_border(window: &mut Window, sprites: &mut Sprites, area: &Rectangle, leaf_w: f32, leaf_h: f32) {
     let lv = DirectedSprite::VerticalLeaves;
     let top = sprites.index(SpriteIndex::Directed(lv, Direction::North)).clone();
     let mid = sprites.index(SpriteIndex::Directed(lv, Direction::Undirected)).clone();
     let bot = sprites.index(SpriteIndex::Directed(lv, Direction::South)).clone();
 
-    let w = top.area().width();
+    let w = leaf_w;
     let start = area.pos.translate((-w*0.75,0));
-    draw_column_texture(window, &top, &mid, &bot, start, area.y() + area.height());
-    draw_column_texture(window, &top, &mid, &bot, start.translate((area.width(), 0)), area.y() + area.height());
+    draw_column_texture(window, &top, &mid, &bot, start, area.y() + area.height(), w);
+    draw_column_texture(window, &top, &mid, &bot, start.translate((area.width(), 0)), area.y() + area.height(), w);
 
     let leaves = &sprites.index(SpriteIndex::Directed(lv, Direction::East));
-    let h = leaves.area().height();
+    let h = leaf_h;
     let start = area.pos.translate((0, -h/2.0));
-    fill_row_with_img(window, leaves, start, area.x() + area.width());
-    fill_row_with_img(window, leaves, start.translate((0,area.height())), area.x() + area.width());
+    fill_row_with_img(window, leaves, start, area.x() + area.width(), h);
+    fill_row_with_img(window, leaves, start.translate((0,area.height())), area.x() + area.width(), h);
 }
 
-fn draw_column_texture(window: &mut Window, top: &Image, mid: &Image, bot: &Image, start: Vector, end: f32) {
+fn draw_column_texture(window: &mut Window, top: &Image, mid: &Image, bot: &Image, start: Vector, end: f32, w: f32) {
     let mut stamp = top.area();
+    let factor = w / stamp.width();
+    stamp.size = stamp.size * factor;
     stamp.pos = start;
     window.draw_ex(
         &stamp,
@@ -41,7 +43,7 @@ fn draw_column_texture(window: &mut Window, top: &Image, mid: &Image, bot: &Imag
         Z_UI_BORDERS,
     );
     stamp.pos.y += stamp.height();
-    stamp.size.y = mid.area().height();
+    stamp.size = mid.area().size * factor;
     while stamp.y() + stamp.height() < end {
         window.draw_ex(
             &stamp,
@@ -51,7 +53,7 @@ fn draw_column_texture(window: &mut Window, top: &Image, mid: &Image, bot: &Imag
         );
         stamp.pos.y += stamp.height();
     }
-    stamp.size.y = bot.area().height();
+    stamp.size = bot.area().size * factor;
     window.draw_ex(
         &stamp,
         Img(bot),
@@ -60,8 +62,10 @@ fn draw_column_texture(window: &mut Window, top: &Image, mid: &Image, bot: &Imag
     );
 }
 
-fn fill_row_with_img(window: &mut Window, img: &Image, start: Vector, end: f32) {
+fn fill_row_with_img(window: &mut Window, img: &Image, start: Vector, end: f32, h: f32) {
     let mut stamp = img.area();
+    let factor = h / stamp.height();
+    stamp.size = stamp.size * factor;
     stamp.pos = start;
     while stamp.x() < end {
         window.draw_ex(
@@ -74,8 +78,7 @@ fn fill_row_with_img(window: &mut Window, img: &Image, start: Vector, end: f32) 
     }
 }
 
-pub fn draw_duck_step_line(window: &mut Window, sprites: &mut Sprites, start: Vector, end: f32) -> f32 {
+pub fn draw_duck_step_line(window: &mut Window, sprites: &mut Sprites, start: Vector, end: f32, h: f32) {
     let img = &sprites.index(SpriteIndex::Simple(SingleSprite::DuckSteps));
-    fill_row_with_img(window, img, start, end);
-    img.area().height()
+    fill_row_with_img(window, img, start, end, h);
 }

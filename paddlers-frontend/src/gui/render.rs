@@ -2,6 +2,7 @@ use quicksilver::prelude::*;
 use quicksilver::graphics::Color;
 use quicksilver::input::MouseCursor;
 use specs::prelude::*;
+use crate::prelude::ScreenResolution;
 use crate::game::{
     Game,
     movement::Position,
@@ -51,15 +52,20 @@ impl Game<'_, '_> {
         let view = ui_state.current_view;
         let main_area = Rectangle::new(
             (0,0), 
-            (ui_state.menu_box_area.x(), window.screen_size().y)
+            (ui_state.menu_box_area.x(), (window.project() * window.screen_size()).y)
         );
         std::mem::drop(ui_state);
         window.clear(Color::WHITE)?;
         match view {
             UiView::Town => {
                 {
-                    let (asset, town, ul) = (&mut self.sprites, &self.world.read_resource::<Town>(), self.unit_len.unwrap());
-                    town.render(window, asset.as_mut().unwrap(), tick, ul)?;
+                    let ul = self.world.fetch::<ScreenResolution>().unit_length();
+                    let (asset, town) = 
+                    (
+                        &mut self.sprites,
+                        &self.world.fetch::<Town>(),
+                    );
+                    town.render(window, asset.as_mut().expect("assets"), tick, ul)?;
                 }
                 self.render_town_entities(window)?;
             },
@@ -67,11 +73,11 @@ impl Game<'_, '_> {
                 let (sprites, mut map) = (
                     &mut self.sprites, 
                     GlobalMap::combined(
-                        self.map.as_mut().unwrap(),
+                        self.map.as_mut().expect("map"),
                         self.world.write_resource()
                     )
                 );
-                map.render(window, &mut sprites.as_mut().unwrap(), &main_area)?;
+                map.render(window, &mut sprites.as_mut().expect("sprites"), &main_area)?;
             },
             UiView::Attacks => {
                 window.draw_ex(&main_area, Col(LIGHT_BLUE), Transform::IDENTITY, Z_TEXTURE);
@@ -114,9 +120,9 @@ impl Game<'_, '_> {
             match r.kind {
                 RenderVariant::ImgWithImgBackground(i, _) => {
                     if let Some(animation) = animation_store.get(e) {
-                        draw_animated_sprite(sprites.as_mut().unwrap(), window, &area, i, pos.z, FitStrategy::TopLeft, animation, tick.0)?;
+                        draw_animated_sprite(sprites.as_mut().expect("sprites"), window, &area, i, pos.z, FitStrategy::TopLeft, animation, tick.0)?;
                     } else {
-                        draw_static_image(sprites.as_mut().unwrap(), window, &area, i.default(), pos.z, FitStrategy::TopLeft)?;
+                        draw_static_image(sprites.as_mut().expect("sprites"), window, &area, i.default(), pos.z, FitStrategy::TopLeft)?;
                     }
                 },
                 _ => { panic!("Not implemented")}
@@ -142,7 +148,7 @@ impl Game<'_, '_> {
 
     pub fn render_grabbed_item(&mut self, window: &mut Window, item: &Grabbable) -> Result<()> {
         let mouse = window.mouse().pos();
-        let ul = self.unit_len.unwrap();
+        let ul = self.world.fetch::<ScreenResolution>().unit_length();
         let center = mouse - (ul / 2.0, ul / 2.0).into();
         let max_area = Rectangle::new(center, (ul, ul));
         match item {

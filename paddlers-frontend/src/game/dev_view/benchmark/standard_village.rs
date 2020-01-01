@@ -16,16 +16,16 @@ pub (crate) fn insert_buildings(town: &mut Town, entities: &EntitiesRes, lazy: &
     town.insert_new_building(entities, lazy, (1,1), BuildingType::BlueFlowers);
     town.insert_new_building(entities, lazy, (1,2), BuildingType::BlueFlowers);
 
-    town.insert_new_building(entities, lazy, (3,1), BuildingType::PresentA);
-    town.insert_new_building(entities, lazy, (5,1), BuildingType::Temple);
-    town.insert_new_building(entities, lazy, (7,1), BuildingType::PresentB);
+    town.insert_new_building(entities, lazy, (2,1), BuildingType::PresentA);
+    town.insert_new_building(entities, lazy, (4,1), BuildingType::Temple);
+    town.insert_new_building(entities, lazy, (6,1), BuildingType::PresentB);
     
+    town.insert_new_building(entities, lazy, (7,0), BuildingType::RedFlowers);
+    town.insert_new_building(entities, lazy, (7,1), BuildingType::RedFlowers);
+    town.insert_new_building(entities, lazy, (7,2), BuildingType::RedFlowers);
     town.insert_new_building(entities, lazy, (8,0), BuildingType::RedFlowers);
     town.insert_new_building(entities, lazy, (8,1), BuildingType::RedFlowers);
     town.insert_new_building(entities, lazy, (8,2), BuildingType::RedFlowers);
-    town.insert_new_building(entities, lazy, (9,0), BuildingType::RedFlowers);
-    town.insert_new_building(entities, lazy, (9,1), BuildingType::RedFlowers);
-    town.insert_new_building(entities, lazy, (9,2), BuildingType::RedFlowers);
     
     town.insert_new_building(entities, lazy, (3,5), BuildingType::Tree);
     town.insert_new_building(entities, lazy, (3,6), BuildingType::Tree);
@@ -39,8 +39,9 @@ pub (crate) fn insert_buildings(town: &mut Town, entities: &EntitiesRes, lazy: &
     town.insert_new_building(entities, lazy, (7,5), BuildingType::SawMill);
     town.insert_new_building(entities, lazy, (7,6), BuildingType::BundlingStation);
 }
-pub (crate) fn insert_hobos(world : &mut World, ul: f32) -> PadlResult<()> {
+pub (crate) fn insert_hobos(world : &mut World) -> PadlResult<()> {
     let now = utc_now();
+    let ul = world.fetch::<ScreenResolution>().unit_length();
 
     let w = TOWN_X as f32 * ul;
     let x = w - ul * 0.6;

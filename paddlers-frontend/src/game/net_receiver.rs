@@ -37,7 +37,7 @@ impl Game<'_,'_> {
                     NetMsg::Attacks(response) => {
                         if let Some(data) = response.data {
                             for atk in data.village.attacks {
-                                atk.create_entities(&mut self.world, self.unit_len.unwrap())?;
+                                atk.create_entities(&mut self.world)?;
                             }
                         }
                         else {

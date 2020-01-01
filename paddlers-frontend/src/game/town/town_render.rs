@@ -71,8 +71,9 @@ impl Town {
     fn shadow_tile(&self, window: &mut Window, coordinates: (usize,usize)) {
         let shadow_col = Color { r: 1.0, g: 1.0, b: 0.5, a: 0.3 };
         let (x,y) = coordinates;
-        let pos = (x as f32 * self.ul, y as f32 * self.ul);
-        let size = (self.ul, self.ul);
+        let ul = self.resolution.unit_length();
+        let pos = (x as f32 * ul, y as f32 * ul);
+        let size = (ul, ul);
         let area = Rectangle::new(pos, size);
         window.draw_ex(
             &area,

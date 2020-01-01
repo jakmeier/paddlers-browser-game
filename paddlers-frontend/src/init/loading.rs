@@ -1,3 +1,4 @@
+use crate::prelude::ScreenResolution;
 use crate::gui::sprites::{
     animation::{AnimatedObject, AnimatedObjectDef, AnimationVariantDef},
     paths::{ANIMATION_DEFS, SPRITE_PATHS},
@@ -6,6 +7,7 @@ use crate::gui::sprites::{
 use crate::game::Game;
 use crate::gui::utils::*;
 use quicksilver::prelude::*;
+use specs::WorldExt;
 
 pub struct LoadingState {
     images: Vec<Asset<Image>>,
@@ -109,23 +111,43 @@ impl Game<'static, 'static> {
         Ok(())
     }
     pub fn draw_loading(&mut self, window: &mut Window) -> Result<()> {
-        let progress = self.preload.as_mut().unwrap().progress();
+        let progress = self.preload.as_mut().expect("preload").progress();
         if progress < 1.0 {
-            self.draw_progress(window, progress);
+            self.draw_progress(window, progress)?;
             return Ok(());
         }
         let images = self.preload.take().unwrap().finalize();
         self.sprites = Some(Sprites::new(images));
         Ok(())
     }
-    fn draw_progress(&mut self, window: &mut Window, progress: f32) {
-        window.clear(DARK_GREEN).unwrap();
-        let size = window.screen_size();
-        let (w,h) = (size.x, size.y);
-        let area = Rectangle::new((w*0.1,h*0.618),(w*0.8,h*0.2));
+    fn draw_progress(&mut self, window: &mut Window, progress: f32) -> Result<()> {
+        window.clear(DARK_GREEN)?;
+        let r = *self.world.read_resource::<ScreenResolution>();
+        let w = r.pixels().0;
+        let y = r.progress_bar_area_y();
+        let ph = r.progress_bar_area_h();
+        let area = Rectangle::new((w*0.1,y),(w*0.8,ph));
 
         // For now, only images are preloaded and therefore this is done very simply
         let msg = "Downloading images"; 
-        draw_progress_bar(window, &mut self.bold_font, area, progress, &msg);
+        draw_progress_bar(window, &mut self.bold_font, area, progress, &msg)
+    }
+}
+
+impl ScreenResolution {
+    fn progress_bar_area_y(&self) -> f32 {
+        match self {
+            ScreenResolution::Low => 100.0,
+            _ => {
+                self.pixels().1 * 0.618
+            }
+        }
+    }
+    fn progress_bar_area_h(&self) -> f32 {
+        match self {
+            ScreenResolution::Low => 100.0,
+            ScreenResolution::Mid => 150.0,
+            ScreenResolution::High => 200.0,
+        }
     }
 }

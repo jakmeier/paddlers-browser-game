@@ -4,6 +4,7 @@ use stdweb::web::IHtmlElement;
 use stdweb::web::html_element::CanvasElement;
 use stdweb::traits::*;
 use crate::prelude::*;
+use strum::IntoEnumIterator;
 
 pub fn adapt_window_size(window: &mut Window) -> PadlResult<()> {
 
@@ -34,4 +35,17 @@ pub fn adapt_window_size(window: &mut Window) -> PadlResult<()> {
     let Vector{x,y} = window.screen_size();
     panes::resize(x as u32, y as u32)?;
     Ok(())
+}
+
+/// Determines a resolution which is close to the current window size
+pub fn estimate_screen_size() -> ScreenResolution {
+    let screen_w = stdweb::web::window().inner_width() as f32;
+    let screen_h = stdweb::web::window().inner_height() as f32;
+    ScreenResolution::iter()
+        .filter(|res| {
+            let (w,h) = res.pixels();
+            w*0.875 < screen_w && 0.875*h < screen_h
+        })
+        .last()
+        .unwrap_or(ScreenResolution::Low)
 }

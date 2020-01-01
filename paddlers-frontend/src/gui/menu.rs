@@ -4,6 +4,7 @@ use crate::gui::ui_state::Now;
 use crate::game::components::UiMenu;
 use quicksilver::prelude::*;
 use specs::prelude::*;
+use crate::resolution::ScreenResolution;
 use crate::game::{
     Game,
     fight::{Health, Aura},
@@ -24,11 +25,57 @@ use crate::gui::{
     decoration::*,
 };
 
+impl ScreenResolution {
+    fn button_h(&self) -> f32 {
+        match self {
+            ScreenResolution::Low => 50.0,
+            ScreenResolution::Mid => 80.0,
+            ScreenResolution::High => 150.0,
+        }
+    }
+    fn resources_h(&self) -> f32 {
+        match self {
+            ScreenResolution::Low => 20.0,
+            ScreenResolution::Mid => 30.0,
+            ScreenResolution::High => 80.0,
+        }
+    }
+    fn leaves_border_h(&self) -> f32 {
+        match self {
+            ScreenResolution::Low => 15.0,
+            ScreenResolution::Mid => 40.0,
+            ScreenResolution::High => 100.0,
+        }
+    }
+    fn leaves_border_w(&self) -> f32 {
+        match self {
+            ScreenResolution::Low => 12.0,
+            ScreenResolution::Mid => 30.0,
+            ScreenResolution::High => 80.0,
+        }
+    }
+    fn duck_steps_h(&self) -> f32 {
+        match self {
+            ScreenResolution::Low => 10.0,
+            ScreenResolution::Mid => 30.0,
+            ScreenResolution::High => 40.0,
+        }
+    }
+    fn menu_padding(&self) -> f32 {
+        match self {
+            ScreenResolution::Low => 2.0,
+            ScreenResolution::Mid => 5.0,
+            ScreenResolution::High => 10.0,
+        }
+    }
+}
 
 impl Game<'_, '_> {
     pub fn render_menu_box(&mut self, window: &mut Window) -> Result<()> {
-        let button_height = 80.0;
-        let resources_height = 50.0;
+        let resolution = *self.world.read_resource::<ScreenResolution>();
+        let button_height = resolution.button_h();
+        let resources_height = resolution.resources_h();
+
         let data = self.world.read_resource::<UiState>();
         let entity = (*data).selected_entity;
         let mut area = data.menu_box_area;
@@ -44,21 +91,27 @@ impl Game<'_, '_> {
             Z_MENU_BOX
         );
 
-        draw_leaf_border(window, self.sprites.as_mut().unwrap(), &area);
+        let leaf_w = resolution.leaves_border_w();
+        let leaf_h = resolution.leaves_border_h();
+        draw_leaf_border(window, self.sprites.as_mut().unwrap(), &area, leaf_w, leaf_h);
 
-        let leaf_h = 40.0;
-        let leaf_w = 20.0;
-        area.pos.x += leaf_w;
-        area.pos.y += leaf_h;
-        area.size.x -= 3.0 * leaf_w;
-        area.size.y -= 2.0 * leaf_h;
+        let padding = resolution.menu_padding();
+        area.pos.x += leaf_w * 0.25 + padding * 0.5;
+        area.pos.y += leaf_h / 2.0;
+        area.size.x -= leaf_w + padding;
+        area.size.y -= leaf_h;
 
         let mut y = area.y();
         let button_area = Rectangle::new( (area.pos.x, y), (area.width(), button_height) );
         self.render_buttons(window, &button_area)?;
         y += button_height;
 
-        let h = draw_duck_step_line(window, self.sprites.as_mut().unwrap(), Vector::new(area.x()-20.0, y), area.x() + area.width());
+        let h = resolution.duck_steps_h();
+        draw_duck_step_line(window, self.sprites.as_mut().unwrap(), 
+            Vector::new(area.x()-leaf_w*0.5, y),
+            area.x() + area.width() + leaf_w*0.5, 
+            h
+        );
         y += h + 10.0;
 
         let view = self.world.read_resource::<UiState>().current_view;

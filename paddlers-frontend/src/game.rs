@@ -64,7 +64,6 @@ pub(crate) struct Game<'a, 'b> {
     pub preload: Option<crate::init::loading::LoadingState>,
     pub font: Asset<Font>,
     pub bold_font: Asset<Font>,
-    pub unit_len: Option<f32>,
     pub resources: TownResources,
     pub net: Option<Receiver<NetMsg>>,
     pub time_zero: Timestamp,
@@ -111,7 +110,6 @@ impl Game<'_,'_> {
             preload: Some(crate::init::loading::LoadingState::new()),
             font: font,
             bold_font: bold_font,
-            unit_len: None,
             net: None,
             time_zero: now,
             resources: TownResources::default(),
@@ -156,19 +154,22 @@ impl Game<'_,'_> {
         self.world.insert(town);
         self
     }
-    pub fn with_unit_length(mut self, ul: f32) -> Self {
-        self.unit_len = Some(ul);
-        self.world.insert(UnitLength(ul));
+    pub fn with_resolution(mut self, r: ScreenResolution) -> Self {
+        self.world.insert(r);
+
+        let (tw,th) = r.main_area();
+        let menu_size = r.menu_area();
+        let menu_area = Rectangle::new((tw,0),menu_size);
+        let main_area = Rectangle::new((0,0),(tw, th));
+
+        let mut data = self.world.write_resource::<UiState>();
+        (*data).main_area = main_area;
+        (*data).menu_box_area = menu_area;
+        std::mem::drop(data);
+        
         self
     }
-    pub fn with_ui_division(self, main_area: Rectangle, menu_area: Rectangle) -> Self {
-        {
-            let mut data = self.world.write_resource::<UiState>();
-            (*data).main_area = main_area;
-            (*data).menu_box_area = menu_area;
-        } 
-        self
-    }
+
     pub fn with_network_chan(mut self, net_receiver: Receiver<NetMsg>) -> Self {
         self.net = Some(net_receiver);
         self

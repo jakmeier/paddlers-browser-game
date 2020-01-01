@@ -1,3 +1,4 @@
+use crate::prelude::ScreenResolution;
 use crate::game::*;
 use stdweb::unstable::TryInto;
 
@@ -34,7 +35,8 @@ impl Game<'_,'_> {
                 let user_agent : String = js!(
                     return navigator.userAgent;
                 ).try_into().unwrap_or("NotAvailable".to_owned());
-                println!("{} {} {:?} {} \"{}\" {}", date, version, test.kind, device, user_agent, result);
+                let resolution = *self.world.fetch::<ScreenResolution>();
+                println!("{} {} {:?} {} \"{}\" {:?} {}", date, version, test.kind, device, user_agent, resolution, result);
                 self.active_test = None;
             }
         }

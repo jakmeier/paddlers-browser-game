@@ -5,9 +5,9 @@ use specs::world::Index;
 use crate::game::{
     movement::Position,
     town::Town,
-    UnitLength,
     game_event_manager::{EventPool, GameEvent},
 };
+use crate::prelude::ScreenResolution;
 
 #[derive(Component, Debug)]
 #[storage(HashMapStorage)]
@@ -87,15 +87,17 @@ impl<'a> System<'a> for FightSystem {
         ReadStorage<'a, Aura>,
         ReadStorage<'a, Position>,
         WriteStorage<'a, Health>,
-        Read<'a, UnitLength>,
+        Read<'a, ScreenResolution>,
      );
 
-    fn run(&mut self, (entities, aura, position, mut health, ul): Self::SystemData) {
+    fn run(&mut self, (entities, aura, position, mut health, resolution): Self::SystemData) {
         // It's not necessary to recalculate every frame
         self.counter = (self.counter + 1) % 30;
         if self.counter != 1 {
             return;
         }
+
+        let ul = resolution.unit_length();
 
         // This algorithm runs in O(n*m*(log(m)+log(t))
         // n attacker, m defenders, t tiles
@@ -104,7 +106,7 @@ impl<'a> System<'a> for FightSystem {
         // t is always smaller than the map lane size
         for (aid, a) in (&entities, &aura).join() { // m
             for (hid, p, h) in (&entities, &position, &mut health).join() { // n
-                let tile = Town::find_tile(p.area.pos, ul.0);
+                let tile = Town::find_tile(p.area.pos, ul);
                 if a.affected_tiles.binary_search(&tile).is_ok() { // log t
                     match h.aura_effects.binary_search(&aid.id()) { // log m
                         Ok(_) => {/* Aura already active*/},

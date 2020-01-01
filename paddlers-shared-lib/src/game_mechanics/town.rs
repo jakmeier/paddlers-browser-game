@@ -3,7 +3,7 @@ use crate::models::BuildingType;
 use crate::game_mechanics::building::*;
 use crate::models::*;
 
-pub const TOWN_X: usize = 10;
+pub const TOWN_X: usize = 9;
 pub const TOWN_Y: usize = 7;
 pub const TOWN_LANE_Y: usize = 3;
 
