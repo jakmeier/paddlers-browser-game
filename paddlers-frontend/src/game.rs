@@ -29,7 +29,6 @@ use crate::game::{
     forestry::ForestrySystem,
     player_info::PlayerInfo,
     attacks::new_attack_view_dispatcher,
-    leaderboard::Leaderboard,
 };
 use crate::gui::{
     input,
@@ -125,6 +124,15 @@ impl Game<'_,'_> {
         })
     }
 
+    /// Called at the first draw loop iteration (the first time quicksilver leaks access to it)
+    pub fn initialize_with_window(&mut self, window: &mut Window) {
+        self.load_resolution();
+        self.init_map();
+        self.init_views();
+        let err = crate::window::adapt_window_size(window);
+        self.check(err);
+    }
+
     pub fn main_update_loop(&mut self, window: &mut Window) -> Result<()> {
 
         {
@@ -156,39 +164,44 @@ impl Game<'_,'_> {
     }
     pub fn with_resolution(mut self, r: ScreenResolution) -> Self {
         self.world.insert(r);
-
-        let (tw,th) = r.main_area();
-        let menu_size = r.menu_area();
-        let menu_area = Rectangle::new((tw,0),menu_size);
-        let main_area = Rectangle::new((0,0),(tw, th));
-
-        let mut data = self.world.write_resource::<UiState>();
-        (*data).main_area = main_area;
-        (*data).menu_box_area = menu_area;
-        std::mem::drop(data);
-        
         self
     }
-
     pub fn with_network_chan(mut self, net_receiver: Receiver<NetMsg>) -> Self {
         self.net = Some(net_receiver);
         self
     }
-    pub fn init_map(mut self) -> Self {
+    /// Call this after changing resolution in world
+    pub fn load_resolution(&mut self) {
+
+        let r = *self.world.fetch::<ScreenResolution>();
+
+        let main_size = Vector::from(r.main_area());
+        let menu_size = Vector::from(r.menu_area());
+        let main_area = Rectangle::new_sized(main_size);
+        let menu_area = Rectangle::new((main_size.x,0),menu_size);
+
+        let mut data = self.world.write_resource::<UiState>();
+        println!("load res: {:?}", main_area);
+        (*data).main_area = main_area;
+        (*data).menu_box_area = menu_area;
+        std::mem::drop(data);
+
+        // TODO: refresh map and town (and make this method callable by user input)
+    }
+    pub fn init_map(&mut self) {
         let main_area = self.world.read_resource::<UiState>().main_area;
         let (private, shared) = GlobalMap::new(main_area.size());
         self.map = Some(private);
         self.world.insert(shared);
-        self
     }
-    pub fn init_views(mut self) -> Self {
+    pub fn init_views(&mut self) {
         let mut ui = self.world.write_resource::<UiState>();
-        let leaderboard : Leaderboard = ui.init_leaderboard().expect("Init leaderboard failed");
+        let area = ui.main_area;
+        let leaderboard = ui.init_leaderboard(&area).expect("Init leaderboard failed");
         let atk_disp = new_attack_view_dispatcher(&mut ui).expect("Init dispatcher failed");
         self.view_manager.add_dispatcher(UiView::Attacks, atk_disp);
         std::mem::drop(ui);
         self.world.insert(leaderboard);
-        self
     }
 
     pub fn town(&self) -> specs::shred::Fetch<Town> {

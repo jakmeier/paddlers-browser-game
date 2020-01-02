@@ -21,6 +21,9 @@ use crate::gui::ui_state::*;
 use quicksilver::prelude::*;
 use crate::specs::WorldExt;
 
+use std::sync::Once;
+static INIT: Once = Once::new();
+
 impl State for Game<'static, 'static> {
     fn new() -> Result<Self> {
         Self::load_game()
@@ -29,6 +32,11 @@ impl State for Game<'static, 'static> {
     fn update(&mut self, window: &mut Window) -> Result<()> {
         #[cfg(feature="dev_view")]
         self.start_update();
+
+        INIT.call_once(|| {
+            self.initialize_with_window(window);
+        });
+        
         self.total_updates += 1;
         window.set_max_updates(1); // 1 update per frame is enough
         self.update_time_reference();
@@ -58,6 +66,10 @@ impl State for Game<'static, 'static> {
     fn draw(&mut self, window: &mut Window) -> Result<()> {
         #[cfg(feature="dev_view")]
         self.start_draw();
+
+        INIT.call_once(|| {
+            self.initialize_with_window(window);
+        });
 
         // TODO (optimization): Refactor to make this call event-based
         if self.total_updates % 50 == 0 {

@@ -36,10 +36,9 @@ pub fn run(net_chan: Receiver<NetMsg>) {
     let resolution = crate::window::estimate_screen_size();
 
     let (w,h) = resolution.pixels();
-    let (tw,th) = resolution.main_area();
 
     // Initialize panes
-    panes::init_ex(Some("game-root"), (0,0), Some((tw as u32, th as u32))).expect("Panes initialization failed");
+    panes::init_ex(Some("game-root"), (0,0), Some((w as u32, h as u32))).expect("Panes initialization failed");
     
     // Load quicksilver canvas and loop
     let mut settings = Settings::default();
@@ -52,8 +51,6 @@ pub fn run(net_chan: Receiver<NetMsg>) {
             crate::game::Game::new().expect("Game initialization")
                 .with_town(Town::new(resolution))
                 .with_resolution(resolution)
-                .init_map()
-                .init_views()
                 .with_network_chan(net_chan)
             )
     );

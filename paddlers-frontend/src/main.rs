@@ -1,5 +1,5 @@
 #![recursion_limit="512"]
-#![feature(is_sorted, associated_type_bounds, vec_remove_item, option_flattening)]
+#![feature(is_sorted, associated_type_bounds, vec_remove_item)]
 extern crate quicksilver;
 #[macro_use]
 extern crate stdweb;

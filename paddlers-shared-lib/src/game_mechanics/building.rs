@@ -61,6 +61,6 @@ impl BuildingType {
             BuildingType::RedFlowers,
             BuildingType::SawMill,
             BuildingType::Tree,
-        ].into_iter()
+        ].iter()
     }
 }

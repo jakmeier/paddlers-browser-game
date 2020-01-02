@@ -1,4 +1,3 @@
-#![feature(result_map_or_else)]
 #![feature(exclusive_range_pattern)]
 #![feature(associated_type_bounds)]
 extern crate env_logger;

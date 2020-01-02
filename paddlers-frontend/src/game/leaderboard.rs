@@ -1,3 +1,4 @@
+use quicksilver::geom::Rectangle;
 use crate::prelude::*;
 use crate::gui::ui_state::UiState;
 use crate::gui::input::UiView;
@@ -7,10 +8,15 @@ use stdweb::web::*;
 pub struct Leaderboard(Node);
 
 impl UiState {
-    pub fn init_leaderboard(&mut self) -> PadlResult<Leaderboard> {
-        let r = self.main_area;
-        let pane = panes::new_pane(r.x() as u32, r.y() as u32, r.width() as u32, r.height() as u32, 
-        r#"<section class="leaderboard"></section>"#)?;
+    pub fn init_leaderboard(&mut self, area: &Rectangle) -> PadlResult<Leaderboard> {
+        println!("init leaderboard: {:?}", area);
+        let pane = panes::new_pane(
+            area.x() as u32,
+            area.y() as u32,
+            area.width() as u32,
+            area.height() as u32,
+            r#"<section class="leaderboard"></section>"#
+        )?;
         let node = pane.first_inner_node()?;
 
         // TODO Debug why this didn't work:
