@@ -1,4 +1,4 @@
-# An image with the latest Rust nightly installed
+# An image with a (recent) Rust nightly and cargo-web installed
 FROM buildpack-deps:stretch as RustBaseImg
 ENV RUSTUP_HOME=/usr/local/rustup \
 CARGO_HOME=/usr/local/cargo \

@@ -1,9 +1,6 @@
-ifneq (,$(wildcard \./\.env))
-    ENV_EXISTS=1
-else
-    ENV_EXISTS=0
-endif
+
 REPO=jakmeier/paddlers
+LOCAL=jakmeier/paddlers-local
 
 build-and-run: build
 	make run
@@ -17,17 +14,18 @@ release: game-master-container db-interface-container frontend-container keycloa
 
 run: docker-compose.local.yml
 	docker-compose -f $< up --no-start
-# ifeq ($(ENV_EXISTS),1)
-# 	docker cp ./.env paddlers_game-master_1:/app/.env
-# 	docker cp ./.env paddlers_db-interface_1:/app/.env
-# else
 	docker cp ./local.env paddlers_game-master_1:/app/.env
 	docker cp ./local.env paddlers_db-interface_1:/app/.env
-# endif
 	docker-compose -f $< up --no-recreate --no-build
+
+update-frontend-builder: frontend-builder
+	docker login; docker push $(REPO):frontend-builder
 
 rust-container: Dockerfile
 	docker build --target RustBaseImg -t $(REPO):builder-base -f $< .
+
+frontend-builder: paddlers-frontend/build.Dockerfile
+	docker build -t $(REPO):frontend-builder -f $< .
 
 game-master-container: paddlers-game-master/Dockerfile rust-container
 	docker build --target GameMaster -t $(REPO):game-master-snapshot -f $< .
@@ -36,28 +34,28 @@ db-interface-container: paddlers-db-interface/Dockerfile rust-container
 	docker build --target DbInterface -t $(REPO):db-interface-snapshot -f $< .
 
 debug-game-master-container: paddlers-game-master/debug.Dockerfile rust-container
-	docker build --target GameMaster -t $(REPO):game-master-snapshot -f $< .
+	docker build --target GameMaster -t $(LOCAL):game-master-snapshot -f $< .
 
 debug-db-interface-container: paddlers-db-interface/debug.Dockerfile rust-container
-	docker build --target DbInterface -t $(REPO):db-interface-snapshot -f $< .
+	docker build --target DbInterface -t $(LOCAL):db-interface-snapshot -f $< .
 
-debug-frontend-container: paddlers-frontend/debug.Dockerfile rust-container
-	docker build --target WebServer -t $(REPO):frontend-snapshot -f $< .
+debug-frontend-container: paddlers-frontend/debug.Dockerfile
+	docker build --target WebServer -t $(LOCAL):frontend-snapshot -f $< .
 
 frontend-container: paddlers-frontend/Dockerfile rust-container
 	docker build --target WebServer -t $(REPO):frontend-snapshot -f $< .
 
-mobile-frontend-container: paddlers-frontend/mobile.Dockerfile rust-container
-	docker build --target WebServer -t $(REPO):frontend-snapshot -f $< .
+mobile-frontend-container: paddlers-frontend/mobile.Dockerfile
+	docker build --target WebServer -t $(LOCAL):frontend-snapshot -f $< .
 
 debug-keycloak-container: paddlers-keycloak/debug.Dockerfile
-	docker build --target KeyCloak -t $(REPO):keycloak-snapshot -f $< .
+	docker build --target KeyCloak -t $(LOCAL):keycloak-snapshot -f $< .
 
 keycloak-container: paddlers-keycloak/Dockerfile
 	docker build --target KeyCloak -t $(REPO):keycloak-snapshot -f $< .
 
 mobile-keycloak-container: paddlers-keycloak/mobile.Dockerfile
-	docker build --target KeyCloak -t $(REPO):keycloak-snapshot -f $< .
+	docker build --target KeyCloak -t $(LOCAL):keycloak-snapshot -f $< .
 
 # When container are alrady running, use these for partial update
 recreate-frontend: debug-frontend-container
