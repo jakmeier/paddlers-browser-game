@@ -1,3 +1,6 @@
+mod text_node;
+pub use text_node::*;
+
 use std::collections::HashMap;
 use crate::prelude::*;
 use crate::game::Game;

@@ -9,16 +9,17 @@ use crate::gui::ui_state::UiState;
 use crate::gui::input::UiView;
 use crate::net::state::current_village;
 use crate::logging::ErrorQueue;
+use crate::view::TextNode;
 use panes::{PaneHandle, new_pane};
 use stdweb::unstable::{TryInto};
 
-#[derive(Component, Debug, Clone)]
+#[derive(Component, Debug)]
 #[storage(HashMapStorage)]
 pub struct Attack {
     arrival: Timestamp,
     size: u32,
     description: String,
-    dom_node: Option<Node>,
+    dom_node: Option<TextNode>,
 }
 
 impl Game<'_,'_> {
@@ -63,17 +64,19 @@ impl Attack {
     fn arrival(&self) -> String {
         let t = crate::seconds(self.arrival - utc_now());
         if t > 0 {
-            t.to_string()
+            t.to_string() + "s"
         } else {
             "Arrived".to_owned()
         }
     }
     fn to_html(&self) -> String {
-        format!("<p>{}</p><p>{}</p><p>{}s</p>", self.description, self.size, self.arrival())
+        format!("<div>{}</div><div>{}</div><div>{}</div>", self.description, self.size, self.arrival())
     }
-    fn update_dom(&self) -> PadlResult<()> {
-        if let Some(text_node) = &self.dom_node {
-            text_node.set_text_content(&self.arrival());
+    fn update_dom(&mut self) -> PadlResult<()> {
+        if self.dom_node.is_some() {
+            let text = self.arrival();
+            self.dom_node.as_mut().unwrap().update(text);
+            self.dom_node.as_mut().unwrap().draw();
             return Ok(());
         }
         PadlErrorCode::InvalidDom("Not initialized").dev()
@@ -81,9 +84,7 @@ impl Attack {
     // TODO: remove after 60s
     fn delete(self) {
         if let Some(node) = self.dom_node {
-            if let Some(parent) = node.parent_node() {
-                parent.remove_child(&node).expect("Child vanished");
-            }
+            node.delete().unwrap();
         }
     }
 }
@@ -132,7 +133,14 @@ impl<'a> System<'a> for AttackViewSystem {
             if a.dom_node.is_none() {
                 let html = a.to_html();
                 match self.add_row(&html) {
-                    Ok(node) => a.dom_node = Some(node),
+                    Ok(node) => {
+                        if let Some(arrival_node) = node.last_child() {
+                            let text_node = TextNode::new(arrival_node, a.arrival());
+                            a.dom_node = Some(text_node);
+                        } else {
+                            errq.push(PadlError::dev_err(PadlErrorCode::InvalidDom("Child lookup failed")));
+                        }
+                    }
                     Err(e) => errq.push(e)
                 }
             }
@@ -153,17 +161,17 @@ impl UpdateAttackViewSystem {
 
 impl<'a> System<'a> for UpdateAttackViewSystem {
     type SystemData = (
-        ReadStorage<'a, Attack>,
+        WriteStorage<'a, Attack>,
         WriteExpect<'a, ErrorQueue>,
     );
 
-    fn run(&mut self, (attack, mut errq): Self::SystemData) {
+    fn run(&mut self, (mut attack, mut errq): Self::SystemData) {
         let now = utc_now();
         if now - self.last_update < 1_000_000 {
             return;
         }
         self.last_update = now;
-        for a in (attack).join() {
+        for a in (&mut attack).join() {
             if a.dom_node.is_some() {
                 a.update_dom().unwrap_or_else(|e| errq.push(e));
             }
