@@ -2310,7 +2310,7 @@ dependencies = [
  "futures-util-preview 0.3.0-alpha.19 (registry+https://github.com/rust-lang/crates.io-index)",
  "graphql_client 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "paddlers-shared-lib 0.1.1-snapshot",
- "panes 0.1.1 (git+https://github.com/jakmeier/panes?rev=a2fad38172d044dc4510b6a7c01cdba1fa677ba)",
+ "panes 0.1.2 (git+https://github.com/jakmeier/panes?rev=39de99f30400ac5b961eaa14516154f50a992b62)",
  "pathfinding 2.0.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "quicksilver 0.3.18 (git+https://github.com/jakmeier/quicksilver?rev=663fb784061547b22cee07ed2dc35d79165ac88c)",
  "serde 1.0.104 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2366,8 +2366,8 @@ dependencies = [
 
 [[package]]
 name = "panes"
-version = "0.1.1"
-source = "git+https://github.com/jakmeier/panes?rev=a2fad38172d044dc4510b6a7c01cdba1fa677ba#a2fad38172d044dc4510b6a7c01cdba1fa677ba7"
+version = "0.1.2"
+source = "git+https://github.com/jakmeier/panes?rev=39de99f30400ac5b961eaa14516154f50a992b62#39de99f30400ac5b961eaa14516154f50a992b62"
 dependencies = [
  "lazy_static 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "stdweb 0.4.20 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2610,7 +2610,6 @@ dependencies = [
  "image 0.21.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "lyon 0.13.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.6.5 (registry+https://github.com/rust-lang/crates.io-index)",
- "rusttype 0.7.9 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.104 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.104 (registry+https://github.com/rust-lang/crates.io-index)",
  "stdweb 0.4.20 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -4397,7 +4396,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum ordered-float 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)" = "18869315e81473c951eb56ad5558bbc56978562d3ecfb87abb7a1e944cea4518"
 "checksum ordermap 0.3.5 (registry+https://github.com/rust-lang/crates.io-index)" = "a86ed3f5f244b372d6b1a00b72ef7f8876d0bc6a78a4c9985c53614041512063"
 "checksum osmesa-sys 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "88cfece6e95d2e717e0872a7f53a8684712ad13822a7979bc760b9c77ec0013b"
-"checksum panes 0.1.1 (git+https://github.com/jakmeier/panes?rev=a2fad38172d044dc4510b6a7c01cdba1fa677ba)" = "<none>"
+"checksum panes 0.1.2 (git+https://github.com/jakmeier/panes?rev=39de99f30400ac5b961eaa14516154f50a992b62)" = "<none>"
 "checksum parking_lot 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)" = "92e98c49ab0b7ce5b222f2cc9193fc4efe11c6d0bd4f648e374684a6857b1cfc"
 "checksum parking_lot 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)" = "fa7767817701cce701d5585b9c4db3cdd02086398322c1d7e8bf5094a96a2ce7"
 "checksum parking_lot 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)" = "f842b1982eb6c2fe34036a4fbfb06dd185a3f5c8edfaacdf7d1ea10b07de6252"

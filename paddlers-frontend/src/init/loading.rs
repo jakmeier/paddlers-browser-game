@@ -1,4 +1,4 @@
-use crate::prelude::ScreenResolution;
+use crate::prelude::{ScreenResolution, PadlResult};
 use crate::gui::sprites::{
     animation::{AnimatedObject, AnimatedObjectDef, AnimationVariantDef},
     paths::{ANIMATION_DEFS, SPRITE_PATHS},
@@ -110,7 +110,7 @@ impl Game<'static, 'static> {
     pub fn update_loading(&mut self, _window: &mut Window) -> Result<()> {
         Ok(())
     }
-    pub fn draw_loading(&mut self, window: &mut Window) -> Result<()> {
+    pub fn draw_loading(&mut self, window: &mut Window) -> PadlResult<()> {
         let progress = self.preload.as_mut().expect("preload").progress();
         if progress < 1.0 {
             self.draw_progress(window, progress)?;
@@ -118,9 +118,10 @@ impl Game<'static, 'static> {
         }
         let images = self.preload.take().unwrap().finalize();
         self.sprites = Some(Sprites::new(images));
+        self.preload_float.hide()?;
         Ok(())
     }
-    fn draw_progress(&mut self, window: &mut Window, progress: f32) -> Result<()> {
+    fn draw_progress(&mut self, window: &mut Window, progress: f32) -> PadlResult<()> {
         window.clear(DARK_GREEN)?;
         let r = *self.world.read_resource::<ScreenResolution>();
         let w = r.pixels().0;
@@ -130,7 +131,7 @@ impl Game<'static, 'static> {
 
         // For now, only images are preloaded and therefore this is done very simply
         let msg = "Downloading images"; 
-        draw_progress_bar(window, &mut self.bold_font, area, progress, &msg)
+        draw_progress_bar(window, &mut self.preload_float, area, progress, &msg)
     }
 }
 

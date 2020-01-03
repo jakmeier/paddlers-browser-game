@@ -26,7 +26,7 @@ static INIT: Once = Once::new();
 
 impl State for Game<'static, 'static> {
     fn new() -> Result<Self> {
-        Self::load_game()
+        Ok(Self::load_game().expect("Loading failed"))
     }
 
     fn update(&mut self, window: &mut Window) -> Result<()> {
@@ -83,10 +83,12 @@ impl State for Game<'static, 'static> {
             self.check(err);
         }
         if self.sprites.is_none() {
-            self.draw_loading(window)
+            let res = self.draw_loading(window);
+            self.check(res);
         } else {
-            self.draw_main(window)
-        }?;
+            let res = self.draw_main(window);
+            self.check(res);
+        }
         #[cfg(feature="dev_view")]
         self.end_draw();
         Ok(())

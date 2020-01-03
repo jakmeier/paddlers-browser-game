@@ -4,6 +4,8 @@ body, a {
 }
 #game-root {
     position: relative;
+    font-size: 24px;
+    color: black;
 }
 #game-root {
     max-width: 100%;
@@ -25,4 +27,17 @@ section.leaderboard {
     display: grid;
     grid-template-columns: 1fr 2fr 2fr;
     padding: 20px;
+}
+
+/* MID */
+@media screen and (max-width: 1679px) {
+    #game-root {
+        font-size: 20px;
+    }
+}
+/* LOW */
+@media screen and (max-width: 1119px) {
+    #game-root {
+        font-size: 16px;
+    }
 }

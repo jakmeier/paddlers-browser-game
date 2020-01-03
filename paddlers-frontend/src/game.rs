@@ -52,7 +52,7 @@ use town::{Town, DefaultShop};
 use town_resources::TownResources;
 use map::{GlobalMap, GlobalMapPrivateState};
 use game_event_manager::GameEvent;
-use crate::view::ViewManager;
+use crate::view::{ViewManager, FloatingText};
 
 pub(crate) struct Game<'a, 'b> {
     pub dispatcher: Dispatcher<'a, 'b>,
@@ -60,10 +60,10 @@ pub(crate) struct Game<'a, 'b> {
     pub pointer_manager: PointerManager<'a, 'b>,
     pub world: World,
     pub sprites: Option<Sprites>,
-    pub preload: Option<crate::init::loading::LoadingState>,
-    pub font: Asset<Font>,
-    pub bold_font: Asset<Font>,
+    pub text_pool: Vec<FloatingText>,
     pub resources: TownResources,
+    pub res_floats: [FloatingText;3],
+    pub shop_floats: [FloatingText;3],
     pub net: Option<Receiver<NetMsg>>,
     pub time_zero: Timestamp,
     pub total_updates: u64,
@@ -71,6 +71,10 @@ pub(crate) struct Game<'a, 'b> {
     pub game_event_receiver: Receiver<GameEvent>,
     pub stats: Statistician,
     pub map: Option<GlobalMapPrivateState>,
+
+    pub preload: Option<crate::init::loading::LoadingState>,
+    pub preload_float: FloatingText,
+
     #[cfg(feature="dev_view")]
     pub palette: bool,
     #[cfg(feature="dev_view")]
@@ -79,11 +83,7 @@ pub(crate) struct Game<'a, 'b> {
 
 impl Game<'_,'_> {
 
-    pub fn load_game() -> Result<Self> {
-        // Start loading fonts asap
-        let font = Asset::new(Font::load("fonts/Manjari-Regular.ttf"));
-        let bold_font = Asset::new(Font::load("fonts/Manjari-Bold.ttf"));
-
+    pub fn load_game() -> PadlResult<Self> {
         let (err_send, err_recv) = channel();
         let (game_evt_send, game_evt_recv) = channel();
         let mut world = crate::init::init_world(err_send);
@@ -107,11 +107,13 @@ impl Game<'_,'_> {
             world: world,
             sprites: None,
             preload: Some(crate::init::loading::LoadingState::new()),
-            font: font,
-            bold_font: bold_font,
+            preload_float: FloatingText::try_default().expect("FloatingText"),
+            text_pool: vec![],
             net: None,
             time_zero: now,
             resources: TownResources::default(),
+            res_floats: FloatingText::new_triplet()?,
+            shop_floats: FloatingText::new_triplet()?,
             total_updates: 0,
             async_err_receiver: err_recv,
             game_event_receiver: game_evt_recv,
@@ -152,7 +154,7 @@ impl Game<'_,'_> {
         self.view_manager.update(&mut self.world, view);
         self.handle_game_events();
         if self.total_updates % 300 == 15 {
-            self.reaper(&Rectangle::new_sized(window.screen_size()));
+            self.reaper(&Rectangle::new_sized(window.project() * window.screen_size()));
         }
         self.world.maintain();
         Ok(())
@@ -181,7 +183,6 @@ impl Game<'_,'_> {
         let menu_area = Rectangle::new((main_size.x,0),menu_size);
 
         let mut data = self.world.write_resource::<UiState>();
-        println!("load res: {:?}", main_area);
         (*data).main_area = main_area;
         (*data).menu_box_area = menu_area;
         std::mem::drop(data);
@@ -297,8 +298,8 @@ impl Game<'_,'_> {
             Some(res.unwrap())
         }
     }
-    pub fn confirm_to_user(&mut self, msg: String) {
+    pub fn confirm_to_user(&mut self, msg: String) -> PadlResult<()> {
         let mut tb = self.world.write_resource::<TextBoard>();
-        tb.display_confirmation(msg);
+        tb.display_confirmation(msg)
     }
 }

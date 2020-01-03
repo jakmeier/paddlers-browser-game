@@ -8,6 +8,7 @@ use paddlers_shared_lib::api::shop::Price;
 use crate::gui::{sprites::*, utils::*, z::*};
 use crate::prelude::*;
 use crate::game::game_event_manager::GameEvent;
+use crate::view::FloatingText;
 use quicksilver::prelude::*;
 
 pub enum TableRow<'a> {
@@ -48,16 +49,18 @@ pub fn draw_table(
     sprites: &mut Sprites,
     table: &mut [TableRow],
     max_area: &Rectangle,
-    font: &mut Asset<Font>,
+    floats: &mut Vec<FloatingText>,
     max_row_height: f32,
     z: i32,
     now: Timestamp,
-) -> Result<()> {
+) -> PadlResult<()> {
     let total_rows = row_count(table);
     let row_height = max_row_height.min(max_area.height() / total_rows as f32);
     let font_h = row_height * 0.9;
     let img_s = row_height * 0.95;
     let margin = 10.0;
+
+    let mut float_idx = 0;
 
     let mut line = Rectangle::new(max_area.pos, (max_area.width(), row_height));
     for row in table {
@@ -65,7 +68,9 @@ pub fn draw_table(
             TableRow::Text(text) => {
                 let mut text_area = line.clone();
                 text_area.size.y = font_h;
-                write_text(font, window, &text_area, z, FitStrategy::Center, text)?;
+                let float = get_float(floats, float_idx);
+                float_idx += 1;
+                float.write(window, &text_area, z, FitStrategy::Center, text)?;
                 line.pos.y += row_height;
             }
             TableRow::TextWithImage(text, img) => {
@@ -76,7 +81,9 @@ pub fn draw_table(
                 text_area.pos.x += shift_x;
                 text_area.size.y = font_h;
                 text_area.pos.y += row_height - font_h; // something is fishy here, should be /2.0 but right now looks better without
-                write_text(font, window, &text_area, z, FitStrategy::Center, text)?;
+                let float = get_float(floats, float_idx);
+                float_idx += 1;
+                float.write(window, &text_area, z, FitStrategy::Center, text)?;
                 draw_static_image(sprites, window, &symbol, *img, z, FitStrategy::Center)?;
                 line.pos.y += row_height;
             }
@@ -99,30 +106,16 @@ pub fn draw_table(
                     window.draw_ex(&label_area, Col(*bkgcol), Transform::IDENTITY, z);
                     let mut label_text_area = label_area.shrink_to_center(0.9);
                     label_text_area.pos.y += label_text_area.size.y * 0.1;
-                    write_text_col(
-                        font,
-                        window,
-                        &label_text_area,
-                        z+1,
-                        FitStrategy::Center,
-                        label,
-                        Color::WHITE,
-                    )
-                    .unwrap();
+                    let float = get_float(floats, float_idx);
+                    float_idx += 1;
+                    float.write(window, &label_text_area, z, FitStrategy::Center, label)?;
                 }
                 let text = format!("{}/{}", i, n);
                 let mut text_area = area.shrink_to_center(0.9);
                 text_area.pos.y += text_area.size.y * 0.1;
-                write_text_col(
-                    font,
-                    window,
-                    &text_area,
-                    z + 1,
-                    FitStrategy::Center,
-                    &text,
-                    Color::WHITE,
-                )
-                .unwrap();
+                let float = get_float(floats, float_idx);
+                float_idx += 1;
+                float.write(window, &text_area, z + 1, FitStrategy::Center, &text)?;
 
                 window.draw_ex(&area, Col(*col), Transform::IDENTITY, Z_MENU_BOX + 1);
                 let mut bar = area.padded(3.0);
@@ -134,6 +127,19 @@ pub fn draw_table(
         }
     }
     Ok(())
+}
+
+fn get_float(f: &mut Vec<FloatingText>, i: usize) -> &mut FloatingText{
+    if f.len() <= i {
+        f.push(
+            FloatingText::new(
+                &Rectangle::default(),
+                "".to_owned(),
+            )
+            .expect("FloatingText creation failed")
+        );
+    }
+    &mut f[i]
 }
 
 fn row_count(table: &[TableRow]) -> usize {
@@ -152,15 +158,15 @@ pub fn draw_resources(
     sprites: &mut Sprites,
     resis: &[(ResourceType, i64)],
     max_area: &Rectangle,
-    font: &mut Asset<Font>,
+    floats: &mut[FloatingText;3],
     z: i32,
-) -> Result<()> {
-    // XXX This is quite specific. If this is used more flexible, consider refactoring.
+) -> PadlResult<()> {
+    // This is quite specific. If this is used more flexible, consider refactoring.
     let cols = 3;
     let rows = (2 + resis.len()) / cols;
     let grid = max_area.grid(cols, rows);
     let max_img_area = Rectangle::new_sized((50, 50));
-    for ((rt, n), res_area) in resis.iter().zip(grid) {
+    for (((rt, n), res_area), ref mut float) in resis.iter().zip(grid).zip(floats.iter_mut()) {
         let mut img_area = max_img_area.shrink_and_fit_into(&res_area, FitStrategy::TopLeft);
         img_area.size.y = res_area.height();
         img_area.pos.x = img_area.pos.x + res_area.width() - img_area.width();
@@ -180,8 +186,7 @@ pub fn draw_resources(
             z,
             FitStrategy::Center,
         )?;
-        write_text(
-            font,
+        float.write(
             window,
             &text_area,
             z + 1,

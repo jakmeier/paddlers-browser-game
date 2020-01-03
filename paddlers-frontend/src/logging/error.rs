@@ -79,6 +79,7 @@ pub enum PadlErrorCode {
     StdWebConversion(stdweb::private::ConversionError),
     StdWebSecurityError(stdweb::web::error::SecurityError),
     InvalidDom(&'static str),
+    QuicksilverError(String),
     PanesError(String),
     JsonParseError(serde_json::error::Error),
     UrlParseError(String),
@@ -145,6 +146,8 @@ impl fmt::Display for PadlErrorCode {
                 write!(f, "A security error in the web std library occurred: {}", cause),
             PadlErrorCode::InvalidDom(cause) =>
                 write!(f, "DOM error: {}", cause),
+            PadlErrorCode::QuicksilverError(cause) =>
+                write!(f, "Quicksilver error: {}", cause),
             PadlErrorCode::PanesError(cause) =>
                 write!(f, "Panes error: {}", cause),
             PadlErrorCode::JsonParseError(cause) =>
@@ -205,6 +208,11 @@ impl From<AjaxError> for PadlError {
         } else {
             PadlError::dev_err(PadlErrorCode::BrowserError(ajax.description))
         }
+    }
+}
+impl From<quicksilver::Error> for PadlError {
+    fn from(error: quicksilver::Error) -> Self {
+        PadlError::dev_err(PadlErrorCode::QuicksilverError(error.to_string()))
     }
 }
 impl From<panes::PanesError> for PadlError {

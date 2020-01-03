@@ -75,7 +75,7 @@ impl Attack {
     fn update_dom(&mut self) -> PadlResult<()> {
         if self.dom_node.is_some() {
             let text = self.arrival();
-            self.dom_node.as_mut().unwrap().update(text);
+            self.dom_node.as_mut().unwrap().update_owned(text);
             self.dom_node.as_mut().unwrap().draw();
             return Ok(());
         }

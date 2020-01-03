@@ -11,10 +11,12 @@ pub use jmr_geometry::*;
 mod progress_bar;
 pub use progress_bar::*;
 
+use crate::prelude::*;
 use crate::gui::animation::AnimationState;
 use crate::gui::sprites::*;
 use quicksilver::graphics::Mesh;
 use quicksilver::prelude::*;
+use crate::view::FloatingText;
 
 #[derive(Debug, Clone, Copy)]
 pub enum RenderVariant {
@@ -107,36 +109,21 @@ pub fn draw_image(
     Ok(())
 }
 
-#[inline]
-pub fn write_text(
-    asset: &mut Asset<Font>,
-    window: &mut Window,
-    max_area: &Rectangle,
-    z: i32,
-    fit_strat: FitStrategy,
-    text: &str,
-) -> Result<f32> {
-    write_text_col(asset, window, max_area, z, fit_strat, text, Color::BLACK)
-}
-pub fn write_text_col(
-    asset: &mut Asset<Font>,
-    window: &mut Window,
-    max_area: &Rectangle,
-    z: i32,
-    fit_strat: FitStrategy,
-    text: &str,
-    col: Color,
-) -> Result<f32> {
-    let mut res = 0.0;
-    asset.execute(|font| {
-        let style = FontStyle::new(max_area.height(), col);
-        let img = font.render(text, &style).unwrap();
-        let area = img.area().shrink_and_fit_into(max_area, fit_strat);
-        window.draw_ex(&area, Img(&img), Transform::IDENTITY, z);
-        res = area.width();
+impl FloatingText {
+    pub fn write(
+        &mut self,
+        _window: &Window,
+        max_area: &Rectangle,
+        _z: i32, // TODO
+        _fit_strat: FitStrategy, // TODO
+        text: &str,
+    ) -> PadlResult<()>
+    {
+        self.update_text(text);
+        self.update_position(max_area)?;
+        self.draw();
         Ok(())
-    })?;
-    Ok(res)
+    }
 }
 
 pub fn horizontal_flip() -> Transform {

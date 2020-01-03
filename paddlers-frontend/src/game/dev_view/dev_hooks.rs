@@ -44,7 +44,7 @@ impl Game<'_,'_> {
     #[cfg(feature="dev_view")]
     pub fn draw_dev_view(&mut self, window: &mut Window) {
         if self.palette {
-            let area = Rectangle::new((0,0),window.screen_size()).padded(100.0);
+            let area = Rectangle::new((0,0),window.project() * window.screen_size()).padded(100.0);
             crate::gui::utils::colors::palette::draw_color_palette(window, area);
         }
     }

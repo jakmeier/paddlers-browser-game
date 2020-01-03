@@ -27,14 +27,21 @@ impl ErrorQueue {
         }
     }
     fn route_err(&self, e: PadlError, tb: &mut TextBoard) {
+        let err =
         match e.channel {
             ErrorChannel::Technical => {
                 println!("Error: {}", e);
                 #[cfg(feature="mobile_debug")]
-                tb.display_error_message(format!("DEBUG: {}", e));
+                let err = tb.display_error_message(format!("DEBUG: {}", e));
+                #[cfg(not(feature="mobile_debug"))]
+                let err = Ok(());
+                err
             },
             ErrorChannel::UserFacing => 
                 tb.display_error_message(format!("{}", e)),
+        };
+        if let Err(err) = err {
+            println!("Failed to display error. Reason of failure: {}", err);
         }
     }
 }

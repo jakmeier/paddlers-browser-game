@@ -2,7 +2,7 @@ use quicksilver::prelude::*;
 use quicksilver::graphics::Color;
 use quicksilver::input::MouseCursor;
 use specs::prelude::*;
-use crate::prelude::ScreenResolution;
+use crate::prelude::*;
 use crate::game::{
     Game,
     movement::Position,
@@ -44,7 +44,7 @@ impl Renderable {
 }
 
 impl Game<'_, '_> {
-    pub fn draw_main(&mut self, window: &mut Window) -> Result<()> {
+    pub fn draw_main(&mut self, window: &mut Window) -> PadlResult<()> {
         let tick = self.world.read_resource::<ClockTick>().0;
         let ui_state = self.world.read_resource::<UiState>();
         let hovered_entity = ui_state.hovered_entity;
@@ -104,7 +104,7 @@ impl Game<'_, '_> {
         Ok(())
     }
 
-    pub fn render_town_entities(&mut self, window: &mut Window) -> Result<()> {
+    pub fn render_town_entities(&mut self, window: &mut Window) -> PadlResult<()> {
         let world = &self.world;
         let pos_store = world.read_storage::<Position>();
         let rend_store = world.read_storage::<Renderable>();
@@ -131,7 +131,7 @@ impl Game<'_, '_> {
         Ok(())
     }
 
-    pub fn render_hovering(&mut self, window: &mut Window, entity: Entity) -> Result<()> {
+    pub fn render_hovering(&mut self, window: &mut Window, entity: Entity) -> PadlResult<()> {
         let position_store = self.world.read_storage::<Position>();
         let range_store = self.world.read_storage::<Range>();
         let health_store = self.world.read_storage::<Health>();
@@ -146,7 +146,7 @@ impl Game<'_, '_> {
         Ok(())
     }
 
-    pub fn render_grabbed_item(&mut self, window: &mut Window, item: &Grabbable) -> Result<()> {
+    pub fn render_grabbed_item(&mut self, window: &mut Window, item: &Grabbable) -> PadlResult<()> {
         let mouse = window.mouse().pos();
         let ul = self.world.fetch::<ScreenResolution>().unit_length();
         let center = mouse - (ul / 2.0, ul / 2.0).into();
@@ -162,20 +162,20 @@ impl Game<'_, '_> {
         Ok(())
     }
 
-    pub fn render_text_messages(&mut self, window: &mut Window) -> Result<()> {
-        let screen = window.screen_size();
+    pub fn render_text_messages(&mut self, window: &mut Window) -> PadlResult<()> {
+        let screen = window.project() * window.screen_size();
         let w = 300.0;
         let h = screen.y;
         let x = (screen.x - w) / 2.0;
         let y = 0.0;
         let area = Rectangle::new((x,y),(w,h));
         let mut tb = self.world.write_resource::<TextBoard>();
-        tb.draw(&mut self.bold_font, window, &area);
+        tb.draw(&area)?;
         Ok(())
     }
 }
 
-fn render_health(health: &Health, sprites: &mut Sprites, window: &mut Window, area: &Rectangle) -> Result<()> {
+fn render_health(health: &Health, sprites: &mut Sprites, window: &mut Window, area: &Rectangle) -> PadlResult<()> {
     let (max, hp) = (health.max_hp, health.hp);
     let unit_pos = area.pos;
     let w = area.width();
@@ -215,7 +215,7 @@ fn render_health(health: &Health, sprites: &mut Sprites, window: &mut Window, ar
 }
 
 impl Range {
-    fn draw(&self, window: &mut Window, town: &Town, area: &Rectangle) -> Result<()> {
+    fn draw(&self, window: &mut Window, town: &Town, area: &Rectangle) -> PadlResult<()> {
         // TODO Check if this aligns 100% with server. Also consider changing interface to TileIndex instead of center
         town.shadow_rectified_circle(window, area.center(), self.range);
         Ok(())

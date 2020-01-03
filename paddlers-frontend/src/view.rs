@@ -1,5 +1,7 @@
 mod text_node;
+mod floating_text;
 pub use text_node::*;
+pub use floating_text::*;
 
 use std::collections::HashMap;
 use crate::prelude::*;

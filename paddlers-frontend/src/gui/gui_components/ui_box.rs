@@ -140,13 +140,13 @@ impl UiBox {
         &mut self,
         window: &mut Window,
         sprites: &mut Sprites,
-        font: &mut Asset<Font>,
+        floats: &mut[FloatingText;3],
         area: &Rectangle,
-    ) -> Result<()> {
+    ) -> PadlResult<()> {
         let mouse = window.mouse().pos();
         if let Some(el) = self.find_element_under_mouse(mouse) {
             if let Some(Condition::HasResources(cost)) = &el.condition {
-                draw_resources(window, sprites, &cost.0, area, font, Z_MENU_RESOURCES)?;
+                draw_resources(window, sprites, &cost.0, area, floats, Z_MENU_RESOURCES)?;
             }
         }
         Ok(())

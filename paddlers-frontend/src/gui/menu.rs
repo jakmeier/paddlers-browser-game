@@ -1,7 +1,7 @@
 pub mod buttons;
 
-use crate::gui::ui_state::Now;
-use crate::game::components::UiMenu;
+use crate::prelude::*;
+use crate::view::FloatingText;
 use quicksilver::prelude::*;
 use specs::prelude::*;
 use crate::resolution::ScreenResolution;
@@ -18,7 +18,7 @@ use crate::gui::{
     sprites::{SpriteIndex, SingleSprite, Sprites},
     z::*,
     input::UiView,
-    ui_state::UiState,
+    ui_state::{UiState,Now},
     utils::*,
     gui_components::*,
     render::Renderable,
@@ -71,7 +71,7 @@ impl ScreenResolution {
 }
 
 impl Game<'_, '_> {
-    pub fn render_menu_box(&mut self, window: &mut Window) -> Result<()> {
+    pub fn render_menu_box(&mut self, window: &mut Window) -> PadlResult<()> {
         let resolution = *self.world.read_resource::<ScreenResolution>();
         let button_height = resolution.button_h();
         let resources_height = resolution.resources_h();
@@ -144,7 +144,7 @@ impl Game<'_, '_> {
         Ok(())
     }
 
-    fn render_town_menu(&mut self, window: &mut Window, entity: Option<Entity>, area: &Rectangle) -> Result<()> {
+    fn render_town_menu(&mut self, window: &mut Window, entity: Option<Entity>, area: &Rectangle) -> PadlResult<()> {
         match entity {
             Some(id) => {
                 self.render_entity_details(window, area, id)?;
@@ -156,7 +156,7 @@ impl Game<'_, '_> {
         Ok(())
     }
 
-    pub fn render_entity_details(&mut self, window: &mut Window, area: &Rectangle, e: Entity) -> Result<()> {
+    pub fn render_entity_details(&mut self, window: &mut Window, area: &Rectangle, e: Entity) -> PadlResult<()> {
         let mut img_bg_area = area.clone();
         img_bg_area.size.y = img_bg_area.height() / 3.0;
         let img_bg_area = img_bg_area.fit_square(FitStrategy::Center).shrink_to_center(0.8);
@@ -168,7 +168,7 @@ impl Game<'_, '_> {
         Ok(())
     }
 
-    fn draw_entity_details_img(&mut self, window: &mut Window, e: Entity, area: &Rectangle,) -> Result<()> {
+    fn draw_entity_details_img(&mut self, window: &mut Window, e: Entity, area: &Rectangle,) -> PadlResult<()> {
         let r = self.world.read_storage::<Renderable>();
         let sprites = &mut self.sprites;
         let inner_area = area.shrink_to_center(0.8);
@@ -188,7 +188,7 @@ impl Game<'_, '_> {
         Ok(())
     }
 
-    fn draw_entity_details_table(&mut self, window: &mut Window, e: Entity, area: &Rectangle) -> Result<()> {
+    fn draw_entity_details_table(&mut self, window: &mut Window, e: Entity, area: &Rectangle) -> PadlResult<()> {
         let mut area = *area;
         let mut table = vec![];
 
@@ -251,18 +251,26 @@ impl Game<'_, '_> {
         
         let mut ui_area = self.world.write_storage::<UiMenu>();
         if let Some(ui) = ui_area.get_mut(e) {
-            Self::draw_shop_prices(window, &mut area, &mut ui.ui, self.sprites.as_mut().unwrap(), &mut self.bold_font)?;
+            Self::draw_shop_prices(window, &mut area, &mut ui.ui, self.sprites.as_mut().unwrap(), &mut self.shop_floats)?;
             table.push(
                 TableRow::InteractiveArea(&mut ui.ui)
             );
         }
         
-        draw_table(window, self.sprites.as_mut().unwrap(), &mut table, 
-        &area, &mut self.font, 40.0, Z_MENU_TEXT, self.world.read_resource::<Now>().0)?;
+        draw_table(
+            window,
+            self.sprites.as_mut().unwrap(),
+            &mut table,
+            &area,
+            &mut self.text_pool,
+            40.0,
+            Z_MENU_TEXT,
+            self.world.read_resource::<Now>().0
+        )?;
         Ok(())
     }
     
-    fn render_default_shop(&mut self, window: &mut Window, area: &Rectangle) -> Result<()> {
+    fn render_default_shop(&mut self, window: &mut Window, area: &Rectangle) -> PadlResult<()> {
         let mut table = vec![];
         let mut area = *area;
         table.push(faith_details(self.town().faith));
@@ -270,30 +278,39 @@ impl Game<'_, '_> {
         table.push(total_aura_details(self.town().ambience()));
         
         let shop = &mut self.world.write_resource::<DefaultShop>();
-        Self::draw_shop_prices(window, &mut area, &mut shop.ui, self.sprites.as_mut().unwrap(), &mut self.bold_font)?;
+        Self::draw_shop_prices(window, &mut area, &mut shop.ui, self.sprites.as_mut().unwrap(), &mut self.shop_floats)?;
 
         table.push(
             TableRow::InteractiveArea(&mut shop.ui)
         );
 
-        draw_table(window, self.sprites.as_mut().unwrap(), &mut table, 
-            &area, &mut self.font, 60.0, Z_MENU_TEXT, self.world.read_resource::<Now>().0)
+        draw_table(
+            window,
+            self.sprites.as_mut().unwrap(),
+            &mut table,
+            &area,
+            &mut self.text_pool,
+            // &mut self.font,
+            60.0, Z_MENU_TEXT,
+            self.world.read_resource::<Now>().0
+        )
     }
     
     fn draw_shop_prices(window: &mut Window, area: &mut Rectangle, ui: &mut UiBox,
-        sprites: &mut Sprites, font: &mut Asset<Font>,
-    ) -> Result<()> {
+        sprites: &mut Sprites, floats: &mut[FloatingText;3],
+    ) -> PadlResult<()> {
         let price_tag_h = 50.0;
         let (shop_area, price_tag_area) = area.cut_horizontal(area.height() - price_tag_h);
         *area = shop_area;
-        ui.draw_hover_info(window, sprites, font, &price_tag_area)
+        ui.draw_hover_info(window, sprites, floats, &price_tag_area)?;
+        Ok(())
     }
 
-    pub fn render_resources(&mut self, window: &mut Window, area: &Rectangle) -> Result<()> {
+    pub fn render_resources(&mut self, window: &mut Window, area: &Rectangle) -> PadlResult<()> {
         let sprites = &mut self.sprites;
-        let font = &mut self.bold_font;
+        let floats = &mut self.res_floats;
         let resis = self.resources.non_zero_resources();
-        draw_resources(window, sprites.as_mut().unwrap(), &resis, &area, font, Z_MENU_RESOURCES)?;
+        draw_resources(window, sprites.as_mut().unwrap(), &resis, &area, floats, Z_MENU_RESOURCES)?;
         Ok(())
     }
 }

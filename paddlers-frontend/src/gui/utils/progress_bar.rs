@@ -3,25 +3,23 @@ use quicksilver::prelude::*;
 
 pub fn draw_progress_bar(
     window: &mut Window,
-    asset: &mut Asset<Font>,
+    float: &mut FloatingText,
     area: Rectangle,
     progress: f32,
     text: &str,
-) -> Result<()>
+) -> PadlResult<()>
 {
     let text_h = (area.height() * 0.5).max(50.0);
     let (text_area, bar_area) = area.cut_horizontal(text_h);
 
     let z = 1;
 
-    write_text_col(
-        asset,
+    float.write(
         window,
         &text_area.padded(10.0),
         z,
         FitStrategy::Center,
-        &text,
-        Color::WHITE,
+        text,
     )?;
 
     window.draw(&bar_area, Col(Color::WHITE));

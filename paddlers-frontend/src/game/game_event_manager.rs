@@ -57,7 +57,7 @@ impl Game<'_,'_> {
                 self.send_prophet_attack((x,y))?;
                 // TODO: Only confirm if HTTP OK is returned 
                 // (Probably do this after cleaning pu network and promise handling)
-                self.confirm_to_user(format!("Attacking village <{}:{}>", x, y));
+                self.confirm_to_user(format!("Attacking village <{}:{}>", x, y))?;
             },
             GameEvent::SwitchToView(view) => {
                 self.switch_view(view)?;

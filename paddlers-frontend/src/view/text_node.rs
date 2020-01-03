@@ -15,7 +15,17 @@ impl TextNode {
             dirty: true,
         }
     }
-    pub fn update(&mut self, text: String) {
+    /// Update the inner text (without redrawing it)
+    /// Performs string comparison and also a string copy when necessary
+    pub fn update(&mut self, text: &str) {
+        if self.dirty || text != self.text {
+            self.text.clear();
+            self.text.push_str(text);
+            self.dirty = true;
+        }
+    }
+    /// Same as `update` but takes ownership of string and avoids copying the string content
+    pub fn update_owned(&mut self, text: String) {
         if self.dirty || text != self.text {
             self.text = text;
             self.dirty = true;
@@ -27,7 +37,7 @@ impl TextNode {
             self.dirty = false;
         }
     }
-    pub fn delete(self) -> Result<(), &'static str> {
+    pub fn delete(&self) -> Result<(), &'static str> {
         if let Some(parent) = self.dom_node.parent_node() {
             return parent.remove_child(&self.dom_node)
                 .map(|_|())

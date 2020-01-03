@@ -4,6 +4,16 @@
 pub mod palette;
 use quicksilver::prelude::*;
 
+pub fn color_string(col: &Color) -> String {
+    format!(
+        "rgba({},{},{},{})",
+        col.r * 255.0, 
+        col.g * 255.0, 
+        col.b * 255.0, 
+        col.a, 
+    )
+}
+
 /* Color palette */
 pub const LIGHT_GREEN: Color = Color {r: 0.600, g: 0.900, b: 0.250, a: 1.0};
 pub const GREEN:       Color = Color {r: 0.059, g: 0.631, b: 0.000, a: 1.0};
