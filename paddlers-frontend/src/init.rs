@@ -16,6 +16,7 @@ pub mod specs_registration;
 use crate::prelude::*;
 use crate::game::town::Town;
 use crate::net::NetMsg;
+use crate::init::quicksilver_integration::QuicksilverState;
 use quicksilver::prelude::*;
 use specs::prelude::*;
 use std::sync::mpsc::Receiver;
@@ -43,15 +44,15 @@ pub fn run(net_chan: Receiver<NetMsg>) {
     // Load quicksilver canvas and loop
     let mut settings = Settings::default();
     settings.root_id = Some("game-root");
-    quicksilver::lifecycle::run_with::<crate::game::Game, _>(
+    quicksilver::lifecycle::run_with::<QuicksilverState, _>(
         "Paddlers", 
         Vector::new(w,h), 
         settings, 
-        || Ok(
-            crate::game::Game::new().expect("Game initialization")
+        || Ok(QuicksilverState::load(
+            crate::game::Game::load_game().expect("Game initialization")
                 .with_town(Town::new(resolution))
                 .with_resolution(resolution)
                 .with_network_chan(net_chan)
-            )
+        ))
     );
 }

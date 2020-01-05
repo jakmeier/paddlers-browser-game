@@ -2,7 +2,7 @@ pub mod buttons;
 
 use crate::prelude::*;
 use crate::view::FloatingText;
-use quicksilver::prelude::*;
+use quicksilver::prelude::{Window, Vector, Rectangle, Col, Transform};
 use specs::prelude::*;
 use crate::resolution::ScreenResolution;
 use crate::game::{
@@ -24,6 +24,8 @@ use crate::gui::{
     render::Renderable,
     decoration::*,
 };
+use crate::view::Frame;
+use std::marker::PhantomData;
 
 impl ScreenResolution {
     fn button_h(&self) -> f32 {
@@ -67,6 +69,34 @@ impl ScreenResolution {
             ScreenResolution::Mid => 5.0,
             ScreenResolution::High => 10.0,
         }
+    }
+}
+
+pub (crate) struct MenuFrame<'a,'b> {
+    res_floats: [FloatingText;3],
+    shop_floats: [FloatingText;3],
+    phantom: &'a PhantomData<()>,
+    phantom_too: &'b PhantomData<()>,
+}
+impl MenuFrame<'_,'_> {
+    pub fn new() -> PadlResult<Self> {
+        Ok(MenuFrame {
+            res_floats: FloatingText::new_triplet()?,
+            shop_floats: FloatingText::new_triplet()?,
+            phantom: &PhantomData,
+            phantom_too: &PhantomData,
+        })
+    }
+}
+impl<'a,'b> Frame for MenuFrame<'a,'b> {
+    type Error = PadlError;
+    type State = Game<'a,'b>;
+    type Graphics = Window;
+    fn draw(&mut self, state: &mut Self::State, graphics: &mut Self::Graphics) -> Result<(),Self::Error> {
+        state.render_menu_box(graphics)
+    }
+    fn update(&mut self, state: &mut Self::State) -> Result<(),Self::Error> {
+        Ok(())
     }
 }
 

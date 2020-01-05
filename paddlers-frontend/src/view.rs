@@ -1,5 +1,7 @@
+mod frame;
 mod text_node;
 mod floating_text;
+pub use frame::*;
 pub use text_node::*;
 pub use floating_text::*;
 
@@ -15,6 +17,7 @@ pub struct ViewManager<'a,'b> {
     dispatchers: HashMap<UiView, Vec<Dispatcher<'a,'b>>>,
 }
 
+// TODO: Remove and replace with what is currently called FrameManager
 impl<'a,'b> ViewManager<'a,'b> {
     pub fn add_dispatcher(&mut self, v: UiView, d: Dispatcher<'a,'b>) {
         let entry = self.dispatchers.entry(v).or_insert(vec![]);

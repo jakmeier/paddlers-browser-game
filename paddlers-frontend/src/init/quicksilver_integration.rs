@@ -18,83 +18,113 @@ use crate::logging::{
 
 use crate::game::*;
 use crate::gui::ui_state::*;
+use crate::gui::input::UiView;
 use quicksilver::prelude::*;
 use crate::specs::WorldExt;
+use crate::view::FrameManager;
+use crate::gui::menu::MenuFrame;
 
 use std::sync::Once;
 static INIT: Once = Once::new();
 
-impl State for Game<'static, 'static> {
+// TODO: reshuffle names
+pub (crate) struct QuicksilverState {
+    pub game: Game<'static, 'static>,
+    pub viewer: FrameManager<UiView, Game<'static, 'static>, Window, PadlError>,
+}
+impl QuicksilverState {
+    pub fn load(game: Game<'static,'static>) -> Self {
+        let mut viewer: FrameManager<UiView,Game<'static,'static>,Window,PadlError> = Default::default();
+        let menu = MenuFrame::new().expect("Menu loading");
+        viewer.add_frame(
+            Box::new(menu),
+            &[UiView::Attacks, UiView::Town, UiView::Leaderboard, UiView::Map],
+            (0,0), // TODO
+            (0,0), // TODO
+        );
+        QuicksilverState {
+            game,
+            viewer,
+        }
+    }
+}
+impl State for QuicksilverState {
     fn new() -> Result<Self> {
-        Ok(Self::load_game().expect("Loading failed"))
+        unreachable!()
     }
 
     fn update(&mut self, window: &mut Window) -> Result<()> {
         #[cfg(feature="dev_view")]
-        self.start_update();
+        self.game.start_update();
 
         INIT.call_once(|| {
-            self.initialize_with_window(window);
+            self.game.initialize_with_window(window);
         });
+
+        let view = self.game.world.fetch::<UiState>().current_view;
+        self.viewer.set_view(view, &mut self.game);
+        self.viewer.update(&mut self.game);
         
-        self.total_updates += 1;
+        self.game.total_updates += 1;
         window.set_max_updates(1); // 1 update per frame is enough
-        self.update_time_reference();
-        self.pointer_manager.run(&mut self.world);
+        self.game.update_time_reference();
+        self.game.pointer_manager.run(&mut self.game.world);
         {
-            let now = self.world.read_resource::<Now>().0;
-            let mut tick = self.world.write_resource::<ClockTick>();
+            let now = self.game.world.read_resource::<Now>().0;
+            let mut tick = self.game.world.write_resource::<ClockTick>();
             let us_draw_rate = 1_000_000/ 60;
             *tick = ClockTick((now / us_draw_rate) as u32);
         }
         {
-            let mut q = self.world.write_resource::<ErrorQueue>();
-            let mut t = self.world.write_resource::<TextBoard>();
-            q.pull_async(&mut self.async_err_receiver, &mut t);
+            let mut q = self.game.world.write_resource::<ErrorQueue>();
+            let mut t = self.game.world.write_resource::<TextBoard>();
+            q.pull_async(&mut self.game.async_err_receiver, &mut t);
             q.run(&mut t);
         }
-        if self.sprites.is_none() {
-            self.update_loading(window)
+        if self.game.sprites.is_none() {
+            self.game.update_loading(window)
         } else {
-            self.main_update_loop(window)
+            self.game.main_update_loop(window)
         }?;
         #[cfg(feature="dev_view")]
-        self.end_update();
+        self.game.end_update();
         Ok(())
     }
 
     fn draw(&mut self, window: &mut Window) -> Result<()> {
         #[cfg(feature="dev_view")]
-        self.start_draw();
+        self.game.start_draw();
 
         INIT.call_once(|| {
-            self.initialize_with_window(window);
+            self.game.initialize_with_window(window);
         });
 
         // TODO (optimization): Refactor to make this call event-based
-        if self.total_updates % 50 == 0 {
+        if self.game.total_updates % 50 == 0 {
             let err = crate::window::adapt_window_size(window);
-            self.check(err);
+            self.game.check(err);
         }
 
         {
-            let mut rest = self.world.write_resource::<RestApiState>();
-            let err = self.stats.track_frame(&mut *rest, utc_now());
-            self.check(err);
+            let mut rest = self.game.world.write_resource::<RestApiState>();
+            let err = self.game.stats.track_frame(&mut *rest, utc_now());
+            self.game.check(err);
         }
-        if self.sprites.is_none() {
-            let res = self.draw_loading(window);
-            self.check(res);
+        if self.game.sprites.is_none() {
+            let res = self.game.draw_loading(window);
+            self.game.check(res);
         } else {
-            let res = self.draw_main(window);
-            self.check(res);
+            window.clear(Color::WHITE)?;
+            self.viewer.draw(&mut self.game, window);
+            let res = self.game.draw_main(window);
+            self.game.check(res);
         }
         #[cfg(feature="dev_view")]
-        self.end_draw();
+        self.game.end_draw();
         Ok(())
     }
 
     fn event(&mut self, event: &Event, window: &mut Window) -> Result<()> {
-        self.handle_event(event, window)
+        self.game.handle_event(event, window)
     }
 }

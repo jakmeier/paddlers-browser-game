@@ -55,7 +55,6 @@ impl Game<'_, '_> {
             (ui_state.menu_box_area.x(), (window.project() * window.screen_size()).y)
         );
         std::mem::drop(ui_state);
-        window.clear(Color::WHITE)?;
         match view {
             UiView::Town => {
                 {
@@ -87,7 +86,7 @@ impl Game<'_, '_> {
             },
         }
         
-        self.render_menu_box(window)?;
+        // self.render_menu_box(window)?;
         self.render_text_messages(window)?;
 
         if let Some(entity) = hovered_entity {
