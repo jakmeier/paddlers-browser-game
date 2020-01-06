@@ -22,4 +22,4 @@ COPY ./paddlers-frontend/src ./paddlers-frontend/src
 COPY ./paddlers-frontend/Cargo.toml ./paddlers-frontend/
 COPY ./Cargo.lock ./paddlers-frontend/
 # Build project
-RUN cd paddlers-frontend; cargo web deploy --target=wasm32-unknown-unknown --release
+RUN cd paddlers-frontend; cargo web deploy --target=wasm32-unknown-unknown --release --features=dev_view
