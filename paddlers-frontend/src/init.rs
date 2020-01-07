@@ -12,6 +12,7 @@ pub (crate) mod quicksilver_integration;
 
 /// Boiler-plate code for initializing SPECS
 pub mod specs_registration;
+mod frame_loading;
 
 use crate::prelude::*;
 use crate::net::NetMsg;

@@ -38,6 +38,16 @@ pub fn main() {
 /// Micro second precision
 pub type Timestamp = i64;
 
+use view::FrameManager;
+use quicksilver::prelude::*;
+pub (crate) type Framer = FrameManager<
+    gui::input::UiView,
+    game::Game<'static, 'static>,
+    Window,
+    Event,
+    prelude::PadlError
+>;
+
 #[inline]
 pub fn seconds(t: Timestamp) -> i64 {
     t / 1_000_000

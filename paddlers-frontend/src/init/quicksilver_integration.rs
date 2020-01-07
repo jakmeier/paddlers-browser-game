@@ -20,18 +20,15 @@ use std::sync::mpsc::Receiver;
 use crate::game::*;
 use crate::game::town::Town;
 use crate::gui::ui_state::*;
-use crate::gui::input::UiView;
 use crate::gui::input::pointer::PointerManager;
 use quicksilver::prelude::*;
 use crate::specs::WorldExt;
-use crate::view::FrameManager;
-use crate::gui::menu::{MapMenuFrame,TownMenuFrame};
 use crate::net::NetMsg;
+use crate::Framer;
 
 use std::sync::Once;
 static INIT: Once = Once::new();
 
-pub (crate) type Framer = FrameManager<UiView, Game<'static, 'static>, Window, Event, PadlError>;
 // TODO: reshuffle names, fix lifetimes
 pub (crate) struct QuicksilverState {
     pub game: Game<'static, 'static>,
@@ -47,22 +44,8 @@ impl QuicksilverState {
             .with_network_chan(net_chan);
 
         let pm = PointerManager::init(&mut game.world, ep.clone());
+        let viewer = super::frame_loading::load_viewer(&mut game, ep);
 
-        let mut viewer: FrameManager<UiView,Game<'static,'static>,Window,Event,PadlError> = Default::default();
-        let menu = TownMenuFrame::new(&mut game, ep.clone()).expect("Town menu loading");
-        viewer.add_frame(
-            Box::new(menu),
-            &[UiView::Town],
-            (0,0), // TODO
-            (0,0), // TODO
-        );
-        let menu = MapMenuFrame::new(&mut game, ep).expect("Map menu loading");
-        viewer.add_frame(
-            Box::new(menu),
-            &[UiView::Map],
-            (0,0), // TODO
-            (0,0), // TODO
-        );
         QuicksilverState {
             game,
             viewer,
@@ -84,8 +67,10 @@ impl State for QuicksilverState {
         });
 
         let view = self.game.world.fetch::<UiState>().current_view;
-        self.viewer.set_view(view, &mut self.game);
-        self.viewer.update(&mut self.game);
+        let err = self.viewer.set_view(view, &mut self.game);
+        self.game.check(err);
+        let err = self.viewer.update(&mut self.game);
+        self.game.check(err);
         
         self.game.total_updates += 1;
         window.set_max_updates(1); // 1 update per frame is enough
@@ -137,9 +122,10 @@ impl State for QuicksilverState {
             self.game.check(res);
         } else {
             window.clear(Color::WHITE)?;
-            self.viewer.draw(&mut self.game, window);
-            let res = self.game.draw_main(window);
-            self.game.check(res);
+            let err = self.viewer.draw(&mut self.game, window);
+            self.game.check(err);
+            let err = self.game.draw_main(window);
+            self.game.check(err);
         }
         #[cfg(feature="dev_view")]
         self.game.end_draw();
@@ -148,7 +134,8 @@ impl State for QuicksilverState {
 
     fn event(&mut self, event: &Event, window: &mut Window) -> Result<()> {
         // TODO: position handling
-        self.viewer.event(&mut self.game, event);
+        let err = self.viewer.event(&mut self.game, event);
+        self.game.check(err);
         self.game.handle_event(event, window, &mut self.pointer_manager)
     }
 }

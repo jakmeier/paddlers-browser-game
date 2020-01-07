@@ -69,14 +69,7 @@ impl Game<'_, '_> {
                 self.render_town_entities(window)?;
             },
             UiView::Map => {
-                let (sprites, mut map) = (
-                    &mut self.sprites, 
-                    GlobalMap::combined(
-                        self.map.as_mut().expect("map"),
-                        self.world.write_resource()
-                    )
-                );
-                map.render(window, &mut sprites.as_mut().expect("sprites"), &main_area)?;
+                
             },
             UiView::Attacks => {
                 window.draw_ex(&main_area, Col(LIGHT_BLUE), Transform::IDENTITY, Z_TEXTURE);

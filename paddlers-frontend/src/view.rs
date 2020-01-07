@@ -1,3 +1,4 @@
+pub mod text_pool;
 mod frame;
 mod text_node;
 mod floating_text;

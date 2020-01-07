@@ -1,3 +1,4 @@
+mod map_frame;
 mod map_position;
 mod map_segment;
 mod map_tesselation;
@@ -19,11 +20,12 @@ use map_position::*;
 use map_segment::MapSegment;
 use map_tesselation::*;
 use quicksilver::graphics::Mesh;
-use quicksilver::prelude::*;
+use quicksilver::prelude::{Vector,Rectangle,Window,Transform,Col};
 use specs::prelude::*;
 
 pub use map_position::MapPosition;
 pub use village_meta::VillageMetaInfo;
+pub (crate) use map_frame::MapFrame;
 
 /// Helper struct to combine private and shared map state
 pub struct GlobalMap<'a> {
@@ -82,7 +84,7 @@ impl<'a> GlobalMap<'a> {
         window: &mut Window,
         sprites: &mut Sprites,
         area: &Rectangle,
-    ) -> Result<()> {
+    ) -> quicksilver::Result<()> {
         window.draw_ex(area, Col(GREEN), Transform::IDENTITY, Z_TEXTURE);
 
         self.apply_scaling(area.size());
@@ -139,7 +141,7 @@ impl<'a> GlobalMap<'a> {
             }
         }
     }
-    fn draw_villages(&mut self, window: &mut Window, sprites: &mut Sprites) -> Result<()> {
+    fn draw_villages(&mut self, window: &mut Window, sprites: &mut Sprites) -> quicksilver::Result<()> {
         #[cfg(feature = "dev_view")]
         self.visualize_control_points(window);
 
@@ -202,7 +204,7 @@ impl<'a> GlobalMap<'a> {
                         ),
                         (pt, pt),
                     );
-                    window.draw_ex(&area, Col(Color::WHITE), Transform::rotate(45) , 1000);
+                    window.draw_ex(&area, Col(quicksilver::prelude::Color::WHITE), Transform::rotate(45) , 1000);
                 }
             } 
         }
@@ -254,7 +256,7 @@ impl GlobalMapSharedState {
     pub fn left_click_on_main_area<'a>(
         &mut self,
         mouse_pos: Vector,
-        mut ui_state: Write<'a, UiState>,
+        ui_state: &'a mut UiState,
         entities: Entities<'a>,
         position: ReadStorage<'a, MapPosition>,
         clickable: ReadStorage<'a, Clickable>,

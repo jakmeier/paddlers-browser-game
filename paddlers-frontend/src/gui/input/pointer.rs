@@ -5,7 +5,7 @@ use quicksilver::prelude::*;
 use crate::prelude::*;
 use super::{MouseState, LeftClickSystem, RightClickSystem, HoverSystem, drag::*};
 use crate::game::game_event_manager::EventPool;
-use crate::init::quicksilver_integration::Framer;
+use crate::Framer;
 
 // Tolerance thresholds
 const LONG_CLICK_DELAY: i64 = 500_000; // [us]
@@ -60,17 +60,19 @@ impl PointerManager<'_,'_> {
         }
     }
 
-    pub (crate) fn run(&mut self, mut game: &mut crate::game::Game<'static,'static>, frame_manager: &mut Framer) {
+    pub (crate) fn run(&mut self, game: &mut crate::game::Game<'static,'static>, frame_manager: &mut Framer) {
         if let Some((pos, button)) = self.buffered_click {
             let click = (pos.x as i32, pos.y as i32);
+            let err = 
             match button {
                 PointerButton::Primary => {
-                    frame_manager.left_click(game, click);
+                    frame_manager.left_click(game, click)
                 },
                 PointerButton::Secondary => {
-                    frame_manager.right_click(game, click);
+                    frame_manager.right_click(game, click)
                 },
-            }
+            };
+            game.check(err);
             Self::update(&mut game.world, &pos, Some(button));
             self.click_dispatcher.dispatch(&mut game.world);
         }

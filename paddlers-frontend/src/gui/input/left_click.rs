@@ -1,8 +1,7 @@
-use super::{Clickable, MouseState, UiView};
+use super::{Clickable, MouseState};
 use crate::gui::ui_state::UiState;
 use crate::game::{
     components::*,
-    map::{GlobalMapSharedState, MapPosition},
     movement::*,
     town::{DefaultShop, Town},
     town_resources::TownResources,
@@ -29,7 +28,6 @@ impl LeftClickSystem {
 impl<'a> System<'a> for LeftClickSystem {
     type SystemData = (
         Read<'a, MouseState>,
-        Write<'a, UiState>,
         ReadExpect<'a, MenuButtons>,
         WriteExpect<'a, ErrorQueue>,
     );
@@ -37,7 +35,6 @@ impl<'a> System<'a> for LeftClickSystem {
         &mut self,
         (
             mouse_state,
-            mut ui_state,
             buttons,
             mut errq,
         ): Self::SystemData,
@@ -46,8 +43,6 @@ impl<'a> System<'a> for LeftClickSystem {
         if button != Some(MouseButton::Left) {
             return;
         }
-
-        let active_entity = ui_state.selected_entity;
 
         // Always visible buttons
         match buttons.click(mouse_pos) {
@@ -75,15 +70,12 @@ impl<'a> System<'a> for TownLeftClickSystem {
         Read<'a, MouseState>,
         Write<'a, UiState>,
         Read<'a, DefaultShop>,
-        ReadExpect<'a, MenuButtons>,
         Write<'a, TownResources>,
         Write<'a, Town>,
-        Write<'a, GlobalMapSharedState>,
         WriteExpect<'a, RestApiState>,
         WriteExpect<'a, ErrorQueue>,
         Read<'a, LazyUpdate>,
         ReadStorage<'a, Position>,
-        ReadStorage<'a, MapPosition>,
         ReadStorage<'a, Clickable>,
         ReadStorage<'a, Moving>,
         ReadStorage<'a, NetObj>,
@@ -100,15 +92,12 @@ impl<'a> System<'a> for TownLeftClickSystem {
             mouse_state,
             mut ui_state,
             shop,
-            buttons,
             mut resources,
             mut town,
-            mut map,
             mut rest,
             mut errq,
             lazy,
             position,
-            map_position,
             clickable,
             moving,
             net_ids,
@@ -189,22 +178,14 @@ impl MapLeftClickSystem {
 
 impl<'a> System<'a> for MapLeftClickSystem {
     type SystemData = (
-        Entities<'a>,
         Read<'a, MouseState>,
         Write<'a, UiState>,
-        ReadExpect<'a, MenuButtons>,
         Write<'a, TownResources>,
         Write<'a, Town>,
-        Write<'a, GlobalMapSharedState>,
         WriteExpect<'a, RestApiState>,
         WriteExpect<'a, ErrorQueue>,
         Read<'a, LazyUpdate>,
         ReadStorage<'a, Position>,
-        ReadStorage<'a, MapPosition>,
-        ReadStorage<'a, Clickable>,
-        ReadStorage<'a, Moving>,
-        ReadStorage<'a, NetObj>,
-        ReadStorage<'a, Mana>,
         WriteStorage<'a, EntityContainer>,
         WriteStorage<'a, UiMenu>,
         WriteStorage<'a, Worker>,
@@ -213,25 +194,17 @@ impl<'a> System<'a> for MapLeftClickSystem {
     fn run(
         &mut self,
         (
-            entities,
             mouse_state,
-            mut ui_state,
-            buttons,
-            mut resources,
+            ui_state,
+            resources,
             mut town,
-            mut map,
-            mut rest,
-            mut errq,
+            rest,
+            errq,
             lazy,
             position,
-            map_position,
-            clickable,
-            moving,
-            net_ids,
-            mana,
-            mut containers,
+            containers,
             mut ui_menus,
-            mut workers,
+            workers,
         ): Self::SystemData,
     ) {
         let MouseState(mouse_pos, button) = *mouse_state;

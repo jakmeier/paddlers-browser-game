@@ -64,7 +64,7 @@ impl<V: Hash+Eq+Copy,S,G,Ev,E> FrameManager<V,S,G,Ev,E> {
             }
         ));
         for view in views {
-            let mut vec = self.view_frames.entry(*view).or_insert(Vec::new());
+            let vec = self.view_frames.entry(*view).or_insert(Vec::new());
             vec.push(frame_ref.clone());
         }
     }

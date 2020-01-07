@@ -140,7 +140,7 @@ impl UiBox {
         &mut self,
         window: &mut Window,
         sprites: &mut Sprites,
-        floats: &mut[FloatingText;3],
+        floats: &mut TextPool,
         area: &Rectangle,
     ) -> PadlResult<()> {
         let mouse = window.mouse().pos();

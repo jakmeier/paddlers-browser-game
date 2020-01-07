@@ -33,7 +33,6 @@ use crate::game::{
 use crate::gui::{
     input,
     input::UiView,
-    input::pointer::PointerManager,
     ui_state::*,
     sprites::*,
 };
@@ -59,7 +58,6 @@ pub(crate) struct Game<'a, 'b> {
     pub view_manager: ViewManager<'a, 'b>,
     pub world: World,
     pub sprites: Option<Sprites>,
-    pub text_pool: Vec<FloatingText>,
     pub resources: TownResources,
     pub net: Option<Receiver<NetMsg>>,
     pub time_zero: Timestamp,
@@ -103,7 +101,6 @@ impl Game<'_,'_> {
             sprites: None,
             preload: Some(crate::init::loading::LoadingState::new()),
             preload_float: FloatingText::try_default().expect("FloatingText"),
-            text_pool: vec![],
             net: None,
             time_zero: now,
             resources: TownResources::default(),

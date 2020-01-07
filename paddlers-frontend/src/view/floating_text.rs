@@ -38,13 +38,6 @@ impl FloatingText {
         };
         Ok(float)
     }
-    pub fn new_triplet() -> PadlResult<[Self;3]> {
-        Ok([
-            FloatingText::try_default()?,
-            FloatingText::try_default()?,
-            FloatingText::try_default()?,
-        ])
-    }
     pub fn update_position(&mut self, area: &Rectangle) -> Result<(), panes::PanesError> {
         let (x,y,w,h) = (
             area.x() as u32,

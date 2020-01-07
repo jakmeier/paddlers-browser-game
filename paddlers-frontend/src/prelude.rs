@@ -4,5 +4,6 @@ pub (crate) use crate::init::wasm_setup::utc_now;
 pub (crate) use crate::gui::utils::{JmrVector, JmrRectangle};
 pub (crate) use crate::game::game_event_manager::{GameEvent, EventPool};
 pub (crate) use crate::resolution::ScreenResolution;
+pub (crate) use crate::view::text_pool::TextPool;
 
 pub (crate) use paddlers_shared_lib::models::{AbilityType, BuildingType, ResourceType, TaskType, UnitColor};
