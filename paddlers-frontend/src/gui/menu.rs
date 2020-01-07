@@ -1,4 +1,9 @@
 pub mod buttons;
+mod town_menu;
+mod map_menu;
+
+pub (crate) use map_menu::MapMenuFrame;
+pub (crate) use town_menu::TownMenuFrame;
 
 use crate::prelude::*;
 use crate::view::FloatingText;
@@ -17,15 +22,12 @@ use crate::game::{
 use crate::gui::{
     sprites::{SpriteIndex, SingleSprite, Sprites},
     z::*,
-    input::UiView,
     ui_state::{UiState,Now},
     utils::*,
     gui_components::*,
     render::Renderable,
     decoration::*,
 };
-use crate::view::Frame;
-use std::marker::PhantomData;
 
 impl ScreenResolution {
     fn button_h(&self) -> f32 {
@@ -72,39 +74,10 @@ impl ScreenResolution {
     }
 }
 
-pub (crate) struct MenuFrame<'a,'b> {
-    res_floats: [FloatingText;3],
-    shop_floats: [FloatingText;3],
-    phantom: &'a PhantomData<()>,
-    phantom_too: &'b PhantomData<()>,
-}
-impl MenuFrame<'_,'_> {
-    pub fn new() -> PadlResult<Self> {
-        Ok(MenuFrame {
-            res_floats: FloatingText::new_triplet()?,
-            shop_floats: FloatingText::new_triplet()?,
-            phantom: &PhantomData,
-            phantom_too: &PhantomData,
-        })
-    }
-}
-impl<'a,'b> Frame for MenuFrame<'a,'b> {
-    type Error = PadlError;
-    type State = Game<'a,'b>;
-    type Graphics = Window;
-    fn draw(&mut self, state: &mut Self::State, graphics: &mut Self::Graphics) -> Result<(),Self::Error> {
-        state.render_menu_box(graphics)
-    }
-    fn update(&mut self, state: &mut Self::State) -> Result<(),Self::Error> {
-        Ok(())
-    }
-}
-
 impl Game<'_, '_> {
-    pub fn render_menu_box(&mut self, window: &mut Window) -> PadlResult<()> {
+    pub fn render_menu_box(&mut self, window: &mut Window) -> PadlResult<Rectangle> {
         let resolution = *self.world.read_resource::<ScreenResolution>();
         let button_height = resolution.button_h();
-        let resources_height = resolution.resources_h();
 
         let data = self.world.read_resource::<UiState>();
         let entity = (*data).selected_entity;
@@ -121,6 +94,7 @@ impl Game<'_, '_> {
             Z_MENU_BOX
         );
 
+        // Leaves border
         let leaf_w = resolution.leaves_border_w();
         let leaf_h = resolution.leaves_border_h();
         draw_leaf_border(window, self.sprites.as_mut().unwrap(), &area, leaf_w, leaf_h);
@@ -131,11 +105,13 @@ impl Game<'_, '_> {
         area.size.x -= leaf_w + padding;
         area.size.y -= leaf_h;
 
+        // butttons
         let mut y = area.y();
         let button_area = Rectangle::new( (area.pos.x, y), (area.width(), button_height) );
         self.render_buttons(window, &button_area)?;
         y += button_height;
 
+        // Duck steps
         let h = resolution.duck_steps_h();
         draw_duck_step_line(window, self.sprites.as_mut().unwrap(), 
             Vector::new(area.x()-leaf_w*0.5, y),
@@ -143,50 +119,15 @@ impl Game<'_, '_> {
             h
         );
         y += h + 10.0;
+        let h = y0 + h0 - y - leaf_h;
+        area.pos.y = y;
+        area.size.y = h;
 
-        let view = self.world.read_resource::<UiState>().current_view;
-        match view {
-            UiView::Map => {
-                if let Some(e) = entity {
-                    let h = y0 + h0 - y - leaf_h;
-                    let menu_area = Rectangle::new((area.x(), y),(area.width(), h));
-                    self.render_entity_details(window, &menu_area, e)?;
-                }
-            },
-            UiView::Town => {
-                let resources_area = Rectangle::new( (area.x(), y), (area.width(), resources_height) );
-                self.render_resources(window, &resources_area)?;
-                y += resources_area.height();
-
-                let h = y0 + h0 - y - leaf_h;
-                let menu_area = Rectangle::new((area.x(), y),(area.width(), h));
-
-                self.render_town_menu(window, entity, &menu_area)?;
-            },
-            UiView::Attacks => {
-                // NOP
-            },
-            UiView::Leaderboard => {
-                // NOP
-            },
-        }
-
-        Ok(())
+        // Return area that is left for other menus
+        Ok(area)
     }
 
-    fn render_town_menu(&mut self, window: &mut Window, entity: Option<Entity>, area: &Rectangle) -> PadlResult<()> {
-        match entity {
-            Some(id) => {
-                self.render_entity_details(window, area, id)?;
-            },
-            None => {
-                self.render_default_shop(window, area)?;
-            },
-        }
-        Ok(())
-    }
-
-    pub fn render_entity_details(&mut self, window: &mut Window, area: &Rectangle, e: Entity) -> PadlResult<()> {
+    pub fn render_entity_details(&mut self, window: &mut Window, area: &Rectangle, e: Entity, floats: &mut [FloatingText;3]) -> PadlResult<()> {
         let mut img_bg_area = area.clone();
         img_bg_area.size.y = img_bg_area.height() / 3.0;
         let img_bg_area = img_bg_area.fit_square(FitStrategy::Center).shrink_to_center(0.8);
@@ -194,7 +135,7 @@ impl Game<'_, '_> {
         let text_area = Rectangle::new((area.x(), text_y), (area.width(), area.y() + area.height() - text_y) ).padded(20.0);
 
         self.draw_entity_details_img(window, e, &img_bg_area)?;
-        self.draw_entity_details_table(window, e, &text_area)?;
+        self.draw_entity_details_table(window, e, &text_area, floats)?;
         Ok(())
     }
 
@@ -218,7 +159,7 @@ impl Game<'_, '_> {
         Ok(())
     }
 
-    fn draw_entity_details_table(&mut self, window: &mut Window, e: Entity, area: &Rectangle) -> PadlResult<()> {
+    fn draw_entity_details_table(&mut self, window: &mut Window, e: Entity, area: &Rectangle, floats: &mut [FloatingText;3]) -> PadlResult<()> {
         let mut area = *area;
         let mut table = vec![];
 
@@ -281,7 +222,7 @@ impl Game<'_, '_> {
         
         let mut ui_area = self.world.write_storage::<UiMenu>();
         if let Some(ui) = ui_area.get_mut(e) {
-            Self::draw_shop_prices(window, &mut area, &mut ui.ui, self.sprites.as_mut().unwrap(), &mut self.shop_floats)?;
+            Self::draw_shop_prices(window, &mut area, &mut ui.ui, self.sprites.as_mut().unwrap(), floats)?;
             table.push(
                 TableRow::InteractiveArea(&mut ui.ui)
             );
@@ -300,7 +241,7 @@ impl Game<'_, '_> {
         Ok(())
     }
     
-    fn render_default_shop(&mut self, window: &mut Window, area: &Rectangle) -> PadlResult<()> {
+    fn render_default_shop(&mut self, window: &mut Window, area: &Rectangle, floats: &mut [FloatingText;3]) -> PadlResult<()> {
         let mut table = vec![];
         let mut area = *area;
         table.push(faith_details(self.town().faith));
@@ -308,7 +249,7 @@ impl Game<'_, '_> {
         table.push(total_aura_details(self.town().ambience()));
         
         let shop = &mut self.world.write_resource::<DefaultShop>();
-        Self::draw_shop_prices(window, &mut area, &mut shop.ui, self.sprites.as_mut().unwrap(), &mut self.shop_floats)?;
+        Self::draw_shop_prices(window, &mut area, &mut shop.ui, self.sprites.as_mut().unwrap(), floats)?;
 
         table.push(
             TableRow::InteractiveArea(&mut shop.ui)
@@ -336,9 +277,8 @@ impl Game<'_, '_> {
         Ok(())
     }
 
-    pub fn render_resources(&mut self, window: &mut Window, area: &Rectangle) -> PadlResult<()> {
+    pub fn render_resources(&mut self, window: &mut Window, area: &Rectangle, floats: &mut [FloatingText;3]) -> PadlResult<()> {
         let sprites = &mut self.sprites;
-        let floats = &mut self.res_floats;
         let resis = self.resources.non_zero_resources();
         draw_resources(window, sprites.as_mut().unwrap(), &resis, &area, floats, Z_MENU_RESOURCES)?;
         Ok(())

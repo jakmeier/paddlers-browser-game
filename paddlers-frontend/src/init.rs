@@ -8,13 +8,12 @@ pub mod wasm_setup;
 pub mod loading;
 
 // doc comment inlined 
-mod quicksilver_integration;
+pub (crate) mod quicksilver_integration;
 
 /// Boiler-plate code for initializing SPECS
 pub mod specs_registration;
 
 use crate::prelude::*;
-use crate::game::town::Town;
 use crate::net::NetMsg;
 use crate::init::quicksilver_integration::QuicksilverState;
 use quicksilver::prelude::*;
@@ -48,11 +47,6 @@ pub fn run(net_chan: Receiver<NetMsg>) {
         "Paddlers", 
         Vector::new(w,h), 
         settings, 
-        || Ok(QuicksilverState::load(
-            crate::game::Game::load_game().expect("Game initialization")
-                .with_town(Town::new(resolution))
-                .with_resolution(resolution)
-                .with_network_chan(net_chan)
-        ))
+        || Ok(QuicksilverState::load(resolution, net_chan))
     );
 }

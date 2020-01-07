@@ -9,6 +9,7 @@ use crate::prelude::*;
 use crate::net::state::current_village;
 use crate::game::fight::*;
 use crate::game::movement::Position;
+use crate::gui::input::pointer::PointerManager;
 use crate::gui::ui_state::Now;
 
 pub mod pointer;
@@ -46,7 +47,7 @@ pub enum Grabbable {
 }
 
 impl crate::game::Game<'_, '_> {
-    pub fn handle_event(&mut self, event: &Event, window: &mut Window) -> Result<()> {
+    pub fn handle_event(&mut self, event: &Event, window: &mut Window, pointer_manager: &mut PointerManager) -> Result<()> {
         // println!("Event: {:?}", event);
         // {
         //     let mut t = self.world.write_resource::<TextBoard>();
@@ -54,13 +55,13 @@ impl crate::game::Game<'_, '_> {
         // }
         match event {
             Event::MouseMoved(pos) => {
-                self.pointer_manager.move_pointer(&mut self.world, &pos);
+                pointer_manager.move_pointer(&mut self.world, &pos);
             },
             Event::MouseButton(button, state)
             => {
                 let now = self.world.read_resource::<Now>().0;
                 let pos = &window.mouse().pos();
-                self.pointer_manager.button_event(now, pos, *button, *state);  
+                pointer_manager.button_event(now, pos, *button, *state);  
             }
             Event::Key(key, state) 
                 if *key == Key::Escape && *state == ButtonState::Pressed =>

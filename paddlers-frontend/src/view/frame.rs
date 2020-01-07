@@ -8,43 +8,49 @@ pub trait Frame {
     type Error;
     type State;
     type Graphics;
+    type Event;
     fn draw(&mut self, state: &mut Self::State, graphics: &mut Self::Graphics) -> Result<(),Self::Error> {
         Ok(())
     }
     fn update(&mut self, state: &mut Self::State) -> Result<(),Self::Error> {
         Ok(())
     }
-    fn event(&mut self, state: &mut Self::State) -> Result<(),Self::Error> {
+    fn event(&mut self, state: &mut Self::State, event: &Self::Event) -> Result<(),Self::Error> {
         Ok(())
     }
-    fn hide(&mut self, state: &mut Self::State) -> Result<(),Self::Error> {
+    fn left_click(&mut self, state: &mut Self::State, pos: (i32,i32)) -> Result<(),Self::Error> {
         Ok(())
     }
-    fn show(&mut self, state: &mut Self::State) -> Result<(),Self::Error> {
+    fn right_click(&mut self, state: &mut Self::State, pos: (i32,i32)) -> Result<(),Self::Error> {
+        Ok(())
+    }
+    fn leave(&mut self, state: &mut Self::State) -> Result<(),Self::Error> {
+        Ok(())
+    }
+    fn enter(&mut self, state: &mut Self::State) -> Result<(),Self::Error> {
         Ok(())
     }
 }
 
-// struct FrameRef<S,G,E>(Rc<RefCell<PositionedFrame<S,G,E>>>);
-type FrameRef<S,G,E> = Rc<RefCell<PositionedFrame<S,G,E>>>;
+type FrameRef<S,G,Ev,E> = Rc<RefCell<PositionedFrame<S,G,Ev,E>>>;
 
-struct PositionedFrame<S,G,E> {
+struct PositionedFrame<S,G,Ev,E> {
     pos: (i32,i32),
     size: (i32,i32),
-    handler: Box<dyn Frame<State=S,Graphics=G,Error=E>>,
+    handler: Box<dyn Frame<State=S,Graphics=G,Event=Ev,Error=E>>,
 }
 
 /// The frame manager keeps track of which frames need to run
 /// It routes events to active frames and can (de-)activate them
-pub struct FrameManager<V: Hash + Eq+Copy,S,G,E> {
-    view_frames: HashMap<V, Vec<FrameRef<S,G,E>>>,
-    active_frames: Vec<FrameRef<S,G,E>>,
+pub struct FrameManager<V: Hash + Eq+Copy,S,G,Ev,E> {
+    view_frames: HashMap<V, Vec<FrameRef<S,G,Ev,E>>>,
+    active_frames: Vec<FrameRef<S,G,Ev,E>>,
     current_view: Option<V>,
 }
-impl<V: Hash+Eq+Copy,S,G,E> FrameManager<V,S,G,E> {
+impl<V: Hash+Eq+Copy,S,G,Ev,E> FrameManager<V,S,G,Ev,E> {
     pub fn add_frame(
         &mut self, 
-        frame: Box<dyn Frame<State=S,Graphics=G,Error=E>>,
+        frame: Box<dyn Frame<State=S,Graphics=G,Event=Ev,Error=E>>,
         views: &[V],
         pos: (i32,i32),
         size: (i32,i32),
@@ -61,6 +67,26 @@ impl<V: Hash+Eq+Copy,S,G,E> FrameManager<V,S,G,E> {
             let mut vec = self.view_frames.entry(*view).or_insert(Vec::new());
             vec.push(frame_ref.clone());
         }
+    }
+    pub fn left_click(&mut self, state: &mut S, pos: (i32,i32)) -> Result<(),E> {
+        // TODO: Check position
+        for frame in &mut self.active_frames {
+            frame.borrow_mut().handler.left_click(state, pos)?;
+        }
+        Ok(())
+    }
+    pub fn right_click(&mut self, state: &mut S, pos: (i32,i32)) -> Result<(),E> {
+        // TODO: Check position
+        for frame in &mut self.active_frames {
+            frame.borrow_mut().handler.left_click(state, pos)?;
+        }
+        Ok(())
+    }
+    pub fn event(&mut self, state: &mut S, event: &Ev) -> Result<(),E> {
+        for frame in &mut self.active_frames {
+            frame.borrow_mut().handler.event(state, event)?;
+        }
+        Ok(())
     }
     pub fn update(&mut self, state: &mut S) -> Result<(),E> {
         for frame in &mut self.active_frames {
@@ -84,21 +110,21 @@ impl<V: Hash+Eq+Copy,S,G,E> FrameManager<V,S,G,E> {
             .unwrap_or(&[]);
         self.active_frames.extend_from_slice(frames);
         for frame in &mut self.active_frames {
-            frame.borrow_mut().handler.show(state)?;
+            frame.borrow_mut().handler.enter(state)?;
         }
         self.current_view = Some(view);
         Ok(())
     }
     fn clear_view(&mut self, state: &mut S) -> Result<(),E> {
         for frame in &mut self.active_frames {
-            frame.borrow_mut().handler.hide(state)?;
+            frame.borrow_mut().handler.leave(state)?;
         }
         self.active_frames.clear();
         Ok(())
     }
 }
 
-impl<V: Hash+Eq+Copy,S,G,E> Default for  FrameManager<V,S,G,E> {
+impl<V: Hash+Eq+Copy,S,G,Ev,E> Default for  FrameManager<V,S,G,Ev,E> {
     fn default() -> Self {
         FrameManager {
             active_frames: vec![],

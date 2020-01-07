@@ -57,13 +57,10 @@ use crate::view::{ViewManager, FloatingText};
 pub(crate) struct Game<'a, 'b> {
     pub dispatcher: Dispatcher<'a, 'b>,
     pub view_manager: ViewManager<'a, 'b>,
-    pub pointer_manager: PointerManager<'a, 'b>,
     pub world: World,
     pub sprites: Option<Sprites>,
     pub text_pool: Vec<FloatingText>,
     pub resources: TownResources,
-    pub res_floats: [FloatingText;3],
-    pub shop_floats: [FloatingText;3],
     pub net: Option<Receiver<NetMsg>>,
     pub time_zero: Timestamp,
     pub total_updates: u64,
@@ -83,7 +80,7 @@ pub(crate) struct Game<'a, 'b> {
 
 impl Game<'_,'_> {
 
-    pub fn load_game() -> PadlResult<Self> {
+    pub fn load_game() -> PadlResult<(Self, EventPool)> {
         let (err_send, err_recv) = channel();
         let (game_evt_send, game_evt_recv) = channel();
         let mut world = crate::init::init_world(err_send);
@@ -97,13 +94,11 @@ impl Game<'_,'_> {
             .build();
         dispatcher.setup(&mut world);
 
-        let pm = PointerManager::init(&mut world, game_evt_send);
         let now = utc_now();
 
-        Ok(Game {
+        Ok((Game {
             dispatcher: dispatcher,
             view_manager: Default::default(),
-            pointer_manager: pm,
             world: world,
             sprites: None,
             preload: Some(crate::init::loading::LoadingState::new()),
@@ -112,8 +107,6 @@ impl Game<'_,'_> {
             net: None,
             time_zero: now,
             resources: TownResources::default(),
-            res_floats: FloatingText::new_triplet()?,
-            shop_floats: FloatingText::new_triplet()?,
             total_updates: 0,
             async_err_receiver: err_recv,
             game_event_receiver: game_evt_recv,
@@ -123,7 +116,7 @@ impl Game<'_,'_> {
             palette: false,
             #[cfg(feature="dev_view")]
             active_test: None,
-        })
+        }, game_evt_send))
     }
 
     /// Called at the first draw loop iteration (the first time quicksilver leaks access to it)

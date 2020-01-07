@@ -80,13 +80,14 @@ impl Game<'_, '_> {
             },
             UiView::Attacks => {
                 window.draw_ex(&main_area, Col(LIGHT_BLUE), Transform::IDENTITY, Z_TEXTURE);
+                self.render_menu_box(window)?;
             },
             UiView::Leaderboard => {
                 window.draw_ex(&main_area, Col(DARK_BLUE), Transform::IDENTITY, Z_TEXTURE);
+                self.render_menu_box(window)?;
             },
         }
         
-        // self.render_menu_box(window)?;
         self.render_text_messages(window)?;
 
         if let Some(entity) = hovered_entity {

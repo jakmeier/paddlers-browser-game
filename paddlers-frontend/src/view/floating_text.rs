@@ -61,6 +61,9 @@ impl FloatingText {
     pub fn draw(&mut self) {
         self.node.draw();
     }
+    pub fn show(&self) -> Result<(), panes::PanesError> {
+        self.pane.show()
+    }
     pub fn hide(&self) -> Result<(), panes::PanesError> {
         self.pane.hide()
     }

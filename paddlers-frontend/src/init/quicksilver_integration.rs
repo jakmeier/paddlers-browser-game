@@ -15,36 +15,58 @@ use crate::logging::{
     ErrorQueue,
     text_to_user::TextBoard,
 };
+use std::sync::mpsc::Receiver;
 
 use crate::game::*;
+use crate::game::town::Town;
 use crate::gui::ui_state::*;
 use crate::gui::input::UiView;
+use crate::gui::input::pointer::PointerManager;
 use quicksilver::prelude::*;
 use crate::specs::WorldExt;
 use crate::view::FrameManager;
-use crate::gui::menu::MenuFrame;
+use crate::gui::menu::{MapMenuFrame,TownMenuFrame};
+use crate::net::NetMsg;
 
 use std::sync::Once;
 static INIT: Once = Once::new();
 
-// TODO: reshuffle names
+pub (crate) type Framer = FrameManager<UiView, Game<'static, 'static>, Window, Event, PadlError>;
+// TODO: reshuffle names, fix lifetimes
 pub (crate) struct QuicksilverState {
     pub game: Game<'static, 'static>,
-    pub viewer: FrameManager<UiView, Game<'static, 'static>, Window, PadlError>,
+    pub pointer_manager: PointerManager<'static, 'static>,
+    pub viewer: Framer,
 }
 impl QuicksilverState {
-    pub fn load(game: Game<'static,'static>) -> Self {
-        let mut viewer: FrameManager<UiView,Game<'static,'static>,Window,PadlError> = Default::default();
-        let menu = MenuFrame::new().expect("Menu loading");
+    pub fn load(resolution: ScreenResolution, net_chan: Receiver<NetMsg>) -> Self {
+
+        let (game, ep) = Game::load_game().expect("Loading game");
+        let mut game = game.with_town(Town::new(resolution))
+            .with_resolution(resolution)
+            .with_network_chan(net_chan);
+
+        let pm = PointerManager::init(&mut game.world, ep.clone());
+
+        let mut viewer: FrameManager<UiView,Game<'static,'static>,Window,Event,PadlError> = Default::default();
+        let menu = TownMenuFrame::new(&mut game, ep.clone()).expect("Town menu loading");
         viewer.add_frame(
             Box::new(menu),
-            &[UiView::Attacks, UiView::Town, UiView::Leaderboard, UiView::Map],
+            &[UiView::Town],
+            (0,0), // TODO
+            (0,0), // TODO
+        );
+        let menu = MapMenuFrame::new(&mut game, ep).expect("Map menu loading");
+        viewer.add_frame(
+            Box::new(menu),
+            &[UiView::Map],
             (0,0), // TODO
             (0,0), // TODO
         );
         QuicksilverState {
             game,
             viewer,
+            pointer_manager: pm,
         }
     }
 }
@@ -68,7 +90,7 @@ impl State for QuicksilverState {
         self.game.total_updates += 1;
         window.set_max_updates(1); // 1 update per frame is enough
         self.game.update_time_reference();
-        self.game.pointer_manager.run(&mut self.game.world);
+        self.pointer_manager.run(&mut self.game, &mut self.viewer);
         {
             let now = self.game.world.read_resource::<Now>().0;
             let mut tick = self.game.world.write_resource::<ClockTick>();
@@ -125,6 +147,8 @@ impl State for QuicksilverState {
     }
 
     fn event(&mut self, event: &Event, window: &mut Window) -> Result<()> {
-        self.game.handle_event(event, window)
+        // TODO: position handling
+        self.viewer.event(&mut self.game, event);
+        self.game.handle_event(event, window, &mut self.pointer_manager)
     }
 }
