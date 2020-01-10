@@ -3,10 +3,12 @@ pub mod town_render;
 pub mod task_factory;
 pub mod tiling;
 pub mod path_finding;
+mod town_frame;
 mod default_shop;
 mod temple_shop;
 pub use default_shop::*;
-pub use temple_shop::*;
+pub (crate) use temple_shop::*;
+pub (crate) use town_frame::*;
 
 
 use quicksilver::prelude::*;

@@ -9,25 +9,25 @@ pub trait Frame {
     type State;
     type Graphics;
     type Event;
-    fn draw(&mut self, state: &mut Self::State, graphics: &mut Self::Graphics) -> Result<(),Self::Error> {
+    fn draw(&mut self, _state: &mut Self::State, _graphics: &mut Self::Graphics) -> Result<(),Self::Error> {
         Ok(())
     }
-    fn update(&mut self, state: &mut Self::State) -> Result<(),Self::Error> {
+    fn update(&mut self, _state: &mut Self::State) -> Result<(),Self::Error> {
         Ok(())
     }
-    fn event(&mut self, state: &mut Self::State, event: &Self::Event) -> Result<(),Self::Error> {
+    fn event(&mut self, _state: &mut Self::State, _event: &Self::Event) -> Result<(),Self::Error> {
         Ok(())
     }
-    fn left_click(&mut self, state: &mut Self::State, pos: (i32,i32)) -> Result<(),Self::Error> {
+    fn left_click(&mut self, _state: &mut Self::State, _pos: (i32,i32)) -> Result<(),Self::Error> {
         Ok(())
     }
-    fn right_click(&mut self, state: &mut Self::State, pos: (i32,i32)) -> Result<(),Self::Error> {
+    fn right_click(&mut self, _state: &mut Self::State, _pos: (i32,i32)) -> Result<(),Self::Error> {
         Ok(())
     }
-    fn leave(&mut self, state: &mut Self::State) -> Result<(),Self::Error> {
+    fn leave(&mut self, _state: &mut Self::State) -> Result<(),Self::Error> {
         Ok(())
     }
-    fn enter(&mut self, state: &mut Self::State) -> Result<(),Self::Error> {
+    fn enter(&mut self, _state: &mut Self::State) -> Result<(),Self::Error> {
         Ok(())
     }
 }
@@ -78,13 +78,21 @@ impl<V: Hash+Eq+Copy,S,G,Ev,E> FrameManager<V,S,G,Ev,E> {
     pub fn right_click(&mut self, state: &mut S, pos: (i32,i32)) -> Result<(),E> {
         // TODO: Check position
         for frame in &mut self.active_frames {
-            frame.borrow_mut().handler.left_click(state, pos)?;
+            frame.borrow_mut().handler.right_click(state, pos)?;
         }
         Ok(())
     }
     pub fn event(&mut self, state: &mut S, event: &Ev) -> Result<(),E> {
         for frame in &mut self.active_frames {
             frame.borrow_mut().handler.event(state, event)?;
+        }
+        Ok(())
+    }
+    pub fn global_event(&mut self, state: &mut S, event: &Ev) -> Result<(),E> {
+        for frames in &mut self.view_frames.values_mut() {
+            for frame in frames.as_mut_slice() {
+                frame.borrow_mut().handler.event(state, event)?;
+            }
         }
         Ok(())
     }

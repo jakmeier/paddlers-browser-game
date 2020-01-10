@@ -11,7 +11,6 @@ pub struct UiState {
     pub main_area: Rectangle,
     pub menu_box_area: Rectangle,
     pub current_view: UiView,
-    pub view_panes: Vec<(UiView, panes::PaneHandle)>,
 }
 
 
@@ -31,7 +30,6 @@ impl Default for UiState {
             main_area: Rectangle::default(),
             menu_box_area: Rectangle::default(),
             current_view: UiView::Town,
-            view_panes: vec![],
         }
     }
 }

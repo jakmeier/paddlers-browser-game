@@ -8,14 +8,13 @@ use crate::game::{
     movement::Position,
     fight::{Health, Range},
     town::Town,
-    map::GlobalMap,
 };
 use crate::gui::{
     sprites::*,
     z::*,
     utils::*,
     animation::AnimationState,
-    input::{Grabbable, UiView},
+    input::Grabbable,
     ui_state::*,
 };
 use crate::logging::text_to_user::TextBoard;
@@ -45,42 +44,11 @@ impl Renderable {
 
 impl Game<'_, '_> {
     pub fn draw_main(&mut self, window: &mut Window) -> PadlResult<()> {
-        let tick = self.world.read_resource::<ClockTick>().0;
         let ui_state = self.world.read_resource::<UiState>();
         let hovered_entity = ui_state.hovered_entity;
         let grabbed_item = ui_state.grabbed_item.clone();
-        let view = ui_state.current_view;
-        let main_area = Rectangle::new(
-            (0,0), 
-            (ui_state.menu_box_area.x(), (window.project() * window.screen_size()).y)
-        );
         std::mem::drop(ui_state);
-        match view {
-            UiView::Town => {
-                {
-                    let ul = self.world.fetch::<ScreenResolution>().unit_length();
-                    let (asset, town) = 
-                    (
-                        &mut self.sprites,
-                        &self.world.fetch::<Town>(),
-                    );
-                    town.render(window, asset.as_mut().expect("assets"), tick, ul)?;
-                }
-                self.render_town_entities(window)?;
-            },
-            UiView::Map => {
-                
-            },
-            UiView::Attacks => {
-                window.draw_ex(&main_area, Col(LIGHT_BLUE), Transform::IDENTITY, Z_TEXTURE);
-                self.render_menu_box(window)?;
-            },
-            UiView::Leaderboard => {
-                window.draw_ex(&main_area, Col(DARK_BLUE), Transform::IDENTITY, Z_TEXTURE);
-                self.render_menu_box(window)?;
-            },
-        }
-        
+
         self.render_text_messages(window)?;
 
         if let Some(entity) = hovered_entity {

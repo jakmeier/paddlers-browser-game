@@ -28,11 +28,9 @@ use crate::game::{
     units::worker_system::WorkerSystem,
     forestry::ForestrySystem,
     player_info::PlayerInfo,
-    attacks::new_attack_view_dispatcher,
 };
 use crate::gui::{
     input,
-    input::UiView,
     ui_state::*,
     sprites::*,
 };
@@ -51,11 +49,10 @@ use town::{Town, DefaultShop};
 use town_resources::TownResources;
 use map::{GlobalMap, GlobalMapPrivateState};
 use game_event_manager::GameEvent;
-use crate::view::{ViewManager, FloatingText};
+use crate::view::FloatingText;
 
 pub(crate) struct Game<'a, 'b> {
     pub dispatcher: Dispatcher<'a, 'b>,
-    pub view_manager: ViewManager<'a, 'b>,
     pub world: World,
     pub sprites: Option<Sprites>,
     pub resources: TownResources,
@@ -96,7 +93,6 @@ impl Game<'_,'_> {
 
         Ok((Game {
             dispatcher: dispatcher,
-            view_manager: Default::default(),
             world: world,
             sprites: None,
             preload: Some(crate::init::loading::LoadingState::new()),
@@ -120,7 +116,6 @@ impl Game<'_,'_> {
     pub fn initialize_with_window(&mut self, window: &mut Window) {
         self.load_resolution();
         self.init_map();
-        self.init_views();
         let err = crate::window::adapt_window_size(window);
         self.check(err);
     }
@@ -131,17 +126,11 @@ impl Game<'_,'_> {
             let mut res = self.world.write_resource::<TownResources>();
             *res = self.resources;
         }
-        if let Err(net_err) = self.update_net() {
-            let mut q = self.world.write_resource::<ErrorQueue>();
-            q.push(net_err);
-        }
         {
             self.map_mut().update();
         }
         self.update_time_reference();
         self.dispatcher.dispatch(&mut self.world);
-        let view = self.world.fetch::<UiState>().current_view;
-        self.view_manager.update(&mut self.world, view);
         self.handle_game_events();
         if self.total_updates % 300 == 15 {
             self.reaper(&Rectangle::new_sized(window.project() * window.screen_size()));
@@ -184,15 +173,6 @@ impl Game<'_,'_> {
         let (private, shared) = GlobalMap::new(main_area.size());
         self.map = Some(private);
         self.world.insert(shared);
-    }
-    pub fn init_views(&mut self) {
-        let mut ui = self.world.write_resource::<UiState>();
-        let area = ui.main_area;
-        let leaderboard = ui.init_leaderboard(&area).expect("Init leaderboard failed");
-        let atk_disp = new_attack_view_dispatcher(&mut ui).expect("Init dispatcher failed");
-        self.view_manager.add_dispatcher(UiView::Attacks, atk_disp);
-        std::mem::drop(ui);
-        self.world.insert(leaderboard);
     }
 
     pub fn town(&self) -> specs::shred::Fetch<Town> {

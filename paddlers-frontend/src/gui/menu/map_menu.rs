@@ -1,10 +1,8 @@
 use crate::prelude::*;
-use quicksilver::prelude::{Window, Event, MouseButton};
+use quicksilver::prelude::{Window, MouseButton};
 use specs::prelude::*;
-use crate::resolution::ScreenResolution;
-use crate::game::{
-    Game,
-};
+use crate::game::Game;
+use crate::gui::ui_state::UiState;
 use crate::gui::input::{
     left_click::MapLeftClickSystem,
     MouseState,
@@ -12,7 +10,6 @@ use crate::gui::input::{
 use crate::view::Frame;
 
 pub (crate) struct MapMenuFrame<'a,'b> {
-    pub selected_entity: Option<Entity>,
     pub text_pool: TextPool,
     left_click_dispatcher: Dispatcher<'a,'b>
 }
@@ -25,7 +22,6 @@ impl MapMenuFrame<'_,'_> {
         left_click_dispatcher.setup(&mut game.world);
 
         Ok(MapMenuFrame {
-            selected_entity: None,
             text_pool: TextPool::default(),
             left_click_dispatcher
         })
@@ -35,14 +31,13 @@ impl<'a,'b> Frame for MapMenuFrame<'a,'b> {
     type Error = PadlError;
     type State = Game<'a,'b>;
     type Graphics = Window;
-    type Event = Event;
+    type Event = PadlEvent;
     fn draw(&mut self, state: &mut Self::State, window: &mut Self::Graphics) -> Result<(),Self::Error> {
         self.text_pool.reset();
         let inner_area = state.render_menu_box(window)?;
-        let resolution = *state.world.read_resource::<ScreenResolution>();
-        let resources_height = resolution.resources_h();
         
-        if let Some(e) = self.selected_entity {
+        let selected_entity = state.world.fetch::<UiState>().selected_entity;
+        if let Some(e) = selected_entity {
             state.render_entity_details(window, &inner_area, e, &mut self.text_pool)?;
         }
         self.text_pool.finish_draw();
@@ -55,7 +50,7 @@ impl<'a,'b> Frame for MapMenuFrame<'a,'b> {
         self.left_click_dispatcher.dispatch(&state.world);
         Ok(())
     }
-    fn leave(&mut self, state: &mut Self::State) -> Result<(), Self::Error> {
+    fn leave(&mut self, _state: &mut Self::State) -> Result<(), Self::Error> {
         self.text_pool.hide();
         Ok(())
     }

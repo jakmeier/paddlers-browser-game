@@ -35,6 +35,10 @@ pub (crate) struct QuicksilverState {
     pub pointer_manager: PointerManager<'static, 'static>,
     pub viewer: Framer,
 }
+pub (crate) enum PadlEvent {
+    Quicksilver(Event),
+    Network(NetMsg)
+}
 impl QuicksilverState {
     pub fn load(resolution: ScreenResolution, net_chan: Receiver<NetMsg>) -> Self {
 
@@ -91,6 +95,8 @@ impl State for QuicksilverState {
         if self.game.sprites.is_none() {
             self.game.update_loading(window)
         } else {
+            let res = self.update_net();
+            self.game.check(res);
             self.game.main_update_loop(window)
         }?;
         #[cfg(feature="dev_view")]
@@ -134,7 +140,7 @@ impl State for QuicksilverState {
 
     fn event(&mut self, event: &Event, window: &mut Window) -> Result<()> {
         // TODO: position handling
-        let err = self.viewer.event(&mut self.game, event);
+        let err = self.viewer.event(&mut self.game, &PadlEvent::Quicksilver(*event));
         self.game.check(err);
         self.game.handle_event(event, window, &mut self.pointer_manager)
     }

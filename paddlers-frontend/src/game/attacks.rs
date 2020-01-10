@@ -1,17 +1,20 @@
 //! View for incoming and outgoing attacks
 
+use crate::view::Frame;
 use specs::prelude::*;
 use stdweb::web::{HtmlElement, Node, INode, IElement};
 use paddlers_shared_lib::api::attacks::*;
 use crate::prelude::*;
 use crate::game::Game;
-use crate::gui::ui_state::UiState;
-use crate::gui::input::UiView;
 use crate::net::state::current_village;
 use crate::logging::ErrorQueue;
 use crate::view::TextNode;
-use panes::{PaneHandle, new_pane};
+use panes::new_pane;
 use stdweb::unstable::{TryInto};
+use quicksilver::prelude::{Window,Rectangle,Transform,Col};
+use crate::gui::z::*;
+use crate::gui::utils::colors::LIGHT_BLUE;
+use crate::gui::ui_state::UiState;
 
 #[derive(Component, Debug)]
 #[storage(HashMapStorage)]
@@ -38,18 +41,6 @@ impl Game<'_,'_> {
             PadlErrorCode::NotEnoughUnits.usr()
         }
     }
-}
-
-pub fn new_attack_view_dispatcher<'a,'b>(ui: &mut UiState) -> PadlResult<Dispatcher<'a,'b>> {
-    let r = ui.main_area;
-    let (atk_sys, panes) = AttackViewSystem::new(r.x(),r.y(),r.width(),r.height())?;
-    let vp = panes.into_iter().map(|p| (UiView::Attacks, p));
-    ui.view_panes.extend(vp);
-    Ok(DispatcherBuilder::new()
-        .with(atk_sys, "attacks", &[])
-        .with(UpdateAttackViewSystem::new(), "update_atk", &["attacks"])
-        .build()
-    )
 }
 
 impl Attack {
@@ -90,12 +81,14 @@ impl Attack {
 }
 
 
-pub struct AttackViewSystem {
+pub (crate) struct AttackFrame<'a,'b> {
     incoming_attacks_table: HtmlElement,
+    update_dispatcher: Dispatcher<'a,'b>,
+    pane: panes::PaneHandle,
 }
 
-impl AttackViewSystem {
-    pub fn new(x: f32, y: f32, w: f32, h: f32) -> PadlResult<(Self, Vec<PaneHandle>)> {
+impl<'a,'b> AttackFrame<'a,'b> {
+    pub fn new(x: f32, y: f32, w: f32, h: f32) -> PadlResult<Self> {
         let pane = new_pane(
             x as u32,
             y as u32,
@@ -106,13 +99,20 @@ impl AttackViewSystem {
         let table = pane.first_inner_node()?
             .try_into()
             .map_err(|_|PadlError::dev_err(PadlErrorCode::InvalidDom("No table in pane")))?;
-        let mut attack = AttackViewSystem {
+        
+        let update_dispatcher = DispatcherBuilder::new()
+            .with(UpdateAttackViewSystem::new(), "update_atk", &[])
+            .build();
+
+        let mut attack = AttackFrame {
             incoming_attacks_table: table,
+            update_dispatcher,
+            pane,
         };
         attack.add_row("<h2>Incoming Visitors</h2>")?;
-        pane.hide()?;
-        let panes = vec![pane];
-        Ok((attack, panes))
+        attack.pane.hide()?;
+
+        Ok(attack)
     }
     pub fn add_row(&mut self, html: &str) -> PadlResult<Node> {
         self.incoming_attacks_table.append_html(&html)
@@ -122,13 +122,16 @@ impl AttackViewSystem {
     }
 }
 
-impl<'a> System<'a> for AttackViewSystem {
-    type SystemData = (
-        WriteStorage<'a, Attack>,
-        WriteExpect<'a, ErrorQueue>,
-    );
+impl<'a,'b> Frame for AttackFrame<'a,'b> {
+    type Error = PadlError;
+    type State = Game<'a,'b>;
+    type Graphics = Window;
+    type Event = PadlEvent;
 
-    fn run(&mut self, (mut attack, mut errq): Self::SystemData) {
+    fn update(&mut self, state: &mut Self::State) -> Result<(),Self::Error> {
+        self.update_dispatcher.dispatch(&mut state.world);
+        let mut attack = state.world.write_storage::<Attack>();
+        let mut errq = state.world.write_resource::<ErrorQueue>();
         for a in (& mut attack).join() {
             if a.dom_node.is_none() {
                 let html = a.to_html();
@@ -145,6 +148,26 @@ impl<'a> System<'a> for AttackViewSystem {
                 }
             }
         }
+        Ok(())
+    }
+    fn draw(&mut self, state: &mut Self::State, window: &mut Self::Graphics) -> Result<(),Self::Error> {
+        let ui_state = state.world.read_resource::<UiState>();
+        let main_area = Rectangle::new(
+            (0,0), 
+            (ui_state.menu_box_area.x(), (window.project() * window.screen_size()).y)
+        );
+        std::mem::drop(ui_state);
+        window.draw_ex(&main_area, Col(LIGHT_BLUE), Transform::IDENTITY, Z_TEXTURE);
+        state.render_menu_box(window)?;
+        Ok(())
+    }
+    fn enter(&mut self, _state: &mut Self::State) -> Result<(),Self::Error> {
+        self.pane.show()?;
+        Ok(())
+    }
+    fn leave(&mut self, _state: &mut Self::State) -> Result<(),Self::Error> {
+        self.pane.hide()?;
+        Ok(())
     }
 }
 

@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use quicksilver::prelude::{Window, Event};
+use quicksilver::prelude::Window;
 use crate::game::{
     Game,
 };
@@ -23,7 +23,7 @@ impl<'a,'b> Frame for MapFrame<'a,'b> {
     type Error = PadlError;
     type State = Game<'a,'b>;
     type Graphics = Window;
-    type Event = Event;
+    type Event = PadlEvent;
     fn draw(&mut self, state: &mut Self::State, window: &mut Self::Graphics) -> Result<(),Self::Error> {
         let ui_state = state.world.read_resource::<UiState>();
         let area = Rectangle::new(

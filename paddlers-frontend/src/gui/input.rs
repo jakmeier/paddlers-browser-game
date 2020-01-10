@@ -124,8 +124,7 @@ impl crate::game::Game<'_, '_> {
             Event::Key(key, state) 
                 if *key == Key::Tab && *state == ButtonState::Pressed =>
                 {
-                    let r = self.toggle_view();
-                    self.check(r);
+                    self.toggle_view();
                 },
             _evt => {
                 // println!("Event: {:#?}", _evt)

@@ -39,12 +39,13 @@ pub fn main() {
 pub type Timestamp = i64;
 
 use view::FrameManager;
-use quicksilver::prelude::*;
+use crate::prelude::PadlEvent;
+use quicksilver::prelude::Window;
 pub (crate) type Framer = FrameManager<
     gui::input::UiView,
     game::Game<'static, 'static>,
     Window,
-    Event,
+    PadlEvent,
     prelude::PadlError
 >;
 

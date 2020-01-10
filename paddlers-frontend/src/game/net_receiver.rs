@@ -5,8 +5,8 @@ use crate::game::{
     units::workers::Worker,
     components::*,
     town::new_temple_menu,
-    leaderboard::*,
     };
+use crate::init::quicksilver_integration::QuicksilverState;
 use crate::net::{
     NetMsg, 
 };
@@ -14,20 +14,20 @@ use crate::net::{
 use specs::prelude::*;
 use super::*;
 
-impl Game<'_,'_> {
+impl QuicksilverState {
     pub fn update_net(&mut self) -> PadlResult<()> {
-        if self.net.is_none() {
+        if self.game.net.is_none() {
             return Ok(());
         }
         use std::sync::mpsc::TryRecvError;
-        match self.net.as_ref().unwrap().try_recv() {
+        match self.game.net.as_ref().unwrap().try_recv() {
             Ok(msg) => {
                 // println!("Received Network data!");
                 match msg {
                     NetMsg::Error(e) => {
                         match e.err {
                             PadlErrorCode::UserNotInDB => {
-                                self.rest().http_create_player()?;
+                                self.game.rest().http_create_player()?;
                             },
                             _ => {
                                 println!("Network Error: {}", e);
@@ -37,7 +37,7 @@ impl Game<'_,'_> {
                     NetMsg::Attacks(response) => {
                         if let Some(data) = response.data {
                             for atk in data.village.attacks {
-                                atk.create_entities(&mut self.world)?;
+                                atk.create_entities(&mut self.game.world)?;
                             }
                         }
                         else {
@@ -46,24 +46,23 @@ impl Game<'_,'_> {
                     }
                     NetMsg::Buildings(response) => {
                         if let Some(data) = response.data {
-                            self.flush_buildings()?;
-                            self.world.maintain();
-                            data.create_entities(self);
+                            self.game.flush_buildings()?;
+                            self.game.world.maintain();
+                            data.create_entities(&mut self.game);
                         }
                         else {
                             println!("No buildings available");
                         }
                     },
                     NetMsg::Hobos(hobos) => {
-                        self.flush_home_hobos()?;
-                        self.insert_hobos(hobos)?;
+                        self.game.flush_home_hobos()?;
+                        self.game.insert_hobos(hobos)?;
                     },
                     NetMsg::Leaderboard(offset, list) => {
-                        let leaderboard = self.world.read_resource::<Leaderboard>();
-                        leaderboard.clear()?;
-                        for (i,(name, karma)) in list.into_iter().enumerate() {
-                            leaderboard.insert_row(offset + i, &name, karma)?;
-                        }
+                        self.viewer.global_event(
+                            &mut self.game,
+                            &PadlEvent::Network(NetMsg::Leaderboard(offset, list))
+                        )?;
                     }
                     NetMsg::Map(response, min, max) => {
                         if let Some(data) = response.data {
@@ -78,7 +77,7 @@ impl Game<'_,'_> {
                                 )
                                 .collect();
                             let villages = data.map.villages.into_iter().map(VillageMetaInfo::from).collect();
-                            let (map, world) = (self.map.as_mut(), &mut self.world);
+                            let (map, world) = (self.game.map.as_mut(), &mut self.game.world);
                             map.map(|map| map.add_segment(world, streams, villages, min, max));
                         }
                         else {
@@ -86,31 +85,31 @@ impl Game<'_,'_> {
                         }
                     },
                     NetMsg::Player(player_info) => {
-                        if let Some(temple) = self.town().temple {
-                            let mut menus = self.world.write_storage::<UiMenu>();
+                        if let Some(temple) = self.game.town().temple {
+                            let mut menus = self.game.world.write_storage::<UiMenu>();
                             // This insert overwrites existing entries
                             menus.insert(temple, new_temple_menu(&player_info))
                                 .map_err(|_| PadlError::dev_err(PadlErrorCode::SpecsError("Temple menu insertion failed")))?;
                             }
-                            *self.world.write_resource() = DefaultShop::new(player_info.karma());
-                            *self.world.write_resource() = player_info;
+                            *self.game.world.write_resource() = DefaultShop::new(player_info.karma());
+                            *self.game.world.write_resource() = player_info;
                         },
                         NetMsg::VillageInfo(response) => {
                             if let Some(data) = response.data {
-                            self.town_mut().faith = data.village.faith.try_into()
+                            self.game.town_mut().faith = data.village.faith.try_into()
                                 .map_err(|_| PadlError::dev_err(PadlErrorCode::InvalidGraphQLData("Faith does not fit u8")))?;
-                            self.resources.update(data);
+                            self.game.resources.update(data);
                         }
                         else {
                             println!("No resources available");
                         }
                     }
                     NetMsg::Workers(response) => {
-                        self.flush_workers()?;
-                        self.world.maintain();
-                        let now = self.world.read_resource::<Now>().0;
-                        let results = create_worker_entities(&response, &mut self.world, now);
-                        let mut q = self.world.write_resource::<ErrorQueue>();
+                        self.game.flush_workers()?;
+                        self.game.world.maintain();
+                        let now = self.game.world.read_resource::<Now>().0;
+                        let results = create_worker_entities(&response, &mut self.game.world, now);
+                        let mut q = self.game.world.write_resource::<ErrorQueue>();
                         for res in results.into_iter() {
                             if let Err(e) = res {
                                 q.push(e);
@@ -118,13 +117,13 @@ impl Game<'_,'_> {
                         }
                     }
                     NetMsg::UpdateWorkerTasks(unit) => {
-                        let entity = self.worker_entity_by_net_id(unit.id.parse().unwrap())?;
-                        let workers = &mut self.world.write_storage::<Worker>();
+                        let entity = self.game.worker_entity_by_net_id(unit.id.parse().unwrap())?;
+                        let workers = &mut self.game.world.write_storage::<Worker>();
                         let worker = workers.get_mut(entity).unwrap();
                         worker.tasks.clear();
 
-                        let net = self.world.read_storage::<NetObj>();
-                        let ent = self.world.entities();
+                        let net = self.game.world.read_storage::<NetObj>();
+                        let ent = self.game.world.entities();
                         for task in unit.tasks {
                             match task.create(&net, &ent) {
                                 Ok(task) => worker.tasks.push_back(task),

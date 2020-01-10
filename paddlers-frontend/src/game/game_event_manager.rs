@@ -60,7 +60,7 @@ impl Game<'_,'_> {
                 self.confirm_to_user(format!("Attacking village <{}:{}>", x, y))?;
             },
             GameEvent::SwitchToView(view) => {
-                self.switch_view(view)?;
+                self.switch_view(view);
             },
         }
         Ok(())
