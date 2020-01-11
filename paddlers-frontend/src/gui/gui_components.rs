@@ -2,6 +2,8 @@
 
 mod ui_box;
 pub use ui_box::*;
+mod resources_component;
+pub use resources_component::*;
 
 use paddlers_shared_lib::prelude::AbilityType;
 use paddlers_shared_lib::api::shop::Price;
@@ -127,50 +129,6 @@ fn row_count(table: &[TableRow]) -> usize {
             TableRow::ProgressBar(_,_,_,_,_) => 1,
         }
     })
-}
-
-pub fn draw_resources(
-    window: &mut Window,
-    sprites: &mut Sprites,
-    resis: &[(ResourceType, i64)],
-    max_area: &Rectangle,
-    tp: &mut TextPool,
-    z: i32,
-) -> PadlResult<()> {
-    // This is quite specific. If this is used more flexible, consider refactoring.
-    let cols = 3;
-    let rows = (2 + resis.len()) / cols;
-    let grid = max_area.grid(cols, rows);
-    let max_img_area = Rectangle::new_sized((50, 50));
-    for ((rt, n), res_area) in resis.iter().zip(grid) {
-        let mut img_area = max_img_area.shrink_and_fit_into(&res_area, FitStrategy::TopLeft);
-        img_area.size.y = res_area.height();
-        img_area.pos.x = img_area.pos.x + res_area.width() - img_area.width();
-        let text_h = res_area.height().min(36.0);
-        let text_area = Rectangle::new(
-            (
-                res_area.pos.x,
-                res_area.pos.y + (res_area.height() - text_h) / 2.0,
-            ),
-            (res_area.size.x - img_area.width(), text_h),
-        );
-        draw_static_image(
-            sprites,
-            window,
-            &img_area.padded(10.0),
-            rt.sprite().default(),
-            z,
-            FitStrategy::Center,
-        )?;
-        tp.allocate().write(
-            window,
-            &text_area,
-            z + 1,
-            FitStrategy::Center,
-            &n.to_string(),
-        )?;
-    }
-    Ok(())
 }
 
 impl From<specs::Entity> for ClickOutput {

@@ -28,6 +28,15 @@ section.leaderboard {
     grid-template-columns: 1fr 2fr 2fr;
     padding: 20px;
 }
+div.pdl-res-comp {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+}
+div.pdl-res-comp img {
+    max-width: 33%;
+    max-height: 80%;
+    float: left;
+}
 
 /* MID */
 @media screen and (max-width: 1679px) {

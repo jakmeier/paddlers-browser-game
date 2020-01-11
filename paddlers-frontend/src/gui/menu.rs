@@ -19,7 +19,7 @@ use crate::game::{
     player_info::PlayerInfo,
 };
 use crate::gui::{
-    sprites::{SpriteIndex, SingleSprite, Sprites},
+    sprites::{SpriteIndex, SingleSprite},
     z::*,
     ui_state::{UiState,Now},
     utils::*,
@@ -125,7 +125,7 @@ impl Game<'_, '_> {
         Ok(area)
     }
 
-    pub fn render_entity_details(&mut self, window: &mut Window, area: &Rectangle, e: Entity, floats: &mut TextPool) -> PadlResult<()> {
+    pub fn render_entity_details(&mut self, window: &mut Window, area: &Rectangle, e: Entity, floats: &mut TextPool, hover_res_comp: &mut ResourcesComponent) -> PadlResult<()> {
         let mut img_bg_area = area.clone();
         img_bg_area.size.y = img_bg_area.height() / 3.0;
         let img_bg_area = img_bg_area.fit_square(FitStrategy::Center).shrink_to_center(0.8);
@@ -133,7 +133,7 @@ impl Game<'_, '_> {
         let text_area = Rectangle::new((area.x(), text_y), (area.width(), area.y() + area.height() - text_y) ).padded(20.0);
 
         self.draw_entity_details_img(window, e, &img_bg_area)?;
-        self.draw_entity_details_table(window, e, &text_area, floats)?;
+        self.draw_entity_details_table(window, e, &text_area, floats, hover_res_comp)?;
         Ok(())
     }
 
@@ -157,7 +157,7 @@ impl Game<'_, '_> {
         Ok(())
     }
 
-    fn draw_entity_details_table(&mut self, window: &mut Window, e: Entity, area: &Rectangle, text_pool: &mut TextPool) -> PadlResult<()> {
+    fn draw_entity_details_table(&mut self, window: &mut Window, e: Entity, area: &Rectangle, text_pool: &mut TextPool, res_comp: &mut ResourcesComponent) -> PadlResult<()> {
         let mut area = *area;
         let mut table = vec![];
 
@@ -220,7 +220,7 @@ impl Game<'_, '_> {
         
         let mut ui_area = self.world.write_storage::<UiMenu>();
         if let Some(ui) = ui_area.get_mut(e) {
-            Self::draw_shop_prices(window, &mut area, &mut ui.ui, self.sprites.as_mut().unwrap(), text_pool)?;
+            Self::draw_shop_prices(window, &mut area, &mut ui.ui, res_comp)?;
             table.push(
                 TableRow::InteractiveArea(&mut ui.ui)
             );
@@ -239,7 +239,7 @@ impl Game<'_, '_> {
         Ok(())
     }
     
-    fn render_default_shop(&mut self, window: &mut Window, area: &Rectangle, floats: &mut TextPool) -> PadlResult<()> {
+    fn render_default_shop(&mut self, window: &mut Window, area: &Rectangle, floats: &mut TextPool, res_comp: &mut ResourcesComponent) -> PadlResult<()> {
         let mut table = vec![];
         let mut area = *area;
         table.push(faith_details(self.town().faith));
@@ -247,7 +247,7 @@ impl Game<'_, '_> {
         table.push(total_aura_details(self.town().ambience()));
         
         let shop = &mut self.world.write_resource::<DefaultShop>();
-        Self::draw_shop_prices(window, &mut area, &mut shop.ui, self.sprites.as_mut().unwrap(), floats)?;
+        Self::draw_shop_prices(window, &mut area, &mut shop.ui, res_comp)?;
 
         table.push(
             TableRow::InteractiveArea(&mut shop.ui)
@@ -264,20 +264,16 @@ impl Game<'_, '_> {
         )
     }
     
-    fn draw_shop_prices(window: &mut Window, area: &mut Rectangle, ui: &mut UiBox,
-        sprites: &mut Sprites, floats: &mut TextPool,
+    fn draw_shop_prices(
+        window: &mut Window,
+        area: &mut Rectangle,
+        ui: &mut UiBox,
+        res_comp: &mut ResourcesComponent
     ) -> PadlResult<()> {
         let price_tag_h = 50.0;
         let (shop_area, price_tag_area) = area.cut_horizontal(area.height() - price_tag_h);
         *area = shop_area;
-        ui.draw_hover_info(window, sprites, floats, &price_tag_area)?;
-        Ok(())
-    }
-
-    pub fn render_resources(&mut self, window: &mut Window, area: &Rectangle, floats: &mut TextPool) -> PadlResult<()> {
-        let sprites = &mut self.sprites;
-        let resis = self.resources.non_zero_resources();
-        draw_resources(window, sprites.as_mut().unwrap(), &resis, &area, floats, Z_MENU_RESOURCES)?;
+        ui.draw_hover_info(window, res_comp, &price_tag_area)?;
         Ok(())
     }
 }
@@ -333,6 +329,6 @@ fn temple_details<'a>(player: &PlayerInfo) -> Vec<TableRow<'a>> {
     vec![row1, row2]
 }
 fn faith_details<'a>(faith: u8) -> TableRow<'a> {
-    let text = format!("{}% faith of Paddlers", faith);
+    let text = format!("{}% faith", faith);
     TableRow::Text(text)
 }

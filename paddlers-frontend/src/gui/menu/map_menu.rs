@@ -8,10 +8,12 @@ use crate::gui::input::{
     MouseState,
 };
 use crate::view::Frame;
+use crate::gui::gui_components::ResourcesComponent;
 
 pub (crate) struct MapMenuFrame<'a,'b> {
     pub text_pool: TextPool,
-    left_click_dispatcher: Dispatcher<'a,'b>
+    left_click_dispatcher: Dispatcher<'a,'b>,
+    _hover_component: ResourcesComponent,
 }
 impl MapMenuFrame<'_,'_> {
     pub fn new<'a,'b>(game: &mut Game<'a,'b>, ep: EventPool) -> PadlResult<Self> {
@@ -23,7 +25,8 @@ impl MapMenuFrame<'_,'_> {
 
         Ok(MapMenuFrame {
             text_pool: TextPool::default(),
-            left_click_dispatcher
+            left_click_dispatcher,
+            _hover_component: ResourcesComponent::new()?,
         })
     }
 }
@@ -38,7 +41,7 @@ impl<'a,'b> Frame for MapMenuFrame<'a,'b> {
         
         let selected_entity = state.world.fetch::<UiState>().selected_entity;
         if let Some(e) = selected_entity {
-            state.render_entity_details(window, &inner_area, e, &mut self.text_pool)?;
+            state.render_entity_details(window, &inner_area, e, &mut self.text_pool, &mut self._hover_component)?;
         }
         self.text_pool.finish_draw();
         Ok(())

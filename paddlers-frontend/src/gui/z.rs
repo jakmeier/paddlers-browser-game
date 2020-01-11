@@ -14,6 +14,5 @@ pub const Z_MENU_BOX: i32 = 220;
 pub const Z_UI_BORDERS: i32 = 230;
 pub const Z_HP_BAR: i32 = 250;
 pub const Z_MENU_BOX_BUTTONS: i32 = 280;
-pub const Z_MENU_RESOURCES: i32 = 285;
 pub const Z_MENU_TEXT: i32 = 286;
 pub const Z_GRABBED_ITEM: i32 = 350;

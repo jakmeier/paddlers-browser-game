@@ -63,9 +63,7 @@ impl LeaderboardFrame<'_,'_> {
         })
     }
     pub fn clear(&self) -> PadlResult<()> {
-        for node in self.table.child_nodes() {
-            self.table.remove_child(&node).expect("not found");
-        }
+        self.table.remove_all_children();
         Ok(())
     }
     

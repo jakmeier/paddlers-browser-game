@@ -37,7 +37,11 @@ pub (crate) struct QuicksilverState {
 }
 pub (crate) enum PadlEvent {
     Quicksilver(Event),
-    Network(NetMsg)
+    Network(NetMsg),
+    Signal(Signal),
+}
+pub enum Signal {
+    ResourcesUpdated,
 }
 impl QuicksilverState {
     pub fn load(resolution: ScreenResolution, net_chan: Receiver<NetMsg>) -> Self {

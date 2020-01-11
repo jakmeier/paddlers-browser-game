@@ -6,7 +6,7 @@ use crate::game::{
     components::*,
     town::new_temple_menu,
     };
-use crate::init::quicksilver_integration::QuicksilverState;
+use crate::init::quicksilver_integration::{QuicksilverState, Signal};
 use crate::net::{
     NetMsg, 
 };
@@ -99,6 +99,10 @@ impl QuicksilverState {
                             self.game.town_mut().faith = data.village.faith.try_into()
                                 .map_err(|_| PadlError::dev_err(PadlErrorCode::InvalidGraphQLData("Faith does not fit u8")))?;
                             self.game.resources.update(data);
+                            self.viewer.event(
+                                &mut self.game,
+                                &PadlEvent::Signal(Signal::ResourcesUpdated)
+                            )?;
                         }
                         else {
                             println!("No resources available");

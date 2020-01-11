@@ -138,16 +138,17 @@ impl UiBox {
 
     pub fn draw_hover_info(
         &mut self,
-        window: &mut Window,
-        sprites: &mut Sprites,
-        floats: &mut TextPool,
+        window: &Window,
+        res_comp: &mut ResourcesComponent,
         area: &Rectangle,
     ) -> PadlResult<()> {
         let mouse = window.mouse().pos();
         if let Some(el) = self.find_element_under_mouse(mouse) {
             if let Some(Condition::HasResources(cost)) = &el.condition {
-                draw_resources(window, sprites, &cost.0, area, floats, Z_MENU_RESOURCES)?;
+                res_comp.draw(area, &cost.0)?;
             }
+        } else{
+            res_comp.hide()?;
         }
         Ok(())
     }

@@ -10,6 +10,7 @@ pub struct TextPool {
 }
 
 impl TextPool {
+    #[allow(dead_code)]
     pub fn new(html: String, pos: Rectangle) -> Self {
         TextPool {
             factory_html: html,

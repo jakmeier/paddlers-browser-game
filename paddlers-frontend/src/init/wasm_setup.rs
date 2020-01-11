@@ -32,3 +32,17 @@ pub fn utc_now() -> crate::Timestamp {
     ).try_into().expect("Reading time");
     millis as i64 * 1000
 }
+
+/// Extension trait for stdweb::web::INode
+pub trait PadlINode {
+    fn remove_all_children(&self);
+}
+
+use stdweb::web::INode;
+impl<T: INode> PadlINode for T {
+    fn remove_all_children(&self) {
+        while let Some(child) = self.first_child() {
+            self.remove_child(&child).expect("not found");
+        }
+    }
+}
