@@ -51,6 +51,7 @@ pub fn draw_table(
     table: &mut [TableRow],
     max_area: &Rectangle,
     floats: &mut TextPool,
+    white_floats: &mut TextPool,
     max_row_height: f32,
     z: i32,
     now: Timestamp,
@@ -101,12 +102,12 @@ pub fn draw_table(
                     window.draw_ex(&label_area, Col(*bkgcol), Transform::IDENTITY, z);
                     let mut label_text_area = label_area.shrink_to_center(0.9);
                     label_text_area.pos.y += label_text_area.size.y * 0.1;
-                    floats.allocate().write(window, &label_text_area, z, FitStrategy::Center, label)?;
+                    white_floats.allocate().write(window, &label_text_area, z, FitStrategy::Center, label)?;
                 }
                 let text = format!("{}/{}", i, n);
                 let mut text_area = area.shrink_to_center(0.9);
                 text_area.pos.y += text_area.size.y * 0.1;
-                floats.allocate().write(window, &text_area, z + 1, FitStrategy::Center, &text)?;
+                white_floats.allocate().write(window, &text_area, z + 1, FitStrategy::Center, &text)?;
 
                 window.draw_ex(&area, Col(*col), Transform::IDENTITY, Z_MENU_BOX + 1);
                 let mut bar = area.padded(3.0);
