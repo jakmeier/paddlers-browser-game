@@ -1,6 +1,6 @@
 [package]
 name = "paddlers-shared-lib"
-version = "0.1.1-snapshot"
+version = "0.1.1"
 authors = ["Jakob Meier <inbox@jakobmeier.ch>"]
 edition = "2018"
 
