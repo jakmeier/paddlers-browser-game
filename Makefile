@@ -69,3 +69,6 @@ recreate-db-interface: debug-db-interface-container
 
 recreate-game-master: debug-game-master-container
 	docker-compose -f docker-compose.local.yml up -d --no-deps --build game-master
+
+benchmark-file-sizes:
+	./paddlers-frontend/benchmarks/app_size_stats.sh

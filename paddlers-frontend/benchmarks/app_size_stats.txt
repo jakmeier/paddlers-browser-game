@@ -1,2 +1,3 @@
 Version total[KB] wasm[KB] js[KB]
 0.1.0 4984 2280 64
+0.1.1 4180 2284 64
