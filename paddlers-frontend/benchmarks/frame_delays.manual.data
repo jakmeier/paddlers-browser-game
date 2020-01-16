@@ -38,3 +38,14 @@
 1578867572 0.1.1 StandardVillage phone "Mozilla/5.0 (Android 6.0.1; Mobile; rv:68.0) Gecko/68.0 Firefox/68.0" Low 37.00FPS = 27.08ms, 8.00ms 26.00ms 54.00ms |DRAW| 2.00ms 4.00ms 10.00ms, 0.000% missed |UPDATE| 0.00ms 0.00ms 6.00ms
 
 
+"StandardVillage laptop High (Chrome)"
+1579124344 0.1.1 StandardVillage laptop "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.79 Safari/537.36" High 29.40FPS = 34.09ms, 16.00ms 34.00ms 52.00ms |DRAW| 0.00ms 1.00ms 7.00ms, 0.000% missed |UPDATE| 0.00ms 0.00ms 1.00ms
+
+
+"StandardVillage laptop Mid (Chrome)"
+1579124787 0.1.1 StandardVillage laptop "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.79 Safari/537.36" Mid 28.90FPS = 34.70ms, 10.00ms 34.00ms 76.00ms |DRAW| 0.00ms 1.00ms 19.00ms, 2.076% missed |UPDATE| 0.00ms 0.00ms 1.00ms
+
+
+"StandardVillage laptop Low (Chrome)"
+1579124670 0.1.1 StandardVillage laptop "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.79 Safari/537.36" Low 29.30FPS = 34.23ms, 15.00ms 34.00ms 58.00ms |DRAW| 0.00ms 1.00ms 18.00ms, 1.024% missed |UPDATE| 0.00ms 0.00ms 1.00ms
+
