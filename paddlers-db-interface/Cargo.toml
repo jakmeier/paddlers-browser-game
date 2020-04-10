@@ -7,10 +7,10 @@ edition = "2018"
 [dependencies]
 paddlers-shared-lib = { path = "../paddlers-shared-lib", features = ["graphql", "sql_db", "user_authentication"] }
 
-rocket = "0.4"
+rocket = "0.4.4"
 rocket_cors = "0.5"
-diesel = { version = "1.4", features = ["postgres", "chrono", "uuidv07"] }
-uuid = "0.7.4" # Fixed version to work with diesel
+diesel = { version = "1.4.4", features = ["postgres", "chrono", "uuidv07"] }
+uuid = "0.8.1"
 serde = "1.0"
 serde_derive = "1.0"
 toml = "0.5"

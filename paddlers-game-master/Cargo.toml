@@ -6,8 +6,8 @@ edition = "2018"
 
 [dependencies]
 paddlers-shared-lib = { path = "../paddlers-shared-lib", features = ["sql_db", "enum_utils", "game_mechanics", "user_authentication"] }
-diesel = { version = "1.4", features = ["postgres", "chrono", "r2d2", "uuidv07"] }
-uuid = "0.7.4" # Fixed version to work with diesel
+diesel = { version = "1.4.4", features = ["postgres", "chrono", "r2d2", "uuidv07"] }
+uuid = "0.8.1"
 r2d2 = "0.8"
 chrono = "0.4"
 rand = "0.7"
