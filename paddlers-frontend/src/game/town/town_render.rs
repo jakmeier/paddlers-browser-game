@@ -1,7 +1,28 @@
 use quicksilver::prelude::*;
+use quicksilver::graphics::{Mesh,Drawable};
 use super::*;
 
 impl Town {
+    pub fn render_background(&self, mesh: &mut Mesh, sprites: &mut Sprites, unit_length: f32) -> Result<()> {
+        let d = unit_length;
+
+        for (x, col) in self.map.0.iter().enumerate() {
+            for (y, tile) in col.iter().enumerate() {
+                match tile {
+                    TileType::EMPTY | TileType::BUILDING(_) => {
+                        let img = sprites.index(SpriteIndex::Simple(SingleSprite::Grass));
+                        let bkg = Img(&img);
+                        let rect = Rectangle::new((d * x as f32, d * y as f32), (d, d));
+                        rect.draw(mesh, bkg.into(), Transform::IDENTITY, Z_TEXTURE);
+                    }
+                    TileType::LANE => {
+                        // Nothing cacheable for lane
+                    }
+                }
+            }
+        }
+        Ok(())
+    }
     pub fn render(&self, window: &mut Window, sprites: &mut Sprites, tick: u32, unit_length: f32) -> Result<()> {
         let d = unit_length;
 
@@ -9,13 +30,7 @@ impl Town {
             for (y, tile) in col.iter().enumerate() {
                 match tile {
                     TileType::EMPTY | TileType::BUILDING(_) => {
-                        // println!("Empty {} {}", x, y);
-                        window.draw_ex(
-                            &Rectangle::new((d * x as f32, d * y as f32), (d, d)),
-                            Img(&sprites.index(SpriteIndex::Simple(SingleSprite::Grass))),
-                            Transform::IDENTITY,
-                            Z_TEXTURE
-                        );
+                        // Already drawn in background
                     }
 
                     TileType::LANE => {

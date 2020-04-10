@@ -8,15 +8,19 @@ use crate::game::{
 };
 use crate::view::Frame;
 use std::marker::PhantomData;
+use quicksilver::graphics::Mesh;
 
 pub (crate) struct TownFrame<'a,'b> {
     phantom: PhantomData<(&'a(), &'b())>,
+    // Graphics optimization
+    pub background_cache: Option<Mesh>,
 }
 
 impl<'a,'b> TownFrame<'a,'b> {
     pub fn new() -> Self {
         TownFrame {
-            phantom: PhantomData
+            phantom: PhantomData,
+            background_cache: None,
         }
     }
 }
@@ -35,6 +39,11 @@ impl<'a,'b> Frame for TownFrame<'a,'b> {
                 &mut state.sprites,
                 &state.world.fetch::<Town>(),
             );
+            if self.background_cache.is_none() {
+                self.background_cache = Some(Mesh::new()); 
+                town.render_background(self.background_cache.as_mut().unwrap(), asset.as_mut().expect("assets"), ul);
+            }
+            window.mesh().extend(self.background_cache.as_ref().unwrap());
             town.render(window, asset.as_mut().expect("assets"), tick, ul)?;
         }
         state.render_town_entities(window)?;

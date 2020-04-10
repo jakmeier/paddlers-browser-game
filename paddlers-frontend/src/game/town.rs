@@ -24,7 +24,6 @@ pub (crate) use paddlers_shared_lib::game_mechanics::town::TownTileType as TileT
 use paddlers_shared_lib::game_mechanics::town::TileState as TileStateEx;
 pub type TileState = TileStateEx<specs::Entity>;
 
-#[derive(Debug)]
 pub struct Town {
     map: TownMap,
     state: TownState<specs::Entity>,
