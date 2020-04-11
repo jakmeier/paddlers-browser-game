@@ -1,4 +1,6 @@
 use serde::{Serialize, Deserialize};
+use crate::story::story_state::StoryState;
+pub use crate::story::story_state::Story_state_type;
 
 #[cfg(feature = "sql_db")]
 use chrono::NaiveDateTime;
@@ -55,6 +57,7 @@ pub struct Player {
     pub uuid: uuid::Uuid,
     pub karma: i64,
     pub display_name: String,
+    pub story_state: StoryState,
 }
 
 #[cfg(feature = "sql_db")]

@@ -1,0 +1,4 @@
+ALTER TABLE players
+DROP COLUMN story_state;
+
+DROP TYPE STORY_STATE_TYPE;

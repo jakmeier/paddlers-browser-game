@@ -3,5 +3,6 @@ query PlayerQuery {
         karma
         villageCount
         prophetCount
+        storyState
     }
 }

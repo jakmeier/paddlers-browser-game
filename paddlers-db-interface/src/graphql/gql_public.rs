@@ -17,6 +17,7 @@
 //! 
 //! Other modules will NOT constraint further what fields can be read. 
 
+use paddlers_shared_lib::story::story_state::StoryState;
 use super::*;
 use juniper;
 use juniper::FieldResult;
@@ -71,6 +72,12 @@ impl GqlPlayer {
     fn prophet_count(&self, ctx: &Context) -> FieldResult<i32> {
         ctx.check_user_key(self.0.key())?;
         Ok(ctx.db().player_prophets_count(self.0.uuid) as i32)
+    }
+    /// Player progress in story
+    /// Field Visibility: user
+    fn story_state(&self, ctx: &Context) -> FieldResult<StoryState> {
+        ctx.check_user_key(self.0.key())?;
+        Ok(self.0.story_state)
     }
 }
 
