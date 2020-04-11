@@ -1,62 +1,53 @@
-pub (crate) mod abilities;
-pub (crate) mod attacks;
-pub (crate) mod buildings;
-pub (crate) mod components;
-pub (crate) mod fight;
-pub (crate) mod forestry;
-pub (crate) mod game_event_manager;
-pub (crate) mod leaderboard;
-pub (crate) mod level;
-pub (crate) mod mana;
-pub (crate) mod map;
-pub (crate) mod movement;
-pub (crate) mod net_receiver;
-pub (crate) mod player_info;
-pub (crate) mod status_effects;
-pub (crate) mod town;
-pub (crate) mod town_resources;
-pub (crate) mod units;
-#[cfg(feature="dev_view")]
-pub (crate) mod dev_view;
+pub(crate) mod abilities;
+pub(crate) mod attacks;
+pub(crate) mod buildings;
+pub(crate) mod components;
+#[cfg(feature = "dev_view")]
+pub(crate) mod dev_view;
+pub(crate) mod fight;
+pub(crate) mod forestry;
+pub(crate) mod game_event_manager;
+pub(crate) mod leaderboard;
+pub(crate) mod level;
+pub(crate) mod mana;
+pub(crate) mod map;
+pub(crate) mod movement;
+pub(crate) mod net_receiver;
+pub(crate) mod player_info;
+pub(crate) mod status_effects;
+pub(crate) mod town;
+pub(crate) mod town_resources;
+pub(crate) mod units;
 
-use std::sync::mpsc::{channel, Receiver};
-use specs::prelude::*;
-use crate::prelude::*;
+use crate::game::town::new_temple_menu;
 use crate::game::{
-    components::*,
-    fight::*,
+    components::*, fight::*, forestry::ForestrySystem, player_info::PlayerInfo,
     units::worker_system::WorkerSystem,
-    forestry::ForestrySystem,
-    player_info::PlayerInfo,
 };
-use crate::gui::{
-    input,
-    ui_state::*,
-    sprites::*,
-};
+use crate::gui::{input, sprites::*, ui_state::*};
+use crate::init::loading::BaseState;
+use crate::logging::{statistics::Statistician, text_to_user::TextBoard, ErrorQueue};
 use crate::net::{
-    NetMsg, 
     game_master_api::{RestApiState, RestApiSystem},
+    NetMsg,
 };
-use crate::logging::{
-    ErrorQueue,
-    statistics::Statistician,
-    text_to_user::TextBoard,
-};
+use crate::prelude::*;
+use game_event_manager::GameEvent;
+use map::{GlobalMap, GlobalMapPrivateState};
 use movement::*;
 use quicksilver::prelude::*;
-use town::{Town, DefaultShop};
+use specs::prelude::*;
+use std::sync::mpsc::{channel, Receiver};
+use town::{DefaultShop, Town};
 use town_resources::TownResources;
-use map::{GlobalMap, GlobalMapPrivateState};
-use game_event_manager::GameEvent;
-use crate::view::FloatingText;
 
 pub(crate) struct Game<'a, 'b> {
     pub dispatcher: Dispatcher<'a, 'b>,
     pub world: World,
-    pub sprites: Option<Sprites>,
+    pub sprites: Sprites,
+    pub locale: Catalog,
     pub resources: TownResources,
-    pub net: Option<Receiver<NetMsg>>,
+    pub net: Receiver<NetMsg>,
     pub time_zero: Timestamp,
     pub total_updates: u64,
     pub async_err_receiver: Receiver<PadlError>,
@@ -64,22 +55,22 @@ pub(crate) struct Game<'a, 'b> {
     pub stats: Statistician,
     pub map: Option<GlobalMapPrivateState>,
 
-    pub preload: Option<crate::init::loading::LoadingState>,
-    pub preload_float: FloatingText,
-
-    #[cfg(feature="dev_view")]
+    #[cfg(feature = "dev_view")]
     pub palette: bool,
-    #[cfg(feature="dev_view")]
+    #[cfg(feature = "dev_view")]
     pub active_test: Option<Box<crate::game::dev_view::benchmark::TestData>>,
 }
 
-impl Game<'_,'_> {
-
-    pub fn load_game() -> PadlResult<(Self, EventPool)> {
-        let (err_send, err_recv) = channel();
+impl Game<'_, '_> {
+    pub fn load_game(
+        sprites: Sprites,
+        locale: Catalog,
+        resolution: ScreenResolution,
+        player_info: PlayerInfo,
+        base: BaseState,
+    ) -> PadlResult<(Self, EventPool)> {
         let (game_evt_send, game_evt_recv) = channel();
-        let mut world = crate::init::init_world(err_send);
-        
+        let mut world = crate::init::init_world(base.err_send, resolution, player_info, base.rest, base.errq, base.tb);
         let mut dispatcher = DispatcherBuilder::new()
             .with(WorkerSystem::new(game_evt_send.clone()), "work", &[])
             .with(MoveSystem, "move", &["work"])
@@ -91,25 +82,36 @@ impl Game<'_,'_> {
 
         let now = utc_now();
 
-        Ok((Game {
-            dispatcher: dispatcher,
-            world: world,
-            sprites: None,
-            preload: Some(crate::init::loading::LoadingState::new()),
-            preload_float: FloatingText::try_default().expect("FloatingText"),
-            net: None,
-            time_zero: now,
-            resources: TownResources::default(),
-            total_updates: 0,
-            async_err_receiver: err_recv,
-            game_event_receiver: game_evt_recv,
-            stats: Statistician::new(now),
-            map: None,
-            #[cfg(feature="dev_view")]
-            palette: false,
-            #[cfg(feature="dev_view")]
-            active_test: None,
-        }, game_evt_send))
+        if let Some(temple) = world.read_resource::<Town>().temple {
+            let mut menus = world.write_storage::<UiMenu>();
+            // This insert overwrites existing entries
+            menus
+                .insert(temple, new_temple_menu(&player_info))
+                .map_err(|_| {
+                    PadlError::dev_err(PadlErrorCode::SpecsError("Temple menu insertion failed"))
+                })?;
+        }
+        Ok((
+            Game {
+                dispatcher: dispatcher,
+                world: world,
+                sprites,
+                locale,
+                net: base.net_chan,
+                time_zero: now,
+                resources: TownResources::default(),
+                total_updates: 0,
+                async_err_receiver: base.err_recv,
+                game_event_receiver: game_evt_recv,
+                stats: Statistician::new(now),
+                map: None,
+                #[cfg(feature = "dev_view")]
+                palette: false,
+                #[cfg(feature = "dev_view")]
+                active_test: None,
+            },
+            game_evt_send,
+        ))
     }
 
     /// Called at the first draw loop iteration (the first time quicksilver leaks access to it)
@@ -121,7 +123,6 @@ impl Game<'_,'_> {
     }
 
     pub fn main_update_loop(&mut self, window: &mut Window) -> Result<()> {
-
         {
             let mut res = self.world.write_resource::<TownResources>();
             *res = self.resources;
@@ -133,33 +134,21 @@ impl Game<'_,'_> {
         self.dispatcher.dispatch(&mut self.world);
         self.handle_game_events();
         if self.total_updates % 300 == 15 {
-            self.reaper(&Rectangle::new_sized(window.project() * window.screen_size()));
+            self.reaper(&Rectangle::new_sized(
+                window.project() * window.screen_size(),
+            ));
         }
         self.world.maintain();
         Ok(())
     }
-
-    pub fn with_town(mut self, town: Town) -> Self {
-        self.world.insert(town);
-        self
-    }
-    pub fn with_resolution(mut self, r: ScreenResolution) -> Self {
-        self.world.insert(r);
-        self
-    }
-    pub fn with_network_chan(mut self, net_receiver: Receiver<NetMsg>) -> Self {
-        self.net = Some(net_receiver);
-        self
-    }
     /// Call this after changing resolution in world
     pub fn load_resolution(&mut self) {
-
         let r = *self.world.fetch::<ScreenResolution>();
 
         let main_size = Vector::from(r.main_area());
         let menu_size = Vector::from(r.menu_area());
         let main_area = Rectangle::new_sized(main_size);
-        let menu_area = Rectangle::new((main_size.x,0),menu_size);
+        let menu_area = Rectangle::new((main_size.x, 0), menu_size);
 
         let mut data = self.world.write_resource::<UiState>();
         (*data).main_area = main_area;
@@ -182,10 +171,7 @@ impl Game<'_,'_> {
         self.world.write_resource()
     }
     pub fn map_mut(&mut self) -> GlobalMap {
-        GlobalMap::combined(
-            self.map.as_mut().unwrap(),
-            self.world.write_resource(),
-        )
+        GlobalMap::combined(self.map.as_mut().unwrap(), self.world.write_resource())
     }
     pub fn rest(&mut self) -> specs::shred::FetchMut<RestApiState> {
         self.world.write_resource()
@@ -205,18 +191,22 @@ impl Game<'_,'_> {
         let p = self.world.read_storage::<Position>();
         let mut dead = vec![];
         for (entity, position) in (&self.world.entities(), &p).join() {
-            if !position.area.overlaps_rectangle(map)  {
+            if !position.area.overlaps_rectangle(map) {
                 dead.push(entity);
             }
         }
         std::mem::drop(p);
-        self.world.delete_entities(&dead).expect("Something bad happened when deleting dead entities");
+        self.world
+            .delete_entities(&dead)
+            .expect("Something bad happened when deleting dead entities");
     }
     /// Deletes all building entities (lazy, requires world.maintain())
     fn flush_buildings(&self) -> PadlResult<()> {
         let b = self.world.read_storage::<buildings::Building>();
         for (entity, _marker) in (&self.world.entities(), &b).join() {
-            self.world.entities().delete(entity)
+            self.world
+                .entities()
+                .delete(entity)
                 .map_err(|_| PadlError::dev_err(PadlErrorCode::SpecsError("Delete building")))?;
         }
         Ok(())
@@ -225,7 +215,9 @@ impl Game<'_,'_> {
     fn flush_workers(&self) -> PadlResult<()> {
         let w = self.world.read_storage::<units::workers::Worker>();
         for (entity, _marker) in (&self.world.entities(), &w).join() {
-            self.world.entities().delete(entity)
+            self.world
+                .entities()
+                .delete(entity)
                 .map_err(|_| PadlError::dev_err(PadlErrorCode::SpecsError("Delete worker")))?;
         }
         Ok(())
@@ -234,7 +226,9 @@ impl Game<'_,'_> {
     fn flush_home_hobos(&self) -> PadlResult<()> {
         let w = self.world.read_storage::<units::hobos::Hobo>();
         for (entity, _marker) in (&self.world.entities(), &w).join() {
-            self.world.entities().delete(entity)
+            self.world
+                .entities()
+                .delete(entity)
                 .map_err(|_| PadlError::dev_err(PadlErrorCode::SpecsError("Delete hobo")))?;
         }
         Ok(())
@@ -245,7 +239,9 @@ impl Game<'_,'_> {
         let w = self.world.read_storage::<components::NetObj>();
         for (entity, netid) in (&self.world.entities(), &w).join() {
             if netid.is_hobo() {
-                self.world.entities().delete(entity)
+                self.world
+                    .entities()
+                    .delete(entity)
                     .map_err(|_| PadlError::dev_err(PadlErrorCode::SpecsError("Delete hobo")))?;
             }
         }
@@ -263,8 +259,7 @@ impl Game<'_,'_> {
             let mut q = self.world.write_resource::<ErrorQueue>();
             q.push(e);
             None
-        }
-        else {
+        } else {
             Some(res.unwrap())
         }
     }

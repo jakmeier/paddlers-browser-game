@@ -74,6 +74,9 @@ impl<'a> System<'a> for RightClickSystem {
             (UiView::Leaderboard, false) => {
                 // NOP
             },
+            (UiView::Dialog, false) => {
+                // NOP
+            },
         }
     }
 }

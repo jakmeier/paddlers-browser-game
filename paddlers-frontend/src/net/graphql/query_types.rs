@@ -151,6 +151,7 @@ pub type HobosQueryUnitColor = hobos_query::UnitColor;
 pub struct PlayerQuery;
 pub type PlayerQueryRawResponse = Response<player_query::ResponseData>;
 pub type PlayerQueryResponse = player_query::PlayerQueryPlayer;
+pub type PlayerStoryState = player_query::StoryState;
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -230,3 +231,28 @@ impl Into<UnitColor> for &attacks_query::UnitColor {
 pub struct LeaderboardQuery;
 pub type LeaderboardRawResponse = Response<leaderboard_query::ResponseData>;
 pub type LeaderboardResponse = Vec<leaderboard_query::LeaderboardQueryScoreboard>;
+
+
+use paddlers_shared_lib::story::story_state::StoryState;
+impl Into<StoryState> for &PlayerStoryState {
+    fn into(self) -> StoryState {
+        match self {
+            PlayerStoryState::INITIALIZED => StoryState::Initialized,
+            PlayerStoryState::SERVANT_ACCEPTED => StoryState::ServantAccepted,
+            PlayerStoryState::TEMPLE_BUILT => StoryState::TempleBuilt,
+            PlayerStoryState::VISITOR_ARRIVED => StoryState::VisitorArrived,
+            PlayerStoryState::FIRST_VISITOR_WELCOMED => StoryState::FirstVisitorWelcomed,
+            PlayerStoryState::FLOWER_PLANTED => StoryState::FlowerPlanted,
+            PlayerStoryState::MORE_HAPPY_VISITORS => StoryState::MoreHappyVisitors,
+            PlayerStoryState::TREE_PLANTED => StoryState::TreePlanted,
+            PlayerStoryState::STICK_GATHERING_STATION_BUILD => StoryState::StickGatheringStationBuild,
+            PlayerStoryState::GATHERING_STICKS => StoryState::GatheringSticks,
+            _ => panic!("Unexpected story state")
+        }
+    }
+}
+impl Into<StoryState> for PlayerStoryState {
+    fn into(self) -> StoryState {
+        (&self).into()
+    }
+}

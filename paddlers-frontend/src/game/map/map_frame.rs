@@ -37,7 +37,7 @@ impl<'a,'b> Frame for MapFrame<'a,'b> {
                 state.world.write_resource()
             )
         );
-        map.render(window, &mut sprites.as_mut().expect("sprites"), &area)?;
+        map.render(window, sprites, &area)?;
         Ok(())
     }
     fn left_click(&mut self, state: &mut Self::State, pos: (i32,i32)) -> Result<(),Self::Error> {

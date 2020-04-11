@@ -92,7 +92,7 @@ impl Game<'_, '_> {
         let leaf_h = resolution.leaves_border_h();
         draw_leaf_border(
             window,
-            self.sprites.as_mut().unwrap(),
+            &mut self.sprites,
             &area,
             leaf_w,
             leaf_h,
@@ -114,7 +114,7 @@ impl Game<'_, '_> {
         let h = resolution.duck_steps_h();
         draw_duck_step_line(
             window,
-            self.sprites.as_mut().unwrap(),
+            &mut self.sprites,
             Vector::new(area.x() - leaf_w * 0.5, y),
             area.x() + area.width() + leaf_w * 0.5,
             h,
@@ -167,7 +167,7 @@ impl Game<'_, '_> {
             match rd.kind {
                 RenderVariant::ImgWithImgBackground(main, background) => {
                     draw_static_image(
-                        sprites.as_mut().unwrap(),
+                        sprites,
                         window,
                         &area,
                         SpriteIndex::Simple(background),
@@ -175,7 +175,7 @@ impl Game<'_, '_> {
                         FitStrategy::Center,
                     )?;
                     draw_static_image(
-                        sprites.as_mut().unwrap(),
+                        sprites,
                         window,
                         &inner_area,
                         main.default(),
@@ -186,7 +186,7 @@ impl Game<'_, '_> {
                 RenderVariant::ImgWithColBackground(main, col) => {
                     window.draw_ex(area, Col(col), Transform::IDENTITY, Z_MENU_BOX + 1);
                     draw_static_image(
-                        sprites.as_mut().unwrap(),
+                        sprites,
                         window,
                         &inner_area,
                         main.default(),
@@ -274,7 +274,7 @@ impl Game<'_, '_> {
         }
         draw_table(
             window,
-            self.sprites.as_mut().unwrap(),
+            &mut self.sprites,
             &mut table,
             &area,
             text_pool,
@@ -309,7 +309,7 @@ impl Game<'_, '_> {
 
         draw_table(
             window,
-            self.sprites.as_mut().unwrap(),
+            &mut self.sprites,
             &mut table,
             &area,
             floats,

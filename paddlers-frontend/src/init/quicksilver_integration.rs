@@ -1,41 +1,43 @@
 //! Integrates Paddlers with the quicksilver framework
-//! 
+//!
 //! Quicksilver provides three things that we use:
 //!  * Drawing a the draw loop
 //!  * Game logic updates in another loop
 //!  * User input events
-//! 
+//!
 //! All this is glued together by implementing quicksilver's State
 
+use crate::init::loading::LoadingState;
+use crate::logging::{text_to_user::TextBoard, ErrorQueue};
+use crate::net::game_master_api::RestApiState;
 use crate::prelude::*;
-use crate::net::{
-    game_master_api::RestApiState,
-};
-use crate::logging::{
-    ErrorQueue,
-    text_to_user::TextBoard,
-};
 use std::sync::mpsc::Receiver;
 
 use crate::game::*;
-use crate::game::town::Town;
-use crate::gui::ui_state::*;
 use crate::gui::input::pointer::PointerManager;
-use quicksilver::prelude::*;
-use crate::specs::WorldExt;
+use crate::gui::ui_state::*;
 use crate::net::NetMsg;
+use crate::specs::WorldExt;
 use crate::Framer;
+use quicksilver::prelude::*;
 
 use std::sync::Once;
 static INIT: Once = Once::new();
 
-// TODO: reshuffle names, fix lifetimes
-pub (crate) struct QuicksilverState {
+pub(crate) enum QuicksilverState {
+    /// Used for easy data swapping
+    Empty,
+    // While downloading resources
+    Loading(LoadingState),
+    // During fully initialized game
+    Ready(GameState),
+}
+pub(crate) struct GameState {
     pub game: Game<'static, 'static>,
     pub pointer_manager: PointerManager<'static, 'static>,
     pub viewer: Framer,
 }
-pub (crate) enum PadlEvent {
+pub(crate) enum PadlEvent {
     Quicksilver(Event),
     Network(NetMsg),
     Signal(Signal),
@@ -45,29 +47,54 @@ pub enum Signal {
 }
 impl QuicksilverState {
     pub fn load(resolution: ScreenResolution, net_chan: Receiver<NetMsg>) -> Self {
-
-        let (game, ep) = Game::load_game().expect("Loading game");
-        let mut game = game.with_town(Town::new(resolution))
-            .with_resolution(resolution)
-            .with_network_chan(net_chan);
-
-        let pm = PointerManager::init(&mut game.world, ep.clone());
-        let viewer = super::frame_loading::load_viewer(&mut game, ep);
-
-        QuicksilverState {
-            game,
-            viewer,
-            pointer_manager: pm,
-        }
+        Self::Loading(LoadingState::new(resolution, net_chan))
     }
 }
 impl State for QuicksilverState {
     fn new() -> Result<Self> {
         unreachable!()
     }
-
     fn update(&mut self, window: &mut Window) -> Result<()> {
-        #[cfg(feature="dev_view")]
+        match self {
+            Self::Loading(state) => {
+                let err = state.update_net();
+                state.queue_error(err);
+                let q = &mut state.base.errq;
+                q.pull_async(&mut state.base.err_recv, &mut state.base.tb);
+                self.try_finalize();
+                Ok(())
+            }
+            Self::Ready(game) => game.update(window),
+            Self::Empty => {
+                println!("Fatal error: No state");
+                Ok(())
+            }
+
+        }
+    }
+    fn draw(&mut self, window: &mut Window) -> Result<()> {
+        match self {
+            Self::Loading(state) => {
+                if let Err(e) = state.draw_loading(window) {
+                    state.base.errq.push(e);
+                }
+                Ok(())
+            }
+            Self::Ready(game) => game.draw(window),
+            Self::Empty => Ok(()),
+        }
+    }
+    fn event(&mut self, event: &Event, window: &mut Window) -> Result<()> {
+        match self {
+            Self::Empty => Ok(()),
+            Self::Loading(_state) => Ok(()),
+            Self::Ready(game) => game.event(event, window),
+        }
+    }
+}
+impl GameState {
+    fn update(&mut self, window: &mut Window) -> Result<()> {
+        #[cfg(feature = "dev_view")]
         self.game.start_update();
 
         INIT.call_once(|| {
@@ -79,7 +106,6 @@ impl State for QuicksilverState {
         self.game.check(err);
         let err = self.viewer.update(&mut self.game);
         self.game.check(err);
-        
         self.game.total_updates += 1;
         window.set_max_updates(1); // 1 update per frame is enough
         self.game.update_time_reference();
@@ -87,7 +113,7 @@ impl State for QuicksilverState {
         {
             let now = self.game.world.read_resource::<Now>().0;
             let mut tick = self.game.world.write_resource::<ClockTick>();
-            let us_draw_rate = 1_000_000/ 60;
+            let us_draw_rate = 1_000_000 / 60;
             *tick = ClockTick((now / us_draw_rate) as u32);
         }
         {
@@ -96,20 +122,18 @@ impl State for QuicksilverState {
             q.pull_async(&mut self.game.async_err_receiver, &mut t);
             q.run(&mut t);
         }
-        if self.game.sprites.is_none() {
-            self.game.update_loading(window)
-        } else {
-            let res = self.update_net();
-            self.game.check(res);
-            self.game.main_update_loop(window)
-        }?;
-        #[cfg(feature="dev_view")]
+
+        let res = self.update_net();
+        self.game.check(res);
+        self.game.main_update_loop(window)?;
+
+        #[cfg(feature = "dev_view")]
         self.game.end_update();
         Ok(())
     }
 
     fn draw(&mut self, window: &mut Window) -> Result<()> {
-        #[cfg(feature="dev_view")]
+        #[cfg(feature = "dev_view")]
         self.game.start_draw();
 
         INIT.call_once(|| {
@@ -127,25 +151,25 @@ impl State for QuicksilverState {
             let err = self.game.stats.track_frame(&mut *rest, utc_now());
             self.game.check(err);
         }
-        if self.game.sprites.is_none() {
-            let res = self.game.draw_loading(window);
-            self.game.check(res);
-        } else {
-            window.clear(Color::WHITE)?;
-            let err = self.viewer.draw(&mut self.game, window);
-            self.game.check(err);
-            let err = self.game.draw_main(window);
-            self.game.check(err);
-        }
-        #[cfg(feature="dev_view")]
+
+        window.clear(Color::WHITE)?;
+        let err = self.viewer.draw(&mut self.game, window);
+        self.game.check(err);
+        let err = self.game.draw_main(window);
+        self.game.check(err);
+
+        #[cfg(feature = "dev_view")]
         self.game.end_draw();
         Ok(())
     }
 
     fn event(&mut self, event: &Event, window: &mut Window) -> Result<()> {
         // TODO: position handling
-        let err = self.viewer.event(&mut self.game, &PadlEvent::Quicksilver(*event));
+        let err = self
+            .viewer
+            .event(&mut self.game, &PadlEvent::Quicksilver(*event));
         self.game.check(err);
-        self.game.handle_event(event, window, &mut self.pointer_manager)
+        self.game
+            .handle_event(event, window, &mut self.pointer_manager)
     }
 }

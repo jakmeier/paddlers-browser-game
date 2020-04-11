@@ -81,9 +81,9 @@ impl Game<'_, '_> {
             match r.kind {
                 RenderVariant::ImgWithImgBackground(i, _) => {
                     if let Some(animation) = animation_store.get(e) {
-                        draw_animated_sprite(sprites.as_mut().expect("sprites"), window, &area, i, pos.z, FitStrategy::TopLeft, animation, tick.0)?;
+                        draw_animated_sprite(sprites, window, &area, i, pos.z, FitStrategy::TopLeft, animation, tick.0)?;
                     } else {
-                        draw_static_image(sprites.as_mut().expect("sprites"), window, &area, i.default(), pos.z, FitStrategy::TopLeft)?;
+                        draw_static_image(sprites, window, &area, i.default(), pos.z, FitStrategy::TopLeft)?;
                     }
                 },
                 _ => { panic!("Not implemented")}
@@ -102,7 +102,7 @@ impl Game<'_, '_> {
         }
 
         if let Some((health,p)) = (&health_store, &position_store).join().get(entity, &self.world.entities()) {
-            render_health(&health, self.sprites.as_mut().unwrap(), window, &p.area)?;
+            render_health(&health, &mut self.sprites, window, &p.area)?;
         }
         Ok(())
     }
@@ -114,10 +114,10 @@ impl Game<'_, '_> {
         let max_area = Rectangle::new(center, (ul, ul));
         match item {
             Grabbable::NewBuilding(building_type) => {
-                draw_static_image(self.sprites.as_mut().unwrap(), window, &max_area, building_type.sprite().default(), Z_GRABBED_ITEM, FitStrategy::TopLeft)?
+                draw_static_image(&mut self.sprites, window, &max_area, building_type.sprite().default(), Z_GRABBED_ITEM, FitStrategy::TopLeft)?
             }, 
             Grabbable::Ability(ability) => {
-                draw_static_image(self.sprites.as_mut().unwrap(), window, &max_area.shrink_to_center(0.375), ability.sprite().default(), Z_GRABBED_ITEM, FitStrategy::TopLeft)?
+                draw_static_image(&mut self.sprites, window, &max_area.shrink_to_center(0.375), ability.sprite().default(), Z_GRABBED_ITEM, FitStrategy::TopLeft)?
             }
         }
         Ok(())

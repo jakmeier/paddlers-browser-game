@@ -45,21 +45,34 @@ pub enum NetUpdateRequest {
 struct NetState {
     interval_ms: u32,
     logged_in: AtomicBool,
+    game_ready: AtomicBool,
     chan: Option<Mutex<Sender<NetMsg>>>,
     gql_state: GraphQlState,
 }
 static mut STATIC_NET_STATE: NetState = NetState {
     interval_ms: 5_000,
     logged_in: AtomicBool::new(false),
+    game_ready: AtomicBool::new(false),
     chan: None,
     gql_state: GraphQlState::new(),
 };
 
 
-/// Sets up continuous networking with the help of JS setTimeout
+/// Initializes state necessary for networking
 pub fn init_net(chan: Sender<NetMsg>) {
     unsafe{
         STATIC_NET_STATE.chan = Some(Mutex::new(chan));
+    }
+}
+/// Sets up continuous networking with the help of JS setTimeout
+pub fn activate_net() {
+    unsafe {
+        STATIC_NET_STATE.game_ready.store(true, Ordering::Relaxed);
+        // Brute-force sync up with WASM initialization
+        while STATIC_NET_STATE.chan.is_none() {
+            // NOP
+        }
+        request_client_state();
     }
 }
 #[js_export]
@@ -73,7 +86,6 @@ pub fn start_network_thread() {
             // NOP
         }
         STATIC_NET_STATE.work();
-        request_client_state();
     }
 }
 /// Sends all requests out necessary for the client state
@@ -100,7 +112,12 @@ pub fn request_worker_tasks_update(unit_id: i64) {
 }
 pub fn request_player_update() {
     unsafe{
-        STATIC_NET_STATE.spawn(STATIC_NET_STATE.gql_state.player_info_query());
+        if STATIC_NET_STATE.logged_in.load(Ordering::Relaxed) {
+            STATIC_NET_STATE.spawn(GraphQlState::player_info_query());
+        }
+        else {
+            stdweb::web::set_timeout(request_player_update, 10);
+        }
     }
 }
 impl NetState {
@@ -113,9 +130,11 @@ impl NetState {
     }
     // For frequent updates
     fn work(&'static self){
-        self.spawn(self.gql_state.attacks_query());
-        self.spawn(self.gql_state.resource_query());
-        self.spawn(self.gql_state.player_info_query());
+        if self.game_ready.load(Ordering::Relaxed) {
+            self.spawn(self.gql_state.attacks_query());
+            self.spawn(self.gql_state.resource_query());
+            self.spawn(GraphQlState::player_info_query());
+        }
         self.register_networking();
     }
 
@@ -149,5 +168,22 @@ impl NetState {
     fn net_msg_to_game_thread(&self, msg: NetMsg) {
         let sender = self.get_channel();
         sender.send(msg).expect("Transferring data to game");
+    }
+}
+
+impl std::fmt::Debug for NetMsg {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Attacks(_) => write!(f, "NetMsg: Attacks"),
+            Self::Buildings(_) => write!(f, "NetMsg: Buildings"),
+            Self::Error(_) => write!(f, "NetMsg: Error"),
+            Self::Hobos(_) => write!(f, "NetMsg: Hobos"),
+            Self::Leaderboard(_, _) => write!(f, "NetMsg: Leaderboard"),
+            Self::Map(_, _, _) => write!(f, "NetMsg: Map"),
+            Self::Player(_) => write!(f, "NetMsg: Player"),
+            Self::VillageInfo(_) => write!(f, "NetMsg: VillageInfo"),
+            Self::UpdateWorkerTasks(_) => write!(f, "NetMsg: UpdateWorkerTasks"),
+            Self::Workers(_) => write!(f, "NetMsg: Workers"),
+        }
     }
 }

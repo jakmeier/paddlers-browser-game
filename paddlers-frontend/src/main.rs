@@ -30,8 +30,8 @@ pub fn main() {
     let version = env!("CARGO_PKG_VERSION");
     println!("Paddlers {}", version);
     let (net_sender, net_receiver) = channel();
-    init::run(net_receiver);
     net::init_net(net_sender);
+    init::run(net_receiver);
 }
 
 

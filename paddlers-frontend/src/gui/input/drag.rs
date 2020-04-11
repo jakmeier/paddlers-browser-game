@@ -35,6 +35,9 @@ impl<'a> System<'a> for DragSystem {
                 (UiView::Leaderboard, false) => {
                     // NOP
                 }
+                (UiView::Dialog, false) => {
+                    // NOP
+                }
             }
         }
     }

@@ -126,7 +126,7 @@ impl GraphQlState {
         )
     }
     
-    pub fn player_info_query(&self) -> PadlResult<impl Future<Output = PadlResult<NetMsg>>> {
+    pub fn player_info_query() -> PadlResult<impl Future<Output = PadlResult<NetMsg>>> {
         let fp = http_read_player_info()?;
         Ok(
             fp.map(

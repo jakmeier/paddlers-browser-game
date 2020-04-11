@@ -1,13 +1,15 @@
 use crate::net::graphql::query_types::PlayerQueryResponse;
 use paddlers_shared_lib::game_mechanics::prophets::*;
 use paddlers_shared_lib::api::shop::Price;
+use paddlers_shared_lib::story::story_state::StoryState;
 
-#[derive(Default, Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub struct PlayerInfo {
     karma: i64,
     /// Prophets currently owned by player that are not ruling a village, yet
     prophets: i64,
     villages: i64,
+    story_state: StoryState,
 }
 
 impl From<PlayerQueryResponse> for PlayerInfo {
@@ -16,6 +18,7 @@ impl From<PlayerQueryResponse> for PlayerInfo {
             karma: p.karma,
             prophets: p.prophet_count,
             villages: p.village_count,
+            story_state: p.story_state.into(),
         }
     }
 }

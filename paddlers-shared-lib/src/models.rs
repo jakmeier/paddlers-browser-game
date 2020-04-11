@@ -1,6 +1,4 @@
 use serde::{Serialize, Deserialize};
-use crate::story::story_state::StoryState;
-pub use crate::story::story_state::Story_state_type;
 
 #[cfg(feature = "sql_db")]
 use chrono::NaiveDateTime;
@@ -8,9 +6,13 @@ use chrono::NaiveDateTime;
 // Reexport
 #[cfg(feature = "sql_db")]
 pub use resources::dsl;
+#[cfg(feature = "sql_db")]
+pub use crate::story::story_state::Story_state_type;
 
 #[cfg(feature = "sql_db")]
 use ::diesel_derive_enum::DbEnum;
+#[cfg(feature = "sql_db")]
+use crate::story::story_state::StoryState;
 
 #[cfg(feature = "sql_db")]
 use super::schema::{

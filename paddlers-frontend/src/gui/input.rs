@@ -33,7 +33,8 @@ pub enum UiView {
     Attacks,
     Leaderboard,
     Map,
-    Town
+    Town,
+    Dialog,
 }
 
 #[derive(Default, Debug, Component)]

@@ -26,6 +26,7 @@ chrono = "0.4"
 pathfinding = "2.0.4"
 url = "2.1.1"
 statistical = { version = "1.0", optional = true }
+gettext = "0.4"
 
 futures-preview = "0.3.0-alpha.18"
 futures-util-preview = "0.3.0-alpha.18"

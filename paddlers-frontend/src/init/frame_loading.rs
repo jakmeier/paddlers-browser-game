@@ -70,5 +70,9 @@ pub (crate) fn load_viewer(game: &mut Game<'static,'static>, ep: EventPool) -> F
         (0,0), // TODO
     );
 
+    /* Dialog box */
+
+    // TODO
+
     viewer
 }

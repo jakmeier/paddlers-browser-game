@@ -41,10 +41,10 @@ impl<'a,'b> Frame for TownFrame<'a,'b> {
             );
             if self.background_cache.is_none() {
                 self.background_cache = Some(Mesh::new()); 
-                town.render_background(self.background_cache.as_mut().unwrap(), asset.as_mut().expect("assets"), ul);
+                town.render_background(self.background_cache.as_mut().unwrap(), asset, ul)?;
             }
             window.mesh().extend(self.background_cache.as_ref().unwrap());
-            town.render(window, asset.as_mut().expect("assets"), tick, ul)?;
+            town.render(window, asset, tick, ul)?;
         }
         state.render_town_entities(window)?;
         Ok(())
