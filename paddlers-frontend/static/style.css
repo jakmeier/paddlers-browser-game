@@ -38,6 +38,11 @@ div.pdl-res-comp img {
     float: left;
 }
 
+.dialogue {
+    font-size: 150%;
+    text-align: center;
+}
+
 /* MID */
 @media screen and (max-width: 1679px) {
     #game-root {

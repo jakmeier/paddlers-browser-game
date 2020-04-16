@@ -1,6 +1,7 @@
 //! High-level GUI components that may be related to game logic as far as necessary
 
 mod ui_box;
+use crate::game::story::scene::SlideIndex;
 pub use ui_box::*;
 mod resources_component;
 pub use resources_component::*;
@@ -38,6 +39,7 @@ pub enum ClickOutput {
     BuildingType(BuildingType),
     Ability(AbilityType),
     Event(GameEvent),
+    Slide(SlideIndex),
 }
 #[derive(Clone, Debug)]
 /// Represents a checkable condition. Used to check it later when the state is not available inside a system, for example.
@@ -45,13 +47,43 @@ pub enum Condition {
     HasResources(Price)
 }
 
+pub struct TableTextProvider {
+    text_pool: TextPool,
+    white_text_pool: TextPool,
+}
+impl TableTextProvider {
+    pub fn new() -> Self {
+        TableTextProvider {
+            text_pool: TextPool::default(),
+            white_text_pool: TextPool::new("".to_owned(), &[("color","white")], &[], Rectangle::default()),
+        } 
+    }
+    pub fn new_styled(class: &'static str) -> Self {
+        TableTextProvider {
+            text_pool: TextPool::new("".to_owned(), &[], &[class], Rectangle::default()),
+            white_text_pool: TextPool::new("".to_owned(), &[("color","white")], &[class], Rectangle::default()),
+        } 
+    }
+    pub fn reset(&mut self) {
+        self.white_text_pool.reset();
+        self.text_pool.reset();
+    }
+    pub fn finish_draw(&mut self) {
+        self.white_text_pool.finish_draw();
+        self.text_pool.finish_draw();
+    }
+    pub fn hide(&mut self) {
+        self.white_text_pool.hide();
+        self.text_pool.hide();
+    }
+}
+
 pub fn draw_table(
     window: &mut Window,
     sprites: &mut Sprites,
     table: &mut [TableRow],
     max_area: &Rectangle,
-    floats: &mut TextPool,
-    white_floats: &mut TextPool,
+    text_provider: &mut TableTextProvider,
     max_row_height: f32,
     z: i32,
     now: Timestamp,
@@ -61,6 +93,9 @@ pub fn draw_table(
     let font_h = row_height * 0.9;
     let img_s = row_height * 0.95;
     let margin = 10.0;
+    
+    let floats = &mut text_provider.text_pool;
+    let white_floats = &mut text_provider.white_text_pool;
 
     let mut line = Rectangle::new(max_area.pos, (max_area.width(), row_height));
     for row in table {

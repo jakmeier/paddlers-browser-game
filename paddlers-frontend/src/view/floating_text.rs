@@ -15,17 +15,16 @@ pub struct FloatingText {
 
 impl FloatingText {
     pub fn new(area: &Rectangle, text: String) -> PadlResult<Self> {
-        Self::new_styled(area, text,&[])
+        Self::new_styled(area, text,&[],&[])
     }
-    pub fn new_styled(area: &Rectangle, text: String, styles: &[(&str,&str)]) -> PadlResult<Self> {
+    pub fn new_styled(area: &Rectangle, text: String, styles: &[(&str,&str)], classes: &[&str]) -> PadlResult<Self> {
         let x = area.x() as u32;
         let y = area.y() as u32;
         let w = area.width() as u32;
         let h = area.height() as u32;
 
         let html = &text;
-        let classes: [&str;0] = [];
-        let pane = panes::new_styled_pane(x,y,w,h,html,&classes,styles)?;
+        let pane = panes::new_styled_pane(x,y,w,h,html,classes,styles)?;
 
         let text_node = pane.parent_element()?.into();
         let node = TextNode::new(text_node, text);

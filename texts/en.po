@@ -1,0 +1,50 @@
+msgid "welcomescene-A0"
+msgstr ""
+"Hey there!\n"
+"What are you doing?"
+
+msgid "welcomescene-B10"
+msgstr ""
+"What? Who is it?\n"
+"Is a god visiting me?\n"
+"How would I be so lucky?"
+
+msgid "welcomescene-B20"
+msgstr ""
+"I'm just an ordinary Paddler,\n"
+"loafing around all day.\n"
+"I've got nothing else to do."
+
+msgid "welcomescene-B30"
+msgstr ""
+"My life should be perfect.\n"
+"Paddland has has enough food\n"
+"and space for everybody."
+
+msgid "welcomescene-B40"
+msgstr ""
+"But I'm all alone out here\n"
+"and find no joy in being here.\n"
+"I don't see any good reason\n"
+"for me to live..."
+
+msgid "welcomescene-B50"
+msgstr ""
+"Oh, divine greatness who\n"
+"has come to visit me!\n"
+"Can I be your servant?\n"
+"I will do anything you say."
+
+msgid "welcomescene-A60"
+msgstr "Yes"
+
+msgid "welcomescene-B70"
+msgstr ""
+"Hooray! How wonderful!\n"
+"I'll be your best servant!"
+
+msgid "welcomescene-B80"
+msgstr "What should I do now?"
+
+msgid "welcomescene-A90"
+msgstr "Build me a temple"

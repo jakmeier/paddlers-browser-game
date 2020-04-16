@@ -64,6 +64,7 @@ impl TextBoard {
                 ("padding","5px"),
                 ("text-align","center"),
             ],
+            &[],
         )
     }
 }

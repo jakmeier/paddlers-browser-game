@@ -1,17 +1,21 @@
+use super::*;
 use crate::gui::{sprites::*, utils::*, z::*};
 use crate::prelude::*;
 use quicksilver::prelude::*;
-use super::*;
 
 #[derive(Clone, Debug)]
+/// A UI element is an individual area for the player to interacts with.
+/// It can be clicked (if a condition is met), hovered, and it may have an overlay showing a "cooldown" effect for abilities.
+/// At the moment, UiElements do just what they need to do right now but probably they should be more general in the future.
+/// For example, it could also be an enum and differentiate between variants with/without overlay.
 pub struct UiElement {
     display: RenderVariant,
-    // Extend with enum and more variants once necessary (for overlay and hover info)
     pub overlay: Option<(Timestamp, Timestamp)>,
     condition: Option<Condition>,
     on_click: Option<ClickOutput>,
 }
 #[derive(Clone, Debug)]
+/// A grid of UI elements.
 pub struct UiBox {
     area: Rectangle,
     elements: Vec<UiElement>,
@@ -26,6 +30,7 @@ impl InteractiveTableArea for UiBox {
         2 * self.rows
     }
 
+    // TODO: margin / padding needs resolution adjustment
     fn draw(
         &mut self,
         window: &mut Window,
@@ -65,6 +70,20 @@ impl InteractiveTableArea for UiBox {
                     } else {
                         Some(img)
                     }
+                }
+                RenderVariant::Shape(s) => {
+                    let shape = sprites.shape_index(s);
+                    let place =
+                        shape
+                            .bounding_box
+                            .fit_into_ex(&draw_area, FitStrategy::Center, true);
+                    let factor = (
+                        place.size.x / draw_area.size.x,
+                        place.size.y / draw_area.size.y,
+                    );
+                    let t = Transform::translate(place.pos) * Transform::scale(factor);
+                    extend_transformed(window.mesh(), &shape.mesh, t);
+                    None
                 }
                 RenderVariant::Hide => None,
             };
@@ -107,6 +126,10 @@ impl UiBox {
             margin: margin,
         }
     }
+    /// Delete all UI elements without changing other properties
+    pub fn clear(&mut self) {
+        self.elements.clear();
+    }
 
     pub fn add(&mut self, el: UiElement) {
         self.elements.push(el);
@@ -114,7 +137,6 @@ impl UiBox {
             println!("Warning: Not all elements of the UI Area will be visible")
         }
     }
-    
     fn element_index_under_mouse(&self, mouse: impl Into<Vector>) -> Option<usize> {
         let dx = self.area.width() / self.columns as f32;
         let dy = self.area.height() / self.rows as f32;
@@ -130,10 +152,13 @@ impl UiBox {
             .and_then(|i| self.elements.get(i))
     }
     fn remove_with_on_click(&mut self, val: ClickOutput) {
-        self.elements.retain(|el| el.on_click.is_none() || *el.on_click.as_ref().unwrap() != val);
+        self.elements
+            .retain(|el| el.on_click.is_none() || *el.on_click.as_ref().unwrap() != val);
     }
     pub fn find_by_on_click(&mut self, val: ClickOutput) -> Option<&mut UiElement> {
-        self.elements.iter_mut().find(|el| el.on_click.is_some() && *el.on_click.as_ref().unwrap() == val)
+        self.elements
+            .iter_mut()
+            .find(|el| el.on_click.is_some() && *el.on_click.as_ref().unwrap() == val)
     }
 
     pub fn draw_hover_info(
@@ -147,7 +172,7 @@ impl UiBox {
             if let Some(Condition::HasResources(cost)) = &el.condition {
                 res_comp.draw(area, &cost.0)?;
             }
-        } else{
+        } else {
             res_comp.hide()?;
         }
         Ok(())
@@ -155,12 +180,7 @@ impl UiBox {
 }
 
 impl UiElement {
-    fn draw_overlay(
-        &self,
-        window: &mut Window,
-        area: &Rectangle,
-        now: Timestamp
-    ) {
+    fn draw_overlay(&self, window: &mut Window, area: &Rectangle, now: Timestamp) {
         if let Some((start, end)) = self.overlay {
             if now > start && now < end {
                 let progress = (now - start) as f32 / (end - start) as f32;
@@ -177,18 +197,23 @@ impl UiElement {
                     Vector::new(center.x, area.y()),
                 ];
                 for i in 0..8 {
-                    let segment_len = ((1.0-progress) * 8.0 - i as f32).min(1.0);
+                    let segment_len = ((1.0 - progress) * 8.0 - i as f32).min(1.0);
                     if segment_len <= 0.0 {
                         break;
                     }
-                    let t  = Triangle::new(
+                    let t = Triangle::new(
                         center,
                         border[i],
-                        border[i] + ((border[i+1] - border[i]) * segment_len),
+                        border[i] + ((border[i + 1] - border[i]) * segment_len),
                     );
                     window.draw_ex(
                         &t,
-                        Col(Color { r: 1.0, g: 1.0, b: 1.0, a: 0.8 }),
+                        Col(Color {
+                            r: 1.0,
+                            g: 1.0,
+                            b: 1.0,
+                            a: 0.8,
+                        }),
                         Transform::IDENTITY,
                         Z_MENU_BOX_BUTTONS + 1,
                     );
@@ -198,9 +223,10 @@ impl UiElement {
     }
     fn click(&self) -> PadlResult<Option<(ClickOutput, Option<Condition>)>> {
         self.is_active()?;
-        Ok(
-            self.on_click.as_ref().map(|c| (c.clone().into(), self.condition.clone()) )
-        )
+        Ok(self
+            .on_click
+            .as_ref()
+            .map(|c| (c.clone().into(), self.condition.clone())))
     }
     fn is_active(&self) -> PadlResult<()> {
         if let Some((start, end)) = self.overlay {
@@ -212,7 +238,7 @@ impl UiElement {
         Ok(())
     }
 
-    pub fn new<T: Into<ClickOutput> + Clone> (on_click: T) -> Self {
+    pub fn new<T: Into<ClickOutput> + Clone>(on_click: T) -> Self {
         UiElement {
             display: RenderVariant::Hide,
             overlay: None,
@@ -236,8 +262,8 @@ impl UiElement {
         match self.display {
             RenderVariant::Img(i) => {
                 self.display = RenderVariant::ImgWithColBackground(i, col);
-            },
-            _ => panic!("Not implemented")
+            }
+            _ => panic!("Not implemented"),
         }
         self
     }
@@ -246,7 +272,6 @@ impl UiElement {
         self
     }
 
-    #[allow(dead_code)]
     pub fn empty() -> Self {
         UiElement {
             display: RenderVariant::Hide,

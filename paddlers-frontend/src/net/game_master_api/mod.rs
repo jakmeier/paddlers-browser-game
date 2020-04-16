@@ -55,6 +55,7 @@ impl RestApiState {
         let request_string = &serde_json::to_string(&msg).unwrap();
         let promise = ajax::send("POST", &format!("{}/shop/unit/prophet", game_master_url()?), request_string);
         let afterwards = NetUpdateRequest::PlayerInfo;
+        // TODO: Also update hobos afterwards, not only player info...
         self.push_promise(promise, Some(afterwards));
         Ok(())
     }

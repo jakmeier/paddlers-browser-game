@@ -1,5 +1,6 @@
 use crate::game::player_info::PlayerInfo;
 use crate::game::Game;
+use crate::game::game_event_manager::GameEvent;
 use crate::gui::sprites::{
     animation::{AnimatedObject, AnimatedObjectDef, AnimationVariantDef},
     paths::{ANIMATION_DEFS, SPRITE_PATHS},
@@ -144,11 +145,13 @@ impl LoadingState {
             Err(e) => {
                 panic!("Fatal Error: Could not load game {:?}", e);
             }
-            Ok((mut game, ep)) => {
+            Ok(mut game) => {
                 let pm = crate::gui::input::pointer::PointerManager::init(
                     &mut game.world,
-                    ep.clone(),
                 );
+                // TODO: Conditionally select event and make sure it is the right scene
+                let ep = game.event_pool.clone();
+                ep.send(GameEvent::LoadScene).expect("Channel send failed");
                 let viewer = super::frame_loading::load_viewer(&mut game, ep);
                 GameState {
                     game,

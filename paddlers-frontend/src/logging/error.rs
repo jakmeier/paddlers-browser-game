@@ -85,6 +85,7 @@ pub enum PadlErrorCode {
     UrlParseError(String),
     NoDataFromBrowser(&'static str),
     BrowserError(String),
+    DialogueEmpty,
     UserNotInDB,
     AuthorizationRequired,
 }
@@ -158,6 +159,8 @@ impl fmt::Display for PadlErrorCode {
                 write!(f, "Could not read data from browser: {}", data),
             PadlErrorCode::BrowserError(s) => 
                 write!(f, "Unexpected browser error: {}", s),
+            PadlErrorCode::DialogueEmpty => 
+                write!(f, "No scene loaded in dialogue"),
             PadlErrorCode::UserNotInDB =>
                 write!(f, "The user logged in is not present in the game database."),
             PadlErrorCode::AuthorizationRequired =>

@@ -3,8 +3,7 @@
 use specs::prelude::*;
 use quicksilver::prelude::*;
 use crate::prelude::*;
-use super::{MouseState, LeftClickSystem, RightClickSystem, HoverSystem, drag::*};
-use crate::game::game_event_manager::EventPool;
+use super::{MouseState, RightClickSystem, HoverSystem, drag::*};
 use crate::Framer;
 
 // Tolerance thresholds
@@ -29,12 +28,11 @@ enum PointerButton {
 }
 
 impl PointerManager<'_,'_> {
-    pub fn init(mut world: &mut World, ep: EventPool) -> Self {
+    pub fn init(mut world: &mut World) -> Self {
 
         world.insert(MouseState::default());
 
         let mut click_dispatcher = DispatcherBuilder::new()
-            .with(LeftClickSystem::new(ep), "lc", &[])
             .with(RightClickSystem, "rc", &[])
             .build();
         click_dispatcher.setup(&mut world);

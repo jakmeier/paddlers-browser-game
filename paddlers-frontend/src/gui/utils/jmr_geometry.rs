@@ -18,6 +18,8 @@ where
     #[must_use]
     fn cut_horizontal(&self, h: f32) -> (Rectangle, Rectangle);
     #[must_use]
+    fn cut_vertical(&self, h: f32) -> (Rectangle, Rectangle);
+    #[must_use]
     fn shrink_and_fit_into(self, frame: &Rectangle, fit_strat: FitStrategy) -> Rectangle {
         self.fit_into_ex(frame, fit_strat, false)
     }
@@ -91,6 +93,14 @@ impl JmrRectangle for Rectangle {
         bottom.size.y -= h;
         bottom.pos.y += h;
         (top, bottom)
+    }
+    fn cut_vertical(&self, w: f32) -> (Rectangle, Rectangle) {
+        let mut left = self.clone();
+        left.size.x = w;
+        let mut right = self.clone();
+        right.size.x -= w;
+        right.pos.x += w;
+        (left, right)
     }
 }
 

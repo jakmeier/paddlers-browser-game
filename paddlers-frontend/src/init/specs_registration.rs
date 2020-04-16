@@ -25,13 +25,13 @@ pub(super) fn insert_resources(
     world.insert(errq);
     world.insert(MenuButtons::new());
     world.insert(Now);
-    world.insert(player_info);
     world.insert(rest);
     world.insert(resolution);
     world.insert(tb);
     world.insert(Town::new(resolution));
     world.insert(TownResources::default());
-    world.insert(UiState::default());
+    world.insert(UiState::new(&player_info));
+    world.insert(player_info);
 }
 
 pub fn register_components(world: &mut World) {

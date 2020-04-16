@@ -9,7 +9,7 @@ pub struct PlayerInfo {
     /// Prophets currently owned by player that are not ruling a village, yet
     prophets: i64,
     villages: i64,
-    story_state: StoryState,
+    pub story_state: StoryState,
 }
 
 impl From<PlayerQueryResponse> for PlayerInfo {

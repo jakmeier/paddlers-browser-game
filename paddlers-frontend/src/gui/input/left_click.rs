@@ -7,51 +7,11 @@ use crate::game::{
     town_resources::TownResources,
     units::workers::*,
 };
-use crate::gui::menu::buttons::MenuButtons;
 use crate::logging::ErrorQueue;
 use crate::net::game_master_api::RestApiState;
 use quicksilver::prelude::*;
 use specs::prelude::*;
 use crate::prelude::*;
-
-pub struct LeftClickSystem {
-    event_pool: EventPool,
-}
-impl LeftClickSystem {
-    pub fn new(event_pool: EventPool) -> Self {
-        LeftClickSystem {
-            event_pool
-        }
-    }
-}
-
-impl<'a> System<'a> for LeftClickSystem {
-    type SystemData = (
-        Read<'a, MouseState>,
-        ReadExpect<'a, MenuButtons>,
-        WriteExpect<'a, ErrorQueue>,
-    );
-    fn run(
-        &mut self,
-        (
-            mouse_state,
-            buttons,
-            mut errq,
-        ): Self::SystemData,
-    ) {
-        let MouseState(mouse_pos, button) = *mouse_state;
-        if button != Some(MouseButton::Left) {
-            return;
-        }
-
-        // Always visible buttons
-        match buttons.click(mouse_pos) {
-            Err(e) => errq.push(e),
-            Ok(Some(event)) => self.event_pool.send(event).expect("sending event failed"),
-            Ok(None) => {}
-        }
-    }
-}
 
 pub struct TownLeftClickSystem {
     event_pool: EventPool,
@@ -68,7 +28,7 @@ impl<'a> System<'a> for TownLeftClickSystem {
     type SystemData = (
         Entities<'a>,
         Read<'a, MouseState>,
-        Write<'a, UiState>,
+        WriteExpect<'a, UiState>,
         Read<'a, DefaultShop>,
         Write<'a, TownResources>,
         Write<'a, Town>,
@@ -179,7 +139,7 @@ impl MapLeftClickSystem {
 impl<'a> System<'a> for MapLeftClickSystem {
     type SystemData = (
         Read<'a, MouseState>,
-        Write<'a, UiState>,
+        WriteExpect<'a, UiState>,
         Write<'a, TownResources>,
         Write<'a, Town>,
         WriteExpect<'a, RestApiState>,

@@ -11,7 +11,7 @@ impl<'a> System<'a> for DragSystem {
     type SystemData = (
         Write<'a, Drag>,
         Write<'a, GlobalMapSharedState>,
-        Read<'a, UiState>,
+        ReadExpect<'a, UiState>,
     );
 
     fn run(&mut self, (mut drag, mut map, ui_state): Self::SystemData) {
@@ -35,7 +35,7 @@ impl<'a> System<'a> for DragSystem {
                 (UiView::Leaderboard, false) => {
                     // NOP
                 }
-                (UiView::Dialog, false) => {
+                (UiView::Dialogue, false) => {
                     // NOP
                 }
             }

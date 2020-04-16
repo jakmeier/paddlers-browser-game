@@ -1,0 +1,3 @@
+#: lib/error.c:116
+msgid "test"
+msgstr "Test"

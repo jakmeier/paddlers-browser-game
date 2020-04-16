@@ -45,7 +45,7 @@ struct PositionedFrame<S,G,Ev,E> {
 pub struct FrameManager<V: Hash + Eq+Copy,S,G,Ev,E> {
     view_frames: HashMap<V, Vec<FrameRef<S,G,Ev,E>>>,
     active_frames: Vec<FrameRef<S,G,Ev,E>>,
-    current_view: Option<V>,
+    current_view: V,
 }
 impl<V: Hash+Eq+Copy,S,G,Ev,E> FrameManager<V,S,G,Ev,E> {
     pub fn add_frame(
@@ -63,9 +63,16 @@ impl<V: Hash+Eq+Copy,S,G,Ev,E> FrameManager<V,S,G,Ev,E> {
                 size,
             }
         ));
+        let mut frame_displayed = false;
         for view in views {
+            if view == &self.current_view {
+                frame_displayed = true;
+            }
             let vec = self.view_frames.entry(*view).or_insert(Vec::new());
             vec.push(frame_ref.clone());
+        }
+        if frame_displayed {
+            self.active_frames.push(frame_ref);
         }
     }
     pub fn left_click(&mut self, state: &mut S, pos: (i32,i32)) -> Result<(),E> {
@@ -109,19 +116,11 @@ impl<V: Hash+Eq+Copy,S,G,Ev,E> FrameManager<V,S,G,Ev,E> {
         Ok(())
     }
     pub fn set_view(&mut self, view: V, state: &mut S) -> Result<(),E> {
-        if self.current_view.as_ref() == Some(&view) {
+        if self.current_view == view {
             return Ok(());
         }
-        self.clear_view(state)?;
-        let frames = self.view_frames.get(&view)
-            .map(Vec::as_slice)
-            .unwrap_or(&[]);
-        self.active_frames.extend_from_slice(frames);
-        for frame in &mut self.active_frames {
-            frame.borrow_mut().handler.enter(state)?;
-        }
-        self.current_view = Some(view);
-        Ok(())
+        self.current_view = view;
+        self.reload(state)
     }
     fn clear_view(&mut self, state: &mut S) -> Result<(),E> {
         for frame in &mut self.active_frames {
@@ -130,13 +129,24 @@ impl<V: Hash+Eq+Copy,S,G,Ev,E> FrameManager<V,S,G,Ev,E> {
         self.active_frames.clear();
         Ok(())
     }
+    pub fn reload(&mut self, state: &mut S) -> Result<(),E> {
+        self.clear_view(state)?;
+        let frames = self.view_frames.get(&self.current_view)
+            .map(Vec::as_slice)
+            .unwrap_or(&[]);
+        self.active_frames.extend_from_slice(frames);
+        for frame in &mut self.active_frames {
+            frame.borrow_mut().handler.enter(state)?;
+        }
+        Ok(())
+    }
 }
 
-impl<V: Hash+Eq+Copy,S,G,Ev,E> Default for  FrameManager<V,S,G,Ev,E> {
-    fn default() -> Self {
+impl<V: Hash+Eq+Copy,S,G,Ev,E> FrameManager<V,S,G,Ev,E> {
+    pub fn new(v: V) -> Self {
         FrameManager {
             active_frames: vec![],
-            current_view: None,
+            current_view: v,
             view_frames: HashMap::new(),
         }
     }

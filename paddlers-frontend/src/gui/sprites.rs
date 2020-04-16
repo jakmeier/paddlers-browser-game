@@ -1,6 +1,7 @@
 pub mod animation;
 pub mod paths;
 
+use crate::gui::shapes::*;
 use quicksilver::prelude::*;
 use quicksilver::graphics::Image;
 use crate::gui::utils::*;
@@ -12,6 +13,7 @@ use crate::init::loading::start_loading_animations;
 pub struct Sprites {
     img: Vec<Image>,
     animations: Vec<(Asset<AnimatedObject>, Image)>,
+    shapes: Vec<PadlShape>,
 }
 
 impl Sprites {
@@ -20,12 +22,13 @@ impl Sprites {
         Sprites {
             img: images,
             animations: future_animations,
+            shapes: load_shapes(),
         }
     }
 }
 
 #[derive(Debug, Clone, Copy)]
-/// An instance of a SpriteIndex is a key for a specific sprite (Something that can be drawn uniquely)
+/// An instance of a SpriteIndex is a key for a specific sprite (Something that maps uniquely to a quicksilver Image)
 pub enum SpriteIndex {
     // Multi-sprite images 
     Simple(SingleSprite),
@@ -167,6 +170,9 @@ impl Sprites {
                 result
             }
         }
+    }
+    pub fn shape_index(&self, index: PadlShapeIndex) -> &PadlShape {
+        &self.shapes[index as usize]
     }
 }
 

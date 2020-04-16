@@ -43,14 +43,14 @@ impl ScreenResolution {
             ScreenResolution::High => 80.0,
         }
     }
-    fn leaves_border_h(&self) -> f32 {
+    pub fn leaves_border_h(&self) -> f32 {
         match self {
             ScreenResolution::Low => 15.0,
             ScreenResolution::Mid => 40.0,
             ScreenResolution::High => 100.0,
         }
     }
-    fn leaves_border_w(&self) -> f32 {
+    pub fn leaves_border_w(&self) -> f32 {
         match self {
             ScreenResolution::Low => 12.0,
             ScreenResolution::Mid => 30.0,
@@ -133,8 +133,7 @@ impl Game<'_, '_> {
         window: &mut Window,
         area: &Rectangle,
         e: Entity,
-        floats: &mut TextPool,
-        white_floats: &mut TextPool,
+        text_provider: &mut TableTextProvider,
         hover_res_comp: &mut ResourcesComponent,
     ) -> PadlResult<()> {
         let mut img_bg_area = area.clone();
@@ -150,7 +149,7 @@ impl Game<'_, '_> {
         .padded(20.0);
 
         self.draw_entity_details_img(window, e, &img_bg_area)?;
-        self.draw_entity_details_table(window, e, &text_area, floats, white_floats, hover_res_comp)?;
+        self.draw_entity_details_table(window, e, &text_area, text_provider, hover_res_comp)?;
         Ok(())
     }
 
@@ -205,8 +204,7 @@ impl Game<'_, '_> {
         window: &mut Window,
         e: Entity,
         area: &Rectangle,
-        text_pool: &mut TextPool,
-        white_text_pool: &mut TextPool,
+        text_provider: &mut TableTextProvider,
         res_comp: &mut ResourcesComponent,
     ) -> PadlResult<()> {
         let mut area = *area;
@@ -277,8 +275,7 @@ impl Game<'_, '_> {
             &mut self.sprites,
             &mut table,
             &area,
-            text_pool,
-            white_text_pool,
+            text_provider,
             40.0,
             Z_MENU_TEXT,
             self.world.read_resource::<Now>().0,
@@ -290,8 +287,7 @@ impl Game<'_, '_> {
         &mut self,
         window: &mut Window,
         area: &Rectangle,
-        floats: &mut TextPool,
-        white_floats: &mut TextPool,
+        text_provider: &mut TableTextProvider,
         res_comp: &mut ResourcesComponent,
     ) -> PadlResult<()> {
         let mut table = vec![];
@@ -312,8 +308,7 @@ impl Game<'_, '_> {
             &mut self.sprites,
             &mut table,
             &area,
-            floats,
-            white_floats,
+            text_provider,
             60.0,
             Z_MENU_TEXT,
             self.world.read_resource::<Now>().0,

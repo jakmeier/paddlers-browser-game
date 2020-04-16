@@ -119,6 +119,7 @@ impl EntityContainer {
                 RenderVariant::ImgWithColBackground(img, GREY)
             }
             RenderVariant::Hide => RenderVariant::Hide,
+            RenderVariant::Shape(s) => RenderVariant::Shape(s),
         };
         ui.ui.add(UiElement::new(e).with_render_variant(style));
     }

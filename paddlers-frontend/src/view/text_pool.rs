@@ -7,17 +7,21 @@ pub struct TextPool {
     used: usize,
     factory_html: String,
     factory_css: Vec<(&'static str,&'static str)>,
+    factory_class: Vec<&'static str>,
     factory_pos: Rectangle,
 }
 
 impl TextPool {
-    pub fn new(html: String, styles: &[(&'static str,&'static str)], pos: Rectangle) -> Self {
+    pub fn new(html: String, styles: &[(&'static str,&'static str)], classes: &[&'static str], pos: Rectangle) -> Self {
         let mut css = vec![];
         css.extend_from_slice(styles);
+        let mut class = vec![];
+        class.extend_from_slice(classes);
         TextPool {
             factory_html: html,
             factory_css: css,
             factory_pos: pos,
+            factory_class: class,
             pool: vec![],
             used: 0,
         }
@@ -37,6 +41,7 @@ impl TextPool {
                 &self.factory_pos,
                 self.factory_html.clone(),
                 &self.factory_css,
+                &self.factory_class,
             )
             .expect("FloatingText creation failed")
         );
@@ -63,6 +68,7 @@ impl Default for TextPool {
             factory_html: "".to_owned(),
             factory_pos: Rectangle::default(),
             factory_css: vec![],
+            factory_class: vec![],
             pool: vec![],
             used: 0,
         }

@@ -41,6 +41,7 @@ pub(crate) enum PadlEvent {
     Quicksilver(Event),
     Network(NetMsg),
     Signal(Signal),
+    Scene, // TODO: Generalization? Maybe all GameEvents?
 }
 pub enum Signal {
     ResourcesUpdated,
@@ -125,6 +126,7 @@ impl GameState {
 
         let res = self.update_net();
         self.game.check(res);
+        self.handle_game_events();
         self.game.main_update_loop(window)?;
 
         #[cfg(feature = "dev_view")]

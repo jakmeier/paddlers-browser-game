@@ -25,7 +25,7 @@ impl Town {
         &mut self,
         menu_entity: Entity,
         mouse_pos: Vector,
-        mut ui_state:  Write<'a, UiState>,
+        mut ui_state: WriteExpect<'a, UiState>,
         position: ReadStorage<'a, Position>,
         mut workers: WriteStorage<'a, Worker>,
         mut containers: WriteStorage<'a, EntityContainer>,
@@ -91,7 +91,7 @@ impl Town {
     }
     pub fn click_default_shop<'a> (
         mouse_pos: Vector, 
-        mut ui_state:  Write<'a, UiState>, 
+        mut ui_state:  WriteExpect<'a, UiState>, 
         shop: Read<'a, DefaultShop>,
         resources: Write<'a, TownResources>,
         ) -> PadlResult<()>
@@ -115,7 +115,7 @@ impl Town {
         &mut self,
         mouse_pos: Vector,
         entities: &Entities<'a>,
-        ui_state:  &mut Write<'a, UiState>, 
+        ui_state:  &mut WriteExpect<'a, UiState>, 
         position: &ReadStorage<'a, Position>, 
         clickable: &ReadStorage<'a, Clickable>,
         net_ids: &ReadStorage<'a, NetObj>,

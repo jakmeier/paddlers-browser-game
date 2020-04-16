@@ -18,7 +18,7 @@ run: docker-compose.local.yml
 	docker cp ./local.env paddlers_db-interface_1:/app/.env
 	docker-compose -f $< up --no-recreate --no-build
 
-update-frontend-builder: frontend-builder
+upload-frontend-builder: frontend-builder
 	docker login; docker push $(REPO):frontend-builder
 
 rust-container: Dockerfile
@@ -72,3 +72,10 @@ recreate-game-master: debug-game-master-container
 
 benchmark-file-sizes:
 	./paddlers-frontend/benchmarks/app_size_stats.sh
+
+# Translations
+paddlers-frontend/static/locale/%.mo: texts/%.po
+	msgfmt $< -o $@
+
+.PHONY: translations
+translations: paddlers-frontend/static/locale/en.mo paddlers-frontend/static/locale/de.mo

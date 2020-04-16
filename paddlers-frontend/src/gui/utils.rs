@@ -3,6 +3,7 @@
 //! no connection with game logic in here
 
 pub mod colors;
+use crate::gui::shapes::PadlShapeIndex;
 pub use colors::*;
 mod grid;
 pub use grid::*;
@@ -11,12 +12,12 @@ pub use jmr_geometry::*;
 mod progress_bar;
 pub use progress_bar::*;
 
-use crate::prelude::*;
 use crate::gui::animation::AnimationState;
 use crate::gui::sprites::*;
+use crate::prelude::*;
+use crate::view::FloatingText;
 use quicksilver::graphics::Mesh;
 use quicksilver::prelude::*;
-use crate::view::FloatingText;
 
 #[derive(Debug, Clone, Copy)]
 pub enum RenderVariant {
@@ -25,6 +26,7 @@ pub enum RenderVariant {
     ImgWithImgBackground(SpriteSet, SingleSprite),
     ImgWithColBackground(SpriteSet, Color),
     ImgWithHoverAlternative(SpriteSet, SpriteSet),
+    Shape(PadlShapeIndex),
     Hide,
 }
 
@@ -114,11 +116,10 @@ impl FloatingText {
         &mut self,
         _window: &Window,
         max_area: &Rectangle,
-        _z: i32, // TODO
+        _z: i32,                 // TODO
         _fit_strat: FitStrategy, // TODO
         text: &str,
-    ) -> PadlResult<()>
-    {
+    ) -> PadlResult<()> {
         self.update_text(text);
         self.update_position(max_area)?;
         self.draw();
@@ -149,10 +150,17 @@ pub fn scale_mesh(mesh: &mut Mesh, r: f32) {
 
 /// Adds all vertices from one mesh to another mesh after applying a transformation
 pub fn extend_transformed(mesh: &mut Mesh, other: &Mesh, t: Transform) {
+    let n = mesh.vertices.len() as u32;
     for mut vertex in other.vertices.iter().cloned() {
         vertex.pos = t * vertex.pos;
-        vertex.tex_pos = vertex.tex_pos.map( |v| t*v ) ;
+        vertex.tex_pos = vertex.tex_pos.map(|v| t * v);
         mesh.vertices.push(vertex);
     }
-    mesh.triangles.extend(other.triangles.iter().cloned());
+    mesh.triangles
+        .extend(other.triangles.iter().cloned().map(|mut t| {
+            t.indices[0] += n;
+            t.indices[1] += n;
+            t.indices[2] += n;
+            t
+        }));
 }

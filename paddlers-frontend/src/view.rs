@@ -24,7 +24,7 @@ impl Game<'_, '_> {
             UiView::Town => UiView::Attacks,
             UiView::Attacks => UiView::Leaderboard,
             UiView::Leaderboard => UiView::Map,
-            UiView::Dialog => return,
+            UiView::Dialogue => return,
         };
         std::mem::drop(ui);
 
@@ -34,7 +34,7 @@ impl Game<'_, '_> {
 
 impl UiView {
     /// Determines in which view the game is loaded.
-    /// Requieres the player's current story state.
+    /// Requires the player's current story state.
     pub fn entry(story_state: &StoryState) -> Self {
         match story_state {
             StoryState::Initialized
@@ -46,7 +46,7 @@ impl UiView {
             | StoryState::TreePlanted
             | StoryState::StickGatheringStationBuild
             | StoryState::GatheringSticks => UiView::Town,
-            StoryState::ServantAccepted => UiView::Dialog,
+            StoryState::ServantAccepted => UiView::Dialogue,
         }
     }
 }

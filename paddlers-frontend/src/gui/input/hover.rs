@@ -12,7 +12,7 @@ impl<'a> System<'a> for HoverSystem {
     type SystemData = (
         Entities<'a>,
         Read<'a, MouseState>,
-        Write<'a, UiState>,
+        WriteExpect<'a, UiState>,
         ReadStorage<'a, Position>,
      );
 
@@ -34,7 +34,7 @@ impl<'a> System<'a> for HoverSystem {
             },
             UiView::Attacks => {},
             UiView::Leaderboard => {},
-            UiView::Dialog => {},
+            UiView::Dialogue => {},
         }
     }
 }

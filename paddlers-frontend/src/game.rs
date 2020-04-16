@@ -7,6 +7,7 @@ pub(crate) mod dev_view;
 pub(crate) mod fight;
 pub(crate) mod forestry;
 pub(crate) mod game_event_manager;
+pub(crate) mod dialogue;
 pub(crate) mod leaderboard;
 pub(crate) mod level;
 pub(crate) mod mana;
@@ -15,6 +16,7 @@ pub(crate) mod movement;
 pub(crate) mod net_receiver;
 pub(crate) mod player_info;
 pub(crate) mod status_effects;
+pub(crate) mod story;
 pub(crate) mod town;
 pub(crate) mod town_resources;
 pub(crate) mod units;
@@ -52,6 +54,7 @@ pub(crate) struct Game<'a, 'b> {
     pub total_updates: u64,
     pub async_err_receiver: Receiver<PadlError>,
     pub game_event_receiver: Receiver<GameEvent>,
+    pub event_pool: EventPool,
     pub stats: Statistician,
     pub map: Option<GlobalMapPrivateState>,
 
@@ -68,7 +71,7 @@ impl Game<'_, '_> {
         resolution: ScreenResolution,
         player_info: PlayerInfo,
         base: BaseState,
-    ) -> PadlResult<(Self, EventPool)> {
+    ) -> PadlResult<Self> {
         let (game_evt_send, game_evt_recv) = channel();
         let mut world = crate::init::init_world(base.err_send, resolution, player_info, base.rest, base.errq, base.tb);
         let mut dispatcher = DispatcherBuilder::new()
@@ -91,7 +94,7 @@ impl Game<'_, '_> {
                     PadlError::dev_err(PadlErrorCode::SpecsError("Temple menu insertion failed"))
                 })?;
         }
-        Ok((
+        Ok(
             Game {
                 dispatcher: dispatcher,
                 world: world,
@@ -103,15 +106,15 @@ impl Game<'_, '_> {
                 total_updates: 0,
                 async_err_receiver: base.err_recv,
                 game_event_receiver: game_evt_recv,
+                event_pool: game_evt_send,
                 stats: Statistician::new(now),
                 map: None,
                 #[cfg(feature = "dev_view")]
                 palette: false,
                 #[cfg(feature = "dev_view")]
                 active_test: None,
-            },
-            game_evt_send,
-        ))
+            }
+        )
     }
 
     /// Called at the first draw loop iteration (the first time quicksilver leaks access to it)
@@ -132,7 +135,6 @@ impl Game<'_, '_> {
         }
         self.update_time_reference();
         self.dispatcher.dispatch(&mut self.world);
-        self.handle_game_events();
         if self.total_updates % 300 == 15 {
             self.reaper(&Rectangle::new_sized(
                 window.project() * window.screen_size(),

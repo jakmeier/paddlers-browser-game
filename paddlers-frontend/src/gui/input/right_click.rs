@@ -11,12 +11,13 @@ use crate::logging::ErrorQueue;
 use super::{UiView, MouseState};
 use crate::gui::ui_state::UiState;
 
+/// TODO: Remove RightClickSystem
 pub struct RightClickSystem;
 
 impl<'a> System<'a> for RightClickSystem {
     type SystemData = (
         Read<'a, MouseState>,
-        Write<'a, UiState>,
+        WriteExpect<'a, UiState>,
         Read<'a, Town>,
         WriteExpect<'a, RestApiState>,
         WriteExpect<'a, ErrorQueue>,
@@ -74,7 +75,7 @@ impl<'a> System<'a> for RightClickSystem {
             (UiView::Leaderboard, false) => {
                 // NOP
             },
-            (UiView::Dialog, false) => {
+            (UiView::Dialogue, false) => {
                 // NOP
             },
         }

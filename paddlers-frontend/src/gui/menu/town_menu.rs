@@ -1,3 +1,4 @@
+use crate::gui::gui_components::TableTextProvider;
 use crate::prelude::*;
 use quicksilver::prelude::{Window, Rectangle, MouseButton};
 use specs::prelude::*;
@@ -14,8 +15,7 @@ use crate::gui::gui_components::ResourcesComponent;
 use crate::init::quicksilver_integration::Signal;
 
 pub (crate) struct TownMenuFrame<'a,'b> {
-    text_pool: TextPool,
-    white_text_pool: TextPool,
+    text_provider: TableTextProvider,
     bank_component: ResourcesComponent,
     hover_component: ResourcesComponent,
     resources_area: Rectangle,
@@ -30,8 +30,7 @@ impl TownMenuFrame<'_,'_> {
         left_click_dispatcher.setup(&mut game.world);
 
         Ok(TownMenuFrame {
-            text_pool: TextPool::default(),
-            white_text_pool: TextPool::new("".to_owned(), &[("color","white")], Rectangle::default()),
+            text_provider: TableTextProvider::new(),
             left_click_dispatcher,
             resources_area: Rectangle::default(),
             bank_component: ResourcesComponent::new()?,
@@ -45,8 +44,7 @@ impl<'a,'b> Frame for TownMenuFrame<'a,'b> {
     type Graphics = Window;
     type Event = PadlEvent;
     fn draw(&mut self, state: &mut Self::State, window: &mut Self::Graphics) -> Result<(),Self::Error> {
-        self.white_text_pool.reset();
-        self.text_pool.reset();
+        self.text_provider.reset();
         let inner_area = state.render_menu_box(window)?;
         let resolution = *state.world.read_resource::<ScreenResolution>();
         let resources_height = resolution.resources_h();
@@ -55,18 +53,18 @@ impl<'a,'b> Frame for TownMenuFrame<'a,'b> {
         let (resources_area, menu_area) = inner_area.cut_horizontal(resources_height);
         self.resources_area = resources_area;
         self.bank_component.show()?;
-        render_town_menu(state, window, entity, &menu_area, &mut self.text_pool, &mut self.white_text_pool, &mut self.hover_component)?;
-        self.white_text_pool.finish_draw();
-        self.text_pool.finish_draw();
+        render_town_menu(state, window, entity, &menu_area, &mut self.text_provider, &mut self.hover_component)?;
+        self.text_provider.finish_draw();
         Ok(())
     }
     fn leave(&mut self, _state: &mut Self::State) -> Result<(),Self::Error> {
-        self.text_pool.hide();
+        self.text_provider.hide();
         self.bank_component.hide()?;
         self.hover_component.hide()?;
         Ok(())
     }
     fn left_click(&mut self, state: &mut Self::State, pos: (i32,i32)) -> Result<(),Self::Error> {
+        state.click_buttons(pos);
         let mut ms = state.world.write_resource::<MouseState>();
         *ms = MouseState(pos.into(), Some(MouseButton::Left));
         std::mem::drop(ms); // This drop is essential! The internal RefCell will not be release otherwise
@@ -89,16 +87,15 @@ fn render_town_menu(
     window: &mut Window,
     entity: Option<Entity>,
     area: &Rectangle,
-    floats: &mut TextPool,
-    white_floats: &mut TextPool,
+    text_provider: &mut TableTextProvider,
     hover_component: &mut ResourcesComponent,
 ) -> PadlResult<()> {
     match entity {
         Some(id) => {
-            state.render_entity_details(window, area, id, floats, white_floats, hover_component)?;
+            state.render_entity_details(window, area, id, text_provider, hover_component)?;
         },
         None => {
-            state.render_default_shop(window, area, floats, white_floats, hover_component)?;
+            state.render_default_shop(window, area, text_provider, hover_component)?;
         },
     }
     Ok(())

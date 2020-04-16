@@ -121,6 +121,10 @@ impl<'a,'b> Frame for LeaderboardFrame<'a,'b> {
         self.pane.hide()?;
         Ok(())
     }
+    fn left_click(&mut self, state: &mut Self::State, pos: (i32,i32)) -> Result<(),Self::Error> {
+        state.click_buttons(pos);
+        Ok(())
+    }
 }
 
 // fn insert_h3(node: &Node, text: &str) {

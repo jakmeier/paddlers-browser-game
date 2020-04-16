@@ -169,6 +169,10 @@ impl<'a,'b> Frame for AttackFrame<'a,'b> {
         self.pane.hide()?;
         Ok(())
     }
+    fn left_click(&mut self, state: &mut Self::State, pos: (i32,i32)) -> Result<(),Self::Error> {
+        state.click_buttons(pos);
+        Ok(())
+    }
 }
 
 pub struct UpdateAttackViewSystem {

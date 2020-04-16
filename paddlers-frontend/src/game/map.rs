@@ -136,7 +136,6 @@ impl<'a> GlobalMap<'a> {
         for segment in self.private.segments.iter_mut() {
             if segment.is_visible(visible_frame) {
                 segment.apply_scaling(self.shared.scaling);
-                window.flush().unwrap();
                 extend_transformed(&mut window.mesh(), &segment.water_mesh, t)
             }
         }
