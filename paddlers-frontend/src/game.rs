@@ -4,10 +4,10 @@ pub(crate) mod buildings;
 pub(crate) mod components;
 #[cfg(feature = "dev_view")]
 pub(crate) mod dev_view;
+pub(crate) mod dialogue;
 pub(crate) mod fight;
 pub(crate) mod forestry;
 pub(crate) mod game_event_manager;
-pub(crate) mod dialogue;
 pub(crate) mod leaderboard;
 pub(crate) mod level;
 pub(crate) mod mana;
@@ -24,10 +24,11 @@ pub(crate) mod units;
 use crate::game::town::new_temple_menu;
 use crate::game::{
     components::*, fight::*, forestry::ForestrySystem, player_info::PlayerInfo,
-    units::worker_system::WorkerSystem,
+    story::entity_trigger::EntityTriggerSystem, units::worker_system::WorkerSystem,
 };
 use crate::gui::{input, sprites::*, ui_state::*};
 use crate::init::loading::BaseState;
+use crate::init::loading::GameLoadingData;
 use crate::logging::{statistics::Statistician, text_to_user::TextBoard, ErrorQueue};
 use crate::net::{
     game_master_api::{RestApiState, RestApiSystem},
@@ -69,17 +70,26 @@ impl Game<'_, '_> {
         sprites: Sprites,
         locale: Catalog,
         resolution: ScreenResolution,
-        player_info: PlayerInfo,
+        game_data: GameLoadingData,
         base: BaseState,
     ) -> PadlResult<Self> {
         let (game_evt_send, game_evt_recv) = channel();
-        let mut world = crate::init::init_world(base.err_send, resolution, player_info, base.rest, base.errq, base.tb);
+        let player_info = game_data.player_info.ok_or("Player Info not loaded")?; 
+        let mut world = crate::init::init_world(
+            base.err_send,
+            resolution,
+            player_info,
+            base.rest,
+            base.errq,
+            base.tb,
+        );
         let mut dispatcher = DispatcherBuilder::new()
             .with(WorkerSystem::new(game_evt_send.clone()), "work", &[])
             .with(MoveSystem, "move", &["work"])
             .with(FightSystem::new(game_evt_send.clone()), "fight", &["move"])
             .with(ForestrySystem, "forest", &[])
             .with(RestApiSystem, "rest", &[])
+            .with(EntityTriggerSystem::new(game_evt_send.clone()), "ets", &[])
             .build();
         dispatcher.setup(&mut world);
 
@@ -91,30 +101,33 @@ impl Game<'_, '_> {
             menus
                 .insert(temple, new_temple_menu(&player_info))
                 .map_err(|_| {
-                    PadlError::dev_err(PadlErrorCode::SpecsError("Temple menu insertion failed"))
+                    PadlError::dev_err(PadlErrorCode::EcsError("Temple menu insertion failed"))
                 })?;
         }
-        Ok(
-            Game {
-                dispatcher: dispatcher,
-                world: world,
-                sprites,
-                locale,
-                net: base.net_chan,
-                time_zero: now,
-                resources: TownResources::default(),
-                total_updates: 0,
-                async_err_receiver: base.err_recv,
-                game_event_receiver: game_evt_recv,
-                event_pool: game_evt_send,
-                stats: Statistician::new(now),
-                map: None,
-                #[cfg(feature = "dev_view")]
-                palette: false,
-                #[cfg(feature = "dev_view")]
-                active_test: None,
-            }
-        )
+        world.maintain();
+        let mut game = Game {
+            dispatcher: dispatcher,
+            world: world,
+            sprites,
+            locale,
+            net: base.net_chan,
+            time_zero: now,
+            resources: TownResources::default(),
+            total_updates: 0,
+            async_err_receiver: base.err_recv,
+            game_event_receiver: game_evt_recv,
+            event_pool: game_evt_send,
+            stats: Statistician::new(now),
+            map: None,
+            #[cfg(feature = "dev_view")]
+            palette: false,
+            #[cfg(feature = "dev_view")]
+            active_test: None,
+        };
+        game.load_workers_from_net_response(game_data.worker_response.ok_or("No worker response")?);
+        game.world.maintain();
+        game.load_story_state()?;
+        Ok(game)
     }
 
     /// Called at the first draw loop iteration (the first time quicksilver leaks access to it)
@@ -209,7 +222,7 @@ impl Game<'_, '_> {
             self.world
                 .entities()
                 .delete(entity)
-                .map_err(|_| PadlError::dev_err(PadlErrorCode::SpecsError("Delete building")))?;
+                .map_err(|_| PadlError::dev_err(PadlErrorCode::EcsError("Delete building")))?;
         }
         Ok(())
     }
@@ -220,7 +233,7 @@ impl Game<'_, '_> {
             self.world
                 .entities()
                 .delete(entity)
-                .map_err(|_| PadlError::dev_err(PadlErrorCode::SpecsError("Delete worker")))?;
+                .map_err(|_| PadlError::dev_err(PadlErrorCode::EcsError("Delete worker")))?;
         }
         Ok(())
     }
@@ -231,7 +244,7 @@ impl Game<'_, '_> {
             self.world
                 .entities()
                 .delete(entity)
-                .map_err(|_| PadlError::dev_err(PadlErrorCode::SpecsError("Delete hobo")))?;
+                .map_err(|_| PadlError::dev_err(PadlErrorCode::EcsError("Delete hobo")))?;
         }
         Ok(())
     }
@@ -244,7 +257,7 @@ impl Game<'_, '_> {
                 self.world
                     .entities()
                     .delete(entity)
-                    .map_err(|_| PadlError::dev_err(PadlErrorCode::SpecsError("Delete hobo")))?;
+                    .map_err(|_| PadlError::dev_err(PadlErrorCode::EcsError("Delete hobo")))?;
             }
         }
         Ok(())

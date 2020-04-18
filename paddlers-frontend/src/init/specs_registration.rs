@@ -1,3 +1,4 @@
+use crate::game::story::entity_trigger::EntityTrigger;
 use crate::prelude::*;
 use specs::prelude::*;
 
@@ -40,6 +41,7 @@ pub fn register_components(world: &mut World) {
     world.register::<Building>();
     world.register::<Clickable>();
     world.register::<EntityContainer>();
+    world.register::<EntityTrigger>();
     world.register::<ForestComponent>();
     world.register::<Health>();
     world.register::<Hobo>();

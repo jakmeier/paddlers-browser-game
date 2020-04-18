@@ -136,10 +136,10 @@ fn collect_reward(town: &mut Town, position: TileIndex, entities: &Entities, lev
     let bt = town.building_type(position)?;
     let collected_building = town.remove_building(position);
     if let Err(_e) = entities.delete(collected_building) {
-        return PadlErrorCode::SpecsError("Deleting collected reward building").dev();
+        return PadlErrorCode::EcsError("Deleting collected reward building").dev();
     }
     let level = level.ok_or(
-        PadlError::dev_err(PadlErrorCode::SpecsError("No experience pool given to add to"))
+        PadlError::dev_err(PadlErrorCode::EcsError("No experience pool given to add to"))
     )?;
     if let Some(reward) = bt.reward_exp() {
         level.add_exp(reward);

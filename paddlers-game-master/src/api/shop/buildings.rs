@@ -23,7 +23,10 @@ impl DB {
             )
     }
 
-    fn building_has_space(&self,  typ: BuildingType, pos: (usize ,usize), village: VillageKey) -> StringErr {
+    fn building_has_space(&self, typ: BuildingType, pos: (usize ,usize), village: VillageKey) -> StringErr {
+        if !self.player_allowed_to_build(typ, village) {
+            return Err(format!("Player cannot build {}", typ));
+        }
 // TODO: Check building space with current units (or allow units to walk out of unwalkable buildings)        
         // Check conflict with existing building
         let (w,h) = typ.size();
@@ -49,5 +52,9 @@ impl DB {
             return Err("Cannot build here".to_owned());
         }
         Ok(())
+    }
+    fn player_allowed_to_build(&self, _typ: BuildingType, _vid: VillageKey) -> bool {
+        // TODO: Check with story state and karma level what kind of building are allowed
+        true
     }
 }

@@ -12,16 +12,13 @@ impl DB {
         };
         let player = self.insert_player(&player)?;
         let village = self.new_village(player.key());
-        let building = BuildingFactory::new(
-            BuildingType::Temple,
-            (4,2),
-            village.key(),
-        );
-        self.insert_building(&building);
+
+        // #[cfg(debug_assertions)]
+        // self.insert_temple(&village);
+        
         self.insert_hero(village.key());
         Ok(player)
     }
-
 
     fn insert_hero(&self, vid: VillageKey) -> Worker {
         let (x,y) = (5,2);
@@ -93,7 +90,16 @@ impl DB {
         self.add_resource(ResourceType::Sticks, vid, 1000).expect("Adding dev resources");
         self.add_resource(ResourceType::Logs, vid, 1000).expect("Adding dev resources");
     }
-    
+
+    #[cfg(debug_assertions)]
+    fn insert_temple(&self, village: &Village) {
+        let building = BuildingFactory::new(
+            BuildingType::Temple,
+            (4,2),
+            village.key(),
+        );
+        self.insert_building(&building);
+    }
 
 }
 

@@ -13,6 +13,7 @@ use crate::net::game_master_api::RestApiState;
 use crate::prelude::*;
 use std::sync::mpsc::Receiver;
 
+use crate::game::story::scene::SceneIndex;
 use crate::game::*;
 use crate::gui::input::pointer::PointerManager;
 use crate::gui::ui_state::*;
@@ -41,7 +42,7 @@ pub(crate) enum PadlEvent {
     Quicksilver(Event),
     Network(NetMsg),
     Signal(Signal),
-    Scene, // TODO: Generalization? Maybe all GameEvents?
+    Scene(SceneIndex), // TODO: Generalization? Maybe all GameEvents?
 }
 pub enum Signal {
     ResourcesUpdated,
@@ -70,7 +71,6 @@ impl State for QuicksilverState {
                 println!("Fatal error: No state");
                 Ok(())
             }
-
         }
     }
     fn draw(&mut self, window: &mut Window) -> Result<()> {

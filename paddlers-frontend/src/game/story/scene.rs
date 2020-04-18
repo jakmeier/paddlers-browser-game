@@ -1,3 +1,5 @@
+use paddlers_shared_lib::story::story_state::StoryState;
+
 /// A Scene consists of a set of slides and can be loaded in the Dialogue view.
 /// It starts at a specific slide and the player can click through the, as defined on the slides.
 /// Slides are referenced (within a scene) by their index.
@@ -7,7 +9,7 @@ pub struct Scene {
 }
 
 /// A Slide shows some text and optionally back/next and other buttons.
-/// At least one button should be visible, or players cannot do anything to progress the scene. 
+/// At least one button should be visible, or players cannot do anything to progress the scene.
 pub struct Slide {
     text_key: String,
     button: Option<SlideButton>,
@@ -47,88 +49,94 @@ impl Scene {
     }
 }
 
-// TODO: This is not a permanent interface, just for testing
-pub fn load_entry_scene() -> Scene {
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum SceneIndex {
+    Entrance,
+}
+
+impl SceneIndex {
+    // Improvement: The scenes could be loaded from the server dynamically, to reduce the WASM binary size
+    pub fn load_scene(&self) -> Scene {
+        match self {
+            Self::Entrance => load_entry_scene(),
+        }
+    }
+    pub fn from_story_state(story_state: &StoryState) -> Option<Self> {
+        match story_state {
+            StoryState::Initialized
+            | StoryState::TempleBuilt
+            | StoryState::VisitorArrived
+            | StoryState::FirstVisitorWelcomed
+            | StoryState::FlowerPlanted
+            | StoryState::MoreHappyVisitors
+            | StoryState::TreePlanted
+            | StoryState::StickGatheringStationBuild
+            | StoryState::GatheringSticks => None,
+            StoryState::ServantAccepted => Some(Self::Entrance),
+        }
+    }
+}
+fn load_entry_scene() -> Scene {
     let mut slides = Vec::new();
 
     // 0
-    slides.push(
-        Slide {
-            text_key: "welcomescene-B10".to_owned(),
-            button: None,
-            back_button: false,
-            next_button: true,
-        }
-    );
-    
+    slides.push(Slide {
+        text_key: "welcomescene-B10".to_owned(),
+        button: None,
+        back_button: false,
+        next_button: true,
+    });
     // 1
-    slides.push(
-        Slide {
-            text_key: "welcomescene-B20".to_owned(),
-            button: None,
-            back_button: true,
-            next_button: true,
-        }
-    );
-    
+    slides.push(Slide {
+        text_key: "welcomescene-B20".to_owned(),
+        button: None,
+        back_button: true,
+        next_button: true,
+    });
     // 2
-    slides.push(
-        Slide {
-            text_key: "welcomescene-B30".to_owned(),
-            button: None,
-            back_button: true,
-            next_button: true,
-        }
-    );
-    
+    slides.push(Slide {
+        text_key: "welcomescene-B30".to_owned(),
+        button: None,
+        back_button: true,
+        next_button: true,
+    });
     // 3
-    slides.push(
-        Slide {
-            text_key: "welcomescene-B40".to_owned(),
-            button: None,
-            back_button: true,
-            next_button: true,
-        }
-    );
-    
+    slides.push(Slide {
+        text_key: "welcomescene-B40".to_owned(),
+        button: None,
+        back_button: true,
+        next_button: true,
+    });
     let button = SlideButton {
         text_key: "welcomescene-A60".to_owned(),
         next_slide: Some(5),
     };
     // 4
-    slides.push(
-        Slide {
-            text_key: "welcomescene-B50".to_owned(),
-            button: Some(button),
-            back_button: true,
-            next_button: false,
-        }
-    );
-    
+    slides.push(Slide {
+        text_key: "welcomescene-B50".to_owned(),
+        button: Some(button),
+        back_button: true,
+        next_button: false,
+    });
     // 5
-    slides.push(
-        Slide {
-            text_key: "welcomescene-B70".to_owned(),
-            button: None,
-            back_button: false,
-            next_button: true,
-        }
-    );
-    
+    slides.push(Slide {
+        text_key: "welcomescene-B70".to_owned(),
+        button: None,
+        back_button: false,
+        next_button: true,
+    });
 
     let button = SlideButton {
         text_key: "welcomescene-A90".to_owned(),
         next_slide: None,
     };
     // 6
-    slides.push(
-        Slide {
-            text_key: "welcomescene-B80".to_owned(),
-            button: Some(button),
-            back_button: true,
-            next_button: false,
-        }
-    );
+    slides.push(Slide {
+        text_key: "welcomescene-B80".to_owned(),
+        button: Some(button),
+        back_button: true,
+        next_button: false,
+    });
 
     Scene {
         slides,

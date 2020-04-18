@@ -1,3 +1,4 @@
+use std::sync::mpsc::SendError;
 use std::{fmt};
 use crate::prelude::*;
 use crate::game::town::{TileType, TileIndex};
@@ -70,7 +71,9 @@ pub enum PadlErrorCode {
     NoStateForTile(TileIndex),
     UnexpectedTileType(&'static str, TileType),
     MissingComponent(&'static str),
-    SpecsError(&'static str),
+    EcsError(&'static str),
+    SpecsError(specs::error::Error),
+    EventPoolSend(SendError<GameEvent>),
     RestAPI(String),
     EmptyGraphQLData(&'static str),
     InvalidGraphQLData(&'static str),
@@ -129,8 +132,12 @@ impl fmt::Display for PadlErrorCode {
                 write!(f, "Unexpected tile type: Expected {} but was {:?}", expected, was),
             PadlErrorCode::MissingComponent(component) =>
                 write!(f, "Entity does not have required component: {}", component),
-            PadlErrorCode::SpecsError(component) =>
+            PadlErrorCode::EcsError(component) =>
                 write!(f, "ECS error: {}", component),
+            PadlErrorCode::SpecsError(component) =>
+                write!(f, "Specs error: {}", component),
+            PadlErrorCode::EventPoolSend(e) =>
+                write!(f, "EventPool send error: {}", e),
             PadlErrorCode::RestAPI(msg) =>
                 write!(f, "A REST API error occurred: {}", msg),
             PadlErrorCode::EmptyGraphQLData(data_set) =>
@@ -221,6 +228,21 @@ impl From<quicksilver::Error> for PadlError {
 impl From<panes::PanesError> for PadlError {
     fn from(error: panes::PanesError) -> Self {
         PadlError::dev_err(PadlErrorCode::PanesError(error.to_string()))
+    }
+}
+impl From<SendError<GameEvent>> for PadlError {
+    fn from(error: SendError<GameEvent>) -> Self {
+        PadlError::dev_err(PadlErrorCode::EventPoolSend(error))
+    }
+}
+impl From<specs::error::Error> for PadlError {
+    fn from(error: specs::error::Error) -> Self {
+        PadlError::dev_err(PadlErrorCode::SpecsError(error))
+    }
+}
+impl From<&'static str> for PadlError {
+    fn from(msg: &'static str) -> Self {
+        PadlError::dev_err(PadlErrorCode::DevMsg(msg))
     }
 }
 

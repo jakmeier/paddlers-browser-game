@@ -10,7 +10,8 @@
 //! Try to keep computations in here short and simple.
 
 use crate::game::{
-    components::*, player_info::PlayerInfo, units::attackers::change_duck_sprite_to_happy,
+    components::*, player_info::PlayerInfo, story::scene::SceneIndex,
+    units::attackers::change_duck_sprite_to_happy,
 };
 use crate::gui::input::UiView;
 use crate::init::quicksilver_integration::GameState;
@@ -27,7 +28,7 @@ pub enum GameEvent {
     HttpBuyProphet,
     SendProphetAttack((i32, i32)),
     SwitchToView(UiView),
-    LoadScene, // TODO: Think of a good way to store, select and load scenes on demand
+    LoadScene(SceneIndex),
 }
 
 impl GameState {
@@ -62,9 +63,8 @@ impl GameState {
             GameEvent::SwitchToView(view) => {
                 self.game.switch_view(view);
             }
-            GameEvent::LoadScene => {
-                // TODO: Select the right scene
-                self.viewer.event(&mut self.game, &PadlEvent::Scene)?;
+            GameEvent::LoadScene(s) => {
+                self.viewer.event(&mut self.game, &PadlEvent::Scene(s))?;
             }
         }
         Ok(())

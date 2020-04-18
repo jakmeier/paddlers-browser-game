@@ -4,6 +4,7 @@ use crate::game::{
 };
 use crate::init::loading::LoadingState;
 use crate::init::quicksilver_integration::{GameState, Signal};
+use crate::net::graphql::query_types::WorkerResponse;
 use crate::net::NetMsg;
 use crate::prelude::*;
 use std::convert::TryInto;
@@ -24,12 +25,16 @@ impl LoadingState {
                         println!("Network Error: {}", e);
                     }
                 },
+                NetMsg::Workers(response) => {
+                    self.game_data.worker_response = Some(response);
+                }
                 NetMsg::Player(player_info) => {
-                    self.player_info = Some(player_info);
+                    self.game_data.player_info = Some(player_info);
                 }
                 other => {
                     println!(
-                        "Unexpected network message before complete initialization {:?}", other,
+                        "Unexpected network message before complete initialization {:?}",
+                        other,
                     );
                 }
             },
@@ -111,7 +116,7 @@ impl GameState {
                             menus
                                 .insert(temple, new_temple_menu(&player_info))
                                 .map_err(|_| {
-                                    PadlError::dev_err(PadlErrorCode::SpecsError(
+                                    PadlError::dev_err(PadlErrorCode::EcsError(
                                         "Temple menu insertion failed",
                                     ))
                                 })?;
@@ -139,14 +144,7 @@ impl GameState {
                     NetMsg::Workers(response) => {
                         self.game.flush_workers()?;
                         self.game.world.maintain();
-                        let now = self.game.world.read_resource::<Now>().0;
-                        let results = create_worker_entities(&response, &mut self.game.world, now);
-                        let mut q = self.game.world.write_resource::<ErrorQueue>();
-                        for res in results.into_iter() {
-                            if let Err(e) = res {
-                                q.push(e);
-                            }
-                        }
+                        self.game.load_workers_from_net_response(response);
                     }
                     NetMsg::UpdateWorkerTasks(unit) => {
                         let entity = self
@@ -182,5 +180,17 @@ impl GameState {
             Err(TryRecvError::Empty) => {}
         }
         Ok(())
+    }
+}
+impl<'a, 'b> Game<'a, 'b> {
+    pub fn load_workers_from_net_response(&mut self, response: WorkerResponse) {
+        let now = self.world.read_resource::<Now>().0;
+        let results = create_worker_entities(&response, &mut self.world, now);
+        let mut q = self.world.write_resource::<ErrorQueue>();
+        for res in results.into_iter() {
+            if let Err(e) = res {
+                q.push(e);
+            }
+        }
     }
 }

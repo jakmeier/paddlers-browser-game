@@ -1,6 +1,6 @@
+use crate::net::graphql::query_types::WorkerResponse;
 use crate::game::player_info::PlayerInfo;
 use crate::game::Game;
-use crate::game::game_event_manager::GameEvent;
 use crate::gui::sprites::{
     animation::{AnimatedObject, AnimatedObjectDef, AnimationVariantDef},
     paths::{ANIMATION_DEFS, SPRITE_PATHS},
@@ -32,7 +32,7 @@ pub struct BaseState {
 
 /// State that is used while loading all data over the network
 pub struct LoadingState {
-    pub player_info: Option<PlayerInfo>,
+    pub game_data: GameLoadingData,
     pub base: BaseState,
     images: Vec<Asset<Image>>,
     locale: Asset<Catalog>,
@@ -40,11 +40,17 @@ pub struct LoadingState {
     preload_float: FloatingText,
 }
 
+#[derive(Default)]
+pub struct GameLoadingData {
+    pub player_info: Option<PlayerInfo>,
+    pub worker_response: Option<WorkerResponse>,
+}
+
 impl LoadingState {
     pub fn new(resolution: ScreenResolution, net_chan: Receiver<NetMsg>) -> Self {
         let images = start_loading_sprites();
         let locale = start_loading_locale();
-        crate::net::request_player_update();
+        crate::net::request_client_state();
         let preload_float = FloatingText::try_default().expect("FloatingText");
         let (err_send, err_recv) = channel();
         let err_send_clone = err_send.clone();
@@ -57,9 +63,10 @@ impl LoadingState {
             errq: ErrorQueue::default(),
             tb: TextBoard::default(),
         };
+        let game_data = GameLoadingData::default();
         LoadingState {
             base,
-            player_info: None,
+            game_data,
             images,
             locale,
             resolution,
@@ -67,7 +74,8 @@ impl LoadingState {
         }
     }
     pub fn progress(&mut self) -> f32 {
-        let total = self.images.len() as f32 + 2.0;
+        // TODO: Put this calculation in its own tracking object with messages to display
+        let total = self.images.len() as f32 + 3.0;
         let images_loaded = self
             .images
             .iter_mut()
@@ -79,8 +87,9 @@ impl LoadingState {
         } else {
             0
         };
-        let player_info_loaded = if self.player_info.is_some() { 1 } else { 0 };
-        (images_loaded + locale_loaded + player_info_loaded) as f32 / total
+        let player_info_loaded = if self.game_data.player_info.is_some() { 1 } else { 0 };
+        let worker_loaded = if self.game_data.worker_response.is_some() { 1 } else { 0 };
+        (images_loaded + locale_loaded + player_info_loaded + worker_loaded) as f32 / total
     }
     pub fn asset_loaded<T>(asset: &mut Asset<T>) -> bool {
         let mut helper = false;
@@ -116,8 +125,10 @@ impl LoadingState {
         let area = Rectangle::new((w * 0.1, y), (w * 0.8, ph));
 
         // This could be handled nicer by a separate loader object but I kept it simple for now
-        let msg = if !self.player_info.is_some() {
+        let msg = if self.game_data.player_info.is_none() {
             "Downloading player data"
+        } else if self.game_data.worker_response.is_none() {
+            "Downloading worker data"
         } else if !Self::asset_loaded(&mut self.locale) {
             "Downloading localized texts"
         } else {
@@ -130,28 +141,32 @@ impl LoadingState {
             self.base.errq.push(e);
         }
     }
-    fn finalize(self) -> GameState {
-        let (images, catalog, resolution, player_info, base) = {
+    fn finalize(mut self) -> GameState {
+        let (images, catalog, resolution, game_data, base) = {
             (
-                self.images.into_iter().map(LoadingState::extract_asset).collect(),
+                self.images
+                    .into_iter()
+                    .map(LoadingState::extract_asset)
+                    .collect(),
                 LoadingState::extract_asset(self.locale),
                 self.resolution,
-                self.player_info.expect("Finalized without player info"),
+                self.game_data,
                 self.base,
             )
         };
         let sprites = Sprites::new(images);
-        match Game::load_game(sprites, catalog, resolution, player_info, base) {
+        match Game::load_game(sprites, catalog, resolution, game_data, base) {
             Err(e) => {
+                let mut tb = TextBoard::default();
+                #[allow(unused_must_use)] {
+                    tb.display_error_message(":(\nLoading game failed".to_owned()); // TODO: multi-lang errors
+                    tb.draw(&Rectangle::new_sized(resolution.main_area()));
+                }
                 panic!("Fatal Error: Could not load game {:?}", e);
             }
             Ok(mut game) => {
-                let pm = crate::gui::input::pointer::PointerManager::init(
-                    &mut game.world,
-                );
-                // TODO: Conditionally select event and make sure it is the right scene
+                let pm = crate::gui::input::pointer::PointerManager::init(&mut game.world);
                 let ep = game.event_pool.clone();
-                ep.send(GameEvent::LoadScene).expect("Channel send failed");
                 let viewer = super::frame_loading::load_viewer(&mut game, ep);
                 GameState {
                     game,
@@ -182,7 +197,7 @@ impl QuicksilverState {
             Self::Loading(state) => {
                 *self = QuicksilverState::Ready(state.finalize());
             }
-            _ => unreachable!()
+            _ => unreachable!(),
         }
     }
 }

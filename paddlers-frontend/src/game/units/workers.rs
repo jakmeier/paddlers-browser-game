@@ -1,21 +1,23 @@
-use std::collections::VecDeque;
-use quicksilver::geom::*;
-use specs::prelude::*;
-use crate::prelude::*;
 use crate::game::{
-    town::{Town, TileIndex, task_factory::NewTaskDescriptor},
-    movement::{Position},
     components::*,
+    movement::Position,
+    town::{task_factory::NewTaskDescriptor, TileIndex, Town},
 };
 use crate::gui::render::Renderable;
 use crate::gui::z::*;
-use crate::net::game_master_api::RestApiState;
 use crate::logging::ErrorQueue;
+use crate::net::game_master_api::RestApiState;
+use crate::prelude::*;
 use paddlers_shared_lib::api::tasks::*;
 use paddlers_shared_lib::prelude::WorkerKey;
+use quicksilver::geom::*;
+use specs::prelude::*;
+use std::collections::VecDeque;
 
 #[derive(Default, Component, Debug)]
 #[storage(HashMapStorage)]
+/// Workers are the ducks a player can control in its own town.
+/// This can be heros or basic workers.
 pub struct Worker {
     pub tasks: VecDeque<WorkerTask>,
     pub netid: i64,
@@ -23,13 +25,27 @@ pub struct Worker {
 
 #[derive(Debug)]
 pub struct WorkerTask {
-    pub task_type: TaskType, 
+    pub task_type: TaskType,
     pub position: TileIndex,
     pub start_time: Timestamp,
     pub target: Option<Entity>,
 }
 
 impl Worker {
+    pub fn find_hero<'a>(
+        workers: ReadStorage<'a, Worker>,
+        entities: Entities<'a>,
+    ) -> PadlResult<Entity> {
+        // atm, only one worker exists, which is the hero
+        (&workers, &entities)
+            .join()
+            .next()
+            .map(|(_, e)| e)
+            .ok_or(PadlError::dev_err(PadlErrorCode::MissingComponent(
+                "Hero worker",
+            )))
+    }
+
     /// Worker is ordered by the player to perform a job at a position
     /// How to get there and if this is possible has yet to be checked.
     pub fn new_order<'a>(
@@ -44,7 +60,8 @@ impl Worker {
         containers: &mut WriteStorage<'a, EntityContainer>,
         mana: &ReadStorage<'a, Mana>,
     ) {
-        let msg = self.try_create_task_list(entity, start, destination, job, &town, containers, mana);
+        let msg =
+            self.try_create_task_list(entity, start, destination, job, &town, containers, mana);
         match msg {
             Ok(msg) => {
                 rest.http_overwrite_tasks(msg)
@@ -68,7 +85,7 @@ impl Worker {
         town: &Town,
         containers: &mut WriteStorage<'a, EntityContainer>,
         mana: &ReadStorage<'a, Mana>,
-) -> PadlResult<TaskList> {
+    ) -> PadlResult<TaskList> {
         let mana = mana.get(entity);
         town.check_task_constraints(job, destination, containers, mana)?;
         let tasks = town.build_task_chain(from, destination, &job)?;
@@ -78,11 +95,15 @@ impl Worker {
         };
         Ok(msg)
     }
-    
     /// Finds the default-task that is performed on a right click in the town area
-    pub fn task_on_right_click<'a>(&mut self, click: &Vector, town: &Town) -> Option<(TaskType, TileIndex)> {
+    pub fn task_on_right_click<'a>(
+        &mut self,
+        click: &Vector,
+        town: &Town,
+    ) -> Option<(TaskType, TileIndex)> {
         let destination = town.tile(*click); // TODO: destination is not always where it has been clicked
-        let job = town.available_tasks(destination)
+        let job = town
+            .available_tasks(destination)
             .into_iter()
             // .filter(
             //     || TODO
@@ -90,12 +111,9 @@ impl Worker {
             .next()?;
         Some((job, destination))
     }
-    
     fn go_idle(&mut self, idx: TileIndex) -> Result<TaskList, String> {
-        let tasks = vec![
-            RawTask::new(TaskType::Idle, idx)
-        ];
-        Ok( TaskList {
+        let tasks = vec![RawTask::new(TaskType::Idle, idx)];
+        Ok(TaskList {
             worker_id: self.key(),
             tasks: tasks,
         })
@@ -112,21 +130,23 @@ impl Worker {
 }
 
 pub fn move_worker_into_building<'a>(
-    containers: &mut WriteStorage<'a, EntityContainer>, 
-    ui_menus: &mut WriteStorage<'a, UiMenu>, 
+    containers: &mut WriteStorage<'a, EntityContainer>,
+    ui_menus: &mut WriteStorage<'a, UiMenu>,
     town: &mut Write<'a, Town>,
     lazy: &Read<'a, LazyUpdate>,
     rend: &ReadStorage<'a, Renderable>,
-    worker_e: Entity, 
+    worker_e: Entity,
     building_pos: TileIndex,
-){
+) {
     let renderable = rend.get(worker_e).unwrap();
     let tile_state = (*town).tile_state(building_pos).unwrap();
     let c = containers.get_mut(tile_state.entity).unwrap();
     let mut ui_menu = ui_menus.get_mut(tile_state.entity).unwrap();
     c.add_entity_unchecked(worker_e, &renderable, &mut ui_menu);
-    town.add_entity_to_building(&building_pos).expect("Task has conflict");
-    town.add_stateful_task(c.task).expect("Task has conflict in town state");
+    town.add_entity_to_building(&building_pos)
+        .expect("Task has conflict");
+    town.add_stateful_task(c.task)
+        .expect("Task has conflict in town state");
     lazy.remove::<Position>(worker_e);
 }
 
@@ -139,8 +159,7 @@ pub fn move_worker_out_of_building<'a>(
     size: Vector,
     lazy: &Read<'a, LazyUpdate>,
     rest: &mut WriteExpect<'a, RestApiState>,
-) -> PadlResult<()>
-{
+) -> PadlResult<()> {
     let worker = workers.get_mut(worker_e).unwrap();
     let http_msg = worker.go_idle(tile);
     match http_msg {
@@ -151,15 +170,17 @@ pub fn move_worker_out_of_building<'a>(
             println!("Failure on moving out of building: {}", e);
         }
     }
-    lazy.insert(worker_e, 
+    lazy.insert(
+        worker_e,
         Position::new(
-            (0.0,0.0), // the MoveSystem will overwrite this before first use
-            size, 
-            Z_UNITS
-        )
+            (0.0, 0.0), // the MoveSystem will overwrite this before first use
+            size,
+            Z_UNITS,
+        ),
     );
     town.remove_entity_from_building(&tile).unwrap();
-    town.remove_stateful_task(task).expect("Task has conflict in town state");
+    town.remove_stateful_task(task)
+        .expect("Task has conflict in town state");
     Ok(())
 }
 
