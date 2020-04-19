@@ -12,6 +12,7 @@ mod init;
 
 mod game;
 mod gui;
+mod i18n;
 mod net;
 mod prelude;
 mod logging;

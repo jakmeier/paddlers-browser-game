@@ -8,12 +8,12 @@ pub use super::movement::{Moving, Position};
 pub use super::status_effects::StatusEffects;
 pub use crate::gui::{animation::AnimationState, input::Clickable, render::Renderable};
 use crate::gui::{
-    gui_components::{UiBox, UiElement, ClickOutput},
-    utils::*,
+    gui_components::{ClickOutput, UiBox, UiElement},
     sprites::SpriteSet,
+    utils::*,
 };
-use paddlers_shared_lib::api::shop::Price;
 use crate::prelude::*;
+use paddlers_shared_lib::api::shop::Price;
 use specs::prelude::*;
 
 /// Required to give NetObj values a context
@@ -111,15 +111,18 @@ impl EntityContainer {
     }
     pub fn add_entity_unchecked(&mut self, e: Entity, rend: &Renderable, ui: &mut UiMenu) {
         self.children.push(e);
-        let style = match rend.kind {
+        let style = match &rend.kind {
             RenderVariant::ImgWithImgBackground(img, _)
             | RenderVariant::ImgWithColBackground(img, _)
             | RenderVariant::Img(img)
             | RenderVariant::ImgWithHoverAlternative(img, _) => {
-                RenderVariant::ImgWithColBackground(img, GREY)
+                RenderVariant::ImgWithColBackground(*img, GREY)
+            }
+            RenderVariant::Text(t) | RenderVariant::TextWithColBackground(t, _) => {
+                RenderVariant::TextWithColBackground(t.to_owned(), GREY)
             }
             RenderVariant::Hide => RenderVariant::Hide,
-            RenderVariant::Shape(s) => RenderVariant::Shape(s),
+            RenderVariant::Shape(s) => RenderVariant::Shape(*s),
         };
         ui.ui.add(UiElement::new(e).with_render_variant(style));
     }
@@ -143,8 +146,8 @@ impl UiMenu {
         }
     }
     pub fn with_shop_item<T: Into<ClickOutput> + Clone>(
-        mut self, 
-        c: T, 
+        mut self,
+        c: T,
         sprite: SpriteSet,
         cost: Price,
     ) -> Self {
@@ -152,7 +155,7 @@ impl UiMenu {
             UiElement::new(c)
                 .with_image(sprite)
                 .with_background_color(LIGHT_BLUE)
-                .with_cost(cost)
+                .with_cost(cost),
         );
         self
     }

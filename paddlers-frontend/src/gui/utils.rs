@@ -19,13 +19,16 @@ use crate::view::FloatingText;
 use quicksilver::graphics::Mesh;
 use quicksilver::prelude::*;
 
-#[derive(Debug, Clone, Copy)]
+// Improvement: Would be nice to have Copy here (maybe with string interning)
+#[derive(Debug, Clone)]
 pub enum RenderVariant {
     #[allow(dead_code)]
     Img(SpriteSet),
     ImgWithImgBackground(SpriteSet, SingleSprite),
     ImgWithColBackground(SpriteSet, Color),
     ImgWithHoverAlternative(SpriteSet, SpriteSet),
+    Text(String),
+    TextWithColBackground(String, Color),
     Shape(PadlShapeIndex),
     Hide,
 }

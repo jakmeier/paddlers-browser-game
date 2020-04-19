@@ -14,7 +14,7 @@ use crate::logging::text_to_user::TextBoard;
 use crate::logging::ErrorQueue;
 use crate::net::game_master_api::RestApiState;
 use crate::net::NetMsg;
-use crate::prelude::{Catalog, PadlResult, ScreenResolution};
+use crate::prelude::{TextDb, PadlResult, ScreenResolution};
 use crate::view::FloatingText;
 use quicksilver::prelude::*;
 use std::sync::mpsc::{channel, Receiver, Sender};
@@ -35,7 +35,7 @@ pub struct LoadingState {
     pub game_data: GameLoadingData,
     pub base: BaseState,
     images: Vec<Asset<Image>>,
-    locale: Asset<Catalog>,
+    locale: Asset<TextDb>,
     resolution: ScreenResolution,
     preload_float: FloatingText,
 }
@@ -141,7 +141,7 @@ impl LoadingState {
             self.base.errq.push(e);
         }
     }
-    fn finalize(mut self) -> GameState {
+    fn finalize(self) -> GameState {
         let (images, catalog, resolution, game_data, base) = {
             (
                 self.images
@@ -215,11 +215,11 @@ pub fn start_loading_animations(images: &Vec<Image>) -> Vec<(Asset<AnimatedObjec
     animations
 }
 
-fn start_loading_locale() -> Asset<Catalog> {
+fn start_loading_locale() -> Asset<TextDb> {
     Asset::new(
         // TODO
         quicksilver::load_file("locale/en.mo")
-            .map(|data| Catalog::parse(data.as_slice()).expect("could not parse the catalog")),
+            .map(|data| TextDb::parse(data.as_slice()).expect("could not parse the catalog")),
     )
 }
 

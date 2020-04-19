@@ -48,7 +48,7 @@ pub(crate) struct Game<'a, 'b> {
     pub dispatcher: Dispatcher<'a, 'b>,
     pub world: World,
     pub sprites: Sprites,
-    pub locale: Catalog,
+    pub locale: TextDb,
     pub resources: TownResources,
     pub net: Receiver<NetMsg>,
     pub time_zero: Timestamp,
@@ -68,7 +68,7 @@ pub(crate) struct Game<'a, 'b> {
 impl Game<'_, '_> {
     pub fn load_game(
         sprites: Sprites,
-        locale: Catalog,
+        locale: TextDb,
         resolution: ScreenResolution,
         game_data: GameLoadingData,
         base: BaseState,

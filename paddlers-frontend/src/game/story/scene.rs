@@ -1,3 +1,5 @@
+use crate::gui::input::UiView;
+use crate::prelude::*;
 use paddlers_shared_lib::story::story_state::StoryState;
 
 /// A Scene consists of a set of slides and can be loaded in the Dialogue view.
@@ -11,14 +13,18 @@ pub struct Scene {
 /// A Slide shows some text and optionally back/next and other buttons.
 /// At least one button should be visible, or players cannot do anything to progress the scene.
 pub struct Slide {
-    text_key: String,
-    button: Option<SlideButton>,
+    text_key: TextKey,
+    buttons: Vec<SlideButton>,
     back_button: bool,
     next_button: bool,
 }
 pub struct SlideButton {
-    text_key: String,
-    next_slide: Option<SlideIndex>,
+    pub text_key: TextKey,
+    pub action: SlideButtonAction,
+}
+pub enum SlideButtonAction {
+    Slide(SlideIndex),
+    View(UiView),
 }
 
 pub type SlideIndex = usize;
@@ -29,6 +35,9 @@ impl Scene {
     }
     pub fn current_slide(&self) -> &Slide {
         &self.slides[self.active_slide]
+    }
+    pub fn slide_buttons(&self) -> &[SlideButton] {
+        self.slides[self.active_slide].buttons.as_slice()
     }
     pub fn back_button(&self) -> Option<SlideIndex> {
         if self.current_slide().back_button {
@@ -81,59 +90,59 @@ fn load_entry_scene() -> Scene {
 
     // 0
     slides.push(Slide {
-        text_key: "welcomescene-B10".to_owned(),
-        button: None,
+        text_key: "welcomescene-B10",
+        buttons: vec![],
         back_button: false,
         next_button: true,
     });
     // 1
     slides.push(Slide {
-        text_key: "welcomescene-B20".to_owned(),
-        button: None,
+        text_key: "welcomescene-B20",
+        buttons: vec![],
         back_button: true,
         next_button: true,
     });
     // 2
     slides.push(Slide {
-        text_key: "welcomescene-B30".to_owned(),
-        button: None,
+        text_key: "welcomescene-B30",
+        buttons: vec![],
         back_button: true,
         next_button: true,
     });
     // 3
     slides.push(Slide {
-        text_key: "welcomescene-B40".to_owned(),
-        button: None,
+        text_key: "welcomescene-B40",
+        buttons: vec![],
         back_button: true,
         next_button: true,
     });
     let button = SlideButton {
-        text_key: "welcomescene-A60".to_owned(),
-        next_slide: Some(5),
+        text_key: "welcomescene-A60",
+        action: SlideButtonAction::Slide(5),
     };
     // 4
     slides.push(Slide {
-        text_key: "welcomescene-B50".to_owned(),
-        button: Some(button),
+        text_key: "welcomescene-B50",
+        buttons: vec![button],
         back_button: true,
         next_button: false,
     });
     // 5
     slides.push(Slide {
-        text_key: "welcomescene-B70".to_owned(),
-        button: None,
+        text_key: "welcomescene-B70",
+        buttons: vec![],
         back_button: false,
         next_button: true,
     });
 
     let button = SlideButton {
-        text_key: "welcomescene-A90".to_owned(),
-        next_slide: None,
+        text_key: "welcomescene-A90",
+        action: SlideButtonAction::View(UiView::Town),
     };
     // 6
     slides.push(Slide {
-        text_key: "welcomescene-B80".to_owned(),
-        button: Some(button),
+        text_key: "welcomescene-B80",
+        buttons: vec![button],
         back_button: true,
         next_button: false,
     });

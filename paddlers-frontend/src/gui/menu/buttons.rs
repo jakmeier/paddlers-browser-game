@@ -5,6 +5,7 @@ use specs::prelude::*;
 
 pub struct MenuButtons {
     ui: UiBox,
+    tp: TableTextProvider,
 }
 
 impl MenuButtons {
@@ -37,7 +38,8 @@ impl MenuButtons {
                 .with_render_variant(leaderboard_button),
         );
 
-        MenuButtons { ui: ui_box }
+        let tp = TableTextProvider::new();
+        MenuButtons { ui: ui_box, tp }
     }
     fn button_render(normal: SingleSprite, hover: SingleSprite) -> RenderVariant {
         RenderVariant::ImgWithHoverAlternative(SpriteSet::Simple(normal), SpriteSet::Simple(hover))
@@ -48,17 +50,25 @@ impl MenuButtons {
             _ => Ok(None),
         }
     }
+    fn draw(&mut self, window: &mut Window, sprites: &mut Sprites, now: Timestamp, area: &Rectangle) -> PadlResult<()>{
+        self.ui.draw(
+            window,
+            sprites,
+            &mut self.tp,
+            now,
+            area,
+        )
+    }
 }
 
 impl crate::game::Game<'_, '_> {
-    pub fn render_buttons(&mut self, window: &mut Window, area: &Rectangle) -> Result<()> {
-        let (sprites, mut buttons) = (
+    pub fn render_buttons(&mut self, window: &mut Window, area: &Rectangle) -> PadlResult<()> {
+        let (sprites, buttons, now) = (
             &mut self.sprites,
-            self.world.write_resource::<MenuButtons>(),
+            &mut self.world.write_resource::<MenuButtons>(),
+            self.world.read_resource::<Now>().0,
         );
-        buttons
-            .ui
-            .draw(window, sprites, self.world.read_resource::<Now>().0, area)
+        buttons.draw(window, sprites, now, area)
     }
     pub fn click_buttons(&mut self, pos: (i32, i32)) {
         let buttons = self.world.fetch::<MenuButtons>();

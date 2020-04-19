@@ -55,7 +55,7 @@ impl<'a, 'b> DialogueFrame<'a, 'b> {
         Ok(dialogue)
     }
 
-    pub fn load_scene(&mut self, scene: Scene, locale: &Catalog) {
+    pub fn load_scene(&mut self, scene: Scene, locale: &TextDb) {
         self.current_scene = Some(scene);
         self.reload(locale);
     }
@@ -71,14 +71,14 @@ impl<'a, 'b> DialogueFrame<'a, 'b> {
             .as_ref()
             .ok_or(PadlError::dev_err(PadlErrorCode::DialogueEmpty))
     }
-    fn load_slide(&mut self, i: usize, locale: &Catalog) -> PadlResult<()> {
+    fn load_slide(&mut self, i: usize, locale: &TextDb) -> PadlResult<()> {
         let scene = self.scene_mut()?;
         scene.set_slide(i);
         self.reload(locale);
         Ok(())
     }
     /// Panics if no scene is loaded
-    fn reload(&mut self, locale: &Catalog) {
+    fn reload(&mut self, locale: &TextDb) {
         self.buttons.clear();
         self.text_lines.clear();
 
@@ -89,7 +89,7 @@ impl<'a, 'b> DialogueFrame<'a, 'b> {
             self.text_lines.push(s.to_owned());
         }
 
-        // Create buttons
+        // Create navigation buttons
         if let Some(i) = self.scene().unwrap().back_button() {
             let back_button = UiElement::new(ClickOutput::Slide(i))
                 .with_render_variant(RenderVariant::Shape(PadlShapeIndex::LeftArrow));
@@ -101,8 +101,22 @@ impl<'a, 'b> DialogueFrame<'a, 'b> {
             let next_button = UiElement::new(ClickOutput::Slide(i))
                 .with_render_variant(RenderVariant::Shape(PadlShapeIndex::RightArrow));
             self.buttons.add(next_button);
-        } else {
-            self.buttons.add(UiElement::empty());
+        }
+
+        // Create dialogue buttons for interactions
+        self.load_slide_buttons(locale);
+    }
+    fn load_slide_buttons(&mut self, texts: &TextDb) {
+        for b in self.current_scene.as_ref().unwrap().slide_buttons() {
+            let button = match b.action {
+                SlideButtonAction::Slide(s) => UiElement::new(ClickOutput::Slide(s)),
+                SlideButtonAction::View(v) => {
+                    UiElement::new(ClickOutput::Event(GameEvent::SwitchToView(v)))
+                }
+            }
+            .with_text(texts.gettext(b.text_key).to_owned())
+            .with_background_color(LIGHT_GREEN);
+            self.buttons.add(button);
         }
     }
 

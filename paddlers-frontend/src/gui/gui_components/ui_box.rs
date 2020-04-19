@@ -35,19 +35,20 @@ impl InteractiveTableArea for UiBox {
         &mut self,
         window: &mut Window,
         sprites: &mut Sprites,
+        tp: &mut TableTextProvider,
         now: Timestamp,
         area: &Rectangle,
-    ) -> Result<()> {
+    ) -> PadlResult<()> {
         self.area = *area;
         let grid = area.grid(self.columns, self.rows);
 
         for (el, draw_area) in self.elements.iter().zip(grid) {
-            let img = match el.display {
+            let img = match &el.display {
                 RenderVariant::Img(img) => Some(img),
                 RenderVariant::ImgWithColBackground(img, col) => {
                     window.draw_ex(
                         &draw_area.padded(self.margin),
-                        Col(col),
+                        Col(*col),
                         Transform::IDENTITY,
                         Z_MENU_BOX_BUTTONS - 1,
                     );
@@ -58,7 +59,7 @@ impl InteractiveTableArea for UiBox {
                         sprites,
                         window,
                         &draw_area.padded(self.margin),
-                        SpriteIndex::Simple(bkg),
+                        SpriteIndex::Simple(*bkg),
                         Z_MENU_BOX_BUTTONS - 1,
                         FitStrategy::Center,
                     )?;
@@ -72,7 +73,7 @@ impl InteractiveTableArea for UiBox {
                     }
                 }
                 RenderVariant::Shape(s) => {
-                    let shape = sprites.shape_index(s);
+                    let shape = sprites.shape_index(*s);
                     let place =
                         shape
                             .bounding_box
@@ -83,6 +84,32 @@ impl InteractiveTableArea for UiBox {
                     );
                     let t = Transform::translate(place.pos) * Transform::scale(factor);
                     extend_transformed(window.mesh(), &shape.mesh, t);
+                    None
+                }
+                RenderVariant::Text(t) => {
+                    tp.text_pool.allocate().write(
+                        window,
+                        &draw_area,
+                        Z_MENU_TEXT,
+                        FitStrategy::Center,
+                        &t,
+                    )?;
+                    None
+                }
+                RenderVariant::TextWithColBackground(t, col) => {
+                    window.draw_ex(
+                        &draw_area.padded(self.margin),
+                        Col(*col),
+                        Transform::IDENTITY,
+                        Z_MENU_BOX_BUTTONS - 1,
+                    );
+                    tp.text_pool.allocate().write(
+                        window,
+                        &draw_area,
+                        Z_MENU_TEXT,
+                        FitStrategy::Center,
+                        &t,
+                    )?;
                     None
                 }
                 RenderVariant::Hide => None,
@@ -250,6 +277,10 @@ impl UiElement {
         self.display = RenderVariant::Img(i);
         self
     }
+    pub fn with_text(mut self, t: String) -> Self {
+        self.display = RenderVariant::Text(t);
+        self
+    }
     pub fn with_cooldown(mut self, start: Timestamp, end: Timestamp) -> Self {
         self.overlay = Some((start, end));
         self
@@ -262,6 +293,9 @@ impl UiElement {
         match self.display {
             RenderVariant::Img(i) => {
                 self.display = RenderVariant::ImgWithColBackground(i, col);
+            }
+            RenderVariant::Text(t) => {
+                self.display = RenderVariant::TextWithColBackground(t, col);
             }
             _ => panic!("Not implemented"),
         }

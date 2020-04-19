@@ -25,7 +25,7 @@ pub trait InteractiveTableArea {
     /// Defines how many table rows it takes to draw the area
     fn rows(&self) -> usize;
     /// Draw the area on a specified area
-    fn draw(&mut self, window: &mut Window, sprites: &mut Sprites, now: Timestamp, area: &Rectangle) -> Result<()>;
+    fn draw(&mut self, window: &mut Window, sprites: &mut Sprites, tp: &mut TableTextProvider, now: Timestamp, area: &Rectangle) -> PadlResult<()>;
     /// Check if the mouse hits somthing on the area
     fn click(&self, mouse: Vector) -> PadlResult<Option<(ClickOutput, Option<Condition>)>>;
     /// Remove one of the clickable options
@@ -94,11 +94,11 @@ pub fn draw_table(
     let img_s = row_height * 0.95;
     let margin = 10.0;
     
-    let floats = &mut text_provider.text_pool;
-    let white_floats = &mut text_provider.white_text_pool;
-
+    
     let mut line = Rectangle::new(max_area.pos, (max_area.width(), row_height));
     for row in table {
+        let floats = &mut text_provider.text_pool;
+        let white_floats = &mut text_provider.white_text_pool;
         match row {
             TableRow::Text(text) => {
                 let mut text_area = line.clone();
@@ -121,7 +121,7 @@ pub fn draw_table(
             TableRow::InteractiveArea(ia) => {
                 let mut area = line.clone();
                 area.size.y = area.size.y * ia.rows() as f32;
-                ia.draw(window, sprites, now, &area)?;
+                ia.draw(window, sprites, text_provider, now, &area)?;
                 line.pos.y += area.size.y;
             }
             TableRow::ProgressBar(bkgcol, col, i, n, label) => {
