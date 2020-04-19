@@ -45,6 +45,7 @@ struct PositionedFrame<S,G,Ev,E> {
 pub struct FrameManager<V: Hash + Eq+Copy,S,G,Ev,E> {
     view_frames: HashMap<V, Vec<FrameRef<S,G,Ev,E>>>,
     active_frames: Vec<FrameRef<S,G,Ev,E>>,
+    all_frames: Vec<FrameRef<S,G,Ev,E>>,
     current_view: V,
 }
 impl<V: Hash+Eq+Copy,S,G,Ev,E> FrameManager<V,S,G,Ev,E> {
@@ -72,8 +73,9 @@ impl<V: Hash+Eq+Copy,S,G,Ev,E> FrameManager<V,S,G,Ev,E> {
             vec.push(frame_ref.clone());
         }
         if frame_displayed {
-            self.active_frames.push(frame_ref);
+            self.active_frames.push(frame_ref.clone());
         }
+        self.all_frames.push(frame_ref);
     }
     pub fn left_click(&mut self, state: &mut S, pos: (i32,i32)) -> Result<(),E> {
         // TODO: Check position
@@ -89,17 +91,17 @@ impl<V: Hash+Eq+Copy,S,G,Ev,E> FrameManager<V,S,G,Ev,E> {
         }
         Ok(())
     }
+    /// Event that only reaches active frames
     pub fn event(&mut self, state: &mut S, event: &Ev) -> Result<(),E> {
         for frame in &mut self.active_frames {
             frame.borrow_mut().handler.event(state, event)?;
         }
         Ok(())
     }
+    /// Event that reaches all frames, regardless of activation status
     pub fn global_event(&mut self, state: &mut S, event: &Ev) -> Result<(),E> {
-        for frames in &mut self.view_frames.values_mut() {
-            for frame in frames.as_mut_slice() {
-                frame.borrow_mut().handler.event(state, event)?;
-            }
+        for frame in &mut self.all_frames {
+            frame.borrow_mut().handler.event(state, event)?;
         }
         Ok(())
     }
@@ -146,6 +148,7 @@ impl<V: Hash+Eq+Copy,S,G,Ev,E> FrameManager<V,S,G,Ev,E> {
     pub fn new(v: V) -> Self {
         FrameManager {
             active_frames: vec![],
+            all_frames: vec![],
             current_view: v,
             view_frames: HashMap::new(),
         }

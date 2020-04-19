@@ -64,7 +64,7 @@ impl GameState {
                 self.game.switch_view(view);
             }
             GameEvent::LoadScene(s) => {
-                self.viewer.event(&mut self.game, &PadlEvent::Scene(s))?;
+                self.viewer.global_event(&mut self.game, &PadlEvent::Scene(s))?;
             }
         }
         Ok(())
