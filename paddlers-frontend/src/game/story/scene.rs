@@ -1,3 +1,4 @@
+use crate::game::story::StoryAction;
 use crate::gui::input::UiView;
 use crate::prelude::*;
 use paddlers_shared_lib::story::story_state::StoryState;
@@ -24,7 +25,7 @@ pub struct SlideButton {
 }
 pub enum SlideButtonAction {
     Slide(SlideIndex),
-    View(UiView),
+    ActionAndView(StoryAction, UiView),
 }
 
 pub type SlideIndex = usize;
@@ -137,7 +138,7 @@ fn load_entry_scene() -> Scene {
 
     let button = SlideButton {
         text_key: "welcomescene-A90",
-        action: SlideButtonAction::View(UiView::Town),
+        action: SlideButtonAction::ActionAndView(StoryAction::EnableTempleInShop, UiView::Town),
     };
     // 6
     slides.push(Slide {

@@ -110,8 +110,8 @@ impl<'a, 'b> DialogueFrame<'a, 'b> {
         for b in self.current_scene.as_ref().unwrap().slide_buttons() {
             let button = match b.action {
                 SlideButtonAction::Slide(s) => UiElement::new(ClickOutput::Slide(s)),
-                SlideButtonAction::View(v) => {
-                    UiElement::new(ClickOutput::Event(GameEvent::SwitchToView(v)))
+                SlideButtonAction::ActionAndView(a,v) => {
+                    UiElement::new(ClickOutput::Events(GameEvent::StoryAction(a), GameEvent::SwitchToView(v)))
                 }
             }
             .with_text(texts.gettext(b.text_key).to_owned())
@@ -219,7 +219,12 @@ impl<'a, 'b> Frame for DialogueFrame<'a, 'b> {
         if let Some(output) = self.buttons.click(pos.into())? {
             match output {
                 (ClickOutput::Slide(i), None) => self.load_slide(i, &state.locale)?,
-                _ => unimplemented!("Only slide transitions implemented"),
+                (ClickOutput::Event(evt), None) => state.event_pool.send(evt)?, 
+                (ClickOutput::Events(evt0,evt1), None) => {
+                    state.event_pool.send(evt0)?; 
+                    state.event_pool.send(evt1)?;
+                } 
+                _ => PadlErrorCode::DevMsg("Unimplemented ClickOutput in dialogue.rs").dev()?,
             }
         }
         Ok(())

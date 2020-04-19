@@ -33,7 +33,7 @@ impl DefaultShop {
         result
     }
 
-    fn add_building(&mut self, b: BuildingType) {
+    pub fn add_building(&mut self, b: BuildingType) {
         self.ui.add(
             UiElement::new(b)
                 .with_image(b.sprite())

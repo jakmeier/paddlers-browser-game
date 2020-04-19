@@ -1,4 +1,5 @@
 use crate::game::story::scene::SceneIndex;
+use crate::game::story::StoryAction;
 use crate::game::units::workers::Worker;
 use crate::gui::input::UiView;
 use crate::gui::ui_state::UiState;
@@ -13,12 +14,6 @@ use specs::storage::HashMapStorage;
 /// If attached to an entity, will be triggered when the entity is selected.
 pub struct EntityTrigger {
     pub actions: Vec<StoryAction>,
-}
-
-#[derive(Debug, Clone)]
-pub enum StoryAction {
-    OpenScene(SceneIndex),
-    EnableTempleInShop,
 }
 
 impl Game<'_, '_> {
@@ -62,7 +57,7 @@ impl EntityTriggerSystem {
         for action in trigger.actions {
             match action {
                 StoryAction::OpenScene(i) => {
-                    self.event_pool.send(GameEvent::LoadScene(i))?;
+                    self.event_pool.send(GameEvent::StoryAction(StoryAction::OpenScene(i)))?;
                     self.event_pool
                         .send(GameEvent::SwitchToView(UiView::Dialogue))?;
                 }

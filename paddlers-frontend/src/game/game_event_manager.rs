@@ -9,6 +9,8 @@
 //!
 //! Try to keep computations in here short and simple.
 
+use crate::game::story::StoryAction;
+use crate::game::town::DefaultShop;
 use crate::game::{
     components::*, player_info::PlayerInfo, story::scene::SceneIndex,
     units::attackers::change_duck_sprite_to_happy,
@@ -28,7 +30,7 @@ pub enum GameEvent {
     HttpBuyProphet,
     SendProphetAttack((i32, i32)),
     SwitchToView(UiView),
-    LoadScene(SceneIndex),
+    StoryAction(StoryAction),
 }
 
 impl GameState {
@@ -63,8 +65,13 @@ impl GameState {
             GameEvent::SwitchToView(view) => {
                 self.game.switch_view(view);
             }
-            GameEvent::LoadScene(s) => {
-                self.viewer.global_event(&mut self.game, &PadlEvent::Scene(s))?;
+            GameEvent::StoryAction(StoryAction::OpenScene(s)) => {
+                self.viewer
+                    .global_event(&mut self.game, &PadlEvent::Scene(s))?;
+            }
+            GameEvent::StoryAction(StoryAction::EnableTempleInShop) => {
+                let shop = &mut self.game.world.write_resource::<DefaultShop>();
+                shop.add_building(BuildingType::Temple);
             }
         }
         Ok(())

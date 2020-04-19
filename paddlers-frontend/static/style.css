@@ -2,36 +2,45 @@ body, a {
     font-family: manjari;
     color: white;
 }
+
 #game-root {
     position: relative;
     font-size: 24px;
     color: black;
 }
+
 #game-root {
     max-width: 100%;
     max-height: 100%;
 }
+
 #game-root canvas {
     max-width: 100%;
     max-height: 100%;
 }
+
 div.attack-table {
     display: grid;
     grid-template-columns: 2fr 1fr 1fr;
     padding: 10px;
 }
-div.attack-table >:first-child {
-    grid-column: 1 / 4; /* span from grid column line 1 to 4 (3 columns) */
+
+div.attack-table>:first-child {
+    grid-column: 1 / 4;
+    /* span from grid column line 1 to 4 (3 columns) */
 }
+
 section.leaderboard {
     display: grid;
     grid-template-columns: 1fr 2fr 2fr;
     padding: 20px;
 }
+
 div.pdl-res-comp {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
 }
+
 div.pdl-res-comp img {
     max-width: 33%;
     max-height: 80%;
@@ -46,13 +55,21 @@ div.dialogue {
     align-items: center;
 }
 
+.pane {
+    /*Can be removed after panes update*/
+    pointer-events: none;
+}
+
 /* MID */
+
 @media screen and (max-width: 1679px) {
     #game-root {
         font-size: 20px;
     }
 }
+
 /* LOW */
+
 @media screen and (max-width: 1119px) {
     #game-root {
         font-size: 16px;
