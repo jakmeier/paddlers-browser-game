@@ -1,4 +1,7 @@
-use crate::net::graphql::query_types::WorkerResponse;
+mod progress_manager;
+use crate::net::graphql::query_types::{BuildingsResponse, HobosQueryResponse};
+use progress_manager::*;
+
 use crate::game::player_info::PlayerInfo;
 use crate::game::Game;
 use crate::gui::sprites::{
@@ -13,8 +16,9 @@ use crate::logging::error::PadlError;
 use crate::logging::text_to_user::TextBoard;
 use crate::logging::ErrorQueue;
 use crate::net::game_master_api::RestApiState;
+use crate::net::graphql::query_types::WorkerResponse;
 use crate::net::NetMsg;
-use crate::prelude::{TextDb, PadlResult, ScreenResolution};
+use crate::prelude::{PadlResult, ScreenResolution, TextDb};
 use crate::view::FloatingText;
 use quicksilver::prelude::*;
 use std::sync::mpsc::{channel, Receiver, Sender};
@@ -32,6 +36,7 @@ pub struct BaseState {
 
 /// State that is used while loading all data over the network
 pub struct LoadingState {
+    pub progress: ProgressManager,
     pub game_data: GameLoadingData,
     pub base: BaseState,
     images: Vec<Asset<Image>>,
@@ -44,6 +49,8 @@ pub struct LoadingState {
 pub struct GameLoadingData {
     pub player_info: Option<PlayerInfo>,
     pub worker_response: Option<WorkerResponse>,
+    pub buildings_response: Option<BuildingsResponse>,
+    pub hobos_response: Option<HobosQueryResponse>,
 }
 
 impl LoadingState {
@@ -64,6 +71,13 @@ impl LoadingState {
             tb: TextBoard::default(),
         };
         let game_data = GameLoadingData::default();
+        let progress = ProgressManager::new()
+            .with_loadable(&game_data.player_info)
+            .with_loadable(&game_data.worker_response)
+            .with_loadable(&game_data.buildings_response)
+            .with_loadable(&game_data.hobos_response)
+            .with::<TextDb>(1)
+            .with::<Image>(images.len());
         LoadingState {
             base,
             game_data,
@@ -71,25 +85,24 @@ impl LoadingState {
             locale,
             resolution,
             preload_float,
+            progress,
         }
     }
     pub fn progress(&mut self) -> f32 {
-        // TODO: Put this calculation in its own tracking object with messages to display
-        let total = self.images.len() as f32 + 3.0;
         let images_loaded = self
             .images
             .iter_mut()
             .map(Self::asset_loaded)
             .filter(|b| *b)
             .count();
+        self.progress.report_progress::<Image>(images_loaded);
         let locale_loaded = if Self::asset_loaded(&mut self.locale) {
             1
         } else {
             0
         };
-        let player_info_loaded = if self.game_data.player_info.is_some() { 1 } else { 0 };
-        let worker_loaded = if self.game_data.worker_response.is_some() { 1 } else { 0 };
-        (images_loaded + locale_loaded + player_info_loaded + worker_loaded) as f32 / total
+        self.progress.report_progress::<TextDb>(locale_loaded);
+        self.progress.progress()
     }
     pub fn asset_loaded<T>(asset: &mut Asset<T>) -> bool {
         let mut helper = false;
@@ -158,7 +171,8 @@ impl LoadingState {
         match Game::load_game(sprites, catalog, resolution, game_data, base) {
             Err(e) => {
                 let mut tb = TextBoard::default();
-                #[allow(unused_must_use)] {
+                #[allow(unused_must_use)]
+                {
                     tb.display_error_message(":(\nLoading game failed".to_owned()); // TODO: multi-lang errors
                     tb.draw(&Rectangle::new_sized(resolution.main_area()));
                 }
@@ -181,7 +195,7 @@ impl QuicksilverState {
     pub(crate) fn try_finalize(&mut self) {
         match self {
             Self::Loading(state) => {
-                if state.progress() >= 1.0 {
+                if state.progress.done() {
                     let err = state.preload_float.hide();
                     state.queue_error(err.map_err(|e| e.into()));
                     self.finalize();

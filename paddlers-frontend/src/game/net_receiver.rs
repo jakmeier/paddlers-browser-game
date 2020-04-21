@@ -5,6 +5,7 @@ use crate::game::{
 use crate::init::loading::LoadingState;
 use crate::init::quicksilver_integration::{GameState, Signal};
 use crate::net::graphql::query_types::WorkerResponse;
+use crate::net::graphql::query_types::{BuildingsResponse, HobosQueryResponse};
 use crate::net::NetMsg;
 use crate::prelude::*;
 use std::convert::TryInto;
@@ -26,10 +27,20 @@ impl LoadingState {
                     }
                 },
                 NetMsg::Workers(response) => {
+                    self.progress.report_progress_for(&response, 1);
                     self.game_data.worker_response = Some(response);
                 }
                 NetMsg::Player(player_info) => {
+                    self.progress.report_progress_for(&player_info, 1);
                     self.game_data.player_info = Some(player_info);
+                }
+                NetMsg::Buildings(response) => {
+                    self.progress.report_progress_for(&response, 1);
+                    self.game_data.buildings_response = Some(response);
+                }
+                NetMsg::Hobos(hobos) => {
+                    self.progress.report_progress_for(&hobos, 1);
+                    self.game_data.hobos_response = Some(hobos);
                 }
                 other => {
                     println!(
@@ -66,17 +77,10 @@ impl GameState {
                         }
                     }
                     NetMsg::Buildings(response) => {
-                        if let Some(data) = response.data {
-                            self.game.flush_buildings()?;
-                            self.game.world.maintain();
-                            data.create_entities(&mut self.game);
-                        } else {
-                            println!("No buildings available");
-                        }
+                        self.game.load_buildings_from_net_response(response)?;
                     }
                     NetMsg::Hobos(hobos) => {
-                        self.game.flush_home_hobos()?;
-                        self.game.insert_hobos(hobos)?;
+                        self.game.load_hobos_from_net_response(hobos)?;
                     }
                     NetMsg::Leaderboard(offset, list) => {
                         self.viewer.global_event(
@@ -192,5 +196,23 @@ impl<'a, 'b> Game<'a, 'b> {
                 q.push(e);
             }
         }
+    }
+    pub fn load_buildings_from_net_response(
+        &mut self,
+        response: BuildingsResponse,
+    ) -> PadlResult<()> {
+        if let Some(data) = response.data {
+            self.flush_buildings()?;
+            self.world.maintain();
+            data.create_entities(self);
+        } else {
+            println!("No buildings available");
+        }
+        Ok(())
+    }
+    pub fn load_hobos_from_net_response(&mut self, hobos: HobosQueryResponse) -> PadlResult<()> {
+        self.flush_home_hobos()?;
+        self.insert_hobos(hobos)?;
+        Ok(())
     }
 }

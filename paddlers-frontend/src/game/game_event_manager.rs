@@ -12,8 +12,7 @@
 use crate::game::story::StoryAction;
 use crate::game::town::DefaultShop;
 use crate::game::{
-    components::*, player_info::PlayerInfo, story::scene::SceneIndex,
-    units::attackers::change_duck_sprite_to_happy,
+    components::*, player_info::PlayerInfo, units::attackers::change_duck_sprite_to_happy,
 };
 use crate::gui::input::UiView;
 use crate::init::quicksilver_integration::GameState;

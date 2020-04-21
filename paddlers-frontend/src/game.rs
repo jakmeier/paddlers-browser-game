@@ -124,7 +124,9 @@ impl Game<'_, '_> {
             #[cfg(feature = "dev_view")]
             active_test: None,
         };
+        game.load_buildings_from_net_response(game_data.buildings_response.ok_or("No buildings response")?)?;
         game.load_workers_from_net_response(game_data.worker_response.ok_or("No worker response")?);
+        game.load_hobos_from_net_response(game_data.hobos_response.ok_or("No hobos response")?)?;
         game.world.maintain();
         game.load_story_state()?;
         Ok(game)
