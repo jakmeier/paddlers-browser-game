@@ -2,7 +2,6 @@ use crate::game::attacks::AttackFrame;
 use crate::game::dialogue::DialogueFrame;
 use crate::game::leaderboard::LeaderboardFrame;
 use crate::game::map::MapFrame;
-use crate::game::player_info::PlayerInfo;
 use crate::game::town::TownFrame;
 use crate::game::Game;
 use crate::gui::input::UiView;
@@ -12,7 +11,8 @@ use crate::Framer;
 use quicksilver::prelude::*;
 
 pub(crate) fn load_viewer(game: &mut Game<'static, 'static>, ep: EventPool) -> Framer {
-    let mut viewer = Framer::new(UiView::entry(&game.world.fetch::<PlayerInfo>().story_state));
+    let view = game.entry_view();
+    let mut viewer = Framer::new(view);
 
     /* Town */
 

@@ -1,5 +1,6 @@
 use crate::game::story::entity_trigger::EntityTrigger;
 use crate::prelude::*;
+use crate::view::entry_view;
 use specs::prelude::*;
 
 use crate::game::town::DefaultShop;
@@ -31,8 +32,9 @@ pub(super) fn insert_resources(
     world.insert(tb);
     world.insert(Town::new(resolution));
     world.insert(TownResources::default());
-    world.insert(UiState::new(&player_info));
     world.insert(player_info);
+    let view = entry_view(player_info.story_state);
+    world.insert(UiState::new(view));
 }
 
 pub fn register_components(world: &mut World) {

@@ -1,4 +1,3 @@
-use crate::game::player_info::PlayerInfo;
 use crate::gui::input::*;
 use crate::prelude::*;
 use quicksilver::prelude::*;
@@ -24,14 +23,14 @@ pub struct ClockTick(pub u32);
 pub struct Now(pub Timestamp);
 
 impl UiState {
-    pub fn new(player_info: &PlayerInfo) -> Self {
+    pub fn new(current_view: UiView) -> Self {
         UiState {
             grabbed_item: None,
             selected_entity: None,
             hovered_entity: None,
             main_area: Rectangle::default(),
             menu_box_area: Rectangle::default(),
-            current_view: UiView::entry(&player_info.story_state),
+            current_view,
         }
     }
     pub fn leave_view(&mut self) {

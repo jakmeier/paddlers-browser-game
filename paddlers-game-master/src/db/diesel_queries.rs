@@ -2,12 +2,19 @@ use diesel::prelude::*;
 use paddlers_shared_lib::prelude::*;
 use paddlers_shared_lib::schema::*;
 use paddlers_shared_lib::models::dsl;
+use paddlers_shared_lib::story::story_state::StoryState;
 use super::*;
 
 impl DB {
     pub fn insert_player(&self, u: &NewPlayer) -> QueryResult<Player> {
         diesel::insert_into(players::dsl::players)
             .values(u)
+            .get_result(self.dbconn())
+    }
+    pub fn update_story_state(&self, p: PlayerKey, story_state: StoryState) -> QueryResult<Player> {
+        let target = players::table.find(p.num());
+        diesel::update(target)
+            .set(players::story_state.eq(story_state))
             .get_result(self.dbconn())
     }
 

@@ -7,6 +7,7 @@
 //!
 //! All this is glued together by implementing quicksilver's State
 
+use crate::game::story::scene::SlideIndex;
 use crate::init::loading::LoadingState;
 use crate::logging::{text_to_user::TextBoard, ErrorQueue};
 use crate::net::game_master_api::RestApiState;
@@ -42,7 +43,7 @@ pub(crate) enum PadlEvent {
     Quicksilver(Event),
     Network(NetMsg),
     Signal(Signal),
-    Scene(SceneIndex), // TODO: Generalization? Maybe all GameEvents?
+    Scene(SceneIndex, SlideIndex), // TODO: Generalization? Maybe all GameEvents?
 }
 pub enum Signal {
     ResourcesUpdated,

@@ -13,6 +13,7 @@ mod statistics;
 mod setup;
 mod authentication;
 
+use paddlers_shared_lib::api::story::StoryStateTransition;
 use db::*;
 use game_master::{
     GameMaster,
@@ -130,6 +131,11 @@ fn main() {
                 web::resource("/attacks/create")
                 .data(web::Json::<AttackDescriptor>)
                 .route(web::post().to_async(api::create_attack))
+            )
+            .service(
+                web::resource("/story/transition")
+                .data(web::Json::<StoryStateTransition>)
+                .route(web::post().to(api::story_transition))
             )
             .service(
                 web::resource("/stats")

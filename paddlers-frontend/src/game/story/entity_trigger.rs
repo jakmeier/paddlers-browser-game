@@ -1,7 +1,6 @@
 use crate::game::story::scene::SceneIndex;
 use crate::game::story::StoryAction;
 use crate::game::units::workers::Worker;
-use crate::gui::input::UiView;
 use crate::gui::ui_state::UiState;
 use crate::logging::ErrorQueue;
 use crate::prelude::*;
@@ -21,7 +20,7 @@ impl Game<'_, '_> {
         match story_state {
             StoryState::Initialized => {
                 self.add_trigger_to_hero(EntityTrigger {
-                    actions: vec![StoryAction::OpenScene(SceneIndex::Entrance)],
+                    actions: vec![StoryAction::OpenScene(SceneIndex::Entrance, 0)],
                 })?;
             }
             StoryState::TempleBuilt
@@ -54,18 +53,8 @@ impl EntityTriggerSystem {
         EntityTriggerSystem { event_pool }
     }
     fn trigger(&mut self, trigger: EntityTrigger) -> PadlResult<()> {
-        for action in trigger.actions {
-            match action {
-                StoryAction::OpenScene(i) => {
-                    self.event_pool.send(GameEvent::StoryAction(StoryAction::OpenScene(i)))?;
-                    self.event_pool
-                        .send(GameEvent::SwitchToView(UiView::Dialogue))?;
-                }
-                StoryAction::EnableTempleInShop => {
-                    // TODO
-                }
-            }
-        }
+        self.event_pool
+            .send(GameEvent::StoryActions(trigger.actions))?;
         Ok(())
     }
 }

@@ -17,6 +17,7 @@ use crate::game::{
 use crate::gui::input::UiView;
 use crate::init::quicksilver_integration::GameState;
 use crate::prelude::*;
+use paddlers_shared_lib::api::story::StoryStateTransition;
 use specs::prelude::*;
 use std::sync::mpsc::Sender;
 
@@ -29,7 +30,7 @@ pub enum GameEvent {
     HttpBuyProphet,
     SendProphetAttack((i32, i32)),
     SwitchToView(UiView),
-    StoryAction(StoryAction),
+    StoryActions(Vec<StoryAction>),
 }
 
 impl GameState {
@@ -64,13 +65,31 @@ impl GameState {
             GameEvent::SwitchToView(view) => {
                 self.game.switch_view(view);
             }
-            GameEvent::StoryAction(StoryAction::OpenScene(s)) => {
-                self.viewer
-                    .global_event(&mut self.game, &PadlEvent::Scene(s))?;
+            GameEvent::StoryActions(actions) => {
+                for a in actions {
+                    self.try_handle_story_action(a)?;
+                }
             }
-            GameEvent::StoryAction(StoryAction::EnableTempleInShop) => {
+        }
+        Ok(())
+    }
+    fn try_handle_story_action(&mut self, action: StoryAction) -> PadlResult<()> {
+        match action {
+            StoryAction::OpenScene(scene,slide) => {
+                self.viewer
+                    .global_event(&mut self.game, &PadlEvent::Scene(scene,slide))?;
+                self.game.switch_view(UiView::Dialogue);
+            }
+            StoryAction::EnableTempleInShop => {
                 let shop = &mut self.game.world.write_resource::<DefaultShop>();
                 shop.add_building(BuildingType::Temple);
+            }
+            StoryAction::StoryProgress(new_state) => {
+                let t = StoryStateTransition {
+                    before: self.game.story_state(),
+                    after: new_state,
+                };
+                self.game.rest().http_update_story_state(t)?;
             }
         }
         Ok(())

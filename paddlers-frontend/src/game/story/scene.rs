@@ -23,9 +23,11 @@ pub struct SlideButton {
     pub text_key: TextKey,
     pub action: SlideButtonAction,
 }
-pub enum SlideButtonAction {
-    Slide(SlideIndex),
-    ActionAndView(StoryAction, UiView),
+#[derive(Default, Clone, Debug, PartialEq)]
+pub struct SlideButtonAction {
+    pub next_slide: Option<SlideIndex>,
+    pub next_view: Option<UiView>,
+    pub actions: Vec<StoryAction>,
 }
 
 pub type SlideIndex = usize;
@@ -54,6 +56,7 @@ impl Scene {
             None
         }
     }
+    #[inline]
     pub fn set_slide(&mut self, i: SlideIndex) {
         self.active_slide = i;
     }
@@ -66,27 +69,32 @@ pub enum SceneIndex {
 
 impl SceneIndex {
     // Improvement: The scenes could be loaded from the server dynamically, to reduce the WASM binary size
-    pub fn load_scene(&self) -> Scene {
+    pub fn load_scene(&self, slide: SlideIndex) -> Scene {
         match self {
-            Self::Entrance => load_entry_scene(),
-        }
-    }
-    pub fn from_story_state(story_state: &StoryState) -> Option<Self> {
-        match story_state {
-            StoryState::Initialized
-            | StoryState::TempleBuilt
-            | StoryState::VisitorArrived
-            | StoryState::FirstVisitorWelcomed
-            | StoryState::FlowerPlanted
-            | StoryState::MoreHappyVisitors
-            | StoryState::TreePlanted
-            | StoryState::StickGatheringStationBuild
-            | StoryState::GatheringSticks => None,
-            StoryState::ServantAccepted => Some(Self::Entrance),
+            Self::Entrance => load_entry_scene(slide),
         }
     }
 }
-fn load_entry_scene() -> Scene {
+
+impl SlideButtonAction {
+    pub fn to_slide(next_slide: SlideIndex) -> Self {
+        SlideButtonAction {
+            next_slide: Some(next_slide),
+            next_view: None,
+            actions: vec![],
+        }
+    }
+    fn with_action(mut self, a: StoryAction) -> Self {
+        self.actions.push(a);
+        self
+    }
+    fn with_view_change(mut self, v: UiView) -> Self {
+        self.next_view = Some(v);
+        self
+    }
+}
+
+fn load_entry_scene(active_slide: SlideIndex) -> Scene {
     let mut slides = Vec::new();
 
     // 0
@@ -119,7 +127,8 @@ fn load_entry_scene() -> Scene {
     });
     let button = SlideButton {
         text_key: "welcomescene-A60",
-        action: SlideButtonAction::Slide(5),
+        action: SlideButtonAction::to_slide(5)
+            .with_action(StoryAction::StoryProgress(StoryState::ServantAccepted)),
     };
     // 4
     slides.push(Slide {
@@ -138,7 +147,9 @@ fn load_entry_scene() -> Scene {
 
     let button = SlideButton {
         text_key: "welcomescene-A90",
-        action: SlideButtonAction::ActionAndView(StoryAction::EnableTempleInShop, UiView::Town),
+        action: SlideButtonAction::default()
+            .with_action(StoryAction::EnableTempleInShop)
+            .with_view_change(UiView::Town),
     };
     // 6
     slides.push(Slide {
@@ -150,6 +161,6 @@ fn load_entry_scene() -> Scene {
 
     Scene {
         slides,
-        active_slide: 0,
+        active_slide,
     }
 }

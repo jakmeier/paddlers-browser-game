@@ -3,6 +3,7 @@ pub mod error;
 pub mod keys;
 pub mod shop;
 pub mod statistics;
+pub mod story;
 pub mod tasks;
 
 use serde::*;

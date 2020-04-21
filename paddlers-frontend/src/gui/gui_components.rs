@@ -1,16 +1,16 @@
 //! High-level GUI components that may be related to game logic as far as necessary
 
 mod ui_box;
-use crate::game::story::scene::SlideIndex;
+use crate::game::story::scene::SlideButtonAction;
 pub use ui_box::*;
 mod resources_component;
 pub use resources_component::*;
 
-use paddlers_shared_lib::prelude::AbilityType;
-use paddlers_shared_lib::api::shop::Price;
+use crate::game::game_event_manager::GameEvent;
 use crate::gui::{sprites::*, utils::*, z::*};
 use crate::prelude::*;
-use crate::game::game_event_manager::GameEvent;
+use paddlers_shared_lib::api::shop::Price;
+use paddlers_shared_lib::prelude::AbilityType;
 use quicksilver::prelude::*;
 
 pub enum TableRow<'a> {
@@ -25,7 +25,14 @@ pub trait InteractiveTableArea {
     /// Defines how many table rows it takes to draw the area
     fn rows(&self) -> usize;
     /// Draw the area on a specified area
-    fn draw(&mut self, window: &mut Window, sprites: &mut Sprites, tp: &mut TableTextProvider, now: Timestamp, area: &Rectangle) -> PadlResult<()>;
+    fn draw(
+        &mut self,
+        window: &mut Window,
+        sprites: &mut Sprites,
+        tp: &mut TableTextProvider,
+        now: Timestamp,
+        area: &Rectangle,
+    ) -> PadlResult<()>;
     /// Check if the mouse hits somthing on the area
     fn click(&self, mouse: Vector) -> PadlResult<Option<(ClickOutput, Option<Condition>)>>;
     /// Remove one of the clickable options
@@ -39,13 +46,13 @@ pub enum ClickOutput {
     BuildingType(BuildingType),
     Ability(AbilityType),
     Event(GameEvent),
-    Events(GameEvent,GameEvent),
-    Slide(SlideIndex),
+    Events(GameEvent, GameEvent),
+    SlideAction(SlideButtonAction),
 }
 #[derive(Clone, Debug)]
 /// Represents a checkable condition. Used to check it later when the state is not available inside a system, for example.
 pub enum Condition {
-    HasResources(Price)
+    HasResources(Price),
 }
 
 pub struct TableTextProvider {
@@ -56,14 +63,24 @@ impl TableTextProvider {
     pub fn new() -> Self {
         TableTextProvider {
             text_pool: TextPool::default(),
-            white_text_pool: TextPool::new("".to_owned(), &[("color","white")], &[], Rectangle::default()),
-        } 
+            white_text_pool: TextPool::new(
+                "".to_owned(),
+                &[("color", "white")],
+                &[],
+                Rectangle::default(),
+            ),
+        }
     }
     pub fn new_styled(class: &'static str) -> Self {
         TableTextProvider {
             text_pool: TextPool::new("".to_owned(), &[], &[class], Rectangle::default()),
-            white_text_pool: TextPool::new("".to_owned(), &[("color","white")], &[class], Rectangle::default()),
-        } 
+            white_text_pool: TextPool::new(
+                "".to_owned(),
+                &[("color", "white")],
+                &[class],
+                Rectangle::default(),
+            ),
+        }
     }
     pub fn reset(&mut self) {
         self.white_text_pool.reset();
@@ -94,8 +111,6 @@ pub fn draw_table(
     let font_h = row_height * 0.9;
     let img_s = row_height * 0.95;
     let margin = 10.0;
-    
-    
     let mut line = Rectangle::new(max_area.pos, (max_area.width(), row_height));
     for row in table {
         let floats = &mut text_provider.text_pool;
@@ -104,7 +119,9 @@ pub fn draw_table(
             TableRow::Text(text) => {
                 let mut text_area = line.clone();
                 text_area.size.y = font_h;
-                floats.allocate().write(window, &text_area, z, FitStrategy::Center, text)?;
+                floats
+                    .allocate()
+                    .write(window, &text_area, z, FitStrategy::Center, text)?;
                 line.pos.y += row_height;
             }
             TableRow::TextWithImage(text, img) => {
@@ -115,7 +132,9 @@ pub fn draw_table(
                 text_area.pos.x += shift_x;
                 text_area.size.y = font_h;
                 text_area.pos.y += row_height - font_h; // something is fishy here, should be /2.0 but right now looks better without
-                floats.allocate().write(window, &text_area, z, FitStrategy::Center, text)?;
+                floats
+                    .allocate()
+                    .write(window, &text_area, z, FitStrategy::Center, text)?;
                 draw_static_image(sprites, window, &symbol, *img, z, FitStrategy::Center)?;
                 line.pos.y += row_height;
             }
@@ -138,12 +157,24 @@ pub fn draw_table(
                     window.draw_ex(&label_area, Col(*bkgcol), Transform::IDENTITY, z);
                     let mut label_text_area = label_area.shrink_to_center(0.9);
                     label_text_area.pos.y += label_text_area.size.y * 0.1;
-                    white_floats.allocate().write(window, &label_text_area, z, FitStrategy::Center, label)?;
+                    white_floats.allocate().write(
+                        window,
+                        &label_text_area,
+                        z,
+                        FitStrategy::Center,
+                        label,
+                    )?;
                 }
                 let text = format!("{}/{}", i, n);
                 let mut text_area = area.shrink_to_center(0.9);
                 text_area.pos.y += text_area.size.y * 0.1;
-                white_floats.allocate().write(window, &text_area, z + 1, FitStrategy::Center, &text)?;
+                white_floats.allocate().write(
+                    window,
+                    &text_area,
+                    z + 1,
+                    FitStrategy::Center,
+                    &text,
+                )?;
 
                 window.draw_ex(&area, Col(*col), Transform::IDENTITY, Z_MENU_BOX + 1);
                 let mut bar = area.padded(3.0);
@@ -163,7 +194,7 @@ fn row_count(table: &[TableRow]) -> usize {
             TableRow::Text(_) => 1,
             TableRow::TextWithImage(_, _) => 1,
             TableRow::InteractiveArea(ia) => ia.rows(),
-            TableRow::ProgressBar(_,_,_,_,_) => 1,
+            TableRow::ProgressBar(_, _, _, _, _) => 1,
         }
     })
 }

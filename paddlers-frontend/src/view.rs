@@ -2,6 +2,7 @@ mod floating_text;
 mod frame;
 mod text_node;
 pub mod text_pool;
+use crate::game::story::select_dialogue_scene;
 pub use floating_text::*;
 pub use frame::*;
 use paddlers_shared_lib::story::story_state::StoryState;
@@ -32,21 +33,10 @@ impl Game<'_, '_> {
     }
 }
 
-impl UiView {
-    /// Determines in which view the game is loaded.
-    /// Requires the player's current story state.
-    pub fn entry(story_state: &StoryState) -> Self {
-        match story_state {
-            StoryState::Initialized
-            | StoryState::TempleBuilt
-            | StoryState::VisitorArrived
-            | StoryState::FirstVisitorWelcomed
-            | StoryState::FlowerPlanted
-            | StoryState::MoreHappyVisitors
-            | StoryState::TreePlanted
-            | StoryState::StickGatheringStationBuild
-            | StoryState::GatheringSticks => UiView::Town,
-            StoryState::ServantAccepted => UiView::Dialogue,
-        }
+pub fn entry_view(story_state: StoryState) -> UiView {
+    if select_dialogue_scene(story_state).is_some() {
+        UiView::Dialogue
+    } else {
+        UiView::Town
     }
 }

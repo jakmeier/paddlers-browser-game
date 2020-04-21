@@ -91,15 +91,17 @@ impl<'a, 'b> DialogueFrame<'a, 'b> {
 
         // Create navigation buttons
         if let Some(i) = self.scene().unwrap().back_button() {
-            let back_button = UiElement::new(ClickOutput::Slide(i))
-                .with_render_variant(RenderVariant::Shape(PadlShapeIndex::LeftArrow));
+            let back_button =
+                UiElement::new(ClickOutput::SlideAction(SlideButtonAction::to_slide(i)))
+                    .with_render_variant(RenderVariant::Shape(PadlShapeIndex::LeftArrow));
             self.buttons.add(back_button);
         } else {
             self.buttons.add(UiElement::empty());
         }
         if let Some(i) = self.scene().unwrap().next_button() {
-            let next_button = UiElement::new(ClickOutput::Slide(i))
-                .with_render_variant(RenderVariant::Shape(PadlShapeIndex::RightArrow));
+            let next_button =
+                UiElement::new(ClickOutput::SlideAction(SlideButtonAction::to_slide(i)))
+                    .with_render_variant(RenderVariant::Shape(PadlShapeIndex::RightArrow));
             self.buttons.add(next_button);
         }
 
@@ -108,14 +110,9 @@ impl<'a, 'b> DialogueFrame<'a, 'b> {
     }
     fn load_slide_buttons(&mut self, texts: &TextDb) {
         for b in self.current_scene.as_ref().unwrap().slide_buttons() {
-            let button = match b.action {
-                SlideButtonAction::Slide(s) => UiElement::new(ClickOutput::Slide(s)),
-                SlideButtonAction::ActionAndView(a,v) => {
-                    UiElement::new(ClickOutput::Events(GameEvent::StoryAction(a), GameEvent::SwitchToView(v)))
-                }
-            }
-            .with_text(texts.gettext(b.text_key).to_owned())
-            .with_background_color(LIGHT_GREEN);
+            let button = UiElement::new(ClickOutput::SlideAction(b.action.clone()))
+                .with_text(texts.gettext(b.text_key).to_owned())
+                .with_background_color(LIGHT_GREEN);
             self.buttons.add(button);
         }
     }
@@ -190,8 +187,8 @@ impl<'a, 'b> Frame for DialogueFrame<'a, 'b> {
     type Event = PadlEvent;
     fn event(&mut self, state: &mut Self::State, e: &Self::Event) -> Result<(), Self::Error> {
         match e {
-            PadlEvent::Scene(s) => {
-                self.load_scene(s.load_scene(), &state.locale);
+            PadlEvent::Scene(scene,slide) => {
+                self.load_scene(scene.load_scene(*slide), &state.locale);
             }
             _ => {}
         }
@@ -218,12 +215,17 @@ impl<'a, 'b> Frame for DialogueFrame<'a, 'b> {
     fn left_click(&mut self, state: &mut Self::State, pos: (i32, i32)) -> Result<(), Self::Error> {
         if let Some(output) = self.buttons.click(pos.into())? {
             match output {
-                (ClickOutput::Slide(i), None) => self.load_slide(i, &state.locale)?,
-                (ClickOutput::Event(evt), None) => state.event_pool.send(evt)?, 
-                (ClickOutput::Events(evt0,evt1), None) => {
-                    state.event_pool.send(evt0)?; 
-                    state.event_pool.send(evt1)?;
-                } 
+                (ClickOutput::SlideAction(a), None) => {
+                    if let Some(i) = a.next_slide {
+                        self.load_slide(i, &state.locale)?;
+                    }
+                    if let Some(v) = a.next_view {
+                        state.event_pool.send(GameEvent::SwitchToView(v))?;
+                    }
+                    if a.actions.len() > 0 {
+                        state.event_pool.send(GameEvent::StoryActions(a.actions))?;
+                    }
+                }
                 _ => PadlErrorCode::DevMsg("Unimplemented ClickOutput in dialogue.rs").dev()?,
             }
         }

@@ -1,3 +1,4 @@
+use paddlers_shared_lib::api::story::StoryStateTransition;
 use std::collections::VecDeque;
 use std::sync::{Mutex,mpsc::Sender, atomic::AtomicBool};
 use crate::prelude::*;
@@ -91,6 +92,13 @@ impl RestApiState {
     pub fn http_send_attack(&mut self, msg: AttackDescriptor) -> PadlResult<()>  {
         let request_string = &serde_json::to_string(&msg).unwrap();
         let promise = ajax::send("POST", &format!("{}/attacks/create", game_master_url()?), request_string);
+        self.push_promise(promise, None);
+        Ok(())
+    }
+
+    pub fn http_update_story_state(&mut self, msg: StoryStateTransition) -> PadlResult<()>  {
+        let request_string = &serde_json::to_string(&msg).unwrap();
+        let promise = ajax::send("POST", &format!("{}/story/transition", game_master_url()?), request_string);
         self.push_promise(promise, None);
         Ok(())
     }

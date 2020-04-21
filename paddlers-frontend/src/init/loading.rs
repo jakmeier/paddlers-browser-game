@@ -1,4 +1,5 @@
 mod progress_manager;
+use crate::init::quicksilver_integration::PadlEvent;
 use crate::net::graphql::query_types::{BuildingsResponse, HobosQueryResponse};
 use progress_manager::*;
 
@@ -35,9 +36,10 @@ pub struct BaseState {
 }
 
 /// State that is used while loading all data over the network
-pub struct LoadingState {
+pub(crate) struct LoadingState {
     pub progress: ProgressManager,
     pub game_data: GameLoadingData,
+    pub viewer_data: Vec<PadlEvent>,
     pub base: BaseState,
     images: Vec<Asset<Image>>,
     locale: Asset<TextDb>,
@@ -71,13 +73,16 @@ impl LoadingState {
             tb: TextBoard::default(),
         };
         let game_data = GameLoadingData::default();
+        // For leaderboard network event
+        let viewer_data = vec![];
         let progress = ProgressManager::new()
             .with_loadable(&game_data.player_info)
             .with_loadable(&game_data.worker_response)
             .with_loadable(&game_data.buildings_response)
             .with_loadable(&game_data.hobos_response)
             .with::<TextDb>(1)
-            .with::<Image>(images.len());
+            .with::<Image>(images.len())
+            .with::<PadlEvent>(1);
         LoadingState {
             base,
             game_data,
@@ -86,6 +91,7 @@ impl LoadingState {
             resolution,
             preload_float,
             progress,
+            viewer_data,
         }
     }
     pub fn progress(&mut self) -> f32 {
@@ -181,7 +187,11 @@ impl LoadingState {
             Ok(mut game) => {
                 let pm = crate::gui::input::pointer::PointerManager::init(&mut game.world);
                 let ep = game.event_pool.clone();
-                let viewer = super::frame_loading::load_viewer(&mut game, ep);
+                let mut viewer = super::frame_loading::load_viewer(&mut game, ep);
+                for evt in self.viewer_data {
+                    let e = viewer.global_event(&mut game, &evt);
+                    game.check(e);
+                }
                 GameState {
                     game,
                     viewer,
