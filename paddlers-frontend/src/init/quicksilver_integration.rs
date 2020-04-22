@@ -62,6 +62,7 @@ impl State for QuicksilverState {
             Self::Loading(state) => {
                 let err = state.update_net();
                 state.queue_error(err);
+                state.base.rest.poll_queue(&state.base.async_err);
                 let q = &mut state.base.errq;
                 q.pull_async(&mut state.base.err_recv, &mut state.base.tb);
                 self.try_finalize();

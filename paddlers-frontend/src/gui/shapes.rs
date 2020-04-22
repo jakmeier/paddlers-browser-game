@@ -34,15 +34,6 @@ pub enum PadlShapeIndex {
     RightArrow = 1,
 }
 
-impl PadlShapeIndex {
-    pub fn index_in_vector(&self) -> usize {
-        match self {
-            Self::LeftArrow => 0,
-            Self::RightArrow => 1,
-        }
-    }
-}
-
 /// Shape used as button to go back/forth
 fn build_arrow(total_area: Rectangle, left: bool) -> Mesh {
     let w = total_area.size.x;

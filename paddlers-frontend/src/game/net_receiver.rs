@@ -5,7 +5,9 @@ use crate::game::{
 use crate::init::loading::LoadingState;
 use crate::init::quicksilver_integration::{GameState, Signal};
 use crate::net::graphql::query_types::WorkerResponse;
-use crate::net::graphql::query_types::{BuildingsResponse, HobosQueryResponse};
+use crate::net::graphql::query_types::{
+    AttacksResponse, BuildingsResponse, HobosQueryResponse, VolatileVillageInfoResponse,
+};
 use crate::net::NetMsg;
 use crate::prelude::*;
 use std::convert::TryInto;
@@ -42,6 +44,14 @@ impl LoadingState {
                     self.progress.report_progress_for(&hobos, 1);
                     self.game_data.hobos_response = Some(hobos);
                 }
+                NetMsg::Attacks(response) => {
+                    self.progress.report_progress_for(&response, 1);
+                    self.game_data.attacking_hobos = Some(response);
+                }
+                NetMsg::VillageInfo(response) => {
+                    self.progress.report_progress_for(&response, 1);
+                    self.game_data.village_info = Some(response);
+                }
                 NetMsg::Leaderboard(offset, list) => {
                     self.viewer_data
                         .push(PadlEvent::Network(NetMsg::Leaderboard(offset, list)));
@@ -74,13 +84,7 @@ impl GameState {
                         println!("Network Error: {}", e);
                     }
                     NetMsg::Attacks(response) => {
-                        if let Some(data) = response.data {
-                            for atk in data.village.attacks {
-                                atk.create_entities(&mut self.game.world)?;
-                            }
-                        } else {
-                            println!("No data returned");
-                        }
+                        self.game.load_attacking_hobos(response)?;
                     }
                     NetMsg::Buildings(response) => {
                         self.game.load_buildings_from_net_response(response)?;
@@ -135,21 +139,9 @@ impl GameState {
                         *self.game.world.write_resource() = player_info;
                     }
                     NetMsg::VillageInfo(response) => {
-                        if let Some(data) = response.data {
-                            self.game.town_mut().faith =
-                                data.village.faith.try_into().map_err(|_| {
-                                    PadlError::dev_err(PadlErrorCode::InvalidGraphQLData(
-                                        "Faith does not fit u8",
-                                    ))
-                                })?;
-                            self.game.resources.update(data);
-                            self.viewer.event(
-                                &mut self.game,
-                                &PadlEvent::Signal(Signal::ResourcesUpdated),
-                            )?;
-                        } else {
-                            println!("No resources available");
-                        }
+                        self.game.load_village_info(response)?;
+                        self.viewer
+                            .event(&mut self.game, &PadlEvent::Signal(Signal::ResourcesUpdated))?;
                     }
                     NetMsg::Workers(response) => {
                         self.game.flush_workers()?;
@@ -216,9 +208,27 @@ impl<'a, 'b> Game<'a, 'b> {
         }
         Ok(())
     }
+    /// Home hobos (not attackers) are loaded
     pub fn load_hobos_from_net_response(&mut self, hobos: HobosQueryResponse) -> PadlResult<()> {
         self.flush_home_hobos()?;
         self.insert_hobos(hobos)?;
+        Ok(())
+    }
+    pub fn load_attacking_hobos(&mut self, response: AttacksResponse) -> PadlResult<()> {
+        if let Some(data) = response.data {
+            for atk in data.village.attacks {
+                atk.create_entities(&mut self.world)?;
+            }
+        }
+        Ok(())
+    }
+    pub fn load_village_info(&mut self, response: VolatileVillageInfoResponse) -> PadlResult<()> {
+        if let Some(data) = response.data {
+            self.town_mut().faith = data.village.faith.try_into().map_err(|_| {
+                PadlError::dev_err(PadlErrorCode::InvalidGraphQLData("Faith does not fit u8"))
+            })?;
+            self.resources.update(data);
+        }
         Ok(())
     }
 }

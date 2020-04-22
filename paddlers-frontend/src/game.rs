@@ -76,7 +76,7 @@ impl Game<'_, '_> {
         let (game_evt_send, game_evt_recv) = channel();
         let player_info = game_data.player_info.ok_or("Player Info not loaded")?;
         let mut world = crate::init::init_world(
-            base.err_send,
+            base.async_err,
             resolution,
             player_info,
             base.rest,
@@ -124,6 +124,7 @@ impl Game<'_, '_> {
             #[cfg(feature = "dev_view")]
             active_test: None,
         };
+        game.load_village_info(game_data.village_info.ok_or("No village info")?)?;
         game.load_buildings_from_net_response(
             game_data
                 .buildings_response
@@ -131,6 +132,7 @@ impl Game<'_, '_> {
         )?;
         game.load_workers_from_net_response(game_data.worker_response.ok_or("No worker response")?);
         game.load_hobos_from_net_response(game_data.hobos_response.ok_or("No hobos response")?)?;
+        game.load_attacking_hobos(game_data.attacking_hobos.ok_or("No attacks response")?)?;
         game.world.maintain();
         game.load_story_state()?;
         Ok(game)

@@ -47,7 +47,9 @@ pub trait Frame {
 type FrameRef<S, G, Ev, E> = Rc<RefCell<PositionedFrame<S, G, Ev, E>>>;
 
 struct PositionedFrame<S, G, Ev, E> {
+    #[allow(dead_code)]
     pos: (i32, i32),
+    #[allow(dead_code)]
     size: (i32, i32),
     handler: Box<dyn Frame<State = S, Graphics = G, Event = Ev, Error = E>>,
 }

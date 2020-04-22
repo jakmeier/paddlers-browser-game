@@ -16,7 +16,7 @@ pub mod specs_registration;
 
 use crate::game::player_info::PlayerInfo;
 use crate::init::quicksilver_integration::QuicksilverState;
-use crate::logging::{text_to_user::TextBoard, ErrorQueue};
+use crate::logging::{text_to_user::TextBoard, AsyncErr, ErrorQueue};
 use crate::net::game_master_api::RestApiState;
 use crate::net::NetMsg;
 use crate::prelude::*;
@@ -26,7 +26,7 @@ use specs_registration::{insert_resources, register_components};
 use std::sync::mpsc::Receiver;
 
 pub(super) fn init_world(
-    err_send: std::sync::mpsc::Sender<PadlError>,
+    async_err: AsyncErr,
     resolution: ScreenResolution,
     player_info: PlayerInfo,
     rest: RestApiState,
@@ -41,7 +41,7 @@ pub(super) fn init_world(
     // Resources
     insert_resources(
         &mut world,
-        err_send,
+        async_err,
         resolution,
         player_info,
         rest,

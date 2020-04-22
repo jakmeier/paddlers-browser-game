@@ -46,7 +46,6 @@ pub enum ClickOutput {
     BuildingType(BuildingType),
     Ability(AbilityType),
     Event(GameEvent),
-    Events(GameEvent, GameEvent),
     SlideAction(SlideButtonAction),
 }
 #[derive(Clone, Debug)]

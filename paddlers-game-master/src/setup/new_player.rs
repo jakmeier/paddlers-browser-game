@@ -1,4 +1,3 @@
-use crate::buildings::BuildingFactory;
 use crate::db::DB;
 use diesel::QueryResult;
 use paddlers_shared_lib::prelude::*;
@@ -12,9 +11,6 @@ impl DB {
         };
         let player = self.insert_player(&player)?;
         let village = self.new_village(player.key());
-
-        // #[cfg(debug_assertions)]
-        // self.insert_temple(&village);
 
         self.insert_hero(village.key());
         Ok(player)
@@ -90,12 +86,5 @@ impl DB {
             .expect("Adding dev resources");
         self.add_resource(ResourceType::Logs, vid, 1000)
             .expect("Adding dev resources");
-    }
-
-    #[cfg(debug_assertions)]
-    #[allow(dead_code)]
-    fn insert_temple(&self, village: &Village) {
-        let building = BuildingFactory::new(BuildingType::Temple, (4, 2), village.key());
-        self.insert_building(&building);
     }
 }

@@ -14,14 +14,14 @@ use crate::net::game_master_api::RestApiState;
 
 pub(super) fn insert_resources(
     world: &mut World,
-    err_send: std::sync::mpsc::Sender<PadlError>,
+    async_err: AsyncErr,
     resolution: ScreenResolution,
     player_info: PlayerInfo,
     rest: RestApiState,
     errq: ErrorQueue,
     tb: TextBoard,
 ) {
-    world.insert(AsyncErr::new(err_send));
+    world.insert(async_err);
     world.insert(ClockTick(0));
     world.insert(DefaultShop::new(player_info.karma()));
     world.insert(errq);

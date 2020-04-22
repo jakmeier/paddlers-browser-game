@@ -1,6 +1,8 @@
 mod progress_manager;
-use crate::init::quicksilver_integration::PadlEvent;
-use crate::net::graphql::query_types::{BuildingsResponse, HobosQueryResponse};
+use crate::init::quicksilver_integration::{PadlEvent, Signal};
+use crate::net::graphql::query_types::{
+    AttacksResponse, BuildingsResponse, HobosQueryResponse, VolatileVillageInfoResponse,
+};
 use progress_manager::*;
 
 use crate::game::player_info::PlayerInfo;
@@ -13,22 +15,21 @@ use crate::gui::sprites::{
 use crate::gui::utils::*;
 use crate::init::quicksilver_integration::GameState;
 use crate::init::quicksilver_integration::QuicksilverState;
-use crate::logging::error::PadlError;
-use crate::logging::text_to_user::TextBoard;
-use crate::logging::ErrorQueue;
+use crate::logging::{error::PadlError, text_to_user::TextBoard, AsyncErr, ErrorQueue};
 use crate::net::game_master_api::RestApiState;
 use crate::net::graphql::query_types::WorkerResponse;
 use crate::net::NetMsg;
 use crate::prelude::{PadlResult, ScreenResolution, TextDb};
 use crate::view::FloatingText;
 use quicksilver::prelude::*;
-use std::sync::mpsc::{channel, Receiver, Sender};
+use std::sync::mpsc::{channel, Receiver};
 
 /// State which must always be present to enable basic tasks
 /// like networking and error handling.
 pub struct BaseState {
     pub err_recv: Receiver<PadlError>,
-    pub err_send: Sender<PadlError>,
+    // pub err_send: Sender<PadlError>,
+    pub async_err: AsyncErr,
     pub net_chan: Receiver<NetMsg>,
     pub rest: RestApiState,
     pub errq: ErrorQueue,
@@ -53,6 +54,8 @@ pub struct GameLoadingData {
     pub worker_response: Option<WorkerResponse>,
     pub buildings_response: Option<BuildingsResponse>,
     pub hobos_response: Option<HobosQueryResponse>,
+    pub attacking_hobos: Option<AttacksResponse>,
+    pub village_info: Option<VolatileVillageInfoResponse>,
 }
 
 impl LoadingState {
@@ -64,9 +67,10 @@ impl LoadingState {
         let (err_send, err_recv) = channel();
         let err_send_clone = err_send.clone();
         let rest = RestApiState::new(err_send_clone);
+        let async_err = AsyncErr::new(err_send);
         let base = BaseState {
             err_recv,
-            err_send,
+            async_err,
             net_chan,
             rest,
             errq: ErrorQueue::default(),
@@ -76,13 +80,18 @@ impl LoadingState {
         // For leaderboard network event
         let viewer_data = vec![];
         let progress = ProgressManager::new()
-            .with_loadable(&game_data.player_info)
-            .with_loadable(&game_data.worker_response)
-            .with_loadable(&game_data.buildings_response)
-            .with_loadable(&game_data.hobos_response)
-            .with::<TextDb>(1)
-            .with::<Image>(images.len())
-            .with::<PadlEvent>(1);
+            .with::<PadlEvent>(1, "Downloading news in Paddland")
+            .with_loadable(&game_data.player_info, "Downloading player data")
+            .with_loadable(&game_data.worker_response, "Downloading working Paddlers")
+            .with_loadable(&game_data.buildings_response, "Downloading buildings")
+            .with_loadable(
+                &game_data.hobos_response,
+                "Downloading non-working Paddlers",
+            )
+            .with_loadable(&game_data.attacking_hobos, "Downloading visitors")
+            .with_loadable(&game_data.village_info, "Downloading village news")
+            .with::<TextDb>(1, "Downloading localized texts")
+            .with::<Image>(images.len(), "Downloading images");
         LoadingState {
             base,
             game_data,
@@ -94,7 +103,7 @@ impl LoadingState {
             viewer_data,
         }
     }
-    pub fn progress(&mut self) -> f32 {
+    pub fn progress(&mut self) -> (f32, &'static str) {
         let images_loaded = self
             .images
             .iter_mut()
@@ -108,7 +117,10 @@ impl LoadingState {
             0
         };
         self.progress.report_progress::<TextDb>(locale_loaded);
-        self.progress.progress()
+        let p = self.progress.progress();
+        // This could be handled nicer by a separate loader object but I kept it simple for now
+        let msg = self.progress.waiting_for();
+        (p, msg)
     }
     pub fn asset_loaded<T>(asset: &mut Asset<T>) -> bool {
         let mut helper = false;
@@ -131,11 +143,12 @@ impl LoadingState {
         helper.unwrap()
     }
     pub fn draw_loading(&mut self, window: &mut Window) -> PadlResult<()> {
-        let progress = self.progress();
-        self.draw_progress(window, progress)?;
+        let (progress, msg) = self.progress();
+
+        self.draw_progress(window, progress, msg)?;
         Ok(())
     }
-    fn draw_progress(&mut self, window: &mut Window, progress: f32) -> PadlResult<()> {
+    fn draw_progress(&mut self, window: &mut Window, progress: f32, msg: &str) -> PadlResult<()> {
         window.clear(DARK_GREEN)?;
         let r = self.resolution;
         let w = r.pixels().0;
@@ -143,16 +156,6 @@ impl LoadingState {
         let ph = r.progress_bar_area_h();
         let area = Rectangle::new((w * 0.1, y), (w * 0.8, ph));
 
-        // This could be handled nicer by a separate loader object but I kept it simple for now
-        let msg = if self.game_data.player_info.is_none() {
-            "Downloading player data"
-        } else if self.game_data.worker_response.is_none() {
-            "Downloading worker data"
-        } else if !Self::asset_loaded(&mut self.locale) {
-            "Downloading localized texts"
-        } else {
-            "Downloading images"
-        };
         draw_progress_bar(window, &mut self.preload_float, area, progress, &msg)
     }
     pub fn queue_error(&mut self, res: PadlResult<()>) {
@@ -192,6 +195,8 @@ impl LoadingState {
                     let e = viewer.global_event(&mut game, &evt);
                     game.check(e);
                 }
+                let e = viewer.event(&mut game, &PadlEvent::Signal(Signal::ResourcesUpdated));
+                game.check(e);
                 GameState {
                     game,
                     viewer,

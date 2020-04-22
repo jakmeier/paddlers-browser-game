@@ -162,14 +162,8 @@ impl RestApiState {
                 .expect("Sending error over mpsc failed"),
         }
     }
-}
-
-pub struct RestApiSystem;
-impl<'a> System<'a> for RestApiSystem {
-    type SystemData = (WriteExpect<'a, RestApiState>, ReadExpect<'a, AsyncErr>);
-
-    fn run(&mut self, (mut state, error): Self::SystemData) {
-        while let Some((promise, afterwards)) = (*state).queue.pop_front() {
+    pub fn poll_queue(&mut self, error: &AsyncErr) {
+        while let Some((promise, afterwards)) = self.queue.pop_front() {
             let error_chan = error.clone_sender();
             stdweb::spawn_local(promise.map(move |r| {
                 if r.is_err() {
@@ -192,5 +186,14 @@ impl<'a> System<'a> for RestApiSystem {
                 }
             }));
         }
+    }
+}
+
+pub struct RestApiSystem;
+impl<'a> System<'a> for RestApiSystem {
+    type SystemData = (WriteExpect<'a, RestApiState>, ReadExpect<'a, AsyncErr>);
+
+    fn run(&mut self, (mut state, error): Self::SystemData) {
+        state.poll_queue(&*error);
     }
 }

@@ -1,7 +1,6 @@
 use super::*;
 use diesel::prelude::*;
 use paddlers_shared_lib::models::dsl;
-use paddlers_shared_lib::prelude::*;
 use paddlers_shared_lib::schema::*;
 use paddlers_shared_lib::story::story_state::StoryState;
 

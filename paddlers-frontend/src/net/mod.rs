@@ -91,6 +91,8 @@ pub fn request_client_state() {
             STATIC_NET_STATE.spawn(STATIC_NET_STATE.gql_state.workers_query());
             STATIC_NET_STATE.spawn(STATIC_NET_STATE.gql_state.hobos_query());
             STATIC_NET_STATE.spawn(STATIC_NET_STATE.gql_state.leaderboard_query());
+            STATIC_NET_STATE.spawn(STATIC_NET_STATE.gql_state.attacks_query());
+            STATIC_NET_STATE.spawn(STATIC_NET_STATE.gql_state.resource_query());
             request_player_update();
         } else {
             stdweb::web::set_timeout(request_client_state, 10);
