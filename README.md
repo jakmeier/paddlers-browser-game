@@ -27,7 +27,7 @@ Many things are lacking, including:
 
 ## Demo
 
-A [live-demo](http://demo.paddlers.ch) of the current state is online now! However, it's only semi-automated deployment at this point, therefore the deployed version may diverge from the master branch by a couple of days.
+A [live-demo](https://demo.paddlers.ch) of the current state is online now! However, it's only semi-automated deployment at this point, therefore the deployed version may diverge from the master branch by a couple of days.
 
 
 
