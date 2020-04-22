@@ -43,4 +43,7 @@ impl Authentication {
         }
         self.cached_player.as_ref()
     }
+    pub (crate) fn player_key(&mut self, db: &DB) -> Result<PlayerKey, String> {
+        self.player_object(&db).ok_or("No such player".to_owned()).map(|p| p.key())
+    }
 }

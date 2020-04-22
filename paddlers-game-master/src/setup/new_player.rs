@@ -92,6 +92,7 @@ impl DB {
     }
 
     #[cfg(debug_assertions)]
+    #[allow(dead_code)]
     fn insert_temple(&self, village: &Village) {
         let building = BuildingFactory::new(
             BuildingType::Temple,
