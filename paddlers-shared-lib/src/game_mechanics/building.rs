@@ -2,7 +2,7 @@ use crate::models::*;
 
 #[derive(PartialEq, Eq, Clone, Debug, Hash)]
 /// Part of [TileState](crate::game_mechanics::town::TileState) for validation state used similarly in backend and frontend.
-/// 
+///
 /// See also description of [TownState](crate::game_mechanics::town::TownState)
 pub struct BuildingState {
     pub capacity: usize,
@@ -61,6 +61,7 @@ impl BuildingType {
             BuildingType::RedFlowers,
             BuildingType::SawMill,
             BuildingType::Tree,
-        ].iter()
+        ]
+        .iter()
     }
 }

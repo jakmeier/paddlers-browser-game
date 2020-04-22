@@ -1,10 +1,10 @@
-//! Processes and routes mouse-like input. 
+//! Processes and routes mouse-like input.
 //! Triggers the corresponding mouse-click systems when necessary.
-use specs::prelude::*;
-use quicksilver::prelude::*;
+use super::{drag::*, HoverSystem, MouseState, RightClickSystem};
 use crate::prelude::*;
-use super::{MouseState, RightClickSystem, HoverSystem, drag::*};
 use crate::Framer;
+use quicksilver::prelude::*;
+use specs::prelude::*;
 
 // Tolerance thresholds
 const LONG_CLICK_DELAY: i64 = 500_000; // [us]
@@ -19,7 +19,7 @@ pub struct PointerManager<'a, 'b> {
     pointer_down: Option<(Vector, Timestamp)>,
 }
 
-#[derive(Debug,Clone,Copy,PartialEq,Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum PointerButton {
     // Left click or short tap
     Primary,
@@ -27,9 +27,8 @@ enum PointerButton {
     Secondary,
 }
 
-impl PointerManager<'_,'_> {
+impl PointerManager<'_, '_> {
     pub fn init(mut world: &mut World) -> Self {
-
         world.insert(MouseState::default());
 
         let mut click_dispatcher = DispatcherBuilder::new()
@@ -58,17 +57,16 @@ impl PointerManager<'_,'_> {
         }
     }
 
-    pub (crate) fn run(&mut self, game: &mut crate::game::Game<'static,'static>, frame_manager: &mut Framer) {
+    pub(crate) fn run(
+        &mut self,
+        game: &mut crate::game::Game<'static, 'static>,
+        frame_manager: &mut Framer,
+    ) {
         if let Some((pos, button)) = self.buffered_click {
             let click = (pos.x as i32, pos.y as i32);
-            let err = 
-            match button {
-                PointerButton::Primary => {
-                    frame_manager.left_click(game, click)
-                },
-                PointerButton::Secondary => {
-                    frame_manager.right_click(game, click)
-                },
+            let err = match button {
+                PointerButton::Primary => frame_manager.left_click(game, click),
+                PointerButton::Secondary => frame_manager.right_click(game, click),
             };
             game.check(err);
             Self::update(&mut game.world, &pos, Some(button));
@@ -96,21 +94,24 @@ impl PointerManager<'_,'_> {
         }
     }
 
-    pub fn button_event(&mut self, now: Timestamp, pos: &Vector, button: MouseButton, state: ButtonState) {
+    pub fn button_event(
+        &mut self,
+        now: Timestamp,
+        pos: &Vector,
+        button: MouseButton,
+        state: ButtonState,
+    ) {
         match (state, button) {
             (ButtonState::Pressed, MouseButton::Left) => {
                 self.pointer_down = Some((*pos, now));
-            },
+            }
             (ButtonState::Pressed, _) => {
                 self.queue_click(pos, PointerButton::Secondary);
-            },
+            }
             (ButtonState::Released, MouseButton::Left) => {
                 if let Some((start_pos, start_t)) = self.pointer_down {
-                    if !self.dragging 
-                        && start_pos.distance_2(pos) < MIN_DRAG_DISTANCE_2 
-                    {
-                        let key = 
-                        if now - start_t < LONG_CLICK_DELAY {
+                    if !self.dragging && start_pos.distance_2(pos) < MIN_DRAG_DISTANCE_2 {
+                        let key = if now - start_t < LONG_CLICK_DELAY {
                             PointerButton::Primary
                         } else {
                             PointerButton::Secondary
@@ -120,20 +121,15 @@ impl PointerManager<'_,'_> {
                     self.dragging = false;
                     self.pointer_down = None;
                 }
-            },
+            }
             _ => { /* NOP */ }
         }
     }
 
     fn update(world: &mut World, position: &Vector, button: Option<PointerButton>) {
-        let key = button.map(|button|
-        match button {
-            PointerButton::Primary => {
-                MouseButton::Left
-            },
-            PointerButton::Secondary => {
-                MouseButton::Right
-            }
+        let key = button.map(|button| match button {
+            PointerButton::Primary => MouseButton::Left,
+            PointerButton::Secondary => MouseButton::Right,
         });
         let mut ms = world.write_resource::<MouseState>();
         *ms = MouseState(*position, key);
@@ -148,4 +144,3 @@ impl PointerManager<'_,'_> {
         self.buffered_click = Some((*position, button));
     }
 }
-

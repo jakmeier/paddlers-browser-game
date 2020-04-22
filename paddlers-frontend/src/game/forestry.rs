@@ -1,10 +1,10 @@
-use specs::prelude::*;
-use crate::prelude::*;
-use crate::gui::sprites::*;
-use crate::gui::render::Renderable;
-use crate::gui::utils::RenderVariant;
 use crate::game::town::Town;
+use crate::gui::render::Renderable;
+use crate::gui::sprites::*;
+use crate::gui::utils::RenderVariant;
+use crate::prelude::*;
 use paddlers_shared_lib::game_mechanics::forestry::tree_size;
+use specs::prelude::*;
 
 #[derive(Component, Debug, Clone)]
 #[storage(HashMapStorage)]
@@ -13,7 +13,7 @@ pub struct ForestComponent {
     pub score: usize,
 }
 
-#[derive(Default,Clone,Copy)]
+#[derive(Default, Clone, Copy)]
 pub struct ForestrySystem;
 
 impl<'a> System<'a> for ForestrySystem {
@@ -21,7 +21,7 @@ impl<'a> System<'a> for ForestrySystem {
         WriteStorage<'a, ForestComponent>,
         WriteStorage<'a, Renderable>,
         Write<'a, Town>,
-     );
+    );
 
     fn run(&mut self, (mut forest, mut rend, mut town): Self::SystemData) {
         let now = utc_now();

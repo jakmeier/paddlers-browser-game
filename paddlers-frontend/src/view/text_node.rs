@@ -1,4 +1,4 @@
-use stdweb::web::{Node, INode};
+use stdweb::web::{INode, Node};
 
 #[derive(Debug)]
 pub struct TextNode {
@@ -39,9 +39,10 @@ impl TextNode {
     }
     pub fn delete(&self) -> Result<(), &'static str> {
         if let Some(parent) = self.dom_node.parent_node() {
-            return parent.remove_child(&self.dom_node)
-                .map(|_|())
-                .map_err(|_|"Child vanished");
+            return parent
+                .remove_child(&self.dom_node)
+                .map(|_| ())
+                .map_err(|_| "Child vanished");
         }
         Ok(())
     }

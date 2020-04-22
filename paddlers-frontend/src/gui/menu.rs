@@ -90,13 +90,7 @@ impl Game<'_, '_> {
         // Leaves border
         let leaf_w = resolution.leaves_border_w();
         let leaf_h = resolution.leaves_border_h();
-        draw_leaf_border(
-            window,
-            &mut self.sprites,
-            &area,
-            leaf_w,
-            leaf_h,
-        );
+        draw_leaf_border(window, &mut self.sprites, &area, leaf_w, leaf_h);
 
         let padding = resolution.menu_padding();
         area.pos.x += leaf_w * 0.25 + padding * 0.5;

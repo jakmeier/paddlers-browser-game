@@ -1,22 +1,23 @@
-use quicksilver::prelude::{Window, Vector};
-use stdweb::unstable::TryFrom;
-use stdweb::web::IHtmlElement;
-use stdweb::web::html_element::CanvasElement;
-use stdweb::traits::*;
 use crate::prelude::*;
+use quicksilver::prelude::{Vector, Window};
+use stdweb::traits::*;
+use stdweb::unstable::TryFrom;
+use stdweb::web::html_element::CanvasElement;
+use stdweb::web::IHtmlElement;
 use strum::IntoEnumIterator;
 
 pub fn adapt_window_size(window: &mut Window) -> PadlResult<()> {
-
     // TODO: (optimization) cache canvas
-    let canvas: CanvasElement =
-    stdweb::web::document().get_element_by_id("game-root")
-        .expect("Failed to find specified HTML id").child_nodes().iter()
+    let canvas: CanvasElement = stdweb::web::document()
+        .get_element_by_id("game-root")
+        .expect("Failed to find specified HTML id")
+        .child_nodes()
+        .iter()
         .map(CanvasElement::try_from)
         .find(|res| res.is_ok())
         .map(|res| res.unwrap())
         .expect("No canvas");
-    
+
     let w = stdweb::web::window().inner_width();
     let h = stdweb::web::window().inner_height();
     canvas.set_width(w as u32);
@@ -30,9 +31,9 @@ pub fn adapt_window_size(window: &mut Window) -> PadlResult<()> {
     window.set_size(size_in_browser);
 
     // Update panes
-    let Vector{x,y} = window.screen_offset();
+    let Vector { x, y } = window.screen_offset();
     panes::reposition(x as u32, y as u32)?;
-    let Vector{x,y} = window.screen_size();
+    let Vector { x, y } = window.screen_size();
     panes::resize(x as u32, y as u32)?;
     Ok(())
 }
@@ -43,8 +44,8 @@ pub fn estimate_screen_size() -> ScreenResolution {
     let screen_h = stdweb::web::window().inner_height() as f32;
     ScreenResolution::iter()
         .filter(|res| {
-            let (w,h) = res.pixels();
-            w*0.875 < screen_w && 0.875*h < screen_h
+            let (w, h) = res.pixels();
+            w * 0.875 < screen_w && 0.875 * h < screen_h
         })
         .last()
         .unwrap_or(ScreenResolution::Low)

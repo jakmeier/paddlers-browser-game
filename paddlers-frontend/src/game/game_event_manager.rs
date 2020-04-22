@@ -75,9 +75,9 @@ impl GameState {
     }
     fn try_handle_story_action(&mut self, action: StoryAction) -> PadlResult<()> {
         match action {
-            StoryAction::OpenScene(scene,slide) => {
+            StoryAction::OpenScene(scene, slide) => {
                 self.viewer
-                    .global_event(&mut self.game, &PadlEvent::Scene(scene,slide))?;
+                    .global_event(&mut self.game, &PadlEvent::Scene(scene, slide))?;
                 self.game.switch_view(UiView::Dialogue);
             }
             StoryAction::EnableTempleInShop => {

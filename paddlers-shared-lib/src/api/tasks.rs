@@ -1,9 +1,9 @@
-use serde::{Serialize, Deserialize};
+use crate::api::keys::WorkerKey;
+#[cfg(feature = "game_mechanics")]
+use crate::game_mechanics::town::TileIndex;
 use crate::models::*;
 use crate::PadlId;
-use crate::api::keys::WorkerKey;
-#[cfg(feature = "game_mechanics")] 
-use crate::game_mechanics::town::TileIndex;
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct TaskList {
@@ -20,7 +20,7 @@ pub struct RawTask {
 }
 
 impl RawTask {
-    #[cfg(feature = "game_mechanics")] 
+    #[cfg(feature = "game_mechanics")]
     pub fn new(t: TaskType, i: TileIndex) -> Self {
         RawTask {
             task_type: t,
@@ -29,7 +29,7 @@ impl RawTask {
             target: None,
         }
     }
-    #[cfg(feature = "game_mechanics")] 
+    #[cfg(feature = "game_mechanics")]
     pub fn new_with_target(t: (TaskType, Option<PadlId>), i: TileIndex) -> Self {
         RawTask {
             task_type: t.0,
@@ -39,4 +39,3 @@ impl RawTask {
         }
     }
 }
-

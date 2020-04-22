@@ -1,5 +1,5 @@
-use super::event_queue::*;
 use super::event::*;
+use super::event_queue::*;
 use crate::db::*;
 use actix::prelude::*;
 use chrono::prelude::*;
@@ -12,7 +12,7 @@ pub struct TownWorker {
 }
 
 impl TownWorker {
-    pub fn new(dbpool: Pool) -> Self { 
+    pub fn new(dbpool: Pool) -> Self {
         TownWorker {
             dbpool: dbpool,
             event_queue: EventQueue::new(),
@@ -20,14 +20,14 @@ impl TownWorker {
         .with_filled_event_queue()
     }
     fn db(&self) -> DB {
-       (&self.dbpool).into()
+        (&self.dbpool).into()
     }
     fn work(&mut self, ctx: &mut Context<Self>) {
         while let Some(event) = self.event_queue.poll_event() {
-           let res = event.run(&self.db());
-           if let Some((next_event, time)) = res {
-               self.event_queue.add_event(next_event, time);
-           }
+            let res = event.run(&self.db());
+            if let Some((next_event, time)) = res {
+                self.event_queue.add_event(next_event, time);
+            }
         }
         ctx.run_later(std::time::Duration::from_millis(100), Self::work);
     }
@@ -48,12 +48,12 @@ impl Actor for TownWorker {
     type Context = Context<Self>;
 
     fn started(&mut self, ctx: &mut Context<Self>) {
-       println!("Town Worker started");
-       self.work(ctx);
+        println!("Town Worker started");
+        self.work(ctx);
     }
 
     fn stopped(&mut self, _ctx: &mut Context<Self>) {
-       println!("Town Worker stopped");
+        println!("Town Worker stopped");
     }
 }
 
@@ -69,4 +69,3 @@ impl Handler<TownWorkerEventMsg> for TownWorker {
         self.event_queue.add_event(msg.0, msg.1);
     }
 }
-

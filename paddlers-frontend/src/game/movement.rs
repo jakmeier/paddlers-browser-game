@@ -1,15 +1,15 @@
-use crate::Timestamp;
 use crate::game::Now;
-use quicksilver::geom::{Vector, Rectangle};
-use specs::storage::BTreeStorage;
+use crate::Timestamp;
+use quicksilver::geom::{Rectangle, Vector};
 use specs::prelude::*;
+use specs::storage::BTreeStorage;
 
 #[derive(Component, Debug)]
 #[storage(VecStorage)]
 /// A position on the town view
 pub struct Position {
     pub area: Rectangle,
-    pub z: i32, 
+    pub z: i32,
 }
 
 #[derive(Component, Debug)]
@@ -22,13 +22,12 @@ pub struct Moving {
     pub max_speed: f32,
 }
 
-
 pub struct MoveSystem;
 impl<'a> System<'a> for MoveSystem {
     type SystemData = (
         Read<'a, Now>,
         ReadStorage<'a, Moving>,
-        WriteStorage<'a, Position>
+        WriteStorage<'a, Position>,
     );
 
     fn run(&mut self, (t, vel, mut pos): Self::SystemData) {
@@ -36,7 +35,6 @@ impl<'a> System<'a> for MoveSystem {
             pos.area.pos = vel.position(t.0);
         }
     }
-
 }
 
 impl Position {
@@ -49,8 +47,13 @@ impl Position {
 }
 
 impl Moving {
-    pub fn new (t0: Timestamp, start_pos: impl Into<Vector>, vel: impl Into<Vector>, max_speed: f32) -> Self {
-        let  v = vel.into();
+    pub fn new(
+        t0: Timestamp,
+        start_pos: impl Into<Vector>,
+        vel: impl Into<Vector>,
+        max_speed: f32,
+    ) -> Self {
+        let v = vel.into();
         let start = start_pos.into();
         Moving {
             start_ts: t0,
@@ -65,6 +68,6 @@ impl Moving {
     pub fn stand_still(&mut self, timestamp: i64) {
         self.start_pos = self.position(timestamp);
         self.start_ts = timestamp;
-        self.momentum = (0.0,0.0).into();
+        self.momentum = (0.0, 0.0).into();
     }
 }

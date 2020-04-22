@@ -1,9 +1,9 @@
-use specs::prelude::*;
 pub use crate::gui::{
-    utils::*,
     gui_components::*,
     sprites::{SingleSprite, SpriteIndex},
+    utils::*,
 };
+use specs::prelude::*;
 
 #[derive(Component, Debug, Clone, Copy)]
 #[storage(HashMapStorage)]

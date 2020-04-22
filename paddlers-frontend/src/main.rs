@@ -1,4 +1,4 @@
-#![recursion_limit="512"]
+#![recursion_limit = "512"]
 #![feature(is_sorted, associated_type_bounds, vec_remove_item)]
 extern crate quicksilver;
 #[macro_use]
@@ -13,12 +13,12 @@ mod init;
 mod game;
 mod gui;
 mod i18n;
+mod logging;
 mod net;
 mod prelude;
-mod logging;
+pub(crate) mod resolution;
 mod view;
-pub (crate) mod window;
-pub (crate) mod resolution;
+pub(crate) mod window;
 
 #[cfg(target_arch = "wasm32")]
 use init::wasm_setup::setup_wasm;
@@ -35,19 +35,18 @@ pub fn main() {
     init::run(net_receiver);
 }
 
-
 /// Micro second precision
 pub type Timestamp = i64;
 
-use view::FrameManager;
 use crate::prelude::PadlEvent;
 use quicksilver::prelude::Window;
-pub (crate) type Framer = FrameManager<
+use view::FrameManager;
+pub(crate) type Framer = FrameManager<
     gui::input::UiView,
     game::Game<'static, 'static>,
     Window,
     PadlEvent,
-    prelude::PadlError
+    prelude::PadlError,
 >;
 
 #[inline]

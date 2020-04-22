@@ -1,16 +1,16 @@
 use super::DbConn;
 
-use rocket::response::content;
-use rocket::State;
-use rocket::Outcome;
-use rocket::http::Status;
-use rocket::request::{self, Request, FromRequest};
-use juniper_rocket::{self, GraphQLResponse, GraphQLRequest};
 use juniper::FieldError;
+use juniper_rocket::{self, GraphQLRequest, GraphQLResponse};
+use rocket::http::Status;
+use rocket::request::{self, FromRequest, Request};
+use rocket::response::content;
+use rocket::Outcome;
+use rocket::State;
 
+use crate::graphql::Schema;
 use paddlers_shared_lib::prelude::{Config, PadlApiError};
 use paddlers_shared_lib::user_authentication::*;
-use crate::graphql::Schema;
 
 #[derive(Debug)]
 pub struct UserInfo {
@@ -18,16 +18,14 @@ pub struct UserInfo {
 }
 
 #[get("/")]
-pub (crate) fn index() -> String {
+pub(crate) fn index() -> String {
     format!("GraphQL interface OK")
 }
-
 
 #[get("/graphiql")]
 pub fn graphiql() -> content::Html<String> {
     juniper_rocket::graphiql_source("/graphql")
 }
-
 
 #[get("/?<request>")]
 pub fn get_graphql_handler(
@@ -55,16 +53,13 @@ fn generic_graphql_handler(
     schema: State<Schema>,
     user_info: UserInfo,
 ) -> GraphQLResponse {
-    if let Some(player_ctx)  = crate::graphql::Context::new(connection, user_info.user) {
+    if let Some(player_ctx) = crate::graphql::Context::new(connection, user_info.user) {
         request.execute(&schema, &player_ctx)
     } else {
         // Lookup error code from shared lib that frontend understands
         let n = PadlApiError::PlayerNotCreated as i32;
         // Create a GQL error
-        let err = FieldError::new(
-            "Player is not in DB",
-            graphql_value!({ "padlcode": n })
-        );
+        let err = FieldError::new("Player is not in DB", graphql_value!({ "padlcode": n }));
         // Pack GQL Error into a GQL response
         // Note: Juniper will send this as BadRequest, although I think
         //       the standard for GQL would be 200 OK
@@ -83,14 +78,14 @@ impl<'a, 'r> FromRequest<'a, 'r> for UserInfo {
             Some(s) => {
                 let config = request.guard::<State<Config>>().expect("Config broken");
                 match PadlUser::from_token(s, &config) {
-                    Ok(user) => Outcome::Success(UserInfo{ user: Some(user) }),
+                    Ok(user) => Outcome::Success(UserInfo { user: Some(user) }),
                     Err(e) => {
                         println!("{}", e);
                         Outcome::Failure((Status::Unauthorized, e))
-                    },
+                    }
                 }
-            },
-            None => Outcome::Success(UserInfo{ user: None }),
+            }
+            None => Outcome::Success(UserInfo { user: None }),
         }
     }
 }

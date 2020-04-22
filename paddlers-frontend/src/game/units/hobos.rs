@@ -1,29 +1,22 @@
-use specs::prelude::*;
-use paddlers_shared_lib::prelude::*;
+use crate::game::{components::NetObj, Game};
+use crate::net::graphql::query_types::{HobosQueryResponse, HobosQueryUnitColor};
 use crate::prelude::*;
-use crate::game::{
-    components::NetObj,
-    Game,
-};
-use crate::net::graphql::query_types::{
-    HobosQueryResponse,
-    HobosQueryUnitColor,
-};
+use paddlers_shared_lib::prelude::*;
+use specs::prelude::*;
 
 #[derive(Default, Debug, Component)]
 #[storage(NullStorage)]
 pub struct Hobo;
 
-
 impl Game<'_, '_> {
-    pub fn insert_hobos(&mut self, hobos: HobosQueryResponse) -> PadlResult<()>{
+    pub fn insert_hobos(&mut self, hobos: HobosQueryResponse) -> PadlResult<()> {
         // Insert idle prophets
-        self.town_mut().idle_prophets = 
-            hobos.iter()
+        self.town_mut().idle_prophets = hobos
+            .iter()
             .filter(|h| h.color == Some(HobosQueryUnitColor::PROPHET))
             .filter(|h| h.idle)
             .map(|h| new_hobo(&mut self.world, &h.id))
-            .collect::<Result<Vec<_>,_>>()?;
+            .collect::<Result<Vec<_>, _>>()?;
         // Ignore all other hobos (for now)
         Ok(())
     }
@@ -35,13 +28,12 @@ impl Game<'_, '_> {
             PadlErrorCode::MissingComponent("Prophet Hobo").dev()
         }
     }
-
 }
 
 fn new_hobo(world: &mut World, id: &str) -> PadlResult<Entity> {
-    let id = id.parse().map_err(|_|PadlError::dev_err(PadlErrorCode::InvalidGraphQLData("HoboId")))?;
-    let entity = world.create_entity()
-        .with(NetObj::hobo(id))
-        .build();
+    let id = id
+        .parse()
+        .map_err(|_| PadlError::dev_err(PadlErrorCode::InvalidGraphQLData("HoboId")))?;
+    let entity = world.create_entity().with(NetObj::hobo(id)).build();
     Ok(entity)
 }

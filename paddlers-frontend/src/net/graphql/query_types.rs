@@ -1,9 +1,9 @@
-use specs::prelude::*;
-use crate::prelude::*;
 use crate::game::components::NetObj;
-use paddlers_shared_lib::models::*;
+use crate::prelude::*;
 use graphql_client::{GraphQLQuery, Response};
 use paddlers_shared_lib::graphql_types;
+use paddlers_shared_lib::models::*;
+use specs::prelude::*;
 
 pub use serde::Deserialize;
 type GqlTimestamp = String;
@@ -18,7 +18,7 @@ fn timestamp(s: &String) -> graphql_types::GqlTimestamp {
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "api/schema.json",
-    query_path = "api/queries/attacks_query.graphql",
+    query_path = "api/queries/attacks_query.graphql"
 )]
 pub struct AttacksQuery;
 pub type AttacksResponse = Response<attacks_query::ResponseData>;
@@ -41,7 +41,7 @@ impl Into<HoboAttributeType> for &HoboAttribute {
         match self {
             HoboAttribute::HEALTH => HoboAttributeType::Health,
             HoboAttribute::SPEED => HoboAttributeType::Speed,
-            _ => panic!("Unexpected attribute")
+            _ => panic!("Unexpected attribute"),
         }
     }
 }
@@ -49,7 +49,7 @@ impl Into<HoboAttributeType> for &HoboAttribute {
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "api/schema.json",
-    query_path = "api/queries/buildings_query.graphql",
+    query_path = "api/queries/buildings_query.graphql"
 )]
 pub struct BuildingsQuery;
 pub type BuildingsResponse = Response<buildings_query::ResponseData>;
@@ -57,7 +57,7 @@ pub type BuildingsResponse = Response<buildings_query::ResponseData>;
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "api/schema.json",
-    query_path = "api/queries/volatile_village_info_query.graphql",
+    query_path = "api/queries/volatile_village_info_query.graphql"
 )]
 pub struct VolatileVillageInfoQuery;
 pub type VolatileVillageInfoResponse = Response<volatile_village_info_query::ResponseData>;
@@ -65,7 +65,7 @@ pub type VolatileVillageInfoResponse = Response<volatile_village_info_query::Res
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "api/schema.json",
-    query_path = "api/queries/village_units_query.graphql",
+    query_path = "api/queries/village_units_query.graphql"
 )]
 pub struct VillageUnitsQuery;
 pub type VillageUnitsResponse = Response<village_units_query::ResponseData>;
@@ -77,12 +77,14 @@ pub type VillageUnitsAbilityType = village_units_query::AbilityType;
 
 use crate::game::units::workers::WorkerTask;
 impl VillageUnitsTask {
-    pub fn create(&self, net_ids: &ReadStorage<NetObj>, entities: &Entities) -> PadlResult<WorkerTask> {
-        let target = 
-        if let Some(id) = self.hobo_target {
+    pub fn create(
+        &self,
+        net_ids: &ReadStorage<NetObj>,
+        entities: &Entities,
+    ) -> PadlResult<WorkerTask> {
+        let target = if let Some(id) = self.hobo_target {
             Some(NetObj::lookup_hobo(id, net_ids, entities)?)
-        }
-        else {
+        } else {
             None
         };
         Ok(WorkerTask {
@@ -98,7 +100,7 @@ impl Into<AbilityType> for &VillageUnitsAbilityType {
         match self {
             VillageUnitsAbilityType::WORK => AbilityType::Work,
             VillageUnitsAbilityType::WELCOME => AbilityType::Welcome,
-            _ => panic!("Unexpected ability")
+            _ => panic!("Unexpected ability"),
         }
     }
 }
@@ -106,7 +108,7 @@ impl Into<AbilityType> for &VillageUnitsAbilityType {
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "api/schema.json",
-    query_path = "api/queries/worker_tasks_query.graphql",
+    query_path = "api/queries/worker_tasks_query.graphql"
 )]
 pub struct WorkerTasksQuery;
 pub type WorkerTasksRawResponse = Response<worker_tasks_query::ResponseData>;
@@ -116,12 +118,14 @@ pub type WorkerTaskEx = worker_tasks_query::WorkerTasksQueryWorkerTasks;
 pub type WorkerTaskType = worker_tasks_query::TaskType;
 
 impl WorkerTaskEx {
-    pub fn create(&self, net_ids: &ReadStorage<NetObj>, entities: &Entities) -> PadlResult<WorkerTask> {
-        let target = 
-        if let Some(id) = self.hobo_target {
+    pub fn create(
+        &self,
+        net_ids: &ReadStorage<NetObj>,
+        entities: &Entities,
+    ) -> PadlResult<WorkerTask> {
+        let target = if let Some(id) = self.hobo_target {
             Some(NetObj::lookup_hobo(id, net_ids, entities)?)
-        }
-        else {
+        } else {
             None
         };
         Ok(WorkerTask {
@@ -136,7 +140,7 @@ impl WorkerTaskEx {
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "api/schema.json",
-    query_path = "api/queries/hobos_query.graphql",
+    query_path = "api/queries/hobos_query.graphql"
 )]
 pub struct HobosQuery;
 pub type HobosQueryRawResponse = Response<hobos_query::ResponseData>;
@@ -146,7 +150,7 @@ pub type HobosQueryUnitColor = hobos_query::UnitColor;
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "api/schema.json",
-    query_path = "api/queries/player_query.graphql",
+    query_path = "api/queries/player_query.graphql"
 )]
 pub struct PlayerQuery;
 pub type PlayerQueryRawResponse = Response<player_query::ResponseData>;
@@ -156,7 +160,7 @@ pub type PlayerStoryState = player_query::StoryState;
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "api/schema.json",
-    query_path = "api/queries/map_query.graphql",
+    query_path = "api/queries/map_query.graphql"
 )]
 pub struct MapQuery;
 pub type MapResponse = Response<map_query::ResponseData>;
@@ -164,12 +168,11 @@ pub type MapResponse = Response<map_query::ResponseData>;
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "api/schema.json",
-    query_path = "api/queries/player_villages_query.graphql",
+    query_path = "api/queries/player_villages_query.graphql"
 )]
 pub struct PlayerVillagesQuery;
 pub type PlayerVillagesRawResponse = Response<player_villages_query::ResponseData>;
 pub type PlayerVillagesResponse = player_villages_query::PlayerVillagesQueryPlayer;
-
 
 use paddlers_shared_lib::models::TaskType;
 impl Into<TaskType> for &WorkerTaskType {
@@ -182,7 +185,7 @@ impl Into<TaskType> for &WorkerTaskType {
             WorkerTaskType::DEFEND => TaskType::Defend,
             WorkerTaskType::WELCOME_ABILITY => TaskType::WelcomeAbility,
             WorkerTaskType::COLLECT_REWARD => TaskType::CollectReward,
-            _ => panic!("Unexpected task type")
+            _ => panic!("Unexpected task type"),
         }
     }
 }
@@ -201,7 +204,7 @@ impl Into<TaskType> for &VillageUnitsTaskType {
             VillageUnitsTaskType::DEFEND => TaskType::Defend,
             VillageUnitsTaskType::WELCOME_ABILITY => TaskType::WelcomeAbility,
             VillageUnitsTaskType::COLLECT_REWARD => TaskType::CollectReward,
-            _ => panic!("Unexpected task type")
+            _ => panic!("Unexpected task type"),
         }
     }
 }
@@ -218,7 +221,7 @@ impl Into<UnitColor> for &attacks_query::UnitColor {
             attacks_query::UnitColor::WHITE => UnitColor::White,
             attacks_query::UnitColor::CAMO => UnitColor::Camo,
             attacks_query::UnitColor::PROPHET => UnitColor::Prophet,
-            _ => panic!("Unexpected unit color")
+            _ => panic!("Unexpected unit color"),
         }
     }
 }
@@ -226,12 +229,11 @@ impl Into<UnitColor> for &attacks_query::UnitColor {
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "api/schema.json",
-    query_path = "api/queries/leaderboard_query.graphql",
+    query_path = "api/queries/leaderboard_query.graphql"
 )]
 pub struct LeaderboardQuery;
 pub type LeaderboardRawResponse = Response<leaderboard_query::ResponseData>;
 pub type LeaderboardResponse = Vec<leaderboard_query::LeaderboardQueryScoreboard>;
-
 
 use paddlers_shared_lib::story::story_state::StoryState;
 impl Into<StoryState> for &PlayerStoryState {
@@ -245,9 +247,11 @@ impl Into<StoryState> for &PlayerStoryState {
             PlayerStoryState::FLOWER_PLANTED => StoryState::FlowerPlanted,
             PlayerStoryState::MORE_HAPPY_VISITORS => StoryState::MoreHappyVisitors,
             PlayerStoryState::TREE_PLANTED => StoryState::TreePlanted,
-            PlayerStoryState::STICK_GATHERING_STATION_BUILD => StoryState::StickGatheringStationBuild,
+            PlayerStoryState::STICK_GATHERING_STATION_BUILD => {
+                StoryState::StickGatheringStationBuild
+            }
             PlayerStoryState::GATHERING_STICKS => StoryState::GatheringSticks,
-            _ => panic!("Unexpected story state")
+            _ => panic!("Unexpected story state"),
         }
     }
 }

@@ -1,13 +1,14 @@
-use paddlers_shared_lib::game_mechanics::{
-    town::*,
-    worker::*,
-};
-use paddlers_shared_lib::prelude::*;
-use chrono::Duration;
 use crate::db::DB;
 use crate::town_view::*;
+use chrono::Duration;
+use paddlers_shared_lib::game_mechanics::{town::*, worker::*};
+use paddlers_shared_lib::prelude::*;
 
-pub fn worker_walk(town: &TownView, worker: &mut Worker, to: TileIndex) -> Result<Duration, String> {
+pub fn worker_walk(
+    town: &TownView,
+    worker: &mut Worker,
+    to: TileIndex,
+) -> Result<Duration, String> {
     let from = (worker.x as usize, worker.y as usize);
     if !town.path_walkable(from, to) {
         return Err(format!("Cannot walk this way. {:?} -> {:?}", from, to));
@@ -20,19 +21,31 @@ pub fn worker_walk(town: &TownView, worker: &mut Worker, to: TileIndex) -> Resul
     Ok(Duration::microseconds((seconds * 1_000_000.0) as i64))
 }
 
-pub fn worker_out_of_building(town: &mut TownView, _worker: &mut Worker, to: TileIndex) -> Result<Duration, String> {
-    let tile_state = town.state.get_mut(&to).ok_or("No building found")?; 
+pub fn worker_out_of_building(
+    town: &mut TownView,
+    _worker: &mut Worker,
+    to: TileIndex,
+) -> Result<Duration, String> {
+    let tile_state = town.state.get_mut(&to).ok_or("No building found")?;
     tile_state.try_remove_entity().map_err(|e| e.to_string())?;
     Ok(Duration::milliseconds(0))
 }
-pub fn worker_into_building(town: &mut TownView, _worker: &mut Worker, to: TileIndex) -> Result<(), String> {
-    let tile_state = town.state.get_mut(&to).ok_or("No building found")?; 
+pub fn worker_into_building(
+    town: &mut TownView,
+    _worker: &mut Worker,
+    to: TileIndex,
+) -> Result<(), String> {
+    let tile_state = town.state.get_mut(&to).ok_or("No building found")?;
     tile_state.try_add_entity().map_err(|e| e.to_string())?;
     Ok(())
 }
-pub (super) fn validate_ability(db: &DB, task_type: TaskType, worker_id: WorkerKey, now: chrono::NaiveDateTime) -> Result<(), String> {
-    if let Some(ability_type) = AbilityType::from_task(&task_type)
-    {
+pub(super) fn validate_ability(
+    db: &DB,
+    task_type: TaskType,
+    worker_id: WorkerKey,
+    now: chrono::NaiveDateTime,
+) -> Result<(), String> {
+    if let Some(ability_type) = AbilityType::from_task(&task_type) {
         // TODO: Range checks
         // let range = ability_type.range();
         // TODO: Take movement of visitor into account

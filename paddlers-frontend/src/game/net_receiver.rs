@@ -43,8 +43,10 @@ impl LoadingState {
                     self.game_data.hobos_response = Some(hobos);
                 }
                 NetMsg::Leaderboard(offset, list) => {
-                    self.viewer_data.push(PadlEvent::Network(NetMsg::Leaderboard(offset, list)));
-                    self.progress.report_progress::<PadlEvent>(self.viewer_data.len());
+                    self.viewer_data
+                        .push(PadlEvent::Network(NetMsg::Leaderboard(offset, list)));
+                    self.progress
+                        .report_progress::<PadlEvent>(self.viewer_data.len());
                 }
                 other => {
                     println!(

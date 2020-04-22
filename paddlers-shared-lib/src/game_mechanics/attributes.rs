@@ -4,12 +4,10 @@ pub trait Attributes {
     fn range(&self) -> Option<f32>;
     fn attack_power(&self) -> Option<i64>;
     fn attacks_per_cycle(&self) -> Option<i64>;
-    fn size(&self) -> (usize,usize);
+    fn size(&self) -> (usize, usize);
 }
 
-
 impl Attributes for BuildingType {
-
     fn range(&self) -> Option<f32> {
         match self {
             BuildingType::BlueFlowers => Some(2.0),
@@ -24,7 +22,7 @@ impl Attributes for BuildingType {
             _ => None,
         }
     }
-    fn attacks_per_cycle(&self) -> Option<i64>{
+    fn attacks_per_cycle(&self) -> Option<i64> {
         match self {
             BuildingType::BlueFlowers => None,
             BuildingType::RedFlowers => None,
@@ -36,7 +34,7 @@ impl Attributes for BuildingType {
             BuildingType::Temple => None,
         }
     }
-    fn size(&self) -> (usize,usize) {
-        (1,1)
+    fn size(&self) -> (usize, usize) {
+        (1, 1)
     }
 }

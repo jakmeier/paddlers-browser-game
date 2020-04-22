@@ -1,53 +1,56 @@
-use specs::prelude::*;
-use specs::world::EntitiesRes;
-use crate::prelude::*;
-use crate::gui::{
-    render::Renderable,
-    sprites::*,
-    z::Z_BUILDINGS,
-    utils::*,
-};
 use crate::game::{
-    Game,
+    components::*,
+    fight::{Aura, Range},
+    forestry::ForestComponent,
     input::Clickable,
     movement::Position,
-    fight::{Range,Aura},
-    town::{Town, TileIndex},
-    components::*,
-    forestry::ForestComponent,
+    town::{TileIndex, Town},
+    Game,
 };
-use paddlers_shared_lib::{
-    models::*,
-    game_mechanics::{
-        attributes::Attributes,
-    },
-    graphql_types::*,
-};
+use crate::gui::{render::Renderable, sprites::*, utils::*, z::Z_BUILDINGS};
+use crate::prelude::*;
+use paddlers_shared_lib::{game_mechanics::attributes::Attributes, graphql_types::*, models::*};
+use specs::prelude::*;
+use specs::world::EntitiesRes;
 
 #[derive(Default, Debug, Component)]
 #[storage(NullStorage)]
 pub struct Building;
 
 impl Town {
-    pub fn insert_new_building(&mut self, entities: &EntitiesRes, lazy: &LazyUpdate, pos: TileIndex, bt: BuildingType) -> Entity {
-       self.insert_building(entities, lazy, pos, bt, bt.attack_power(), bt.attacks_per_cycle(), bt.range(), utc_now())
+    pub fn insert_new_building(
+        &mut self,
+        entities: &EntitiesRes,
+        lazy: &LazyUpdate,
+        pos: TileIndex,
+        bt: BuildingType,
+    ) -> Entity {
+        self.insert_building(
+            entities,
+            lazy,
+            pos,
+            bt,
+            bt.attack_power(),
+            bt.attacks_per_cycle(),
+            bt.range(),
+            utc_now(),
+        )
     }
 
     fn insert_building(
-        &mut self, 
-        entities: &EntitiesRes, 
-        lazy: &LazyUpdate, 
-        tile_index: TileIndex, 
-        bt: BuildingType, 
-        ap: Option<i64>, 
-        attacks_per_cycle: Option<i64>,  
+        &mut self,
+        entities: &EntitiesRes,
+        lazy: &LazyUpdate,
+        tile_index: TileIndex,
+        bt: BuildingType,
+        ap: Option<i64>,
+        attacks_per_cycle: Option<i64>,
         range: Option<f32>,
         created: crate::Timestamp,
-    ) -> Entity 
-    {
+    ) -> Entity {
         let area = self.tile_area(tile_index);
-        let mut builder = 
-            lazy.create_entity(entities)
+        let mut builder = lazy
+            .create_entity(entities)
             .with(Position::new(area.pos, area.size, Z_BUILDINGS))
             .with(Renderable::new_transformed(
                 RenderVariant::ImgWithImgBackground(bt.sprite(), SingleSprite::Grass),
@@ -73,34 +76,32 @@ impl Town {
         match bt {
             BuildingType::Temple => {
                 builder = builder.with(UiMenu::new_shop_menu());
-            },
+            }
             BuildingType::BundlingStation => {
-                builder = builder.with(
-                    EntityContainer::new(bt.capacity(), TaskType::GatherSticks)
-                )
-                .with(UiMenu::new_entity_container());
-            },
+                builder = builder
+                    .with(EntityContainer::new(bt.capacity(), TaskType::GatherSticks))
+                    .with(UiMenu::new_entity_container());
+            }
             BuildingType::SawMill => {
-                builder = builder.with(
-                    EntityContainer::new(bt.capacity(), TaskType::ChopTree)
-                )
-                .with(UiMenu::new_entity_container());
-            },
+                builder = builder
+                    .with(EntityContainer::new(bt.capacity(), TaskType::ChopTree))
+                    .with(UiMenu::new_entity_container());
+            }
             BuildingType::Tree => {
                 builder = builder.with(ForestComponent::new(created));
             }
-            _ => { }
+            _ => {}
         }
-        
+
         self.place_building(tile_index, bt, builder.entity);
-        
+
         let entity = builder.build();
-        
+
         match bt {
             BuildingType::Temple => {
                 self.temple = Some(entity);
-            },
-            _ => { }
+            }
+            _ => {}
         }
         entity
     }
@@ -108,30 +109,27 @@ impl Town {
 
 fn building_ingame_scaling(b: BuildingType) -> f32 {
     match b {
-        BuildingType::PresentA |
-        BuildingType::PresentB
-        => 0.5,
-        BuildingType::BlueFlowers
-        => 0.6,
-        BuildingType::RedFlowers
-        => 0.45,
-        _ => std::f32::NAN
+        BuildingType::PresentA | BuildingType::PresentB => 0.5,
+        BuildingType::BlueFlowers => 0.6,
+        BuildingType::RedFlowers => 0.45,
+        _ => std::f32::NAN,
     }
 }
 
 use crate::net::graphql::buildings_query;
 impl buildings_query::ResponseData {
-    pub (crate) fn create_entities(&self, game: &mut Game) -> Vec<Entity> {
-        self.village.buildings
+    pub(crate) fn create_entities(&self, game: &mut Game) -> Vec<Entity> {
+        self.village
+            .buildings
             .iter()
-            .map(|u|{u.create_entity(game)})
+            .map(|u| u.create_entity(game))
             .collect()
     }
 }
 
 impl buildings_query::BuildingsQueryVillageBuildings {
     fn create_entity(&self, game: &mut Game) -> Entity {
-        let coordinates = (self.x as usize,self.y as usize);
+        let coordinates = (self.x as usize, self.y as usize);
         let maybe_range = self.building_range.map(|f| f as f32);
         let maybe_ap = self.attack_power.map(|f| f as i64);
         let bt = match self.building_type {
@@ -150,6 +148,15 @@ impl buildings_query::BuildingsQueryVillageBuildings {
         let entities = game.world.entities();
         let lazy = game.world.read_resource::<LazyUpdate>();
         let mut town = game.world.write_resource::<Town>();
-        town.insert_building(&entities, &lazy, coordinates, bt, maybe_ap, self.attacks_per_cycle, maybe_range, created)
+        town.insert_building(
+            &entities,
+            &lazy,
+            coordinates,
+            bt,
+            maybe_ap,
+            self.attacks_per_cycle,
+            maybe_range,
+            created,
+        )
     }
 }

@@ -1,15 +1,13 @@
-use diesel::PgConnection;
 use diesel::r2d2::ConnectionManager;
-use paddlers_shared_lib::{
-    prelude::*,
-};
+use diesel::PgConnection;
+use paddlers_shared_lib::prelude::*;
 pub mod diesel_queries;
 pub use diesel_queries::*;
 mod db_actor;
 pub use db_actor::*;
 type Manager = ConnectionManager<PgConnection>;
 pub type Pool = r2d2::Pool<Manager>;
-pub (crate) struct DB (r2d2::PooledConnection<Manager>);
+pub(crate) struct DB(r2d2::PooledConnection<Manager>);
 
 impl DB {
     pub fn new_pool() -> Pool {

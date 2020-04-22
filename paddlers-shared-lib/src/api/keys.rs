@@ -1,16 +1,16 @@
 //! Common key types for cross-layer entities.
 //! The only purpose of these keys is to provide static type checks.
 
-use serde::{Serialize, Deserialize};
 use crate::PadlId;
+use serde::{Deserialize, Serialize};
 
-#[derive(Clone,Copy,Debug, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 pub struct PlayerKey(pub PadlId);
-#[derive(Clone,Copy,Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct VillageKey(pub PadlId);
-#[derive(Clone,Copy,Debug, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 pub struct HoboKey(pub PadlId);
-#[derive(Clone,Copy,Debug, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 pub struct WorkerKey(pub PadlId);
 
 impl Into<i64> for VillageKey {
@@ -23,7 +23,7 @@ impl Into<i64> for VillageKey {
 impl VillageKey {
     pub fn num(&self) -> i64 {
         self.0
-    } 
+    }
 }
 
 impl Into<i64> for PlayerKey {
@@ -34,7 +34,7 @@ impl Into<i64> for PlayerKey {
 impl PlayerKey {
     pub fn num(&self) -> i64 {
         self.0
-    } 
+    }
 }
 
 impl Into<i64> for HoboKey {
@@ -45,7 +45,7 @@ impl Into<i64> for HoboKey {
 impl HoboKey {
     pub fn num(&self) -> i64 {
         self.0
-    } 
+    }
 }
 impl Into<i64> for WorkerKey {
     fn into(self) -> i64 {
@@ -55,5 +55,5 @@ impl Into<i64> for WorkerKey {
 impl WorkerKey {
     pub fn num(&self) -> i64 {
         self.0
-    } 
+    }
 }

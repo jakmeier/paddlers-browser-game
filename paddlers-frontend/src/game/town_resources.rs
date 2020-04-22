@@ -1,27 +1,27 @@
+use crate::net::graphql::volatile_village_info_query;
 use crate::prelude::*;
 use paddlers_shared_lib::api::shop::*;
-use crate::net::graphql::volatile_village_info_query;
 
-#[derive(Default,Debug, Clone, Copy)]
+#[derive(Default, Debug, Clone, Copy)]
 pub struct TownResources {
     feathers: i64,
     sticks: i64,
     logs: i64,
 }
 
-impl TownResources { 
+impl TownResources {
     pub fn read(&self, rt: ResourceType) -> i64 {
         match rt {
             ResourceType::Feathers => self.feathers,
             ResourceType::Sticks => self.sticks,
-            ResourceType::Logs=> self.logs,
+            ResourceType::Logs => self.logs,
         }
     }
     fn write(&mut self, rt: ResourceType) -> &mut i64 {
         match rt {
             ResourceType::Feathers => &mut self.feathers,
             ResourceType::Sticks => &mut self.sticks,
-            ResourceType::Logs=> &mut self.logs,
+            ResourceType::Logs => &mut self.logs,
         }
     }
     pub fn update(&mut self, data: volatile_village_info_query::ResponseData) {
@@ -33,7 +33,7 @@ impl TownResources {
         use paddlers_shared_lib::strum::IntoEnumIterator;
         ResourceType::iter()
             .map(|rt| (rt, self.read(rt)))
-            .filter( |t| t.1 > 0 )
+            .filter(|t| t.1 > 0)
             .collect()
     }
     fn spend_res(&mut self, rt: ResourceType, amount: i64) {

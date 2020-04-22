@@ -1,20 +1,20 @@
 //! View for incoming and outgoing attacks
 
-use crate::view::Frame;
-use specs::prelude::*;
-use stdweb::web::{HtmlElement, Node, INode, IElement};
-use paddlers_shared_lib::api::attacks::*;
-use crate::prelude::*;
 use crate::game::Game;
-use crate::net::state::current_village;
-use crate::logging::ErrorQueue;
-use crate::view::TextNode;
-use panes::new_pane;
-use stdweb::unstable::{TryInto};
-use quicksilver::prelude::{Window,Rectangle,Transform,Col};
-use crate::gui::z::*;
-use crate::gui::utils::colors::LIGHT_BLUE;
 use crate::gui::ui_state::UiState;
+use crate::gui::utils::colors::LIGHT_BLUE;
+use crate::gui::z::*;
+use crate::logging::ErrorQueue;
+use crate::net::state::current_village;
+use crate::prelude::*;
+use crate::view::Frame;
+use crate::view::TextNode;
+use paddlers_shared_lib::api::attacks::*;
+use panes::new_pane;
+use quicksilver::prelude::{Col, Rectangle, Transform, Window};
+use specs::prelude::*;
+use stdweb::unstable::TryInto;
+use stdweb::web::{HtmlElement, IElement, INode, Node};
 
 #[derive(Component, Debug)]
 #[storage(HashMapStorage)]
@@ -25,8 +25,8 @@ pub struct Attack {
     dom_node: Option<TextNode>,
 }
 
-impl Game<'_,'_> {
-    pub fn send_prophet_attack(&mut self, target: (i32,i32)) -> PadlResult<()> {
+impl Game<'_, '_> {
+    pub fn send_prophet_attack(&mut self, target: (i32, i32)) -> PadlResult<()> {
         let maybe_prophet = self.town_mut().idle_prophets.pop();
         if let Some(prophet) = maybe_prophet {
             let hobo = self.hobo_key(prophet)?;
@@ -61,7 +61,12 @@ impl Attack {
         }
     }
     fn to_html(&self) -> String {
-        format!("<div>{}</div><div>{}</div><div>{}</div>", self.description, self.size, self.arrival())
+        format!(
+            "<div>{}</div><div>{}</div><div>{}</div>",
+            self.description,
+            self.size,
+            self.arrival()
+        )
     }
     fn update_dom(&mut self) -> PadlResult<()> {
         if self.dom_node.is_some() {
@@ -80,26 +85,27 @@ impl Attack {
     }
 }
 
-
-pub (crate) struct AttackFrame<'a,'b> {
+pub(crate) struct AttackFrame<'a, 'b> {
     incoming_attacks_table: HtmlElement,
-    update_dispatcher: Dispatcher<'a,'b>,
+    update_dispatcher: Dispatcher<'a, 'b>,
     pane: panes::PaneHandle,
 }
 
-impl<'a,'b> AttackFrame<'a,'b> {
+impl<'a, 'b> AttackFrame<'a, 'b> {
     pub fn new(x: f32, y: f32, w: f32, h: f32) -> PadlResult<Self> {
         let pane = new_pane(
             x as u32,
             y as u32,
-            (w/2.0) as u32,
+            (w / 2.0) as u32,
             h as u32,
             r#"<div class="attack-table"></div>"#,
-        ).expect("Pane not set up properly");
-        let table = pane.first_inner_node()?
+        )
+        .expect("Pane not set up properly");
+        let table = pane
+            .first_inner_node()?
             .try_into()
-            .map_err(|_|PadlError::dev_err(PadlErrorCode::InvalidDom("No table in pane")))?;
-        
+            .map_err(|_| PadlError::dev_err(PadlErrorCode::InvalidDom("No table in pane")))?;
+
         let update_dispatcher = DispatcherBuilder::new()
             .with(UpdateAttackViewSystem::new(), "update_atk", &[])
             .build();
@@ -115,24 +121,28 @@ impl<'a,'b> AttackFrame<'a,'b> {
         Ok(attack)
     }
     pub fn add_row(&mut self, html: &str) -> PadlResult<Node> {
-        self.incoming_attacks_table.append_html(&html)
+        self.incoming_attacks_table
+            .append_html(&html)
             .map_err(|_e| PadlError::dev_err(PadlErrorCode::InvalidDom("Inserting HTML failed")))?;
-        self.incoming_attacks_table.last_child()
-            .ok_or(PadlError::dev_err(PadlErrorCode::InvalidDom("Child lookup failed")))
+        self.incoming_attacks_table
+            .last_child()
+            .ok_or(PadlError::dev_err(PadlErrorCode::InvalidDom(
+                "Child lookup failed",
+            )))
     }
 }
 
-impl<'a,'b> Frame for AttackFrame<'a,'b> {
+impl<'a, 'b> Frame for AttackFrame<'a, 'b> {
     type Error = PadlError;
-    type State = Game<'a,'b>;
+    type State = Game<'a, 'b>;
     type Graphics = Window;
     type Event = PadlEvent;
 
-    fn update(&mut self, state: &mut Self::State) -> Result<(),Self::Error> {
+    fn update(&mut self, state: &mut Self::State) -> Result<(), Self::Error> {
         self.update_dispatcher.dispatch(&mut state.world);
         let mut attack = state.world.write_storage::<Attack>();
         let mut errq = state.world.write_resource::<ErrorQueue>();
-        for a in (& mut attack).join() {
+        for a in (&mut attack).join() {
             if a.dom_node.is_none() {
                 let html = a.to_html();
                 match self.add_row(&html) {
@@ -141,35 +151,44 @@ impl<'a,'b> Frame for AttackFrame<'a,'b> {
                             let text_node = TextNode::new(arrival_node, a.arrival());
                             a.dom_node = Some(text_node);
                         } else {
-                            errq.push(PadlError::dev_err(PadlErrorCode::InvalidDom("Child lookup failed")));
+                            errq.push(PadlError::dev_err(PadlErrorCode::InvalidDom(
+                                "Child lookup failed",
+                            )));
                         }
                     }
-                    Err(e) => errq.push(e)
+                    Err(e) => errq.push(e),
                 }
             }
         }
         Ok(())
     }
-    fn draw(&mut self, state: &mut Self::State, window: &mut Self::Graphics) -> Result<(),Self::Error> {
+    fn draw(
+        &mut self,
+        state: &mut Self::State,
+        window: &mut Self::Graphics,
+    ) -> Result<(), Self::Error> {
         let ui_state = state.world.read_resource::<UiState>();
         let main_area = Rectangle::new(
-            (0,0), 
-            (ui_state.menu_box_area.x(), (window.project() * window.screen_size()).y)
+            (0, 0),
+            (
+                ui_state.menu_box_area.x(),
+                (window.project() * window.screen_size()).y,
+            ),
         );
         std::mem::drop(ui_state);
         window.draw_ex(&main_area, Col(LIGHT_BLUE), Transform::IDENTITY, Z_TEXTURE);
         state.render_menu_box(window)?;
         Ok(())
     }
-    fn enter(&mut self, _state: &mut Self::State) -> Result<(),Self::Error> {
+    fn enter(&mut self, _state: &mut Self::State) -> Result<(), Self::Error> {
         self.pane.show()?;
         Ok(())
     }
-    fn leave(&mut self, _state: &mut Self::State) -> Result<(),Self::Error> {
+    fn leave(&mut self, _state: &mut Self::State) -> Result<(), Self::Error> {
         self.pane.hide()?;
         Ok(())
     }
-    fn left_click(&mut self, state: &mut Self::State, pos: (i32,i32)) -> Result<(),Self::Error> {
+    fn left_click(&mut self, state: &mut Self::State, pos: (i32, i32)) -> Result<(), Self::Error> {
         state.click_buttons(pos);
         Ok(())
     }
@@ -187,10 +206,7 @@ impl UpdateAttackViewSystem {
 }
 
 impl<'a> System<'a> for UpdateAttackViewSystem {
-    type SystemData = (
-        WriteStorage<'a, Attack>,
-        WriteExpect<'a, ErrorQueue>,
-    );
+    type SystemData = (WriteStorage<'a, Attack>, WriteExpect<'a, ErrorQueue>);
 
     fn run(&mut self, (mut attack, mut errq): Self::SystemData) {
         let now = utc_now();

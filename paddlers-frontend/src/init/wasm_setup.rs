@@ -26,10 +26,12 @@ pub fn setup_wasm() {
 
 use crate::stdweb::unstable::TryInto;
 pub fn utc_now() -> crate::Timestamp {
-    let millis : f64 = js!(
+    let millis: f64 = js!(
         var date = new Date();
         return date.getTime();
-    ).try_into().expect("Reading time");
+    )
+    .try_into()
+    .expect("Reading time");
     millis as i64 * 1000
 }
 

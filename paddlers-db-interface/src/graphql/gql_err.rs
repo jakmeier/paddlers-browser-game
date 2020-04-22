@@ -1,5 +1,5 @@
-use juniper::*;
 use juniper::IntoFieldError;
+use juniper::*;
 
 #[derive(Debug)]
 pub enum ReadableInterfaceError {

@@ -1,40 +1,43 @@
 //! All GQL objects are defined in this module.
 //! The fields of the public objects are directly defined here, too.
-//! Fields of private objects are in their own module since they 
+//! Fields of private objects are in their own module since they
 //! require no further authorization checks.
 //!
 //! Relevant for guaranteeing data secrecy is:
 //!     1) All public objects only allow authorized field access
 //!     2) Private objects are only created for authorized users.
-//! 
+//!
 //! This module is where that authorization happens.
 //!     Each field  has either of these visibilities:
 //!         same as the parent GQL object
 //!         more restricted => Check necessary when reading field
 //! The root query is also public and each field access there must
-//! also be authorized as necessary. Private constructors in this 
+//! also be authorized as necessary. Private constructors in this
 //! help to argue about correctness there.
-//! 
-//! Other modules will NOT constraint further what fields can be read. 
+//!
+//! Other modules will NOT constraint further what fields can be read.
 
-use paddlers_shared_lib::story::story_state::StoryState;
 use super::*;
 use juniper;
 use juniper::FieldResult;
 use paddlers_shared_lib::sql_db::keys::SqlKey;
+use paddlers_shared_lib::story::story_state::StoryState;
 
 // Complete list of fully public objects without private sub fields.
-pub struct GqlMapSlice { pub low_x: i32, pub high_x: i32 }
-pub struct GqlStream( pub paddlers_shared_lib::models::Stream );
-pub struct GqlHobo( pub paddlers_shared_lib::models::Hobo ); // Note: Consider changing this to private
+pub struct GqlMapSlice {
+    pub low_x: i32,
+    pub high_x: i32,
+}
+pub struct GqlStream(pub paddlers_shared_lib::models::Stream);
+pub struct GqlHobo(pub paddlers_shared_lib::models::Hobo); // Note: Consider changing this to private
 
 // Complete list of public objects with restricted fields access.
 pub struct GqlPlayer(pub paddlers_shared_lib::models::Player);
 pub struct GqlVillage(pub paddlers_shared_lib::models::Village);
 
-// Complete list of private objects. 
+// Complete list of private objects.
 // Once these are created, all sub-fields are visible!
-// Note: These constructors are all private and ensure that only this module 
+// Note: These constructors are all private and ensure that only this module
 //       (and potentially children of it) can create these objects.
 struct PrivacyGuard;
 pub struct GqlAbility(pub paddlers_shared_lib::models::Ability, PrivacyGuard);
@@ -43,7 +46,6 @@ pub struct GqlBuilding(pub paddlers_shared_lib::models::Building, PrivacyGuard);
 pub struct GqlEffect(pub paddlers_shared_lib::models::Effect, PrivacyGuard);
 pub struct GqlTask(pub paddlers_shared_lib::models::Task, PrivacyGuard);
 pub struct GqlWorker(pub paddlers_shared_lib::models::Worker, PrivacyGuard);
-
 
 #[juniper::object (Context = Context)]
 impl GqlPlayer {
@@ -102,34 +104,27 @@ impl GqlVillage {
     /// Field Visibility: user
     fn sticks(&self, ctx: &Context) -> FieldResult<i32> {
         ctx.check_village_key(self.0.key())?;
-        Ok(
-            ctx.db().resource(ResourceType::Sticks, self.0.key()) as i32
-        )
+        Ok(ctx.db().resource(ResourceType::Sticks, self.0.key()) as i32)
     }
     /// Field Visibility: user
     fn feathers(&self, ctx: &Context) -> FieldResult<i32> {
         ctx.check_village_key(self.0.key())?;
-        Ok(
-            ctx.db().resource(ResourceType::Feathers, self.0.key()) as i32
-        )
+        Ok(ctx.db().resource(ResourceType::Feathers, self.0.key()) as i32)
     }
     /// Field Visibility: user
     fn logs(&self, ctx: &Context) -> FieldResult<i32> {
         ctx.check_village_key(self.0.key())?;
-        Ok(
-            ctx.db().resource(ResourceType::Logs, self.0.key()) as i32
-        )
+        Ok(ctx.db().resource(ResourceType::Logs, self.0.key()) as i32)
     }
     /// Field Visibility: user
-    fn workers(&self, ctx: &Context) -> FieldResult<Vec<GqlWorker> >{
+    fn workers(&self, ctx: &Context) -> FieldResult<Vec<GqlWorker>> {
         ctx.check_village_key(self.0.key())?;
-        Ok(
-            ctx.db()
-                .workers(self.0.key())
-                .into_iter()
-                .map(GqlWorker::authorized)
-                .collect()
-        )
+        Ok(ctx
+            .db()
+            .workers(self.0.key())
+            .into_iter()
+            .map(GqlWorker::authorized)
+            .collect())
     }
     /// Field Visibility: user
     fn buildings(&self, ctx: &Context) -> FieldResult<Vec<GqlBuilding>> {
@@ -156,26 +151,23 @@ impl GqlVillage {
     }
     /// Field Visibility: public
     fn owner(&self, ctx: &Context) -> FieldResult<Option<GqlPlayer>> {
-        Ok(
-            if let Some(owner) = self.0.player_id {
-                let key = PlayerKey(owner as i64);
-                let player = ctx.db().player(key).ok_or("Invalid owner key on village")?;
-                Some(GqlPlayer(player))
-            } else {
-                None
-            }
-        )
+        Ok(if let Some(owner) = self.0.player_id {
+            let key = PlayerKey(owner as i64);
+            let player = ctx.db().player(key).ok_or("Invalid owner key on village")?;
+            Some(GqlPlayer(player))
+        } else {
+            None
+        })
     }
     /// Field Visibility: user
     fn hobos(&self, ctx: &Context) -> FieldResult<Vec<GqlHobo>> {
-        ctx.check_village_key(self.0.key())?; 
-        Ok(
-            ctx.db()
-                .village_hobos(self.0.key())
-                .into_iter()
-                .map(GqlHobo)
-                .collect()
-        )
+        ctx.check_village_key(self.0.key())?;
+        Ok(ctx
+            .db()
+            .village_hobos(self.0.key())
+            .into_iter()
+            .map(GqlHobo)
+            .collect())
     }
 }
 
@@ -204,7 +196,7 @@ impl GqlHobo {
         ctx.db()
             .effects_on_hobo(HoboKey(self.0.id))
             .into_iter()
-            .map(GqlEffect::authorized )
+            .map(GqlEffect::authorized)
             .collect()
     }
     /// Field Visibility: public
@@ -254,38 +246,32 @@ impl GqlStream {
  * Secrecy model only works if these are only called properly!
  */
 impl GqlAbility {
-    pub (super) 
-    fn authorized(inner: paddlers_shared_lib::models::Ability) -> Self {
+    pub(super) fn authorized(inner: paddlers_shared_lib::models::Ability) -> Self {
         GqlAbility(inner, PrivacyGuard)
     }
 }
 impl GqlAttack {
-    pub (super) 
-    fn authorized(inner: paddlers_shared_lib::models::Attack) -> Self {
+    pub(super) fn authorized(inner: paddlers_shared_lib::models::Attack) -> Self {
         GqlAttack(inner, PrivacyGuard)
     }
 }
 impl GqlBuilding {
-    pub (super) 
-    fn authorized(inner: paddlers_shared_lib::models::Building) -> Self {
+    pub(super) fn authorized(inner: paddlers_shared_lib::models::Building) -> Self {
         GqlBuilding(inner, PrivacyGuard)
     }
 }
 impl GqlEffect {
-    pub (super) 
-    fn authorized(inner: paddlers_shared_lib::models::Effect) -> Self {
+    pub(super) fn authorized(inner: paddlers_shared_lib::models::Effect) -> Self {
         GqlEffect(inner, PrivacyGuard)
     }
 }
 impl GqlTask {
-    pub (super) 
-    fn authorized(inner: paddlers_shared_lib::models::Task) -> Self {
+    pub(super) fn authorized(inner: paddlers_shared_lib::models::Task) -> Self {
         GqlTask(inner, PrivacyGuard)
     }
 }
 impl GqlWorker {
-    pub (in crate::graphql) 
-    fn authorized(inner: paddlers_shared_lib::models::Worker) -> Self {
+    pub(in crate::graphql) fn authorized(inner: paddlers_shared_lib::models::Worker) -> Self {
         GqlWorker(inner, PrivacyGuard)
     }
 }

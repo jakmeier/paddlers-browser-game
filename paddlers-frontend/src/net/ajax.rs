@@ -1,10 +1,14 @@
-use stdweb::{PromiseFuture};
-use stdweb::unstable::{TryInto, TryFrom};
 use crate::prelude::*;
 use paddlers_shared_lib::prelude::PadlApiError;
+use stdweb::unstable::{TryFrom, TryInto};
+use stdweb::PromiseFuture;
 
-pub fn send(method: &str, uri: &str, request_body: &str) -> PadlResult<PromiseFuture<String, AjaxError>>{
-    let promise: Result<PromiseFuture<String, AjaxError>, _> = 
+pub fn send(
+    method: &str,
+    uri: &str,
+    request_body: &str,
+) -> PadlResult<PromiseFuture<String, AjaxError>> {
+    let promise: Result<PromiseFuture<String, AjaxError>, _> =
     js! (
         return new Promise(function (resolve, reject) {
             var xhr = new XMLHttpRequest();
@@ -52,60 +56,48 @@ fn padl_error_from_js_array(val: stdweb::Value) -> (Option<PadlErrorCode>, Optio
     /* We expect a GQL answer body which look something like this:
      * {
      *  data: null,
-     *  errors: [ 
+     *  errors: [
      *      {
      *          extensions: { padlcode: 255 }
-     *          message: "error description", 
+     *          message: "error description",
      *          locations: [...],
      *          path: [...],
      *      },
      *  ]
      * }
      * The interesting bit is the `padlcode` in the error extension, as well as the error message.
-     * 
+     *
      * The input to this function is just the error array.
-     * So we want a type-safe 
+     * So we want a type-safe
      *  `errors[0].extension.padlcode`
-     * 
-     * See below for a wonderful example of what the JavaScript engine has to 
+     *
+     * See below for a wonderful example of what the JavaScript engine has to
      * do all the time. In the JS engine, of course, it will only be like that
      * after several stages of JIT-ing it up.
      */
-    let gql_error_obj = val.into_array()
-        .and_then( |array| {
-                let vec : Option<Vec<stdweb::Object>> = 
-                array.try_into().ok();
-                vec
-            }
-        )
+    let gql_error_obj = val
+        .into_array()
+        .and_then(|array| {
+            let vec: Option<Vec<stdweb::Object>> = array.try_into().ok();
+            vec
+        })
         // Only look at the first error, ignore others
         .and_then(|v| v.get(0).cloned());
 
-    let error_message = gql_error_obj.as_ref()
-        .and_then(|inner_obj| 
-            inner_obj.to_iter()
-            .find(|(key, _val)| key == "message")
-        )
-        .and_then(|(_key, s)| s.try_into().ok() );
+    let error_message = gql_error_obj
+        .as_ref()
+        .and_then(|inner_obj| inner_obj.to_iter().find(|(key, _val)| key == "message"))
+        .and_then(|(_key, s)| s.try_into().ok());
 
-    let error_code = 
-        gql_error_obj.and_then(|inner_obj| 
-            inner_obj.to_iter()
-            .find(|(key, _val)| key == "extensions")
-        )
-        .and_then(|(_key, ext)| ext.into_object() )
-        .and_then(|inner_obj| 
-            inner_obj.to_iter()
-            .find(|(key, _val)| key == "padlcode")
-        )
-        .and_then(|(_key, n)| n.try_into().ok() )
+    let error_code = gql_error_obj
+        .and_then(|inner_obj| inner_obj.to_iter().find(|(key, _val)| key == "extensions"))
+        .and_then(|(_key, ext)| ext.into_object())
+        .and_then(|inner_obj| inner_obj.to_iter().find(|(key, _val)| key == "padlcode"))
+        .and_then(|(_key, n)| n.try_into().ok())
         .and_then(PadlApiError::try_from_num)
-        .map(
-            |api_err|
-            match api_err {
-                PadlApiError::PlayerNotCreated => PadlErrorCode::UserNotInDB
-            }
-        );
+        .map(|api_err| match api_err {
+            PadlApiError::PlayerNotCreated => PadlErrorCode::UserNotInDB,
+        });
     (error_code, error_message)
 }
 
@@ -117,13 +109,17 @@ impl std::convert::From<stdweb::Value> for AjaxError {
             let mut padl_error = None;
             for (key, v) in obj.to_iter() {
                 match key.as_ref() {
-                    "text" => { text = v.into_string(); },
-                    "code" => { code = v.try_into().unwrap_or(0); },
-                    "errors" => { 
-                        let (code, msg) = padl_error_from_js_array(v); 
+                    "text" => {
+                        text = v.into_string();
+                    }
+                    "code" => {
+                        code = v.try_into().unwrap_or(0);
+                    }
+                    "errors" => {
+                        let (code, msg) = padl_error_from_js_array(v);
                         padl_error = code;
                         text = msg;
-                    },
+                    }
                     _ => { /* NOP */ }
                 }
             }
@@ -147,8 +143,7 @@ impl std::convert::From<stdweb::Value> for AjaxError {
 
 impl TryFrom<stdweb::Value> for AjaxError {
     type Error = ();
-    fn try_from(v: stdweb::Value) -> Result< Self, Self::Error > {
+    fn try_from(v: stdweb::Value) -> Result<Self, Self::Error> {
         Ok(v.into())
     }
-
 }

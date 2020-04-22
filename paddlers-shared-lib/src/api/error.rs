@@ -7,10 +7,9 @@ pub enum PadlApiError {
 
 impl std::error::Error for PadlApiError {}
 impl std::fmt::Display for PadlApiError {
-     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        match  self {
-            PadlApiError::PlayerNotCreated => 
-                write!(f, "The player is not in the database.")
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            PadlApiError::PlayerNotCreated => write!(f, "The player is not in the database."),
         }
     }
 }
@@ -19,7 +18,7 @@ impl PadlApiError {
     pub fn try_from_num(i: u8) -> Option<Self> {
         match i {
             1 => Some(PadlApiError::PlayerNotCreated),
-            _ => None
+            _ => None,
         }
     }
 }

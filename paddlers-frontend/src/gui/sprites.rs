@@ -2,11 +2,11 @@ pub mod animation;
 pub mod paths;
 
 use crate::gui::shapes::*;
-use quicksilver::prelude::*;
-use quicksilver::graphics::Image;
 use crate::gui::utils::*;
-use animation::AnimatedObject;
 use crate::init::loading::start_loading_animations;
+use animation::AnimatedObject;
+use quicksilver::graphics::Image;
+use quicksilver::prelude::*;
 
 /// Manager of all sprites.
 /// Cannot easily be in a component because Image is thread local.
@@ -30,13 +30,13 @@ impl Sprites {
 #[derive(Debug, Clone, Copy)]
 /// An instance of a SpriteIndex is a key for a specific sprite (Something that maps uniquely to a quicksilver Image)
 pub enum SpriteIndex {
-    // Multi-sprite images 
+    // Multi-sprite images
     Simple(SingleSprite),
     Directed(DirectedSprite, Direction),
     Animated(AnimatedSprite, Direction, u32),
 }
 
-/// An instance of a SpriteSet summarizes one or many sprites that show 
+/// An instance of a SpriteSet summarizes one or many sprites that show
 /// the same object in different states / from different angles
 #[derive(Debug, Clone, Copy)]
 pub enum SpriteSet {
@@ -62,10 +62,10 @@ impl SpriteSet {
             SpriteSet::Animated(i) => SpriteIndex::Animated(*i, *d, 0),
         };
         let t = match d {
-            Direction::East => { horizontal_flip() },
-            _ => { Transform::IDENTITY },
+            Direction::East => horizontal_flip(),
+            _ => Transform::IDENTITY,
         };
-        (i,t)
+        (i, t)
     }
     pub fn animated(&self, d: &Direction, animation_frame: u32) -> (SpriteIndex, Transform) {
         let i = match self {
@@ -74,10 +74,10 @@ impl SpriteSet {
             SpriteSet::Animated(i) => SpriteIndex::Animated(*i, *d, animation_frame),
         };
         let t = match d {
-            Direction::East => { horizontal_flip() },
-            _ => { Transform::IDENTITY },
+            Direction::East => horizontal_flip(),
+            _ => Transform::IDENTITY,
         };
-        (i,t)
+        (i, t)
     }
 }
 
@@ -96,7 +96,7 @@ pub enum SingleSprite {
     Heart,
     Ambience,
     Tree,
-    Sapling, 
+    Sapling,
     YoungTree,
     CamoDuck,
     WhiteDuck,
@@ -153,20 +153,24 @@ impl Sprites {
             SpriteIndex::Simple(j) => {
                 let i = j.index_in_vector();
                 self.img[i].clone()
-            },
-            SpriteIndex::Directed(j,d) => { 
+            }
+            SpriteIndex::Directed(j, d) => {
                 let i = j.index_in_vector(d);
                 self.img[i].clone()
-            },
-            SpriteIndex::Animated(j,d,a) => {
+            }
+            SpriteIndex::Animated(j, d, a) => {
                 let i = j.index_in_vector();
                 let animations = &mut self.animations;
 
                 // TODO: Find better way to read return value from Asset execution
-                let mut result =  animations[i].1.clone();
-                animations[i].0.execute(
-                    |v| { result = v.sprite(d,a); Ok(()) },
-                ).unwrap();
+                let mut result = animations[i].1.clone();
+                animations[i]
+                    .0
+                    .execute(|v| {
+                        result = v.sprite(d, a);
+                        Ok(())
+                    })
+                    .unwrap();
                 result
             }
         }

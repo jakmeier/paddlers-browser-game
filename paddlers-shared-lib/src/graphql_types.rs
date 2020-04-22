@@ -1,6 +1,6 @@
-#[cfg(feature = "graphql")] 
+#[cfg(feature = "graphql")]
 use juniper::Value;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize)]
 pub struct GqlTimestamp(pub i64);
 impl GqlTimestamp {
@@ -15,16 +15,14 @@ impl GqlTimestamp {
         //     panic!("asdf");
         // }
         // let ndt = date.unwrap().naive_utc();
-        GqlTimestamp(
-            ndt.timestamp() * 1_000_000 + ndt.timestamp_subsec_micros() as i64
-        )
+        GqlTimestamp(ndt.timestamp() * 1_000_000 + ndt.timestamp_subsec_micros() as i64)
     }
     pub fn to_chrono(&self) -> chrono::NaiveDateTime {
         chrono::NaiveDateTime::from_timestamp(self.0 / 1_000_000, (self.0 % 1_000_000) as u32)
     }
 }
 
-#[cfg(feature = "graphql")] 
+#[cfg(feature = "graphql")]
 juniper::graphql_scalar!(GqlTimestamp {
     description: "Micro second precision timestamp"
 

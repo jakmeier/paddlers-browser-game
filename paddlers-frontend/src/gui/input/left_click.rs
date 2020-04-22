@@ -1,5 +1,4 @@
 use super::{Clickable, MouseState};
-use crate::gui::ui_state::UiState;
 use crate::game::{
     components::*,
     movement::*,
@@ -7,20 +6,19 @@ use crate::game::{
     town_resources::TownResources,
     units::workers::*,
 };
+use crate::gui::ui_state::UiState;
 use crate::logging::ErrorQueue;
 use crate::net::game_master_api::RestApiState;
+use crate::prelude::*;
 use quicksilver::prelude::*;
 use specs::prelude::*;
-use crate::prelude::*;
 
 pub struct TownLeftClickSystem {
     event_pool: EventPool,
 }
 impl TownLeftClickSystem {
     pub fn new(event_pool: EventPool) -> Self {
-        TownLeftClickSystem {
-            event_pool
-        }
+        TownLeftClickSystem { event_pool }
     }
 }
 
@@ -73,35 +71,59 @@ impl<'a> System<'a> for TownLeftClickSystem {
         }
 
         let active_entity = ui_state.selected_entity;
-        
+
         // Demultiplex signal to views
         let in_menu_area = mouse_pos.overlaps_rectangle(&(*ui_state).menu_box_area);
         if in_menu_area {
             if let Some(entity) = (*ui_state).selected_entity {
                 if let Some(ui_menu) = ui_menus.get_mut(entity) {
                     town.left_click_on_menu(
-                        entity, mouse_pos, ui_state, position, workers, 
-                        containers, ui_menu, lazy, &*resources, errq, rest, &self.event_pool,
+                        entity,
+                        mouse_pos,
+                        ui_state,
+                        position,
+                        workers,
+                        containers,
+                        ui_menu,
+                        lazy,
+                        &*resources,
+                        errq,
+                        rest,
+                        &self.event_pool,
                     );
                 }
-            }
-            else {
+            } else {
                 Town::click_default_shop(mouse_pos, ui_state, shop, resources)
                     .unwrap_or_else(|e| errq.push(e));
             }
-        }
-        else {
-            let maybe_job =
-                town.left_click(
-                    mouse_pos, &entities, &mut ui_state, &position, &clickable, &net_ids, &lazy, &mut resources, &mut errq, &mut rest,
-                );
+        } else {
+            let maybe_job = town.left_click(
+                mouse_pos,
+                &entities,
+                &mut ui_state,
+                &position,
+                &clickable,
+                &net_ids,
+                &lazy,
+                &mut resources,
+                &mut errq,
+                &mut rest,
+            );
             if let Some(job) = maybe_job {
                 let active_entity = active_entity.expect("Ability requires unit");
-                let worker = workers.get_mut(active_entity).expect("Ability requires unit");
-                let (from, movement) = (&position, &moving).join().get(active_entity, &entities).expect("Unit has position");
+                let worker = workers
+                    .get_mut(active_entity)
+                    .expect("Ability requires unit");
+                let (from, movement) = (&position, &moving)
+                    .join()
+                    .get(active_entity, &entities)
+                    .expect("Unit has position");
                 let start = town.next_tile_in_direction(from.area.pos, movement.momentum);
                 let target_tile = town.tile(mouse_pos);
-                let range = AbilityType::from_task(&job.0).as_ref().map(AbilityType::range).unwrap_or(0.0);
+                let range = AbilityType::from_task(&job.0)
+                    .as_ref()
+                    .map(AbilityType::range)
+                    .unwrap_or(0.0);
                 // TODO: Take movement of visitor into account
                 let destination = (*town).closest_walkable_tile_in_range(start, target_tile, range);
                 if destination.is_none() {
@@ -124,15 +146,12 @@ impl<'a> System<'a> for TownLeftClickSystem {
     }
 }
 
-
 pub struct MapLeftClickSystem {
     event_pool: EventPool,
 }
 impl MapLeftClickSystem {
     pub fn new(event_pool: EventPool) -> Self {
-        MapLeftClickSystem {
-            event_pool
-        }
+        MapLeftClickSystem { event_pool }
     }
 }
 
@@ -171,15 +190,25 @@ impl<'a> System<'a> for MapLeftClickSystem {
         if button != Some(MouseButton::Left) {
             return;
         }
-        
+
         // Demultiplex signal to views
         let in_menu_area = mouse_pos.overlaps_rectangle(&(*ui_state).menu_box_area);
         if in_menu_area {
             if let Some(entity) = (*ui_state).selected_entity {
                 if let Some(ui_menu) = ui_menus.get_mut(entity) {
                     town.left_click_on_menu(
-                        entity, mouse_pos, ui_state, position, workers, 
-                        containers, ui_menu, lazy, &*resources, errq, rest, &self.event_pool,
+                        entity,
+                        mouse_pos,
+                        ui_state,
+                        position,
+                        workers,
+                        containers,
+                        ui_menu,
+                        lazy,
+                        &*resources,
+                        errq,
+                        rest,
+                        &self.event_pool,
                     );
                 }
             }

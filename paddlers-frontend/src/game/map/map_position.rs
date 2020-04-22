@@ -1,7 +1,7 @@
-use specs::storage::BTreeStorage;
-use specs::prelude::*;
-use quicksilver::prelude::*;
 use crate::gui::input::Clickable;
+use quicksilver::prelude::*;
+use specs::prelude::*;
+use specs::storage::BTreeStorage;
 
 #[derive(Component, Debug)]
 #[storage(BTreeStorage)]
@@ -28,11 +28,10 @@ pub fn map_position_lookup<'a>(
     position: ReadStorage<'a, MapPosition>,
     clickable: ReadStorage<'a, Clickable>,
 ) -> Option<Entity> {
-
     for (e, pos, _) in (&entities, &position, &clickable).join() {
         let area = Rectangle::new((pos.x, pos.y), (1.0, 1.0));
         if mouse_pos.overlaps_rectangle(&area) {
-           return Some(e);
+            return Some(e);
         }
     }
     None

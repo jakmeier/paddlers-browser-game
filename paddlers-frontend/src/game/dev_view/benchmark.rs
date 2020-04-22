@@ -1,12 +1,12 @@
 //! Runtime performance tests
 
-use crate::specs::WorldExt;
-use crate::prelude::*;
 use crate::game::Game;
+use crate::prelude::*;
+use crate::specs::WorldExt;
 
 mod standard_village;
 
-pub (crate) struct TestData {
+pub(crate) struct TestData {
     pub kind: Test,
     start: Timestamp,
     end: Timestamp,
@@ -28,31 +28,32 @@ pub enum Test {
 }
 
 impl TestData {
-    pub fn start_test(game : &mut Game<'_, '_>, setting: Test) ->  Self {
+    pub fn start_test(game: &mut Game<'_, '_>, setting: Test) -> Self {
         match setting {
             Test::Vanilla => { /* NOP */ }
             s => {
                 game.flush_hobos().expect("Flushing hobos");
                 game.flush_buildings().expect("Flushing buildings");
                 match s {
-                    Test::Vanilla => { unreachable!() }
+                    Test::Vanilla => unreachable!(),
                     Test::Empty => { /* NOP */ }
-                    Test::StandardVillage => 
-                        standard_village::insert_hobos(&mut game.world).expect("inserting test hobos"),
+                    Test::StandardVillage => standard_village::insert_hobos(&mut game.world)
+                        .expect("inserting test hobos"),
                 }
                 let mut town = game.world.fetch_mut();
                 let entities = game.world.entities();
                 let lazy = game.world.fetch();
                 match s {
-                    Test::Vanilla => { unreachable!() }
+                    Test::Vanilla => unreachable!(),
                     Test::Empty => { /* NOP */ }
-                    Test::StandardVillage => 
-                        standard_village::insert_buildings(&mut town, &entities, &lazy),
+                    Test::StandardVillage => {
+                        standard_village::insert_buildings(&mut town, &entities, &lazy)
+                    }
                 }
             }
         }
         game.world.maintain();
-        
+
         println!("Starting {:?} test", setting);
         let now = utc_now();
         let dt_seconds = 10;
@@ -105,13 +106,23 @@ impl TestData {
     pub fn evaluate(&self) -> String {
         let dt = self.end - self.start;
         let fps = self.total_frames as f64 * 1e6 / dt as f64;
-        let avg = statistical::mean(&self.intervals.iter().map(|i| *i as f64 / 1000.0).collect::<Vec<_>>());
+        let avg = statistical::mean(
+            &self
+                .intervals
+                .iter()
+                .map(|i| *i as f64 / 1000.0)
+                .collect::<Vec<_>>(),
+        );
 
         let (min, max, median) = min_max_median(&self.intervals);
         let (draw_min, draw_max, draw_median) = min_max_median(&self.draw_intervals);
         let (update_min, update_max, update_median) = min_max_median(&self.update_intervals);
 
-        let missed = self.draw_intervals.iter().filter(|dt| **dt > self.draw_frame_target_us).fold(0,|acc,_| acc + 1);
+        let missed = self
+            .draw_intervals
+            .iter()
+            .filter(|dt| **dt > self.draw_frame_target_us)
+            .fold(0, |acc, _| acc + 1);
         let missed = 100.0 * missed as f64 / self.draw_intervals.len() as f64;
 
         format!("{:.02}FPS = {:.02}ms, {:.02}ms {:.02}ms {:.02}ms |DRAW| {:.02}ms {:.02}ms {:.02}ms, {:.03}% missed |UPDATE| {:.02}ms {:.02}ms {:.02}ms",
@@ -122,11 +133,9 @@ impl TestData {
     }
 }
 
-fn min_max_median(data: &[Timestamp]) -> (f64,f64,f64) {
-    let min = data.iter()
-        .fold(std::i64::MAX, |acc, i| acc.min(*i)) as f64/ 1000.0;
-    let max = data.iter()
-        .fold(std::i64::MIN, |acc, i| acc.max(*i)) as f64 / 1000.0;
+fn min_max_median(data: &[Timestamp]) -> (f64, f64, f64) {
+    let min = data.iter().fold(std::i64::MAX, |acc, i| acc.min(*i)) as f64 / 1000.0;
+    let max = data.iter().fold(std::i64::MIN, |acc, i| acc.max(*i)) as f64 / 1000.0;
     let median = statistical::median(data) as f64 / 1000.0;
     (min, max, median)
 }

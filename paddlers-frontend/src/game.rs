@@ -74,7 +74,7 @@ impl Game<'_, '_> {
         base: BaseState,
     ) -> PadlResult<Self> {
         let (game_evt_send, game_evt_recv) = channel();
-        let player_info = game_data.player_info.ok_or("Player Info not loaded")?; 
+        let player_info = game_data.player_info.ok_or("Player Info not loaded")?;
         let mut world = crate::init::init_world(
             base.err_send,
             resolution,
@@ -124,7 +124,11 @@ impl Game<'_, '_> {
             #[cfg(feature = "dev_view")]
             active_test: None,
         };
-        game.load_buildings_from_net_response(game_data.buildings_response.ok_or("No buildings response")?)?;
+        game.load_buildings_from_net_response(
+            game_data
+                .buildings_response
+                .ok_or("No buildings response")?,
+        )?;
         game.load_workers_from_net_response(game_data.worker_response.ok_or("No worker response")?);
         game.load_hobos_from_net_response(game_data.hobos_response.ok_or("No hobos response")?)?;
         game.world.maintain();

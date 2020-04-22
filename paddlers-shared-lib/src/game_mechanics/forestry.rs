@@ -1,5 +1,5 @@
-use chrono::Duration;
 use crate::models::TaskType;
+use chrono::Duration;
 
 pub fn tree_size(age: Duration) -> usize {
     match age.num_hours() {

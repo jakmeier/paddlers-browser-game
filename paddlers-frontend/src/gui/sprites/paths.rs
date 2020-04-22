@@ -1,8 +1,8 @@
+use super::animation::{AnimatedObjectDef, AnimationVariantDef};
 use super::*;
-use super::animation::{AnimatedObjectDef,AnimationVariantDef};
 
 pub const SPRITE_PATHS_NUM: usize = 50;
-pub const SPRITE_PATHS : [&'static str; SPRITE_PATHS_NUM] = [
+pub const SPRITE_PATHS: [&'static str; SPRITE_PATHS_NUM] = [
     "textures/grass.png", // 0
     "textures/water.png",
     "ducks/yellow_sad.png",
@@ -44,8 +44,8 @@ pub const SPRITE_PATHS : [&'static str; SPRITE_PATHS_NUM] = [
     "buildings/red_present.png",
     "buildings/orange_present.png",
     "ducks/yellow_duck_happy.png", // 40
-    "ducks/camo_duck_happy.png", 
-    "ducks/white_duck_happy.png", 
+    "ducks/camo_duck_happy.png",
+    "ducks/white_duck_happy.png",
     "buildings/temple.png",
     "resources/karma.png",
     "ducks/prophet_swimming.png",
@@ -121,17 +121,15 @@ impl DirectedSprite {
 }
 
 pub const ANIMATION_NUM: usize = 1;
-pub const ANIMATION_DEFS : [AnimatedObjectDef; ANIMATION_NUM] = [
-    AnimatedObjectDef {
-        up: AnimationVariantDef::Animated("ducks/animations/roger_back.png"),
-        left: AnimationVariantDef::Animated("ducks/animations/roger_left.png"),
-        down: AnimationVariantDef::Animated("ducks/animations/roger_front.png"),
-        standing: AnimationVariantDef::Static("ducks/roger.png"),
-        cols: 20,
-        rows: 5,
-        alternative: SingleSprite::Roger,
-    },
-];
+pub const ANIMATION_DEFS: [AnimatedObjectDef; ANIMATION_NUM] = [AnimatedObjectDef {
+    up: AnimationVariantDef::Animated("ducks/animations/roger_back.png"),
+    left: AnimationVariantDef::Animated("ducks/animations/roger_left.png"),
+    down: AnimationVariantDef::Animated("ducks/animations/roger_front.png"),
+    standing: AnimationVariantDef::Static("ducks/roger.png"),
+    cols: 20,
+    rows: 5,
+    alternative: SingleSprite::Roger,
+}];
 
 impl AnimatedSprite {
     pub fn index_in_vector(&self) -> usize {

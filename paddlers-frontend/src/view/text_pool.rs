@@ -1,18 +1,23 @@
-use quicksilver::geom::Rectangle;
 use super::FloatingText;
+use quicksilver::geom::Rectangle;
 
 /// Allocates FloatingText units
 pub struct TextPool {
     pool: Vec<FloatingText>,
     used: usize,
     factory_html: String,
-    factory_css: Vec<(&'static str,&'static str)>,
+    factory_css: Vec<(&'static str, &'static str)>,
     factory_class: Vec<&'static str>,
     factory_pos: Rectangle,
 }
 
 impl TextPool {
-    pub fn new(html: String, styles: &[(&'static str,&'static str)], classes: &[&'static str], pos: Rectangle) -> Self {
+    pub fn new(
+        html: String,
+        styles: &[(&'static str, &'static str)],
+        classes: &[&'static str],
+        pos: Rectangle,
+    ) -> Self {
         let mut css = vec![];
         css.extend_from_slice(styles);
         let mut class = vec![];
@@ -43,7 +48,7 @@ impl TextPool {
                 &self.factory_css,
                 &self.factory_class,
             )
-            .expect("FloatingText creation failed")
+            .expect("FloatingText creation failed"),
         );
     }
     pub fn reset(&mut self) {

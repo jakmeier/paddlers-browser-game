@@ -1,18 +1,17 @@
 //! Module for the GraphQL root query definition.
 
-
 use super::DbConn;
+use chrono::prelude::NaiveDateTime;
 use juniper;
 use juniper::FieldResult;
-use paddlers_shared_lib::prelude::*;
 use paddlers_shared_lib::graphql_types::*;
+use paddlers_shared_lib::prelude::*;
 use paddlers_shared_lib::user_authentication::PadlUser;
 use std::sync::Arc;
-use chrono::prelude::NaiveDateTime;
 
 mod gql_err;
-mod gql_public;
 pub mod gql_private;
+mod gql_public;
 
 use gql_err::ReadableInterfaceError;
 use gql_public::*;
@@ -40,32 +39,31 @@ impl Context {
         let conn = Arc::new(db);
         if let Some(user) = user {
             let player = conn.player_by_uuid(user.uuid)?;
-            let vids = conn.player_villages(player.key()).into_iter().map(|v|v.key()).collect();
-            Some(Context::Authenticated( AuthenticatedContext { db: conn, user: player, villages: vids }))
+            let vids = conn
+                .player_villages(player.key())
+                .into_iter()
+                .map(|v| v.key())
+                .collect();
+            Some(Context::Authenticated(AuthenticatedContext {
+                db: conn,
+                user: player,
+                villages: vids,
+            }))
         } else {
-            Some(Context::Public(UnauthenticatedContext{ db: conn }))
+            Some(Context::Public(UnauthenticatedContext { db: conn }))
         }
     }
     pub fn db(&self) -> &Arc<DbConn> {
         match self {
-            Context::Authenticated(ctx) => {
-                &ctx.db
-            },
-            Context::Public(ctx) => {
-                &ctx.db
-            }
+            Context::Authenticated(ctx) => &ctx.db,
+            Context::Public(ctx) => &ctx.db,
         }
     }
     pub fn authenticated(&self) -> Result<&AuthenticatedContext, ReadableInterfaceError> {
         match self {
-            Context::Authenticated(ctx) => {
-                Ok(ctx)
-            },
-            Context::Public(_) => {
-                Err(ReadableInterfaceError::RequiresAuthentication)
-            }
+            Context::Authenticated(ctx) => Ok(ctx),
+            Context::Public(_) => Err(ReadableInterfaceError::RequiresAuthentication),
         }
-
     }
     fn check_user_key(&self, key: PlayerKey) -> Result<(), ReadableInterfaceError> {
         if key.0 == self.authenticated()?.user.id {
@@ -103,7 +101,10 @@ impl Query {
     }
     // Object Visibility: public
     fn village(ctx: &Context, village_id: i32) -> FieldResult<GqlVillage> {
-        let village = ctx.db().village(VillageKey(village_id as i64)).ok_or("No such village")?;
+        let village = ctx
+            .db()
+            .village(VillageKey(village_id as i64))
+            .ok_or("No such village")?;
         Ok(GqlVillage(village))
     }
     // Object Visibility: user
@@ -127,7 +128,8 @@ impl Query {
     // Object Visibility: public
     // Returns up to 100 players starting from the given rank upwards
     fn scoreboard(ctx: &Context, rank_offset: i32) -> Vec<GqlPlayer> {
-        ctx.db().players_sorted_by_karma(rank_offset as i64, 100)
+        ctx.db()
+            .players_sorted_by_karma(rank_offset as i64, 100)
             .into_iter()
             .map(GqlPlayer)
             .collect()

@@ -1,16 +1,16 @@
-use specs::storage::BTreeStorage;
-use specs::prelude::*;
-use crate::prelude::*;
-use paddlers_shared_lib::models::*;
 pub use crate::gui::{
-    utils::*,
-    gui_components::*,
-    sprites::{SpriteSet, SingleSprite},
     animation::AnimationState,
-    render::Renderable,
+    gui_components::*,
     input::Clickable,
+    render::Renderable,
+    sprites::{SingleSprite, SpriteSet},
+    utils::*,
 };
 use crate::net::graphql::query_types::HoboEffect;
+use crate::prelude::*;
+use paddlers_shared_lib::models::*;
+use specs::prelude::*;
+use specs::storage::BTreeStorage;
 
 #[derive(Component, Debug, Clone)]
 #[storage(BTreeStorage)]
@@ -29,23 +29,21 @@ struct StatusEffect {
 
 impl StatusEffects {
     pub fn new() -> Self {
-        StatusEffects {
-            health: None,
-        }
+        StatusEffects { health: None }
     }
-    pub fn from_gql_query(
-        effects: &[HoboEffect],
-    ) -> PadlResult<Self> {
+    pub fn from_gql_query(effects: &[HoboEffect]) -> PadlResult<Self> {
         let mut status = Self::new();
         for ef in effects {
             match (&ef.attribute).into() {
                 HoboAttributeType::Health => {
-                    let strength = ef.strength.ok_or(PadlError::dev_err(PadlErrorCode::InvalidGraphQLData("Health effect without strength")))?;
+                    let strength = ef.strength.ok_or(PadlError::dev_err(
+                        PadlErrorCode::InvalidGraphQLData("Health effect without strength"),
+                    ))?;
                     status.add_health_reduction(strength as i32);
-                },
+                }
                 _ => {
-                    return PadlErrorCode::InvalidGraphQLData("Unknown Effect").dev(); 
-                },
+                    return PadlErrorCode::InvalidGraphQLData("Unknown Effect").dev();
+                }
             }
         }
         Ok(status)
@@ -75,15 +73,11 @@ impl StatusEffect {
         }
     }
     fn details<'a>(&self) -> TableRow<'a> {
-        let text = 
-        if self.value >= 0 {
+        let text = if self.value >= 0 {
             format!("{}{}", "+", self.value)
         } else {
             format!("{}", self.value)
         };
-        TableRow::TextWithImage(
-            text,
-            self.img.default(),
-        )
+        TableRow::TextWithImage(text, self.img.default())
     }
 }

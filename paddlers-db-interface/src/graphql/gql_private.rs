@@ -27,21 +27,15 @@ impl GqlAttack {
     }
     fn attacker(&self, ctx: &Context) -> FieldResult<Option<GqlPlayer>> {
         let db = ctx.db();
-        Ok(
-            self.0.origin_village_id
-            .and_then(
-                |vid| db.village(VillageKey(vid))
-            ).and_then(
-                |village| village.owner()
-            ).and_then(
-                |pid| db.player(pid)
-            ).map(
-                |player| GqlPlayer(player)
-            )
-        )
+        Ok(self
+            .0
+            .origin_village_id
+            .and_then(|vid| db.village(VillageKey(vid)))
+            .and_then(|village| village.owner())
+            .and_then(|pid| db.player(pid))
+            .map(|player| GqlPlayer(player)))
     }
 }
-
 
 #[juniper::object (Context = Context)]
 impl GqlBuilding {
@@ -121,7 +115,6 @@ impl GqlEffect {
 
 #[juniper::object (Context = Context)]
 impl GqlWorker {
-
     pub fn id(&self) -> juniper::ID {
         self.0.id.to_string().into()
     }
@@ -155,7 +148,7 @@ impl GqlWorker {
         ctx.db()
             .worker_tasks(WorkerKey(self.0.id))
             .into_iter()
-            .map(GqlTask::authorized ) // Inherited authorization
+            .map(GqlTask::authorized) // Inherited authorization
             .collect()
     }
 
@@ -163,7 +156,7 @@ impl GqlWorker {
         ctx.db()
             .worker_abilities(WorkerKey(self.0.id))
             .into_iter()
-            .map( GqlAbility::authorized ) // Inherited authorization
+            .map(GqlAbility::authorized) // Inherited authorization
             .collect()
     }
 

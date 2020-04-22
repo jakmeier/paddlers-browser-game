@@ -1,34 +1,23 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "sql_db")]
 use chrono::NaiveDateTime;
 
 // Reexport
 #[cfg(feature = "sql_db")]
-pub use resources::dsl;
-#[cfg(feature = "sql_db")]
 pub use crate::story::story_state::Story_state_type;
+#[cfg(feature = "sql_db")]
+pub use resources::dsl;
 
 #[cfg(feature = "sql_db")]
-use ::diesel_derive_enum::DbEnum;
-#[cfg(feature = "sql_db")]
 use crate::story::story_state::StoryState;
+#[cfg(feature = "sql_db")]
+use ::diesel_derive_enum::DbEnum;
 
 #[cfg(feature = "sql_db")]
 use super::schema::{
-    hobos,
-    workers,
-    worker_flags,
-    attacks,
-    attacks_to_hobos,
-    buildings,
-    resources,
-    tasks,
-    streams,
-    players,
-    villages,
-    abilities,
-    effects,
+    abilities, attacks, attacks_to_hobos, buildings, effects, hobos, players, resources, streams,
+    tasks, villages, worker_flags, workers,
 };
 
 #[derive(Debug, PartialEq, Clone, Copy, Serialize, Deserialize)]
@@ -49,7 +38,6 @@ pub enum UnitColor {
     Camo,
     Prophet,
 }
-
 
 #[cfg(feature = "sql_db")]
 #[derive(Debug, Queryable, Identifiable, AsChangeset, Clone)]
@@ -143,13 +131,12 @@ pub struct NewAttack {
 }
 
 #[cfg(feature = "sql_db")]
-#[derive(Debug, Queryable,Insertable)]
+#[derive(Debug, Queryable, Insertable)]
 #[table_name = "attacks_to_hobos"]
 pub struct AttackToHobo {
     pub attack_id: i64,
     pub hobo_id: i64,
 }
-
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
 #[cfg_attr(feature = "enum_utils", derive(EnumIter))]
@@ -187,8 +174,8 @@ pub struct NewBuilding {
     pub x: i32,
     pub y: i32,
     pub building_type: BuildingType,
-    pub building_range: Option<f32>, 
-    pub attack_power: Option<i32>, 
+    pub building_range: Option<f32>,
+    pub attack_power: Option<i32>,
     pub attacks_per_cycle: Option<i32>,
     pub creation: NaiveDateTime,
     pub village_id: i64,
@@ -213,7 +200,6 @@ pub struct Resource {
     pub amount: i64,
     pub village_id: i64,
 }
-
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Serialize, Deserialize)]
 #[cfg_attr(feature = "enum_utils", derive(EnumIter, Display))]

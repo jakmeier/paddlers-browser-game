@@ -1,9 +1,9 @@
-use paddlers_shared_lib::api::shop::ProphetPurchase;
-use crate::prelude::*;
 use crate::game::{components::UiMenu, game_event_manager::*, player_info::PlayerInfo};
 use crate::gui::sprites::{SingleSprite, SpriteSet};
 use crate::net::game_master_api::RestApiState;
 use crate::net::state::current_village;
+use crate::prelude::*;
+use paddlers_shared_lib::api::shop::ProphetPurchase;
 
 pub fn new_temple_menu(player_info: &PlayerInfo) -> UiMenu {
     UiMenu::new_shop_menu().with_shop_item(

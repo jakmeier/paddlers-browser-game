@@ -1,7 +1,7 @@
+use super::event::Event;
+use chrono::{DateTime, Utc};
 use std::cmp::Ordering;
 use std::collections::BinaryHeap;
-use chrono::{DateTime, Utc};
-use super::event::Event;
 
 pub struct EventQueue {
     queue: BinaryHeap<TimedEvent>,
@@ -20,20 +20,17 @@ impl EventQueue {
         }
     }
     pub fn add_event(&mut self, event: Event, time: DateTime<Utc>) {
-        self.queue.push(
-            TimedEvent{
-                time: time, 
-                event: event,
-            }
-        );
+        self.queue.push(TimedEvent {
+            time: time,
+            event: event,
+        });
     }
-    /// Returns the next event in the queue if it is due 
+    /// Returns the next event in the queue if it is due
     pub fn poll_event(&mut self) -> Option<Event> {
         let next = self.queue.peek();
         if let Some(evt) = next {
             if evt.time <= chrono::Utc::now() {
-                return self.queue.pop()
-                    .map(|te| te.event);
+                return self.queue.pop().map(|te| te.event);
             }
         }
         None
@@ -44,15 +41,15 @@ impl EventQueue {
     }
 }
 
-
-
 // Necessary traits for Binary Heap
 
 impl Ord for TimedEvent {
     fn cmp(&self, other: &TimedEvent) -> Ordering {
         // Flipped order to make it a Min-Heap
         // With event as tie-break
-        other.time.cmp(&self.time)
+        other
+            .time
+            .cmp(&self.time)
             .then_with(|| self.event.cmp(&other.event))
     }
 }
@@ -61,5 +58,3 @@ impl PartialOrd for TimedEvent {
         Some(self.cmp(other))
     }
 }
-
-

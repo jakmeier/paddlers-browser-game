@@ -1,29 +1,25 @@
-use crate::gui::gui_components::TableTextProvider;
-use crate::prelude::*;
-use quicksilver::prelude::{Window, Rectangle, MouseButton};
-use specs::prelude::*;
-use crate::resolution::ScreenResolution;
 use crate::game::Game;
-use crate::gui::utils::*;
-use crate::gui::ui_state::UiState;
-use crate::gui::input::{
-    left_click::TownLeftClickSystem,
-    MouseState,
-};
-use crate::view::Frame;
 use crate::gui::gui_components::ResourcesComponent;
+use crate::gui::gui_components::TableTextProvider;
+use crate::gui::input::{left_click::TownLeftClickSystem, MouseState};
+use crate::gui::ui_state::UiState;
+use crate::gui::utils::*;
 use crate::init::quicksilver_integration::Signal;
+use crate::prelude::*;
+use crate::resolution::ScreenResolution;
+use crate::view::Frame;
+use quicksilver::prelude::{MouseButton, Rectangle, Window};
+use specs::prelude::*;
 
-pub (crate) struct TownMenuFrame<'a,'b> {
+pub(crate) struct TownMenuFrame<'a, 'b> {
     text_provider: TableTextProvider,
     bank_component: ResourcesComponent,
     hover_component: ResourcesComponent,
     resources_area: Rectangle,
-    left_click_dispatcher: Dispatcher<'a,'b>,
+    left_click_dispatcher: Dispatcher<'a, 'b>,
 }
-impl TownMenuFrame<'_,'_> {
-    pub fn new<'a,'b>(game: &mut Game<'a,'b>, ep: EventPool) -> PadlResult<Self> {
-
+impl TownMenuFrame<'_, '_> {
+    pub fn new<'a, 'b>(game: &mut Game<'a, 'b>, ep: EventPool) -> PadlResult<Self> {
         let mut left_click_dispatcher = DispatcherBuilder::new()
             .with(TownLeftClickSystem::new(ep), "", &[])
             .build();
@@ -38,32 +34,43 @@ impl TownMenuFrame<'_,'_> {
         })
     }
 }
-impl<'a,'b> Frame for TownMenuFrame<'a,'b> {
+impl<'a, 'b> Frame for TownMenuFrame<'a, 'b> {
     type Error = PadlError;
-    type State = Game<'a,'b>;
+    type State = Game<'a, 'b>;
     type Graphics = Window;
     type Event = PadlEvent;
-    fn draw(&mut self, state: &mut Self::State, window: &mut Self::Graphics) -> Result<(),Self::Error> {
+    fn draw(
+        &mut self,
+        state: &mut Self::State,
+        window: &mut Self::Graphics,
+    ) -> Result<(), Self::Error> {
         self.text_provider.reset();
         let inner_area = state.render_menu_box(window)?;
         let resolution = *state.world.read_resource::<ScreenResolution>();
         let resources_height = resolution.resources_h();
         let entity = state.world.fetch::<UiState>().selected_entity;
-        
+
         let (resources_area, menu_area) = inner_area.cut_horizontal(resources_height);
         self.resources_area = resources_area;
         self.bank_component.show()?;
-        render_town_menu(state, window, entity, &menu_area, &mut self.text_provider, &mut self.hover_component)?;
+        render_town_menu(
+            state,
+            window,
+            entity,
+            &menu_area,
+            &mut self.text_provider,
+            &mut self.hover_component,
+        )?;
         self.text_provider.finish_draw();
         Ok(())
     }
-    fn leave(&mut self, _state: &mut Self::State) -> Result<(),Self::Error> {
+    fn leave(&mut self, _state: &mut Self::State) -> Result<(), Self::Error> {
         self.text_provider.hide();
         self.bank_component.hide()?;
         self.hover_component.hide()?;
         Ok(())
     }
-    fn left_click(&mut self, state: &mut Self::State, pos: (i32,i32)) -> Result<(),Self::Error> {
+    fn left_click(&mut self, state: &mut Self::State, pos: (i32, i32)) -> Result<(), Self::Error> {
         state.click_buttons(pos);
         let mut ms = state.world.write_resource::<MouseState>();
         *ms = MouseState(pos.into(), Some(MouseButton::Left));
@@ -71,11 +78,12 @@ impl<'a,'b> Frame for TownMenuFrame<'a,'b> {
         self.left_click_dispatcher.dispatch(&state.world);
         Ok(())
     }
-    fn event(&mut self, state: &mut Self::State, e: &Self::Event) -> Result<(),Self::Error> {
+    fn event(&mut self, state: &mut Self::State, e: &Self::Event) -> Result<(), Self::Error> {
         match e {
             PadlEvent::Signal(Signal::ResourcesUpdated) => {
-                self.bank_component.draw(&self.resources_area, &state.resources.non_zero_resources())?;
-            },
+                self.bank_component
+                    .draw(&self.resources_area, &state.resources.non_zero_resources())?;
+            }
             _ => {}
         }
         Ok(())
@@ -83,7 +91,7 @@ impl<'a,'b> Frame for TownMenuFrame<'a,'b> {
 }
 
 fn render_town_menu(
-    state: &mut Game<'_,'_>,
+    state: &mut Game<'_, '_>,
     window: &mut Window,
     entity: Option<Entity>,
     area: &Rectangle,
@@ -93,10 +101,10 @@ fn render_town_menu(
     match entity {
         Some(id) => {
             state.render_entity_details(window, area, id, text_provider, hover_component)?;
-        },
+        }
         None => {
             state.render_default_shop(window, area, text_provider, hover_component)?;
-        },
+        }
     }
     Ok(())
 }

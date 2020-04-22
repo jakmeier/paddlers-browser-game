@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use std::any::TypeId;
+use std::collections::HashMap;
 
 /// Helper object to manage resources that must be loaded
 pub struct ProgressManager {

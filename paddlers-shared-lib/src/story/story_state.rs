@@ -1,8 +1,8 @@
 //! Each player is in one StoryState, depending on which story texts he clicked through already.
 //! It should be a (mostly) linear progression through these states.
 //! These are stored in the database and provided as PlayerInfo to the frontend.
-//! 
-use serde::{Serialize, Deserialize};
+//!
+use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "sql_db")]
 use ::diesel_derive_enum::DbEnum;

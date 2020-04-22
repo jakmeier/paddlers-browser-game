@@ -1,10 +1,10 @@
-use actix::prelude::*;
 use actix::dev::{MessageResponse, ResponseChannel};
+use actix::prelude::*;
 use paddlers_shared_lib::prelude::*;
 
 #[derive(Debug)]
 /// Deferred DB requests should not be dependent on the state of the DB
-/// and instead be logically guaranteed to work. For example, the resource 
+/// and instead be logically guaranteed to work. For example, the resource
 /// price should already be payed before-hand.
 pub enum DeferredDbStatement {
     NewProphet(VillageKey),
@@ -25,10 +25,10 @@ impl Message for NewHoboMessage {
     type Result = NewHoboResponse;
 }
 
-impl<A,M> MessageResponse<A,M> for NewHoboResponse 
+impl<A, M> MessageResponse<A, M> for NewHoboResponse
 where
-A: Actor,
-M: Message<Result = NewHoboResponse>,
+    A: Actor,
+    M: Message<Result = NewHoboResponse>,
 {
     fn handle<R: ResponseChannel<M>>(self, _: &mut A::Context, tx: Option<R>) {
         if let Some(tx) = tx {

@@ -11,10 +11,10 @@ mod graphql;
 mod hooks;
 mod sql;
 
+use paddlers_shared_lib::config::Config;
 use rocket::http::Method;
 use rocket_contrib::databases::diesel;
 use rocket_cors::{AllowedHeaders, AllowedOrigins};
-use paddlers_shared_lib::config::Config;
 
 #[database("game_db")]
 pub struct DbConn(diesel::PgConnection);
@@ -22,14 +22,13 @@ pub struct DbConn(diesel::PgConnection);
 use hooks::*;
 
 fn main() {
-    let config = Config::from_env()
-        .unwrap_or(Config::default());
-    
-    #[cfg(feature="local")]
+    let config = Config::from_env().unwrap_or(Config::default());
+
+    #[cfg(feature = "local")]
     let allowed_origins = AllowedOrigins::all();
-    #[cfg(not(feature="local"))]
+    #[cfg(not(feature = "local"))]
     let origin = config.frontend_origin.clone();
-    #[cfg(not(feature="local"))]
+    #[cfg(not(feature = "local"))]
     let allowed_origins = AllowedOrigins::some_exact(&[origin]);
 
     let mut databse_config_table = std::collections::BTreeMap::new();
@@ -38,24 +37,31 @@ fn main() {
     databse_config_table.insert("game_db".to_owned(), inner_table.into());
 
     let rocket_config = rocket::config::Config::build(rocket::config::Environment::Production)
-    .address(config.graphql_service_name.clone())
-    .port(config.graphql_port)
-    .extra("databases", rocket::config::Value::Table(databse_config_table))
-    .finalize().expect("Check Configuration");
-
+        .address(config.graphql_service_name.clone())
+        .port(config.graphql_port)
+        .extra(
+            "databases",
+            rocket::config::Value::Table(databse_config_table),
+        )
+        .finalize()
+        .expect("Check Configuration");
 
     let cors = rocket_cors::CorsOptions {
         allowed_origins,
-        #[cfg(feature="local")]
-        allowed_methods: vec![Method::Post, Method::Get].into_iter().map(From::from).collect(),
-        #[cfg(not(feature="local"))]
+        #[cfg(feature = "local")]
+        allowed_methods: vec![Method::Post, Method::Get]
+            .into_iter()
+            .map(From::from)
+            .collect(),
+        #[cfg(not(feature = "local"))]
         allowed_methods: vec![Method::Post].into_iter().map(From::from).collect(),
         allowed_headers: AllowedHeaders::some(&["Authorization", "Accept", "Content-Type"]),
         allow_credentials: true,
-        max_age: Some(3600*24),
+        max_age: Some(3600 * 24),
         ..Default::default()
     }
-    .to_cors().expect("CORS creation failed");
+    .to_cors()
+    .expect("CORS creation failed");
 
     rocket::custom(rocket_config)
         .manage(graphql::new_schema())

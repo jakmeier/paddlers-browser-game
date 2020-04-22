@@ -1,5 +1,5 @@
-use crate::prelude::{VillageKey, HoboKey, WorkerKey, PlayerKey};
 use crate::models::*;
+use crate::prelude::{HoboKey, PlayerKey, VillageKey, WorkerKey};
 use crate::schema::*;
 use diesel::prelude::*;
 
@@ -76,7 +76,13 @@ pub trait GameDB {
             .expect("Error loading data");
         results
     }
-    fn count_workers_at_pos_doing_job(&self, village: VillageKey, x: i32, y: i32, job: TaskType ) -> usize {
+    fn count_workers_at_pos_doing_job(
+        &self,
+        village: VillageKey,
+        x: i32,
+        y: i32,
+        job: TaskType,
+    ) -> usize {
         workers::table
             .inner_join(tasks::table)
             .filter(tasks::task_type.eq(job))
@@ -99,12 +105,12 @@ pub trait GameDB {
     }
     fn attack_hobos(&self, atk: &Attack) -> Vec<Hobo> {
         let results = attacks_to_hobos::table
-        .inner_join(hobos::table)
-        .filter(attacks_to_hobos::attack_id.eq(atk.id))
-        .select(hobos::all_columns)
-        .limit(500)
-        .load::<Hobo>(self.dbconn())
-        .expect("Error loading data");
+            .inner_join(hobos::table)
+            .filter(attacks_to_hobos::attack_id.eq(atk.id))
+            .select(hobos::all_columns)
+            .limit(500)
+            .load::<Hobo>(self.dbconn())
+            .expect("Error loading data");
         results
     }
     fn buildings(&self, village: VillageKey) -> Vec<Building> {
@@ -115,7 +121,12 @@ pub trait GameDB {
             .expect("Error loading data");
         results
     }
-    fn find_building_by_coordinates(&self, x: i32, y: i32, village: VillageKey) -> Option<Building> {
+    fn find_building_by_coordinates(
+        &self,
+        x: i32,
+        y: i32,
+        village: VillageKey,
+    ) -> Option<Building> {
         let result = buildings::table
             .filter(buildings::village_id.eq(village.num()))
             .filter(buildings::x.eq(x).and(buildings::y.eq(y)))
@@ -126,41 +137,41 @@ pub trait GameDB {
     }
     fn maybe_resource(&self, r: ResourceType, v: VillageKey) -> Option<i64> {
         resources::table
-        .find((r,v.num()))
-        .first(self.dbconn())
-        .map(|res: Resource| res.amount)
-        .optional()
-        .expect("Error loading data")
+            .find((r, v.num()))
+            .first(self.dbconn())
+            .map(|res: Resource| res.amount)
+            .optional()
+            .expect("Error loading data")
     }
     fn resource(&self, r: ResourceType, v: VillageKey) -> i64 {
         resources::table
-        .find((r,v.num()))
-        .first(self.dbconn())
-        .map(|res: Resource| res.amount)
-        .unwrap_or(0)
+            .find((r, v.num()))
+            .first(self.dbconn())
+            .map(|res: Resource| res.amount)
+            .unwrap_or(0)
     }
     fn worker_tasks(&self, worker_id: WorkerKey) -> Vec<Task> {
         let results = tasks::table
-        .filter(tasks::worker_id.eq(worker_id.num()))
-        .limit(500)
-        .load::<Task>(self.dbconn())
-        .expect("Error loading data");
+            .filter(tasks::worker_id.eq(worker_id.num()))
+            .limit(500)
+            .load::<Task>(self.dbconn())
+            .expect("Error loading data");
         results
     }
     fn worker_abilities(&self, worker_id: WorkerKey) -> Vec<Ability> {
         let results = abilities::table
-        .filter(abilities::worker_id.eq(worker_id.num()))
-        .limit(10)
-        .load::<Ability>(self.dbconn())
-        .expect("Error loading data");
+            .filter(abilities::worker_id.eq(worker_id.num()))
+            .limit(10)
+            .load::<Ability>(self.dbconn())
+            .expect("Error loading data");
         results
     }
     fn worker_ability(&self, worker_id: WorkerKey, ability_type: AbilityType) -> Option<Ability> {
         abilities::table
-        .find((ability_type, worker_id.num()))
-        .first(self.dbconn())
-        .optional()
-        .expect("Error loading data")
+            .find((ability_type, worker_id.num()))
+            .first(self.dbconn())
+            .optional()
+            .expect("Error loading data")
     }
     fn past_worker_tasks(&self, worker_id: WorkerKey) -> Vec<Task> {
         let results = tasks::table
@@ -230,9 +241,9 @@ pub trait GameDB {
     fn village_at(&self, x: f32, y: f32) -> Option<Village> {
         villages::table
             .filter(villages::x.ge(x))
-            .filter(villages::x.lt(1.0+x))
+            .filter(villages::x.lt(1.0 + x))
             .filter(villages::y.ge(y))
-            .filter(villages::y.lt(1.0+y))
+            .filter(villages::y.lt(1.0 + y))
             .first(self.dbconn())
             .optional()
             .expect("Error looking up village from position")
@@ -285,10 +296,10 @@ pub trait GameDB {
     fn hobo_is_attacking(&self, hid: HoboKey) -> bool {
         diesel::select(diesel::dsl::exists(
             attacks_to_hobos::table
-            .inner_join(hobos::table)
-            .inner_join(attacks::table)
-            .filter(hobos::id.eq(hid.num()))
-            .filter(attacks::id.is_not_null())
+                .inner_join(hobos::table)
+                .inner_join(attacks::table)
+                .filter(hobos::id.eq(hid.num()))
+                .filter(attacks::id.is_not_null()),
         ))
         .get_result(self.dbconn())
         .expect("Error in lookup")
@@ -298,7 +309,7 @@ pub trait GameDB {
             players::table
                 .inner_join(villages::table)
                 .filter(players::uuid.eq(uuid))
-                .filter(villages::id.eq(vid.num()))
+                .filter(villages::id.eq(vid.num())),
         ))
         .get_result(self.dbconn())
         .expect("Error in look up")
@@ -309,36 +320,36 @@ pub trait GameDB {
                 .inner_join(villages::table)
                 .inner_join(workers::table.on(workers::home.eq(villages::id)))
                 .filter(players::uuid.eq(uuid))
-                .filter(workers::id.eq(wid.num()))
+                .filter(workers::id.eq(wid.num())),
         ))
         .get_result(self.dbconn())
         .expect("Error in look up")
     }
     fn player_prophets_count(&self, uuid: uuid::Uuid) -> i64 {
         players::table
-        .inner_join(villages::table)
-        .inner_join(hobos::table.on(hobos::home.eq(villages::id)))
-        .filter(players::uuid.eq(uuid))
-        .filter(hobos::color.eq(UnitColor::Prophet))
-        .select(diesel::dsl::count(hobos::id))
-        .first(self.dbconn())
-        .expect("Error in look up")
+            .inner_join(villages::table)
+            .inner_join(hobos::table.on(hobos::home.eq(villages::id)))
+            .filter(players::uuid.eq(uuid))
+            .filter(hobos::color.eq(UnitColor::Prophet))
+            .select(diesel::dsl::count(hobos::id))
+            .first(self.dbconn())
+            .expect("Error in look up")
     }
     fn player_village_count(&self, p: PlayerKey) -> i64 {
         players::table
-        .inner_join(villages::table)
-        .filter(players::id.eq(p.num()))
-        .select(diesel::dsl::count(villages::id))
-        .first(self.dbconn())
-        .expect("Error in look up")
+            .inner_join(villages::table)
+            .filter(players::id.eq(p.num()))
+            .select(diesel::dsl::count(villages::id))
+            .first(self.dbconn())
+            .expect("Error in look up")
     }
     fn players_sorted_by_karma(&self, start_index: i64, limit: i64) -> Vec<Player> {
-            let results = players::table
-                .order_by(players::karma.desc())
-                .offset(start_index)
-                .limit(limit)
-                .load::<Player>(self.dbconn())
-                .expect("Error loading data");
-            results
+        let results = players::table
+            .order_by(players::karma.desc())
+            .offset(start_index)
+            .limit(limit)
+            .load::<Player>(self.dbconn())
+            .expect("Error loading data");
+        results
     }
 }

@@ -4,28 +4,28 @@ mod map_segment;
 mod map_tesselation;
 mod village_meta;
 
-use crate::gui::{
-    input::{Clickable},
-    ui_state::*,
-    render::Renderable,
-    sprites::*,
-    utils::*,
-    z::*,
-    gui_components::{UiBox, UiElement, ClickOutput},
-};
 use crate::game::components::UiMenu;
 use crate::game::GameEvent;
+use crate::gui::{
+    gui_components::{ClickOutput, UiBox, UiElement},
+    input::Clickable,
+    render::Renderable,
+    sprites::*,
+    ui_state::*,
+    utils::*,
+    z::*,
+};
 use crate::net::authentication::read_jwt_preferred_username;
 use map_position::*;
 use map_segment::MapSegment;
 use map_tesselation::*;
 use quicksilver::graphics::Mesh;
-use quicksilver::prelude::{Vector,Rectangle,Window,Transform,Col};
+use quicksilver::prelude::{Col, Rectangle, Transform, Vector, Window};
 use specs::prelude::*;
 
+pub(crate) use map_frame::MapFrame;
 pub use map_position::MapPosition;
 pub use village_meta::VillageMetaInfo;
-pub (crate) use map_frame::MapFrame;
 
 /// Helper struct to combine private and shared map state
 pub struct GlobalMap<'a> {
@@ -140,7 +140,11 @@ impl<'a> GlobalMap<'a> {
             }
         }
     }
-    fn draw_villages(&mut self, window: &mut Window, sprites: &mut Sprites) -> quicksilver::Result<()> {
+    fn draw_villages(
+        &mut self,
+        window: &mut Window,
+        sprites: &mut Sprites,
+    ) -> quicksilver::Result<()> {
         #[cfg(feature = "dev_view")]
         self.visualize_control_points(window);
 
@@ -203,9 +207,14 @@ impl<'a> GlobalMap<'a> {
                         ),
                         (pt, pt),
                     );
-                    window.draw_ex(&area, Col(quicksilver::prelude::Color::WHITE), Transform::rotate(45) , 1000);
+                    window.draw_ex(
+                        &area,
+                        Col(quicksilver::prelude::Color::WHITE),
+                        Transform::rotate(45),
+                        1000,
+                    );
                 }
-            } 
+            }
         }
     }
 }
@@ -232,12 +241,10 @@ impl GlobalMapPrivateState {
             world
                 .create_entity()
                 .with(MapPosition::new(village.coordinates))
-                .with(Renderable::new(
-                    RenderVariant::ImgWithColBackground(
-                        SpriteSet::Simple(SingleSprite::Shack),
-                        GREEN,
-                    ),
-                ))
+                .with(Renderable::new(RenderVariant::ImgWithColBackground(
+                    SpriteSet::Simple(SingleSprite::Shack),
+                    GREEN,
+                )))
                 .with(Clickable)
                 .with((*village).clone())
                 .with(UiMenu::new_village_menu(village.coordinates, is_mine))
@@ -263,20 +270,21 @@ impl GlobalMapSharedState {
         let r = self.scaling;
         let map_coordinates = Vector::new(mouse_pos.x / r, mouse_pos.y / r);
 
-        ui_state.selected_entity = map_position_lookup(map_coordinates, entities, position, clickable);
+        ui_state.selected_entity =
+            map_position_lookup(map_coordinates, entities, position, clickable);
     }
 }
 
 impl UiMenu {
-    pub fn new_village_menu(village: (i32,i32), owned: bool) -> Self {
+    pub fn new_village_menu(village: (i32, i32), owned: bool) -> Self {
         let mut menu = UiMenu {
             ui: UiBox::new(2, 1, 10.0, 2.0),
         };
         if !owned {
             menu.ui.add(
                 UiElement::new(ClickOutput::Event(GameEvent::SendProphetAttack(village)))
-                .with_image(SpriteSet::Simple(SingleSprite::Prophet))
-                .with_background_color(RED)
+                    .with_image(SpriteSet::Simple(SingleSprite::Prophet))
+                    .with_background_color(RED),
             );
         }
         menu

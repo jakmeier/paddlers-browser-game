@@ -62,11 +62,11 @@ fn build_arrow(total_area: Rectangle, left: bool) -> Mesh {
         x0 = w - x0;
         x1 = w - x1;
         x2 = w - x2;
-        y0 = h - y0; 
-        y1 = h - y1; 
-        y2 = h - y2; 
-        y3 = h - y3; 
-        y4 = h - y4; 
+        y0 = h - y0;
+        y1 = h - y1;
+        y2 = h - y2;
+        y3 = h - y3;
+        y4 = h - y4;
     }
 
     // Create enclosing path

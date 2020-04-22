@@ -50,14 +50,14 @@ impl MenuButtons {
             _ => Ok(None),
         }
     }
-    fn draw(&mut self, window: &mut Window, sprites: &mut Sprites, now: Timestamp, area: &Rectangle) -> PadlResult<()>{
-        self.ui.draw(
-            window,
-            sprites,
-            &mut self.tp,
-            now,
-            area,
-        )
+    fn draw(
+        &mut self,
+        window: &mut Window,
+        sprites: &mut Sprites,
+        now: Timestamp,
+        area: &Rectangle,
+    ) -> PadlResult<()> {
+        self.ui.draw(window, sprites, &mut self.tp, now, area)
     }
 }
 

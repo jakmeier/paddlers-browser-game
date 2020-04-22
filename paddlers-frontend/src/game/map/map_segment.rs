@@ -1,7 +1,7 @@
-use paddlers_shared_lib::game_mechanics::map::MAP_STREAM_AREA_W;
-use quicksilver::prelude::*;
-use quicksilver::graphics::{Mesh};
 pub use super::village_meta::VillageMetaInfo;
+use paddlers_shared_lib::game_mechanics::map::MAP_STREAM_AREA_W;
+use quicksilver::graphics::Mesh;
+use quicksilver::prelude::*;
 
 /// Holds data for a segment of the global map
 /// and keeps a rendered copy of the rivers cached
@@ -10,13 +10,13 @@ pub struct MapSegment {
     pub y: f32,
     pub w: f32,
     pub h: f32,
-    pub streams: Vec<Vec<(f32,f32)>>,
+    pub streams: Vec<Vec<(f32, f32)>>,
     pub water_mesh: Mesh,
     pub scaling: f32,
 }
 
 impl MapSegment {
-    pub fn new(x: i32, y: i32, w: i32, h: i32, streams: Vec<Vec<(f32,f32)>>) -> Self {
+    pub fn new(x: i32, y: i32, w: i32, h: i32, streams: Vec<Vec<(f32, f32)>>) -> Self {
         let scaling = 1.0;
         MapSegment {
             x: x as f32,
@@ -29,10 +29,7 @@ impl MapSegment {
         }
     }
     pub fn base_shape(&self) -> Rectangle {
-        Rectangle::new(
-            (self.x,self.y),
-            (self.w, self.h),
-        )
+        Rectangle::new((self.x, self.y), (self.w, self.h))
     }
     pub fn scaled_base_shape(&self) -> Rectangle {
         let scaling = self.scaling;
@@ -49,7 +46,6 @@ impl MapSegment {
     }
     pub fn is_visible(&self, view: Rectangle) -> bool {
         let overlap = MAP_STREAM_AREA_W * self.scaling;
-        self.x <= view.x() + view.width() + overlap
-        && self.x + self.w + overlap >= view.x()
+        self.x <= view.x() + view.width() + overlap && self.x + self.w + overlap >= view.x()
     }
 }

@@ -1,6 +1,6 @@
-use crate::{ActorAddresses,StringErr};
-use crate::db::{DB, DeferredDbStatement};
-use paddlers_shared_lib::{api::shop::*, prelude::*, game_mechanics::prophets::*};
+use crate::db::{DeferredDbStatement, DB};
+use crate::{ActorAddresses, StringErr};
+use paddlers_shared_lib::{api::shop::*, game_mechanics::prophets::*, prelude::*};
 
 impl DB {
     fn check_prophet_conditions(&self, p: &Player) -> Result<Price, String> {
@@ -15,7 +15,12 @@ impl DB {
         Ok(prophet_cost(total_prophets))
     }
 
-    pub fn try_buy_prophet(&self, village: VillageKey, addrs: &ActorAddresses, p: &Player) -> StringErr {
+    pub fn try_buy_prophet(
+        &self,
+        village: VillageKey,
+        addrs: &ActorAddresses,
+        p: &Player,
+    ) -> StringErr {
         self.check_prophet_conditions(p)
             .and_then(|cost| self.try_spend(&cost, village))
             .and_then(|()| {

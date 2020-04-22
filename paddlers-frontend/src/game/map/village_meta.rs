@@ -1,11 +1,11 @@
-use specs::storage::BTreeStorage;
-use specs::prelude::*;
 use crate::gui::gui_components::TableRow;
+use specs::prelude::*;
+use specs::storage::BTreeStorage;
 
 #[derive(Component, Debug, Clone)]
 #[storage(BTreeStorage)]
 pub struct VillageMetaInfo {
-    pub coordinates: (i32,i32),
+    pub coordinates: (i32, i32),
     player: Option<PlayerMetaInfo>,
 }
 
@@ -19,16 +19,13 @@ use crate::net::graphql::query_types::map_query::*;
 
 impl From<MapQueryMapVillages> for VillageMetaInfo {
     fn from(village: MapQueryMapVillages) -> Self {
-        let player = village.owner.map(
-            |p|
-            PlayerMetaInfo {
-                name: p.display_name,
-                karma: p.karma,
-            }
-        );
+        let player = village.owner.map(|p| PlayerMetaInfo {
+            name: p.display_name,
+            karma: p.karma,
+        });
         VillageMetaInfo {
             coordinates: (village.x as i32, village.y as i32),
-            player
+            player,
         }
     }
 }
@@ -44,8 +41,7 @@ impl VillageMetaInfo {
         vec![row0, row1]
     }
     fn player_info_row<'a>(&self) -> TableRow<'a> {
-        let text =
-        if let Some(p) = &self.player {
+        let text = if let Some(p) = &self.player {
             format!("{} ({})", p.name, p.karma)
         } else {
             "Anarchists".to_owned()

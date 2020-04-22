@@ -1,12 +1,12 @@
-use stdweb::unstable::TryInto;
-use paddlers_shared_lib::api::statistics::*;
-use crate::prelude::*;
 use crate::net::game_master_api::RestApiState;
+use crate::prelude::*;
+use paddlers_shared_lib::api::statistics::*;
+use stdweb::unstable::TryInto;
 
-const INTERVAL_SECONDS: i64 = 10; 
+const INTERVAL_SECONDS: i64 = 10;
 
 pub struct Statistician {
-    frames: i32, 
+    frames: i32,
     last_sent: Timestamp,
     session_start: Timestamp,
 }
@@ -37,22 +37,23 @@ impl Statistician {
         let duration_us = now - self.session_start;
         let msg = FrontendRuntimeStatistics {
             browser: browser_info(),
-            session_duration_s: duration_us / 1_000_000, 
+            session_duration_s: duration_us / 1_000_000,
             fps: fps,
         };
         rest.http_send_statistics(msg)
     }
-
 }
 
 fn browser_info() -> BrowserInfo {
-    let user_agent : String = js!(
+    let user_agent: String = js!(
         return navigator.userAgent;
-    ).try_into().unwrap_or("NotAvailable".to_owned());
+    )
+    .try_into()
+    .unwrap_or("NotAvailable".to_owned());
 
     let window = stdweb::web::window();
-    BrowserInfo{
-        user_agent: user_agent, 
+    BrowserInfo {
+        user_agent: user_agent,
         inner_width: window.inner_width(),
         inner_height: window.inner_height(),
         outer_width: window.outer_width(),

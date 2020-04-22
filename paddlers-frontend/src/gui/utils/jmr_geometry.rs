@@ -1,5 +1,5 @@
-use quicksilver::prelude::*;
 use super::*;
+use quicksilver::prelude::*;
 
 pub trait JmrRectangle
 where

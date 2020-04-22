@@ -16,13 +16,13 @@ impl Handler<DeferredDbStatement> for DbActor {
         match msg {
             DeferredDbStatement::NewProphet(village) => {
                 self.db().add_prophet(village);
-            },
+            }
             DeferredDbStatement::NewAttack(planned_atk) => {
                 let attack = self.db().insert_attack(&planned_atk.attack);
                 for hobo in planned_atk.hobos.iter() {
                     let atu = AttackToHobo {
                         attack_id: attack.id,
-                        hobo_id: hobo.num()
+                        hobo_id: hobo.num(),
                     };
                     self.db().insert_attack_to_hobo(&atu);
                 }
@@ -40,20 +40,17 @@ impl Handler<NewHoboMessage> for DbActor {
 }
 
 impl DbActor {
-    pub fn new(dbpool: Pool) -> Self { 
-        DbActor {
-            dbpool: dbpool,
-        }
+    pub fn new(dbpool: Pool) -> Self {
+        DbActor { dbpool: dbpool }
     }
     fn db(&self) -> DB {
-       (&self.dbpool).into()
+        (&self.dbpool).into()
     }
 }
 
 impl Actor for DbActor {
     type Context = SyncContext<Self>;
-    fn started(&mut self, _ctx: &mut SyncContext<Self>) {
-    }
+    fn started(&mut self, _ctx: &mut SyncContext<Self>) {}
 
     fn stopped(&mut self, _ctx: &mut SyncContext<Self>) {
         eprintln!("Stopped DB actor");

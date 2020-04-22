@@ -1,27 +1,26 @@
+mod default_shop;
+pub mod path_finding;
+pub mod task_factory;
+mod temple_shop;
+pub mod tiling;
+mod town_frame;
 pub mod town_input;
 pub mod town_render;
-pub mod task_factory;
-pub mod tiling;
-pub mod path_finding;
-mod town_frame;
-mod default_shop;
-mod temple_shop;
 pub use default_shop::*;
-pub (crate) use temple_shop::*;
-pub (crate) use town_frame::*;
+pub(crate) use temple_shop::*;
+pub(crate) use town_frame::*;
 
-
-use quicksilver::prelude::*;
 use crate::gui::{
     sprites::*,
-    z::{Z_TILE_SHADOW, Z_TEXTURE, Z_VISITOR}
+    z::{Z_TEXTURE, Z_TILE_SHADOW, Z_VISITOR},
 };
-pub use paddlers_shared_lib::game_mechanics::town::TileIndex;
-use paddlers_shared_lib::prelude::*;
 use crate::prelude::*;
-use paddlers_shared_lib::game_mechanics::town::*;
-pub (crate) use paddlers_shared_lib::game_mechanics::town::TownTileType as TileType;
+pub use paddlers_shared_lib::game_mechanics::town::TileIndex;
 use paddlers_shared_lib::game_mechanics::town::TileState as TileStateEx;
+pub(crate) use paddlers_shared_lib::game_mechanics::town::TownTileType as TileType;
+use paddlers_shared_lib::game_mechanics::town::*;
+use paddlers_shared_lib::prelude::*;
+use quicksilver::prelude::*;
 pub type TileState = TileStateEx<specs::Entity>;
 
 pub struct Town {
@@ -82,7 +81,9 @@ impl Town {
     }
     /// Call this when a worker begins a task which has an effect on the Town's state
     pub fn add_stateful_task(&mut self, task: TaskType) -> PadlResult<()> {
-        self.state.register_task_begin(task).map_err(PadlError::from)
+        self.state
+            .register_task_begin(task)
+            .map_err(PadlError::from)
     }
     /// Call this when a worker ends a task which has an effect on the Town's state
     pub fn remove_stateful_task(&mut self, task: TaskType) -> PadlResult<()> {
@@ -90,32 +91,42 @@ impl Town {
     }
 
     pub fn get_buildable_tile(&self, pos: impl Into<Vector>) -> Option<TileIndex> {
-        let (x,y) = self.tile(pos);
-        if self.is_buildable((x,y)) {
-            Some((x,y))
-        }
-        else {
+        let (x, y) = self.tile(pos);
+        if self.is_buildable((x, y)) {
+            Some((x, y))
+        } else {
             None
         }
     }
     fn tiles_in_rectified_circle(&self, tile: TileIndex, radius: f32) -> Vec<TileIndex> {
         let r = radius.ceil() as usize;
-        let xmin =  tile.0.saturating_sub(r);
-        let ymin =  tile.1.saturating_sub(r);
-        let xmax = if tile.0 + r + 1 > X { X } else { tile.0 + r + 1 };
-        let ymax = if tile.1 + r + 1 > Y { Y } else { tile.1 + r + 1 };
+        let xmin = tile.0.saturating_sub(r);
+        let ymin = tile.1.saturating_sub(r);
+        let xmax = if tile.0 + r + 1 > X {
+            X
+        } else {
+            tile.0 + r + 1
+        };
+        let ymax = if tile.1 + r + 1 > Y {
+            Y
+        } else {
+            tile.1 + r + 1
+        };
         let mut tiles = vec![];
-        for x in xmin .. xmax {
-            for y in ymin .. ymax {
-                if Self::are_tiles_in_range(tile, (x,y), radius) {
-                    tiles.push((x,y));
+        for x in xmin..xmax {
+            for y in ymin..ymax {
+                if Self::are_tiles_in_range(tile, (x, y), radius) {
+                    tiles.push((x, y));
                 }
             }
         }
         tiles
     }
     pub fn lane_in_range(&self, pos: TileIndex, range: f32) -> Vec<TileIndex> {
-        self.tiles_in_rectified_circle(pos, range).into_iter().filter( |xy| self.map[*xy] == TileType::LANE ).collect()
+        self.tiles_in_rectified_circle(pos, range)
+            .into_iter()
+            .filter(|xy| self.map[*xy] == TileType::LANE)
+            .collect()
     }
 
     pub fn place_building(&mut self, i: TileIndex, bt: BuildingType, id: specs::Entity) {
@@ -138,19 +149,16 @@ impl Town {
             Some(t) => PadlErrorCode::UnexpectedTileType("Some Building", *t).dev(),
             None => PadlErrorCode::MapOverflow(i).dev(),
         }
-        
     }
 
-    pub fn add_entity_to_building(&mut self, i: &TileIndex) -> PadlResult<()>{
-        match self.state.get_mut(i)
-        {
+    pub fn add_entity_to_building(&mut self, i: &TileIndex) -> PadlResult<()> {
+        match self.state.get_mut(i) {
             None => PadlErrorCode::NoStateForTile(*i).dev(),
             Some(s) => s.try_add_entity().map_err(PadlError::from),
         }
     }
-    pub fn remove_entity_from_building(&mut self, i: &TileIndex) -> PadlResult<()>{
-        match self.state.get_mut(i)
-        {
+    pub fn remove_entity_from_building(&mut self, i: &TileIndex) -> PadlResult<()> {
+        match self.state.get_mut(i) {
             None => PadlErrorCode::NoStateForTile(*i).dev(),
             Some(s) => s.try_remove_entity().map_err(PadlError::from),
         }

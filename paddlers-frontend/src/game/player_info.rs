@@ -1,6 +1,6 @@
 use crate::net::graphql::query_types::PlayerQueryResponse;
-use paddlers_shared_lib::game_mechanics::prophets::*;
 use paddlers_shared_lib::api::shop::Price;
+use paddlers_shared_lib::game_mechanics::prophets::*;
 use paddlers_shared_lib::story::story_state::StoryState;
 
 #[derive(Debug, Clone, Copy)]
@@ -39,7 +39,7 @@ impl PlayerInfo {
     }
     #[inline]
     pub fn prophets_total(&self) -> i64 {
-        self.prophets + self.villages - 1 
+        self.prophets + self.villages - 1
     }
     #[inline]
     pub fn prophet_price(&self) -> Price {

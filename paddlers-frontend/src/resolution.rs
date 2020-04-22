@@ -1,5 +1,5 @@
-use strum_macros::EnumIter;
 use paddlers_shared_lib::game_mechanics::town::{TOWN_X, TOWN_Y};
+use strum_macros::EnumIter;
 
 #[derive(EnumIter, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ScreenResolution {
@@ -10,11 +10,11 @@ pub enum ScreenResolution {
 
 impl ScreenResolution {
     /// Total window dimensions (ratio is always 16:9)
-    pub fn pixels(&self) -> (f32,f32) {
+    pub fn pixels(&self) -> (f32, f32) {
         match self {
-            ScreenResolution::Low => (640.0,360.0),
-            ScreenResolution::Mid => (1280.0,720.0),
-            ScreenResolution::High => (1920.0,1080.0),
+            ScreenResolution::Low => (640.0, 360.0),
+            ScreenResolution::Mid => (1280.0, 720.0),
+            ScreenResolution::High => (1920.0, 1080.0),
         }
     }
     /// The side-length of a square in the town view
@@ -32,9 +32,7 @@ impl ScreenResolution {
     /// Menu on the right side must have the correct width to
     /// fill screen to 16:9 ratio in combination with the town view
     pub fn menu_width(&self) -> f32 {
-        self.unit_length()
-        * ((16.0*TOWN_Y as f32) - (9.0*TOWN_X as f32))
-        / 9.0
+        self.unit_length() * ((16.0 * TOWN_Y as f32) - (9.0 * TOWN_X as f32)) / 9.0
     }
 }
 

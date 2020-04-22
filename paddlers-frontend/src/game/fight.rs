@@ -1,13 +1,13 @@
 // use quicksilver::prelude::*;
-use specs::storage::BTreeStorage;
-use specs::prelude::*;
-use specs::world::Index;
 use crate::game::{
+    game_event_manager::{EventPool, GameEvent},
     movement::Position,
     town::Town,
-    game_event_manager::{EventPool, GameEvent},
 };
 use crate::prelude::ScreenResolution;
+use specs::prelude::*;
+use specs::storage::BTreeStorage;
+use specs::world::Index;
 
 #[derive(Component, Debug)]
 #[storage(HashMapStorage)]
@@ -17,9 +17,7 @@ pub struct Range {
 }
 impl Range {
     pub fn new(range: f32) -> Self {
-        Range {
-            range: range
-        }
+        Range { range: range }
     }
 }
 
@@ -30,9 +28,9 @@ pub struct Aura {
     pub effect: i64,
 }
 impl Aura {
-    pub fn new(range: f32, ap: i64, tile: (usize,usize), town: &Town) -> Self {
+    pub fn new(range: f32, ap: i64, tile: (usize, usize), town: &Town) -> Self {
         let mut tiles = town.lane_in_range(tile, range);
-        if !tiles.is_sorted(){
+        if !tiles.is_sorted() {
             tiles.sort();
         }
         Aura {
@@ -61,7 +59,8 @@ impl Health {
     pub fn make_happy(&mut self, amount: i64, id: Entity, ep: &EventPool) {
         let new_hp = 0.max(self.hp - amount);
         if new_hp == 0 && self.hp != 0 {
-            ep.send(GameEvent::HoboSatisfied(id)).expect("sending event");
+            ep.send(GameEvent::HoboSatisfied(id))
+                .expect("sending event");
         }
         self.hp = new_hp;
     }
@@ -76,7 +75,7 @@ impl FightSystem {
     pub fn new(event_pool: EventPool) -> Self {
         FightSystem {
             counter: 0,
-            event_pool
+            event_pool,
         }
     }
 }
@@ -88,7 +87,7 @@ impl<'a> System<'a> for FightSystem {
         ReadStorage<'a, Position>,
         WriteStorage<'a, Health>,
         Read<'a, ScreenResolution>,
-     );
+    );
 
     fn run(&mut self, (entities, aura, position, mut health, resolution): Self::SystemData) {
         // It's not necessary to recalculate every frame
@@ -104,13 +103,17 @@ impl<'a> System<'a> for FightSystem {
         // n can be arbitrarily large in late game
         // m will most likely remain limited by the map size
         // t is always smaller than the map lane size
-        for (aid, a) in (&entities, &aura).join() { // m
-            for (hid, p, h) in (&entities, &position, &mut health).join() { // n
+        for (aid, a) in (&entities, &aura).join() {
+            // m
+            for (hid, p, h) in (&entities, &position, &mut health).join() {
+                // n
                 let tile = Town::find_tile(p.area.pos, ul);
-                if a.affected_tiles.binary_search(&tile).is_ok() { // log t
-                    match h.aura_effects.binary_search(&aid.id()) { // log m
-                        Ok(_) => {/* Aura already active*/},
-                        Err(i) => { 
+                if a.affected_tiles.binary_search(&tile).is_ok() {
+                    // log t
+                    match h.aura_effects.binary_search(&aid.id()) {
+                        // log m
+                        Ok(_) => { /* Aura already active*/ }
+                        Err(i) => {
                             (*h).make_happy(a.effect, hid, &self.event_pool);
                             (*h).aura_effects.insert(i, aid.id()); // [Theoretically O(m) but not considered above]
                         }

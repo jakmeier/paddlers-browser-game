@@ -7,8 +7,7 @@ pub fn draw_progress_bar(
     area: Rectangle,
     progress: f32,
     text: &str,
-) -> PadlResult<()>
-{
+) -> PadlResult<()> {
     let text_h = (area.height() * 0.5).max(50.0);
     let (text_area, bar_area) = area.cut_horizontal(text_h);
 

@@ -1,7 +1,7 @@
-use std::collections::HashMap;
-use crate::models::BuildingType;
 use crate::game_mechanics::building::*;
+use crate::models::BuildingType;
 use crate::models::*;
+use std::collections::HashMap;
 
 pub const TOWN_X: usize = 9;
 pub const TOWN_Y: usize = 7;
@@ -11,7 +11,7 @@ pub const TOWN_LANE_Y: usize = 3;
 pub struct TownMap(pub [[TownTileType; TOWN_Y]; TOWN_X]);
 pub type TileIndex = (usize, usize);
 
-#[derive(PartialEq, Eq,Clone, Copy, Debug)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub enum TownTileType {
     EMPTY,
     BUILDING(BuildingType),
@@ -21,14 +21,14 @@ pub enum TownTileType {
 #[derive(Default, Debug)]
 /// State which is required for validation of actions to enable both frontend and backend to share validation code.
 /// The frontend may have this state duplicated in components.
-/// State that is only used by the frontend does not belong in here. 
+/// State that is only used by the frontend does not belong in here.
 pub struct TownState<I: Eq + std::hash::Hash + Clone + Copy + std::fmt::Debug> {
     tiles: HashMap<TileIndex, TileState<I>>,
     entity_locations: HashMap<I, TileIndex>,
     pub forest_size: usize,
     forest_usage: usize,
 }
-// Note: So far, this has only one use-case which is buildings. 
+// Note: So far, this has only one use-case which is buildings.
 // Likely, refactoring will become necessary to facilitate other states.
 #[derive(PartialEq, Eq, Clone, Debug, Hash)]
 pub struct TileState<I: Eq + std::hash::Hash + Clone + Copy + std::fmt::Debug> {
@@ -62,33 +62,25 @@ impl TownMap {
     }
 }
 
-
 impl TownTileType {
     pub fn is_buildable(&self) -> bool {
         match self {
-            TownTileType::EMPTY 
-                => true,
-            TownTileType::BUILDING(_)
-            | TownTileType::LANE 
-                => false,
+            TownTileType::EMPTY => true,
+            TownTileType::BUILDING(_) | TownTileType::LANE => false,
         }
     }
     pub fn is_walkable(&self) -> bool {
         match self {
-            TownTileType::EMPTY 
-            | TownTileType::LANE 
-                => true,
-            TownTileType::BUILDING(bt)
-                => match bt {
-                    BuildingType::BundlingStation 
-                    | BuildingType::SawMill 
-                    | BuildingType::PresentA
-                    | BuildingType::PresentB
-                    | BuildingType::RedFlowers
-                    | BuildingType::BlueFlowers
-                        => true,
-                    _ => false,
-                },
+            TownTileType::EMPTY | TownTileType::LANE => true,
+            TownTileType::BUILDING(bt) => match bt {
+                BuildingType::BundlingStation
+                | BuildingType::SawMill
+                | BuildingType::PresentA
+                | BuildingType::PresentB
+                | BuildingType::RedFlowers
+                | BuildingType::BlueFlowers => true,
+                _ => false,
+            },
         }
     }
 }
@@ -125,7 +117,7 @@ impl<I: Eq + std::hash::Hash + Clone + Copy + std::fmt::Debug> TownState<I> {
     pub fn has_supply_for_additional_worker(&self, task: TaskType) -> bool {
         let supply = self.forest_size - self.forest_usage;
         let required = task.required_forest_size();
-        supply >= required 
+        supply >= required
     }
     pub fn register_task_begin(&mut self, task: TaskType) -> Result<(), TownError> {
         if self.has_supply_for_additional_worker(task) {
@@ -136,7 +128,7 @@ impl<I: Eq + std::hash::Hash + Clone + Copy + std::fmt::Debug> TownState<I> {
             Err(TownError::NotEnoughSupply)
         }
     }
-    pub fn register_task_end(&mut self, task: TaskType) -> Result<(), TownError>  {
+    pub fn register_task_end(&mut self, task: TaskType) -> Result<(), TownError> {
         let required = task.required_forest_size();
         if self.forest_usage >= required {
             self.forest_usage -= required;
@@ -154,8 +146,8 @@ impl<I: Eq + std::hash::Hash + Clone + Copy + std::fmt::Debug> TileState<I> {
             building_state: BuildingState {
                 capacity: capacity,
                 entity_count: count,
-            }
-        }   
+            },
+        }
     }
     pub fn try_add_entity(&mut self) -> Result<(), TownError> {
         if self.building_state.capacity > self.building_state.entity_count {
@@ -175,17 +167,16 @@ impl<I: Eq + std::hash::Hash + Clone + Copy + std::fmt::Debug> TileState<I> {
     }
 }
 
-
 use std::ops::{Index, IndexMut};
 impl Index<TileIndex> for TownMap {
     type Output = TownTileType;
 
-    fn index(&self, idx: TileIndex)-> &Self::Output {
+    fn index(&self, idx: TileIndex) -> &Self::Output {
         &self.0[idx.0][idx.1]
     }
 }
 impl IndexMut<TileIndex> for TownMap {
-    fn index_mut(&mut self, idx: TileIndex)-> &mut Self::Output {
+    fn index_mut(&mut self, idx: TileIndex) -> &mut Self::Output {
         &mut self.0[idx.0][idx.1]
     }
 }
@@ -200,19 +191,16 @@ pub fn distance2(a: TileIndex, b: TileIndex) -> f32 {
 pub enum TownError {
     BuildingFull,
     InvalidState(&'static str),
-    NotEnoughSupply
+    NotEnoughSupply,
 }
 
 impl std::error::Error for TownError {}
 impl std::fmt::Display for TownError {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            TownError::BuildingFull =>
-                write!(f, "No space in building"),
-            TownError::InvalidState(s) => 
-                write!(f, "Invalid state: {}", s),
-            TownError::NotEnoughSupply =>
-                write!(f, "Not enough supplies"),
+            TownError::BuildingFull => write!(f, "No space in building"),
+            TownError::InvalidState(s) => write!(f, "Invalid state: {}", s),
+            TownError::NotEnoughSupply => write!(f, "Not enough supplies"),
         }
     }
 }

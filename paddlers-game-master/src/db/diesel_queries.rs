@@ -1,9 +1,9 @@
+use super::*;
 use diesel::prelude::*;
+use paddlers_shared_lib::models::dsl;
 use paddlers_shared_lib::prelude::*;
 use paddlers_shared_lib::schema::*;
-use paddlers_shared_lib::models::dsl;
 use paddlers_shared_lib::story::story_state::StoryState;
-use super::*;
 
 impl DB {
     pub fn insert_player(&self, u: &NewPlayer) -> QueryResult<Player> {
@@ -53,7 +53,7 @@ impl DB {
     pub fn add_worker_mana(&self, w: WorkerKey, plus: i32, max: i32) {
         let worker = self.worker_priv(w).expect("Invalid worker key");
         diesel::update(&worker)
-            .set(workers::mana.eq( Some(max.min(worker.mana.unwrap_or(0) + plus)) ))
+            .set(workers::mana.eq(Some(max.min(worker.mana.unwrap_or(0) + plus))))
             .execute(self.dbconn())
             .expect("Updating worker for mana");
     }
@@ -74,8 +74,13 @@ impl DB {
             .values(res)
             .execute(self.dbconn())
     }
-    pub fn add_resource(&self, rt: ResourceType, vk: VillageKey, plus: i64) -> QueryResult<Resource> {
-        let target = resources::table.find((rt,vk.num()));
+    pub fn add_resource(
+        &self,
+        rt: ResourceType,
+        vk: VillageKey,
+        plus: i64,
+    ) -> QueryResult<Resource> {
+        let target = resources::table.find((rt, vk.num()));
         diesel::update(target)
             .set(resources::amount.eq(resources::amount + plus))
             .get_result(self.dbconn())
@@ -93,8 +98,7 @@ impl DB {
             .expect("Inserting building")
     }
     pub fn delete_building(&self, building: &Building) {
-        diesel::delete(buildings::table
-            .filter(buildings::id.eq(building.id)))
+        diesel::delete(buildings::table.filter(buildings::id.eq(building.id)))
             .execute(self.dbconn())
             .expect("Deleting building");
     }
@@ -104,7 +108,7 @@ impl DB {
             .get_result(self.dbconn())
             .expect("Inserting task")
     }
-    
+
     pub fn insert_tasks(&self, tasks: &[NewTask]) -> Vec<Task> {
         diesel::insert_into(tasks::dsl::tasks)
             .values(tasks)
@@ -118,14 +122,12 @@ impl DB {
             .expect("Updating task");
     }
     pub fn delete_task(&self, task: &Task) {
-        diesel::delete(tasks::table
-            .filter(tasks::id.eq(task.id)))
+        diesel::delete(tasks::table.filter(tasks::id.eq(task.id)))
             .execute(self.dbconn())
             .expect("Deleting task");
     }
     pub fn flush_task_queue(&self, worker_id: WorkerKey) {
-        diesel::delete(tasks::table
-            .filter(tasks::worker_id.eq(worker_id.num())))
+        diesel::delete(tasks::table.filter(tasks::worker_id.eq(worker_id.num())))
             .filter(tasks::start_time.gt(diesel::dsl::now.at_time_zone("UTC")))
             .execute(self.dbconn())
             .expect("Deleting task");
@@ -174,7 +176,12 @@ impl DB {
             .execute(self.dbconn())
             .expect("Updating flag timestamp to now");
     }
-    pub fn update_worker_flag_timestamp(&self, w: WorkerKey, f: WorkerFlagType, ts: chrono::NaiveDateTime) {
+    pub fn update_worker_flag_timestamp(
+        &self,
+        w: WorkerKey,
+        f: WorkerFlagType,
+        ts: chrono::NaiveDateTime,
+    ) {
         let target = worker_flags::table.find((w.num(), f));
         diesel::update(target)
             .set(worker_flags::last_update.eq(ts))
@@ -183,8 +190,8 @@ impl DB {
     }
     pub fn worker_flags(&self, worker: WorkerKey) -> Vec<WorkerFlag> {
         worker_flags::table
-        .filter(worker_flags::worker_id.eq(worker.num()))
-        .get_results(self.dbconn())
-        .expect("Error loading data")
+            .filter(worker_flags::worker_id.eq(worker.num()))
+            .get_results(self.dbconn())
+            .expect("Error loading data")
     }
 }

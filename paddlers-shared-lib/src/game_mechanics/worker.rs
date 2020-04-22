@@ -1,4 +1,4 @@
-use crate::models::{TaskType, ResourceType};
+use crate::models::{ResourceType, TaskType};
 
 pub const fn unit_speed_to_worker_tiles_per_second(base_speed: f32) -> f32 {
     base_speed
@@ -14,15 +14,9 @@ pub const fn hero_mana_regeneration_per_hour() -> i32 {
 
 pub fn hero_resource_collection_per_hour(task: TaskType) -> Option<(ResourceType, i32)> {
     match task {
-        TaskType::ChopTree => {
-            Some((ResourceType::Logs, 5))
-        },
-        TaskType::GatherSticks => {
-            Some((ResourceType::Sticks, 60))
-        },
-        _ => {
-            None
-        }
+        TaskType::ChopTree => Some((ResourceType::Logs, 5)),
+        TaskType::GatherSticks => Some((ResourceType::Sticks, 60)),
+        _ => None,
     }
 }
 

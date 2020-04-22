@@ -3,11 +3,11 @@
 //! may learn it as well.
 //! The effect of the ability is an increased satisfaction,
 
-use specs::prelude::*;
-use crate::logging::error::*;
 use crate::game::components::*;
-use paddlers_shared_lib::models::AbilityType;
 use crate::game::game_event_manager::EventPool;
+use crate::logging::error::*;
+use paddlers_shared_lib::models::AbilityType;
+use specs::prelude::*;
 
 pub fn use_welcome_ability<'a>(
     user: Entity,
@@ -16,14 +16,20 @@ pub fn use_welcome_ability<'a>(
     status_effects: &mut WriteStorage<StatusEffects>,
     mana: &mut WriteStorage<Mana>,
     ep: &EventPool,
-) -> PadlResult<()>
-{
-    let h = health.get_mut(target)
-        .ok_or(PadlError::dev_err(PadlErrorCode::MissingComponent("Health for hobo")))?;
-    let se = status_effects.get_mut(target)
-        .ok_or(PadlError::dev_err(PadlErrorCode::MissingComponent("Status effects for hobo")))?;
-    let m = mana.get_mut(user)
-        .ok_or(PadlError::dev_err(PadlErrorCode::MissingComponent("Mana for worker")))?;
+) -> PadlResult<()> {
+    let h = health
+        .get_mut(target)
+        .ok_or(PadlError::dev_err(PadlErrorCode::MissingComponent(
+            "Health for hobo",
+        )))?;
+    let se = status_effects.get_mut(target).ok_or(PadlError::dev_err(
+        PadlErrorCode::MissingComponent("Status effects for hobo"),
+    ))?;
+    let m = mana
+        .get_mut(user)
+        .ok_or(PadlError::dev_err(PadlErrorCode::MissingComponent(
+            "Mana for worker",
+        )))?;
 
     let a = AbilityType::Welcome;
     let strength = a.apply().1;

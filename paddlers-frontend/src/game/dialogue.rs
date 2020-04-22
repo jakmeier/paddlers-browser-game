@@ -187,7 +187,7 @@ impl<'a, 'b> Frame for DialogueFrame<'a, 'b> {
     type Event = PadlEvent;
     fn event(&mut self, state: &mut Self::State, e: &Self::Event) -> Result<(), Self::Error> {
         match e {
-            PadlEvent::Scene(scene,slide) => {
+            PadlEvent::Scene(scene, slide) => {
                 self.load_scene(scene.load_scene(*slide), &state.locale);
             }
             _ => {}

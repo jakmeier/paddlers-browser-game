@@ -1,33 +1,36 @@
 #![feature(trivial_bounds)]
 #[cfg(feature = "sql_db")]
-#[macro_use] extern crate diesel;
+#[macro_use]
+extern crate diesel;
 #[cfg(feature = "sql_db")]
-#[macro_use] extern crate diesel_migrations;
-#[cfg(feature = "enum_utils")] 
-#[macro_use] extern crate strum_macros;
+#[macro_use]
+extern crate diesel_migrations;
+#[cfg(feature = "enum_utils")]
+#[macro_use]
+extern crate strum_macros;
 
-#[cfg(feature = "enum_utils")] 
+#[cfg(feature = "enum_utils")]
 pub extern crate strum;
 
-pub mod models;
-pub mod display;
 pub mod api;
-pub mod prelude;
-pub mod graphql_types;
 pub mod config;
+pub mod display;
+pub mod graphql_types;
+pub mod models;
+pub mod prelude;
 pub mod story;
 
-#[cfg(feature = "game_mechanics")] 
+#[cfg(feature = "game_mechanics")]
 pub mod game_mechanics;
 
 #[cfg(feature = "sql_db")]
 pub mod schema;
 
-#[cfg(feature = "sql_db")] 
+#[cfg(feature = "sql_db")]
 pub mod sql_db;
 
 #[cfg(feature = "sql_db")]
-pub use sql_db::*; 
+pub use sql_db::*;
 
 #[cfg(feature = "user_authentication")]
 pub mod user_authentication;

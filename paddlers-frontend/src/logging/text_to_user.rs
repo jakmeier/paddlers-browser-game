@@ -1,12 +1,17 @@
+use crate::gui::{
+    utils::colors::color_string,
+    utils::{BLUE, GREY},
+};
 use crate::prelude::*;
 use crate::view::FloatingText;
 use quicksilver::prelude::*;
-use crate::gui::{
-    utils::colors::color_string,
-    utils::{GREY, BLUE},
-};
 
-const ERROR_COLOR: Color = Color { r: 0.8, g: 0.2, b: 0.2, a: 0.75 };
+const ERROR_COLOR: Color = Color {
+    r: 0.8,
+    g: 0.2,
+    b: 0.2,
+    a: 0.75,
+};
 
 struct TextMessage {
     float: FloatingText,
@@ -32,14 +37,12 @@ impl TextBoard {
     fn display_message(&mut self, msg: String, col: Color, time_us: i64) -> PadlResult<()> {
         let show_until = utc_now() + time_us;
         let float = Self::new_float(msg, col)?;
-        self.messages.push(
-            TextMessage { float, show_until }
-        );
+        self.messages.push(TextMessage { float, show_until });
         Ok(())
     }
     pub fn draw(&mut self, max_area: &Rectangle) -> PadlResult<()> {
         self.remove_old_messages();
-        let mut area = max_area.clone(); 
+        let mut area = max_area.clone();
         for msg in self.messages.iter_mut() {
             let (line, rest) = area.cut_horizontal(60.0);
             let (_padding, rest) = rest.cut_horizontal(15.0);
@@ -51,7 +54,7 @@ impl TextBoard {
     }
     fn remove_old_messages(&mut self) {
         let now = utc_now();
-        self.messages.retain(|msg| msg.show_until > now );
+        self.messages.retain(|msg| msg.show_until > now);
     }
     fn new_float(s: String, col: Color) -> PadlResult<FloatingText> {
         let col_str = color_string(&col);
@@ -59,10 +62,10 @@ impl TextBoard {
             &Rectangle::default(),
             s,
             &[
-                ("background-color",&col_str),
-                ("color","white"),
-                ("padding","5px"),
-                ("text-align","center"),
+                ("background-color", &col_str),
+                ("color", "white"),
+                ("padding", "5px"),
+                ("text-align", "center"),
             ],
             &[],
         )
