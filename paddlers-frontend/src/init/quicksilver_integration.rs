@@ -12,6 +12,8 @@ use crate::init::loading::LoadingState;
 use crate::logging::{text_to_user::TextBoard, ErrorQueue};
 use crate::net::game_master_api::RestApiState;
 use crate::prelude::*;
+use crate::view::FrameSignal;
+use paddlers_shared_lib::story::story_state::StoryState;
 use std::sync::mpsc::Receiver;
 
 use crate::game::story::scene::SceneIndex;
@@ -39,14 +41,36 @@ pub(crate) struct GameState {
     pub pointer_manager: PointerManager<'static, 'static>,
     pub viewer: Framer,
 }
+/// These are events that come in to the framer.
+/// Right now, they are passed on directly to the views, which can then decide to act upon it or not.
+/// Moving forward, the goal is to implement this as publish-subscriber system and split it up.
+///     Network:        Subscribe to specific messages (maybe enforce single subscriber per message)
+///     Quicksilver:    These are user inputs, which can be handled with already existing listeners (e.g. left_click)
+///     Signal:         Should only be inputs, nothing to forward to views directly
+///     Notification:   Subscribe to certain notifications with a handler, specification defines how signals are mapped to commands
 pub(crate) enum PadlEvent {
     Quicksilver(Event),
     Network(NetMsg),
     Signal(Signal),
-    Scene(SceneIndex, SlideIndex), // TODO: Generalization? Maybe all GameEvents?
 }
+#[derive(Clone, Debug)]
+/// Signals are a way to broadcast events for event listeners across views.
 pub enum Signal {
-    ResourcesUpdated,
+    ResourcesUpdated,              // Notification
+    BuildingBuilt(BuildingType),   // Signal
+    Scene(SceneIndex, SlideIndex), // Signal(?)
+    NewStoryState(StoryState),     // Notification
+}
+impl FrameSignal<PadlEvent> for Signal {
+    // Improvement: This should be synced with a specification document (to be designed)
+    fn evaluate_signal(&self) -> Option<PadlEvent> {
+        match self {
+            Self::BuildingBuilt(BuildingType::Temple) => Some(PadlEvent::Signal(
+                Signal::NewStoryState(StoryState::TempleBuilt),
+            )),
+            _ => None,
+        }
+    }
 }
 impl QuicksilverState {
     pub fn load(resolution: ScreenResolution, net_chan: Receiver<NetMsg>) -> Self {

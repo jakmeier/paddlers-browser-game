@@ -6,8 +6,9 @@ use crate::game::Game;
 use crate::gui::ui_state::UiState;
 use crate::gui::utils::colors::DARK_BLUE;
 use crate::gui::z::*;
+use crate::init::quicksilver_integration::Signal;
 use crate::net::NetMsg;
-use crate::view::Frame;
+use crate::view::{ExperimentalSignalChannel, Frame};
 use quicksilver::prelude::Window as QuicksilverWindow;
 use quicksilver::prelude::{Col, Rectangle, Transform};
 use std::marker::PhantomData;
@@ -88,6 +89,7 @@ impl<'a, 'b> Frame for LeaderboardFrame<'a, 'b> {
     type State = Game<'a, 'b>;
     type Graphics = QuicksilverWindow;
     type Event = PadlEvent;
+    type Signal = Signal;
     fn event(&mut self, _state: &mut Self::State, e: &Self::Event) -> Result<(), Self::Error> {
         match e {
             PadlEvent::Network(NetMsg::Leaderboard(offset, list)) => {
@@ -126,7 +128,12 @@ impl<'a, 'b> Frame for LeaderboardFrame<'a, 'b> {
         self.pane.hide()?;
         Ok(())
     }
-    fn left_click(&mut self, state: &mut Self::State, pos: (i32, i32)) -> Result<(), Self::Error> {
+    fn left_click(
+        &mut self,
+        state: &mut Self::State,
+        pos: (i32, i32),
+        _signals: &mut ExperimentalSignalChannel,
+    ) -> Result<(), Self::Error> {
         state.click_buttons(pos);
         Ok(())
     }

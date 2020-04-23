@@ -1,7 +1,8 @@
 use super::*;
 use crate::game::Game;
+use crate::init::quicksilver_integration::Signal;
 use crate::prelude::*;
-use crate::view::Frame;
+use crate::view::{ExperimentalSignalChannel, Frame};
 use quicksilver::prelude::Window;
 use std::marker::PhantomData;
 
@@ -22,6 +23,7 @@ impl<'a, 'b> Frame for MapFrame<'a, 'b> {
     type State = Game<'a, 'b>;
     type Graphics = Window;
     type Event = PadlEvent;
+    type Signal = Signal;
     fn draw(
         &mut self,
         state: &mut Self::State,
@@ -45,7 +47,12 @@ impl<'a, 'b> Frame for MapFrame<'a, 'b> {
         map.render(window, sprites, &area)?;
         Ok(())
     }
-    fn left_click(&mut self, state: &mut Self::State, pos: (i32, i32)) -> Result<(), Self::Error> {
+    fn left_click(
+        &mut self,
+        state: &mut Self::State,
+        pos: (i32, i32),
+        _signals: &mut ExperimentalSignalChannel,
+    ) -> Result<(), Self::Error> {
         let mut map = state.world.fetch_mut::<GlobalMapSharedState>();
         map.left_click_on_main_area(
             pos.into(),

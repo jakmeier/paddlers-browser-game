@@ -12,6 +12,7 @@ use crate::game::{
 use crate::gui::gui_components::{ClickOutput, Condition, InteractiveTableArea};
 use crate::gui::input::{Clickable, Grabbable};
 use crate::gui::ui_state::*;
+use crate::init::quicksilver_integration::Signal;
 use crate::logging::ErrorQueue;
 use crate::net::game_master_api::RestApiState;
 use crate::net::state::current_village;
@@ -122,17 +123,22 @@ impl Town {
         resources: &mut Write<'a, TownResources>,
         errq: &mut WriteExpect<'a, ErrorQueue>,
         rest: &mut WriteExpect<'a, RestApiState>,
+        // TODO: Only temporary experiment
+        signals: &mut WriteExpect<'a, crate::view::ExperimentalSignalChannel>,
     ) -> Option<NewTaskDescriptor> {
         let maybe_top_hit = Self::clickable_lookup(entities, mouse_pos, position, clickable);
         if let Some(grabbed) = &(*ui_state).grabbed_item {
             match grabbed {
                 Grabbable::NewBuilding(bt) => {
+                    let bt = *bt;
                     if let Some(pos) = self.get_buildable_tile(mouse_pos) {
-                        rest.http_place_building(pos, *bt, current_village())
+                        rest.http_place_building(pos, bt, current_village())
                             .unwrap_or_else(|e| errq.push(e));
                         resources.spend(&bt.price());
-                        self.insert_new_building(&entities, &lazy, pos, *bt);
+                        self.insert_new_building(&entities, &lazy, pos, bt);
                         (*ui_state).grabbed_item = None;
+                        let signal = Signal::BuildingBuilt(bt);
+                        signals.push_back(signal);
                     }
                 }
                 Grabbable::Ability(a) => {

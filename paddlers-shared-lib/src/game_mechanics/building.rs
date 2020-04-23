@@ -1,4 +1,5 @@
 use crate::models::*;
+use crate::story::story_state::StoryState;
 
 #[derive(PartialEq, Eq, Clone, Debug, Hash)]
 /// Part of [TileState](crate::game_mechanics::town::TileState) for validation state used similarly in backend and frontend.
@@ -40,7 +41,7 @@ impl BuildingType {
 
 // Definition of which buildings are available to a player
 impl BuildingType {
-    pub fn player_can_build(&self, karma: i64) -> bool {
+    pub fn player_can_build(&self, karma: i64, story_state: StoryState) -> bool {
         match self {
             BuildingType::BlueFlowers => karma >= 1,
             BuildingType::BundlingStation => karma >= 1,
@@ -48,7 +49,7 @@ impl BuildingType {
             BuildingType::PresentB => karma >= 2000,
             BuildingType::RedFlowers => karma >= 1000,
             BuildingType::SawMill => karma >= 100,
-            BuildingType::Temple => false,
+            BuildingType::Temple => story_state == StoryState::ServantAccepted,
             BuildingType::Tree => karma >= 1,
         }
     }
@@ -61,6 +62,7 @@ impl BuildingType {
             BuildingType::RedFlowers,
             BuildingType::SawMill,
             BuildingType::Tree,
+            BuildingType::Temple,
         ]
         .iter()
     }

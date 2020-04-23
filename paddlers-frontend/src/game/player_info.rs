@@ -9,7 +9,7 @@ pub struct PlayerInfo {
     /// Prophets currently owned by player that are not ruling a village, yet
     prophets: i64,
     villages: i64,
-    pub story_state: StoryState,
+    story_state: StoryState,
 }
 
 impl From<PlayerQueryResponse> for PlayerInfo {
@@ -27,6 +27,14 @@ impl PlayerInfo {
     #[inline]
     pub fn karma(&self) -> i64 {
         self.karma
+    }
+    #[inline]
+    pub fn set_story_state(&mut self, s: StoryState) {
+        self.story_state = s;
+    }
+    #[inline]
+    pub fn story_state(&self) -> StoryState {
+        self.story_state
     }
     /// Count of current hobo prophets available to the player, either idle or on a mission
     #[inline]

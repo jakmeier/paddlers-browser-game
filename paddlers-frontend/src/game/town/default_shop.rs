@@ -1,3 +1,4 @@
+use crate::game::player_info::PlayerInfo;
 use crate::gui::{gui_components::*, utils::*};
 use crate::gui::{input::Grabbable, sprites::WithSprite};
 use crate::prelude::*;
@@ -17,12 +18,21 @@ impl Default for DefaultShop {
     }
 }
 impl DefaultShop {
-    pub fn new(karma: i64) -> Self {
+    pub fn new(player_info: &PlayerInfo) -> Self {
         let mut result = DefaultShop::default();
-        for b in BuildingType::default_shop_buildings().filter(|b| b.player_can_build(karma)) {
+        let karma = player_info.karma();
+        let story_state = player_info.story_state();
+        for b in BuildingType::default_shop_buildings()
+            .filter(|b| b.player_can_build(karma, story_state))
+        {
             result.add_building(*b);
         }
         result
+    }
+    pub fn reload(world: &mut specs::World) {
+        use specs::WorldExt;
+        let player_info = (*world.read_resource::<PlayerInfo>()).clone();
+        world.insert(DefaultShop::new(&player_info));
     }
 
     pub fn add_building(&mut self, b: BuildingType) {

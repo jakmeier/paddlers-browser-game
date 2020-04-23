@@ -4,9 +4,11 @@ use crate::game::Game;
 use crate::gui::ui_state::UiState;
 use crate::gui::utils::colors::LIGHT_BLUE;
 use crate::gui::z::*;
+use crate::init::quicksilver_integration::Signal;
 use crate::logging::ErrorQueue;
 use crate::net::state::current_village;
 use crate::prelude::*;
+use crate::view::ExperimentalSignalChannel;
 use crate::view::Frame;
 use crate::view::TextNode;
 use paddlers_shared_lib::api::attacks::*;
@@ -137,7 +139,7 @@ impl<'a, 'b> Frame for AttackFrame<'a, 'b> {
     type State = Game<'a, 'b>;
     type Graphics = Window;
     type Event = PadlEvent;
-
+    type Signal = Signal;
     fn update(&mut self, state: &mut Self::State) -> Result<(), Self::Error> {
         self.update_dispatcher.dispatch(&mut state.world);
         let mut attack = state.world.write_storage::<Attack>();
@@ -188,7 +190,12 @@ impl<'a, 'b> Frame for AttackFrame<'a, 'b> {
         self.pane.hide()?;
         Ok(())
     }
-    fn left_click(&mut self, state: &mut Self::State, pos: (i32, i32)) -> Result<(), Self::Error> {
+    fn left_click(
+        &mut self,
+        state: &mut Self::State,
+        pos: (i32, i32),
+        _signals: &mut ExperimentalSignalChannel,
+    ) -> Result<(), Self::Error> {
         state.click_buttons(pos);
         Ok(())
     }

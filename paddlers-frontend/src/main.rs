@@ -47,6 +47,7 @@ pub(crate) type Framer = FrameManager<
     Window,
     PadlEvent,
     prelude::PadlError,
+    init::quicksilver_integration::Signal,
 >;
 
 #[inline]

@@ -148,7 +148,6 @@ fn load_entry_scene(active_slide: SlideIndex) -> Scene {
     let button = SlideButton {
         text_key: "welcomescene-A90",
         action: SlideButtonAction::default()
-            .with_action(StoryAction::EnableTempleInShop)
             .with_view_change(UiView::Town),
     };
     // 6

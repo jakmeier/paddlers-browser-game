@@ -11,13 +11,15 @@ use scene::*;
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum StoryAction {
     OpenScene(SceneIndex, SlideIndex),
-    EnableTempleInShop,
     StoryProgress(StoryState),
 }
 
 impl Game<'_, '_> {
+    pub fn set_story_state(&self, s: StoryState) {
+        self.world.fetch_mut::<PlayerInfo>().set_story_state(s);
+    }
     pub fn story_state(&self) -> StoryState {
-        self.world.fetch::<PlayerInfo>().story_state
+        self.world.fetch::<PlayerInfo>().story_state()
     }
     pub fn load_story_state(&mut self) -> PadlResult<()> {
         let story_state = self.story_state();

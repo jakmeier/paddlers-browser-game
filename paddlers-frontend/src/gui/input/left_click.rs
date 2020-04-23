@@ -41,6 +41,8 @@ impl<'a> System<'a> for TownLeftClickSystem {
         WriteStorage<'a, EntityContainer>,
         WriteStorage<'a, UiMenu>,
         WriteStorage<'a, Worker>,
+        // TODO: Only temporary experiment
+        WriteExpect<'a, crate::view::ExperimentalSignalChannel>,
     );
 
     fn run(
@@ -63,6 +65,7 @@ impl<'a> System<'a> for TownLeftClickSystem {
             mut containers,
             mut ui_menus,
             mut workers,
+            mut signals,
         ): Self::SystemData,
     ) {
         let MouseState(mouse_pos, button) = *mouse_state;
@@ -108,6 +111,7 @@ impl<'a> System<'a> for TownLeftClickSystem {
                 &mut resources,
                 &mut errq,
                 &mut rest,
+                &mut signals,
             );
             if let Some(job) = maybe_job {
                 let active_entity = active_entity.expect("Ability requires unit");

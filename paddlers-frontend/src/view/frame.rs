@@ -1,5 +1,6 @@
+use crate::init::quicksilver_integration::Signal;
 use std::cell::RefCell;
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDeque};
 use std::hash::Hash;
 use std::rc::Rc;
 
@@ -9,6 +10,7 @@ pub trait Frame {
     type State;
     type Graphics;
     type Event;
+    type Signal;
     fn draw(
         &mut self,
         _state: &mut Self::State,
@@ -26,6 +28,7 @@ pub trait Frame {
         &mut self,
         _state: &mut Self::State,
         _pos: (i32, i32),
+        _signals: &mut AbstractExperimentalSignalChannel<Self::Signal>,
     ) -> Result<(), Self::Error> {
         Ok(())
     }
@@ -44,28 +47,38 @@ pub trait Frame {
     }
 }
 
-type FrameRef<S, G, Ev, E> = Rc<RefCell<PositionedFrame<S, G, Ev, E>>>;
+type FrameRef<S, G, Ev, E, Sig> = Rc<RefCell<PositionedFrame<S, G, Ev, E, Sig>>>;
 
-struct PositionedFrame<S, G, Ev, E> {
+struct PositionedFrame<S, G, Ev, E, Sig> {
     #[allow(dead_code)]
     pos: (i32, i32),
     #[allow(dead_code)]
     size: (i32, i32),
-    handler: Box<dyn Frame<State = S, Graphics = G, Event = Ev, Error = E>>,
+    handler: Box<dyn Frame<State = S, Graphics = G, Event = Ev, Error = E, Signal = Sig>>,
 }
 
 /// The frame manager keeps track of which frames need to run
 /// It routes events to active frames and can (de-)activate them
-pub struct FrameManager<V: Hash + Eq + Copy, S, G, Ev, E> {
-    view_frames: HashMap<V, Vec<FrameRef<S, G, Ev, E>>>,
-    active_frames: Vec<FrameRef<S, G, Ev, E>>,
-    all_frames: Vec<FrameRef<S, G, Ev, E>>,
+pub struct FrameManager<V: Hash + Eq + Copy, S, G, Ev, E, Sig> {
+    view_frames: HashMap<V, Vec<FrameRef<S, G, Ev, E, Sig>>>,
+    active_frames: Vec<FrameRef<S, G, Ev, E, Sig>>,
+    all_frames: Vec<FrameRef<S, G, Ev, E, Sig>>,
     current_view: V,
+    signals: AbstractExperimentalSignalChannel<Sig>,
 }
-impl<V: Hash + Eq + Copy, S, G, Ev, E> FrameManager<V, S, G, Ev, E> {
+
+/// The frames need a way to cross-communicate.
+/// This is a prototype to see how it feels and maybe extend from it, or otherwise remove it again.
+pub type AbstractExperimentalSignalChannel<Sig> = VecDeque<Sig>;
+pub type ExperimentalSignalChannel = AbstractExperimentalSignalChannel<Signal>;
+pub trait FrameSignal<Ev> {
+    fn evaluate_signal(&self) -> Option<Ev>;
+}
+
+impl<V: Hash + Eq + Copy, S, G, Ev, E, Sig: FrameSignal<Ev>> FrameManager<V, S, G, Ev, E, Sig> {
     pub fn add_frame(
         &mut self,
-        frame: Box<dyn Frame<State = S, Graphics = G, Event = Ev, Error = E>>,
+        frame: Box<dyn Frame<State = S, Graphics = G, Event = Ev, Error = E, Signal = Sig>>,
         views: &[V],
         pos: (i32, i32),
         size: (i32, i32),
@@ -91,7 +104,10 @@ impl<V: Hash + Eq + Copy, S, G, Ev, E> FrameManager<V, S, G, Ev, E> {
     pub fn left_click(&mut self, state: &mut S, pos: (i32, i32)) -> Result<(), E> {
         // TODO: Check position
         for frame in &mut self.active_frames {
-            frame.borrow_mut().handler.left_click(state, pos)?;
+            frame
+                .borrow_mut()
+                .handler
+                .left_click(state, pos, &mut self.signals)?;
         }
         Ok(())
     }
@@ -119,6 +135,15 @@ impl<V: Hash + Eq + Copy, S, G, Ev, E> FrameManager<V, S, G, Ev, E> {
     pub fn update(&mut self, state: &mut S) -> Result<(), E> {
         for frame in &mut self.active_frames {
             frame.borrow_mut().handler.update(state)?;
+        }
+        while let Some(signal) = self.signals.pop_front() {
+            self.handle_signal(state, signal)?;
+        }
+        Ok(())
+    }
+    pub fn handle_signal(&mut self, state: &mut S, signal: Sig) -> Result<(), E> {
+        if let Some(ev) = signal.evaluate_signal() {
+            self.global_event(state, &ev)?;
         }
         Ok(())
     }
@@ -157,13 +182,14 @@ impl<V: Hash + Eq + Copy, S, G, Ev, E> FrameManager<V, S, G, Ev, E> {
     }
 }
 
-impl<V: Hash + Eq + Copy, S, G, Ev, E> FrameManager<V, S, G, Ev, E> {
+impl<V: Hash + Eq + Copy, S, G, Ev, E, Sig: FrameSignal<Ev>> FrameManager<V, S, G, Ev, E, Sig> {
     pub fn new(v: V) -> Self {
         FrameManager {
             active_frames: vec![],
             all_frames: vec![],
             current_view: v,
             view_frames: HashMap::new(),
+            signals: VecDeque::new(),
         }
     }
 }

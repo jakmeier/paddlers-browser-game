@@ -7,8 +7,9 @@ use crate::gui::{
     decoration::draw_leaf_border, gui_components::*, shapes::PadlShapeIndex, sprites::*,
     ui_state::Now, utils::colors::LIGHT_BLUE, utils::*, z::*,
 };
+use crate::init::quicksilver_integration::Signal;
 use crate::prelude::*;
-use crate::view::Frame;
+use crate::view::{ExperimentalSignalChannel, Frame};
 use quicksilver::graphics::{Mesh, ShapeRenderer};
 use quicksilver::lyon::{math::point, path::Path, tessellation::*};
 use quicksilver::prelude::Window as QuicksilverWindow;
@@ -185,10 +186,15 @@ impl<'a, 'b> Frame for DialogueFrame<'a, 'b> {
     type State = Game<'a, 'b>;
     type Graphics = QuicksilverWindow;
     type Event = PadlEvent;
+    type Signal = Signal;
     fn event(&mut self, state: &mut Self::State, e: &Self::Event) -> Result<(), Self::Error> {
         match e {
-            PadlEvent::Scene(scene, slide) => {
+            PadlEvent::Signal(Signal::Scene(scene, slide)) => {
                 self.load_scene(scene.load_scene(*slide), &state.locale);
+            }
+            PadlEvent::Signal(Signal::NewStoryState(s)) => {
+                state.set_story_state(*s);
+                state.load_story_state()?;
             }
             _ => {}
         }
@@ -212,7 +218,12 @@ impl<'a, 'b> Frame for DialogueFrame<'a, 'b> {
         self.text_provider.finish_draw();
         Ok(())
     }
-    fn left_click(&mut self, state: &mut Self::State, pos: (i32, i32)) -> Result<(), Self::Error> {
+    fn left_click(
+        &mut self,
+        state: &mut Self::State,
+        pos: (i32, i32),
+        _signals: &mut ExperimentalSignalChannel,
+    ) -> Result<(), Self::Error> {
         if let Some(output) = self.buttons.click(pos.into())? {
             match output {
                 (ClickOutput::SlideAction(a), None) => {

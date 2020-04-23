@@ -1,5 +1,6 @@
 use crate::game::{town::Town, Game};
 use crate::gui::ui_state::ClockTick;
+use crate::init::quicksilver_integration::Signal;
 use crate::prelude::*;
 use crate::view::Frame;
 use quicksilver::graphics::Mesh;
@@ -27,6 +28,7 @@ impl<'a, 'b> Frame for TownFrame<'a, 'b> {
     type State = Game<'a, 'b>;
     type Graphics = Window;
     type Event = PadlEvent;
+    type Signal = Signal;
     fn draw(
         &mut self,
         state: &mut Self::State,

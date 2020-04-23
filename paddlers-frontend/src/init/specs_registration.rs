@@ -23,7 +23,7 @@ pub(super) fn insert_resources(
 ) {
     world.insert(async_err);
     world.insert(ClockTick(0));
-    world.insert(DefaultShop::new(player_info.karma()));
+    world.insert(DefaultShop::new(&player_info));
     world.insert(errq);
     world.insert(MenuButtons::new());
     world.insert(Now);
@@ -33,8 +33,10 @@ pub(super) fn insert_resources(
     world.insert(Town::new(resolution));
     world.insert(TownResources::default());
     world.insert(player_info);
-    let view = entry_view(player_info.story_state);
+    let view = entry_view(player_info.story_state());
     world.insert(UiState::new(view));
+    // TODO: Only temporary experiment
+    world.insert(crate::view::ExperimentalSignalChannel::new());
 }
 
 pub fn register_components(world: &mut World) {

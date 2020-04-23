@@ -135,7 +135,7 @@ impl GameState {
                                     ))
                                 })?;
                         }
-                        *self.game.world.write_resource() = DefaultShop::new(player_info.karma());
+                        *self.game.world.write_resource() = DefaultShop::new(&player_info);
                         *self.game.world.write_resource() = player_info;
                     }
                     NetMsg::VillageInfo(response) => {

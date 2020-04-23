@@ -1,3 +1,4 @@
+use crate::game::town::DefaultShop;
 use crate::game::Game;
 use crate::gui::gui_components::ResourcesComponent;
 use crate::gui::gui_components::TableTextProvider;
@@ -7,7 +8,7 @@ use crate::gui::utils::*;
 use crate::init::quicksilver_integration::Signal;
 use crate::prelude::*;
 use crate::resolution::ScreenResolution;
-use crate::view::Frame;
+use crate::view::{ExperimentalSignalChannel, Frame};
 use quicksilver::prelude::{MouseButton, Rectangle, Window};
 use specs::prelude::*;
 
@@ -39,6 +40,7 @@ impl<'a, 'b> Frame for TownMenuFrame<'a, 'b> {
     type State = Game<'a, 'b>;
     type Graphics = Window;
     type Event = PadlEvent;
+    type Signal = Signal;
     fn draw(
         &mut self,
         state: &mut Self::State,
@@ -70,12 +72,20 @@ impl<'a, 'b> Frame for TownMenuFrame<'a, 'b> {
         self.hover_component.hide()?;
         Ok(())
     }
-    fn left_click(&mut self, state: &mut Self::State, pos: (i32, i32)) -> Result<(), Self::Error> {
+    fn left_click(
+        &mut self,
+        state: &mut Self::State,
+        pos: (i32, i32),
+        signals: &mut ExperimentalSignalChannel,
+    ) -> Result<(), Self::Error> {
         state.click_buttons(pos);
         let mut ms = state.world.write_resource::<MouseState>();
         *ms = MouseState(pos.into(), Some(MouseButton::Left));
         std::mem::drop(ms); // This drop is essential! The internal RefCell will not be release otherwise
         self.left_click_dispatcher.dispatch(&state.world);
+        // TODO: Only temporary experiment
+        let mut result_signals = state.world.write_resource::<ExperimentalSignalChannel>();
+        signals.append(&mut result_signals);
         Ok(())
     }
     fn event(&mut self, state: &mut Self::State, e: &Self::Event) -> Result<(), Self::Error> {
@@ -83,6 +93,11 @@ impl<'a, 'b> Frame for TownMenuFrame<'a, 'b> {
             PadlEvent::Signal(Signal::ResourcesUpdated) => {
                 self.bank_component
                     .draw(&self.resources_area, &state.resources.non_zero_resources())?;
+            }
+            PadlEvent::Signal(Signal::NewStoryState(s)) => {
+                // FIXME: redundant with the same call also in dialogue
+                state.set_story_state(*s);
+                DefaultShop::reload(&mut state.world);
             }
             _ => {}
         }

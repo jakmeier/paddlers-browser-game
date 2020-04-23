@@ -3,8 +3,9 @@ use crate::gui::gui_components::ResourcesComponent;
 use crate::gui::gui_components::TableTextProvider;
 use crate::gui::input::{left_click::MapLeftClickSystem, MouseState};
 use crate::gui::ui_state::UiState;
+use crate::init::quicksilver_integration::Signal;
 use crate::prelude::*;
-use crate::view::Frame;
+use crate::view::{ExperimentalSignalChannel, Frame};
 use quicksilver::prelude::{MouseButton, Window};
 use specs::prelude::*;
 
@@ -32,6 +33,7 @@ impl<'a, 'b> Frame for MapMenuFrame<'a, 'b> {
     type State = Game<'a, 'b>;
     type Graphics = Window;
     type Event = PadlEvent;
+    type Signal = Signal;
     fn draw(
         &mut self,
         state: &mut Self::State,
@@ -53,7 +55,12 @@ impl<'a, 'b> Frame for MapMenuFrame<'a, 'b> {
         self.text_provider.finish_draw();
         Ok(())
     }
-    fn left_click(&mut self, state: &mut Self::State, pos: (i32, i32)) -> Result<(), Self::Error> {
+    fn left_click(
+        &mut self,
+        state: &mut Self::State,
+        pos: (i32, i32),
+        _signals: &mut ExperimentalSignalChannel,
+    ) -> Result<(), Self::Error> {
         state.click_buttons(pos);
         let mut ms = state.world.write_resource::<MouseState>();
         *ms = MouseState(pos.into(), Some(MouseButton::Left));

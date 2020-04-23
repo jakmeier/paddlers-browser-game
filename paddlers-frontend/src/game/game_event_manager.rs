@@ -10,12 +10,11 @@
 //! Try to keep computations in here short and simple.
 
 use crate::game::story::StoryAction;
-use crate::game::town::DefaultShop;
 use crate::game::{
     components::*, player_info::PlayerInfo, units::attackers::change_duck_sprite_to_happy,
 };
 use crate::gui::input::UiView;
-use crate::init::quicksilver_integration::GameState;
+use crate::init::quicksilver_integration::{GameState, Signal};
 use crate::prelude::*;
 use paddlers_shared_lib::api::story::StoryStateTransition;
 use specs::prelude::*;
@@ -25,6 +24,10 @@ use std::sync::mpsc::Sender;
 pub type EventPool = Sender<GameEvent>;
 
 #[derive(Debug, PartialEq, Clone)]
+/// This used to be just for `Game<'_,'_>` but now was moved up to `GameState`.
+/// It is questionable if that makes sense. Ideally, this would be just `TownEvent`, staying in the scope of a single frame.
+/// If anything should go between frames, than it should use the signal + notification publish-subscriber system that is to be created
+/// (But how, frames in the same view need to communicate a lot)
 pub enum GameEvent {
     HoboSatisfied(Entity),
     HttpBuyProphet,
@@ -76,13 +79,11 @@ impl GameState {
     fn try_handle_story_action(&mut self, action: StoryAction) -> PadlResult<()> {
         match action {
             StoryAction::OpenScene(scene, slide) => {
-                self.viewer
-                    .global_event(&mut self.game, &PadlEvent::Scene(scene, slide))?;
+                self.viewer.global_event(
+                    &mut self.game,
+                    &PadlEvent::Signal(Signal::Scene(scene, slide)),
+                )?;
                 self.game.switch_view(UiView::Dialogue);
-            }
-            StoryAction::EnableTempleInShop => {
-                let shop = &mut self.game.world.write_resource::<DefaultShop>();
-                shop.add_building(BuildingType::Temple);
             }
             StoryAction::StoryProgress(new_state) => {
                 let t = StoryStateTransition {
@@ -90,6 +91,8 @@ impl GameState {
                     after: new_state,
                 };
                 self.game.rest().http_update_story_state(t)?;
+                self.viewer
+                    .handle_signal(&mut self.game, Signal::NewStoryState(new_state))?;
             }
         }
         Ok(())
