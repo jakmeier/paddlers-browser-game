@@ -58,11 +58,20 @@ pub fn purchase_building(
 ) -> impl Responder {
     let db: crate::db::DB = pool.get_ref().into();
 
+    let building = body.building_type.into();
     if let Err(err) = check_owns_village(&db, &auth, body.village) {
         return err;
     }
+    if !db.player_allowed_to_build(
+        building,
+        body.village,
+        &auth.player_object(&db).expect("no player"),
+    ) {
+        return HttpResponse::BadRequest()
+            .body("Player not allowed to build")
+            .into();
+    }
 
-    let building = body.building_type.into();
     db.try_buy_building(building, (body.x, body.y), body.village)
         .and_then(|_| {
             let player = auth.player_key(&db)?;
@@ -85,8 +94,12 @@ pub fn delete_building(
     if let Some(building) =
         db.find_building_by_coordinates(body.x as i32, body.y as i32, body.village)
     {
-        db.delete_building(&building);
-        HttpResponse::Ok().into()
+        if building.building_type.can_be_deleted() {
+            db.delete_building(&building);
+            HttpResponse::Ok().into()
+        } else {
+            HttpResponse::BadRequest().body("This building cannot be deleted".to_owned())
+        }
     } else {
         HttpResponse::BadRequest().body(format!("No building at {}|{}", body.x, body.y))
     }

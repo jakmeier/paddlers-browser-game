@@ -39,8 +39,8 @@ impl BuildingType {
     }
 }
 
-// Definition of which buildings are available to a player
 impl BuildingType {
+    /// Definition of which buildings are available to a player
     pub fn player_can_build(&self, karma: i64, story_state: StoryState) -> bool {
         match self {
             BuildingType::BlueFlowers => karma >= 1,
@@ -53,6 +53,7 @@ impl BuildingType {
             BuildingType::Tree => karma >= 1,
         }
     }
+    /// Buildings that may be available at the default shop, regardless of player restrictions
     pub fn default_shop_buildings<'a>() -> impl Iterator<Item = &'a BuildingType> {
         [
             BuildingType::BlueFlowers,
@@ -65,5 +66,18 @@ impl BuildingType {
             BuildingType::Temple,
         ]
         .iter()
+    }
+    /// Based on the building type only, some buildings cannot be deleted, as defined in this function.
+    pub fn can_be_deleted(&self) -> bool {
+        match self {
+            BuildingType::BlueFlowers => true,
+            BuildingType::BundlingStation => true,
+            BuildingType::PresentA => false,
+            BuildingType::PresentB => false,
+            BuildingType::RedFlowers => true,
+            BuildingType::SawMill => true,
+            BuildingType::Temple => false,
+            BuildingType::Tree => true,
+        }
     }
 }

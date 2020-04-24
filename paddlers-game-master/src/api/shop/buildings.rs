@@ -37,10 +37,6 @@ impl DB {
         pos: (usize, usize),
         village: VillageKey,
     ) -> StringErr {
-        if !self.player_allowed_to_build(typ, village) {
-            return Err(format!("Player cannot build {}", typ));
-        }
-        // TODO: Check building space with current units (or allow units to walk out of unwalkable buildings)
         // Check conflict with existing building
         let (w, h) = typ.size();
         debug_assert_eq!(w, 1, "Not implemented yet");
@@ -54,7 +50,7 @@ impl DB {
             debug_assert_eq!(h, 1, "Not implemented yet");
             let (x, y) = (other.x as usize, other.y as usize);
             if x == x0 && y == y0 {
-                return Err("No space for building".to_owned());
+                return Err("Space occupied".to_owned());
             }
         }
 
@@ -63,11 +59,40 @@ impl DB {
         if y0 == 6 {
             return Err("Cannot build here".to_owned());
         }
+
+        // Check conflict with stationary units
+        let workers = self.workers(village);
+        let (x0, y0) = (pos.0 as i32, pos.1 as i32);
+        for w in workers {
+            if w.x == x0 && w.y == y0 {
+                return Err("Unit blocks space".to_owned());
+            }
+        }
+        // Check conflict with walking units
+        let workers = self.workers_with_job(village, &[TaskType::Walk]);
+        for w in workers {
+            let mut worker_x = w.x;
+            let mut worker_y = w.y;
+            for task in self.worker_tasks(w.key()) {
+                if is_between(x0, worker_x, task.x) || is_between(y0, worker_y, task.y) {
+                    return Err("Walking unit blocks space".to_owned());
+                }
+                worker_x = task.x;
+                worker_y = task.y;
+            }
+        }
         Ok(())
     }
-    fn player_allowed_to_build(&self, _typ: BuildingType, _vid: VillageKey) -> bool {
-        // TODO: Check with story state and karma level what kind of building are allowed
-        // TODO: Also check for special buildings, such as Temple, that it is only built in the corresponding story state
-        true
+    pub fn player_allowed_to_build(
+        &self,
+        typ: BuildingType,
+        _vid: VillageKey,
+        player: &Player,
+    ) -> bool {
+        typ.player_can_build(player.karma, player.story_state)
     }
+}
+
+fn is_between(x: i32, a: i32, b: i32) -> bool {
+    (x - a) * (x - b) <= 0
 }
