@@ -54,6 +54,12 @@ pub enum Condition {
     HasResources(Price),
 }
 
+#[derive(Clone, Debug, Copy)]
+pub enum TableVerticalAlignment {
+    Top,
+    Center,
+}
+
 pub struct TableTextProvider {
     text_pool: TextPool,
     white_text_pool: TextPool,
@@ -104,6 +110,7 @@ pub fn draw_table(
     max_row_height: f32,
     z: i32,
     now: Timestamp,
+    alignment: TableVerticalAlignment,
 ) -> PadlResult<()> {
     let total_rows = row_count(table);
     let row_height = max_row_height.min(max_area.height() / total_rows as f32);
@@ -111,6 +118,14 @@ pub fn draw_table(
     let img_s = row_height * 0.95;
     let margin = 10.0;
     let mut line = Rectangle::new(max_area.pos, (max_area.width(), row_height));
+    match alignment {
+        TableVerticalAlignment::Top => { /* NOP */ }
+        TableVerticalAlignment::Center => {
+            let table_h = total_rows as f32 * row_height;
+            let shift = (max_area.height() - table_h) / 2.0;
+            line.pos.y += shift;
+        }
+    }
     for row in table {
         let floats = &mut text_provider.text_pool;
         let white_floats = &mut text_provider.white_text_pool;

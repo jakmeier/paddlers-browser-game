@@ -74,13 +74,14 @@ impl InteractiveTableArea for UiBox {
                 }
                 RenderVariant::Shape(s) => {
                     let shape = sprites.shape_index(*s);
-                    let place =
-                        shape
-                            .bounding_box
-                            .fit_into_ex(&draw_area, FitStrategy::Center, true);
+                    let place = shape.bounding_box.fit_into_ex(
+                        &draw_area.padded(self.margin),
+                        FitStrategy::Center,
+                        true,
+                    );
                     let factor = (
-                        place.size.x / draw_area.size.x,
-                        place.size.y / draw_area.size.y,
+                        place.size.x / shape.bounding_box.size.x,
+                        place.size.y / shape.bounding_box.size.y,
                     );
                     let t = Transform::translate(place.pos) * Transform::scale(factor);
                     extend_transformed(window.mesh(), &shape.mesh, t);

@@ -273,6 +273,7 @@ impl Game<'_, '_> {
             40.0,
             Z_MENU_TEXT,
             self.world.read_resource::<Now>().0,
+            TableVerticalAlignment::Top,
         )?;
         Ok(())
     }
@@ -306,6 +307,7 @@ impl Game<'_, '_> {
             60.0,
             Z_MENU_TEXT,
             self.world.read_resource::<Now>().0,
+            TableVerticalAlignment::Top,
         )
     }
     fn draw_shop_prices(

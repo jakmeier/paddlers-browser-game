@@ -145,6 +145,7 @@ impl<'a, 'b> DialogueFrame<'a, 'b> {
             60.0,
             Z_MENU_TEXT,
             now,
+            TableVerticalAlignment::Center,
         )?;
         Ok(())
     }
@@ -180,7 +181,6 @@ impl<'a, 'b> DialogueFrame<'a, 'b> {
             FitStrategy::Center,
         )?;
 
-        // let t = Transform::translate((x * self.shared.scaling, 0));
         let t = Transform::default();
         extend_transformed(window.mesh(), &self.text_bubble, t);
 
