@@ -135,6 +135,11 @@ pub enum SingleSprite {
     AttacksButtonHov,
     LeaderboardButton,
     LeaderboardButtonHov,
+    RogerLarge,
+    RogerLargeCelebrating,
+    RogerLargeObedient,
+    RogerLargeSad,
+    RogerLargeAstonished,
 }
 
 #[derive(Debug, Clone, Copy)]

@@ -1,5 +1,6 @@
 use crate::game::story::StoryAction;
 use crate::gui::input::UiView;
+use crate::gui::sprites::*;
 use crate::prelude::*;
 use paddlers_shared_lib::story::story_state::StoryState;
 
@@ -16,6 +17,7 @@ pub struct Scene {
 pub struct Slide {
     text_key: TextKey,
     buttons: Vec<SlideButton>,
+    sprite: SpriteIndex,
     back_button: bool,
     next_button: bool,
 }
@@ -55,6 +57,9 @@ impl Scene {
         } else {
             None
         }
+    }
+    pub fn slide_sprite(&self) -> SpriteIndex {
+        self.slides[self.active_slide].sprite
     }
     #[inline]
     pub fn set_slide(&mut self, i: SlideIndex) {
@@ -101,12 +106,14 @@ fn load_entry_scene(active_slide: SlideIndex) -> Scene {
     slides.push(Slide {
         text_key: "welcomescene-B10",
         buttons: vec![],
+        sprite: SpriteIndex::Simple(SingleSprite::RogerLargeAstonished),
         back_button: false,
         next_button: true,
     });
     // 1
     slides.push(Slide {
         text_key: "welcomescene-B20",
+        sprite: SpriteIndex::Simple(SingleSprite::RogerLarge),
         buttons: vec![],
         back_button: true,
         next_button: true,
@@ -114,6 +121,7 @@ fn load_entry_scene(active_slide: SlideIndex) -> Scene {
     // 2
     slides.push(Slide {
         text_key: "welcomescene-B30",
+        sprite: SpriteIndex::Simple(SingleSprite::RogerLarge),
         buttons: vec![],
         back_button: true,
         next_button: true,
@@ -121,6 +129,7 @@ fn load_entry_scene(active_slide: SlideIndex) -> Scene {
     // 3
     slides.push(Slide {
         text_key: "welcomescene-B40",
+        sprite: SpriteIndex::Simple(SingleSprite::RogerLargeSad),
         buttons: vec![],
         back_button: true,
         next_button: true,
@@ -133,6 +142,7 @@ fn load_entry_scene(active_slide: SlideIndex) -> Scene {
     // 4
     slides.push(Slide {
         text_key: "welcomescene-B50",
+        sprite: SpriteIndex::Simple(SingleSprite::RogerLargeObedient),
         buttons: vec![button],
         back_button: true,
         next_button: false,
@@ -140,6 +150,7 @@ fn load_entry_scene(active_slide: SlideIndex) -> Scene {
     // 5
     slides.push(Slide {
         text_key: "welcomescene-B70",
+        sprite: SpriteIndex::Simple(SingleSprite::RogerLargeCelebrating),
         buttons: vec![],
         back_button: false,
         next_button: true,
@@ -147,12 +158,12 @@ fn load_entry_scene(active_slide: SlideIndex) -> Scene {
 
     let button = SlideButton {
         text_key: "welcomescene-A90",
-        action: SlideButtonAction::default()
-            .with_view_change(UiView::Town),
+        action: SlideButtonAction::default().with_view_change(UiView::Town),
     };
     // 6
     slides.push(Slide {
         text_key: "welcomescene-B80",
+        sprite: SpriteIndex::Simple(SingleSprite::RogerLarge),
         buttons: vec![button],
         back_button: true,
         next_button: false,

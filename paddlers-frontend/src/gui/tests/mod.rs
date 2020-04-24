@@ -106,7 +106,7 @@ fn cut_vertical() {
     let a = Rectangle::new((100, 100), (100, 100));
     let w = 75.0;
 
-    let (b, c) = a.cut_vertical(h);
+    let (b, c) = a.cut_vertical(w);
 
     assert_eq!(b, Rectangle::new((100, 100), (75, 100)));
     assert_eq!(c, Rectangle::new((175, 100), (25, 100)));

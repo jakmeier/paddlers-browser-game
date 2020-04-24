@@ -20,6 +20,7 @@ use std::marker::PhantomData;
 pub(crate) struct DialogueFrame<'a, 'b> {
     left_area: Rectangle,
     active_area: Rectangle,
+    image: SpriteIndex,
     buttons: UiBox,
     text_lines: Vec<String>,
     text_provider: TableTextProvider,
@@ -45,6 +46,7 @@ impl<'a, 'b> DialogueFrame<'a, 'b> {
         let dialogue = DialogueFrame {
             active_area: text_area,
             buttons: UiBox::new(2, 1, 20.0, 15.0),
+            image: SpriteIndex::Simple(SingleSprite::Roger),
             left_area,
             text_lines: Vec::new(),
             text_provider,
@@ -82,13 +84,17 @@ impl<'a, 'b> DialogueFrame<'a, 'b> {
     fn reload(&mut self, locale: &TextDb) {
         self.buttons.clear();
         self.text_lines.clear();
+        let scene = self.current_scene.as_ref().unwrap();
 
         // Write text into text bubble
-        let key = self.current_scene.as_ref().unwrap().slide_text_key();
+        let key = scene.slide_text_key();
         let text = locale.gettext(key);
         for s in text.split("\n") {
             self.text_lines.push(s.to_owned());
         }
+
+        // load sprite
+        self.image = scene.slide_sprite();
 
         // Create navigation buttons
         if let Some(i) = self.scene().unwrap().back_button() {
@@ -159,16 +165,17 @@ impl<'a, 'b> DialogueFrame<'a, 'b> {
         draw_leaf_border(window, sprites, &leaf_area, leaf_w, leaf_h);
     }
 
-    pub fn draw_roger_with_text_bubble(
+    pub fn draw_image_with_text_bubble(
         &self,
         sprites: &mut Sprites,
         window: &mut QuicksilverWindow,
+        image: SpriteIndex,
     ) -> PadlResult<()> {
         draw_static_image(
             sprites,
             window,
             &self.left_area,
-            SpriteIndex::Simple(SingleSprite::Roger),
+            image,
             Z_TEXTURE + 1,
             FitStrategy::Center,
         )?;
@@ -209,7 +216,7 @@ impl<'a, 'b> Frame for DialogueFrame<'a, 'b> {
         let resolution = *state.world.read_resource::<ScreenResolution>();
         let main_area = Rectangle::new_sized(window.project() * window.screen_size());
         self.draw_background(&mut state.sprites, window, main_area, resolution);
-        self.draw_roger_with_text_bubble(&mut state.sprites, window)?;
+        self.draw_image_with_text_bubble(&mut state.sprites, window, self.image)?;
         self.draw_active_area(
             &mut state.sprites,
             state.world.read_resource::<Now>().0,
