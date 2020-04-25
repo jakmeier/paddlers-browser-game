@@ -10,9 +10,9 @@ cd ..;
 
 cargo pkgid -p paddlers-frontend | cut -d# -f2 | cut -d: -f2 | tr -d '\n' >> $OUTPUT_PATH
 echo -n " " >> $OUTPUT_PATH
-du -s $DEPLOY_PATH | cut -f 1 | tr -d '\n' >> $OUTPUT_PATH
+du -sb $DEPLOY_PATH | cut -f 1 | tr -d '\n' >> $OUTPUT_PATH
 echo -n " " >> $OUTPUT_PATH
-du -s $DEPLOY_PATH/paddlers-frontend.wasm | cut -f 1 | tr -d '\n' >> $OUTPUT_PATH
+stat --printf="%s" $DEPLOY_PATH/paddlers-frontend.wasm >> $OUTPUT_PATH
 echo -n " " >> $OUTPUT_PATH
-du -s $DEPLOY_PATH/paddlers-frontend.js | cut -f 1 | tr -d '\n' >> $OUTPUT_PATH
+stat --printf="%s" $DEPLOY_PATH/paddlers-frontend.js >> $OUTPUT_PATH
 echo "" >> $OUTPUT_PATH
