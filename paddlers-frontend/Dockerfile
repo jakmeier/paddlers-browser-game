@@ -14,7 +14,7 @@ RUN cd paddlers-frontend; cargo web deploy --target=wasm32-unknown-unknown --rel
 FROM nginx:alpine as WebServer
 
 # Install SSL certificate tools
-RUN apk add netcat-openbsd bc curl wget git bash libressl
+RUN apk add --update openssl netcat-openbsd bc curl wget git bash libressl
 RUN cd /tmp/; \
 git clone https://github.com/Neilpang/acme.sh.git; \
 cd acme.sh/; \
@@ -23,8 +23,7 @@ D=/usr/share/nginx/html; \
 mkdir -vp ${D}/.well-known/acme-challenge/; \
 chmod -R 0555 ${D}/.well-known/acme-challenge/; \
 mkdir -p /etc/nginx/ssl/letsencrypt/demo.paddlers.ch/; \
-cd /etc/nginx/ssl/letsencrypt/demo.paddlers.ch/; \
-openssl dhparam -dsaparam -out dhparams.pem 4096;
+cd /etc/nginx/ssl/letsencrypt/demo.paddlers.ch/;
 
 # Install Paddlers app
 COPY --from=WasmBuilder ./paddlers-frontend/target/deploy/paddlers-frontend.* /usr/share/nginx/html/
