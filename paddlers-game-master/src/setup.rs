@@ -53,8 +53,6 @@ impl DB {
         }
         Ok(())
     }
-    #[cfg(debug_assertions)]
-    #[allow(dead_code)]
     fn insert_temple(&self, village: VillageKey) {
         let building = BuildingFactory::new(BuildingType::Temple, (4, 2), village);
         self.insert_building(&building);
