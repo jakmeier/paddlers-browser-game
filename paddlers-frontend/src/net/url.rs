@@ -5,6 +5,7 @@ pub fn graphql_url() -> PadlResult<String> {
     let domain = hostname()?;
     match domain.as_str() {
         "localhost" => Ok(format!("http://{}/graphql/", &domain)),
+        "10.42.0.1" => Ok(format!("http://{}/graphql/", &domain)),
         _ => Ok(format!("https://{}/graphql/", &domain)),
     }
 }
@@ -12,6 +13,7 @@ pub fn game_master_url() -> PadlResult<String> {
     let domain = hostname()?;
     match domain.as_str() {
         "localhost" => Ok(format!("http://{}/api/", &domain)),
+        "10.42.0.1" => Ok(format!("http://{}/api/", &domain)),
         _ => Ok(format!("https://{}/api/", &domain)),
     }
 }

@@ -5,6 +5,7 @@ This benchmark must be triggered manually on different devices.
 The output should then be copy-pasted  without modification to [frame_delays.manual.data](./frame_delays.manual.data).
 Repeat until stable, then pick one representative sample for each category.
 ### Local tests
+ 0) Use Lenovo Y50-70 without second monitor, close all other applications (beside VS code), connect to power
  1) `make`
  2) Open browser at localhost
  3) Different resolution and window size:
