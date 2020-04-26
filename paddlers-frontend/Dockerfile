@@ -14,7 +14,7 @@ RUN cd paddlers-frontend; cargo web deploy --target=wasm32-unknown-unknown --rel
 FROM nginx:alpine as WebServer
 
 # Install SSL certificate tools
-RUN apk add --update openssl netcat-openbsd bc curl wget git bash libressl
+RUN apk add --update openssl netcat-openbsd bc curl wget git bash libressl socat
 RUN cd /tmp/; \
 git clone https://github.com/Neilpang/acme.sh.git; \
 cd acme.sh/; \
