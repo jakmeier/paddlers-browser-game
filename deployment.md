@@ -6,3 +6,7 @@
 4) SSH into frontend, generate keys, issue certificate with acme.sh, change nginx to SSL config and restart
 ## Optional
 5) For game data reset, without deleting account information, redeploy game DB without volume preservation and restart game-master + db-interface afterwards
+
+## Post deployment
+1) Update README
+2) Update Website News

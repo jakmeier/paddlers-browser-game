@@ -27,9 +27,9 @@ Many things are lacking, including:
 
 ## Demo
 
-A [live-demo](https://demo.paddlers.ch) of the current state is online now! However, it's only semi-automated deployment at this point, therefore the deployed version may diverge from the master branch by a couple of days.
+A [live-demo](https://demo.paddlers.ch) of the current state is online now! Usually, the latest tagged commit is deployed. However, it's only semi-automated deployment at this point, therefore the deployed version may diverge from the master branch.
 
-
+Currently deployed version: 0.1.2
 
 ##  Roadmap for 2020
 
@@ -57,6 +57,10 @@ Some of the game development process is documented in this blog series:
 - [Gamedev #2: Multiplayer and procedural map generation](https://www.jakobmeier.ch/blogging/Paddlers_2.html)
 - [Gamedev #3: Fun with Rust and distributed systems](https://www.jakobmeier.ch/blogging/Paddlers_3.html) (Technical overview)
 
+
+## Website
+
+[Paddlers Website](https://paddlers.ch) with [News and full text changelog](https://paddlers.ch/news.html)
 
 ## Compiling and running the project 
 
