@@ -29,6 +29,7 @@ table! {
     attacks_to_hobos (attack_id, hobo_id) {
         attack_id -> Int8,
         hobo_id -> Int8,
+        position -> Journey_position,
     }
 }
 
@@ -72,6 +73,7 @@ table! {
         color -> Nullable<Unit_color>,
         speed -> Float4,
         hp -> Int8,
+        hurried -> Bool,
     }
 }
 
@@ -96,6 +98,18 @@ table! {
         resource_type -> Resource_type,
         amount -> Int8,
         village_id -> Int8,
+    }
+}
+
+table! {
+    use diesel::sql_types::*;
+    use crate::models::*;
+
+    rewards (id) {
+        id -> Int8,
+        visit_report_id -> Int8,
+        resource_type -> Resource_type,
+        amount -> Int8,
     }
 }
 
@@ -143,6 +157,18 @@ table! {
     use diesel::sql_types::*;
     use crate::models::*;
 
+    visit_reports (id) {
+        id -> Int8,
+        village_id -> Int8,
+        reported -> Timestamp,
+        karma -> Int8,
+    }
+}
+
+table! {
+    use diesel::sql_types::*;
+    use crate::models::*;
+
     worker_flags (worker_id, flag_type) {
         worker_id -> Int8,
         flag_type -> Worker_flag_type,
@@ -175,10 +201,12 @@ joinable!(buildings -> villages (village_id));
 joinable!(effects -> hobos (hobo_id));
 joinable!(hobos -> villages (home));
 joinable!(resources -> villages (village_id));
+joinable!(rewards -> visit_reports (visit_report_id));
 joinable!(tasks -> hobos (target_hobo_id));
 joinable!(tasks -> workers (worker_id));
 joinable!(villages -> players (player_id));
 joinable!(villages -> streams (stream_id));
+joinable!(visit_reports -> villages (village_id));
 joinable!(worker_flags -> workers (worker_id));
 joinable!(workers -> villages (home));
 
@@ -191,9 +219,11 @@ allow_tables_to_appear_in_same_query!(
     hobos,
     players,
     resources,
+    rewards,
     streams,
     tasks,
     villages,
+    visit_reports,
     worker_flags,
     workers,
 );

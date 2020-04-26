@@ -16,8 +16,8 @@ use ::diesel_derive_enum::DbEnum;
 
 #[cfg(feature = "sql_db")]
 use super::schema::{
-    abilities, attacks, attacks_to_hobos, buildings, effects, hobos, players, resources, streams,
-    tasks, villages, worker_flags, workers,
+    abilities, attacks, attacks_to_hobos, buildings, effects, hobos, players, resources, rewards,
+    streams, tasks, villages, visit_reports, worker_flags, workers,
 };
 
 #[derive(Debug, PartialEq, Clone, Copy, Serialize, Deserialize)]
@@ -97,6 +97,8 @@ pub struct Hobo {
     pub color: Option<UnitColor>,
     pub speed: f32,
     pub hp: i64,
+    /// If in a hurry, hobos will not stop in a town they are visiting but swim through directly
+    pub hurried: bool,
 }
 
 #[cfg(feature = "sql_db")]
@@ -136,6 +138,18 @@ pub struct NewAttack {
 pub struct AttackToHobo {
     pub attack_id: i64,
     pub hobo_id: i64,
+    pub position: JourneyPosition,
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
+#[cfg_attr(feature = "enum_utils", derive(EnumIter))]
+#[cfg_attr(feature = "graphql", derive(juniper::GraphQLEnum))]
+#[cfg_attr(feature = "sql_db", derive(DbEnum), DieselType = "Journey_position")]
+pub enum JourneyPosition {
+    Travelling,
+    Visiting,
+    Waiting,
+    Gone,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
@@ -350,4 +364,42 @@ pub struct WorkerFlag {
 pub enum WorkerFlagType {
     ManaRegeneration,
     Work,
+}
+
+#[derive(Debug, Clone, Copy, Queryable)]
+#[cfg(feature = "sql_db")]
+/// After a visitor group (an attack) has left, it may send a thank you letter afterwards with rewards
+pub struct VisitReport {
+    pub id: i64,
+    pub village_id: i64,
+    pub reported: NaiveDateTime,
+    pub karma: i64,
+    // letter text, icon, ...
+}
+
+#[derive(Insertable, Debug)]
+#[cfg(feature = "sql_db")]
+#[table_name = "visit_reports"]
+pub struct NewVisitReport {
+    pub village_id: i64,
+    pub reported: NaiveDateTime,
+    pub karma: i64,
+}
+
+#[derive(Debug, Clone, Copy, Queryable)]
+#[cfg(feature = "sql_db")]
+pub struct Reward {
+    pub id: i64,
+    pub visit_report_id: i64,
+    pub resource_type: ResourceType,
+    pub amount: i64,
+}
+
+#[derive(Insertable, Debug)]
+#[cfg(feature = "sql_db")]
+#[table_name = "rewards"]
+pub struct NewReward {
+    pub visit_report_id: i64,
+    pub resource_type: ResourceType,
+    pub amount: i64,
 }
