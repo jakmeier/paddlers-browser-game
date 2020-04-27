@@ -20,6 +20,15 @@ pub trait GameDB {
             .optional()
             .expect("Error loading data")
     }
+    fn player_by_village(&self, vid: VillageKey) -> Option<Player> {
+        villages::table
+            .filter(villages::id.eq(vid.num()))
+            .inner_join(players::table)
+            .select(players::all_columns)
+            .first(self.dbconn())
+            .optional()
+            .expect("Error loading data")
+    }
     fn hobo(&self, hobo_id: i64) -> Option<Hobo> {
         let results = hobos::table
             .filter(hobos::id.eq(hobo_id))
@@ -102,6 +111,15 @@ pub trait GameDB {
             .load::<Attack>(self.dbconn())
             .expect("Error loading data");
         results
+    }
+    fn attacks_count(&self, village: VillageKey, min_id: Option<i64>) -> usize {
+        let results = attacks::table
+            .filter(attacks::destination_village_id.eq(village.num()))
+            .filter(attacks::id.ge(min_id.unwrap_or(0)))
+            .select(diesel::dsl::count(attacks::id))
+            .first::<i64>(self.dbconn())
+            .expect("Error loading data");
+        results as usize
     }
     fn attack_hobos(&self, atk: &Attack) -> Vec<Hobo> {
         let results = attacks_to_hobos::table
