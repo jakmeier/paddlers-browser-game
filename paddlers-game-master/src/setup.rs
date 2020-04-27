@@ -47,7 +47,7 @@ impl DB {
                 let village = self.player_villages(player.key())[0];
                 self.add_prophet(village.key());
                 self.add_karma(player.key(), 50000).unwrap();
-                self.update_story_state(player.key(), StoryState::TempleBuilt)?;
+                self.set_story_state(player.key(), StoryState::TempleBuilt)?;
                 self.insert_temple(village.key());
             }
         }

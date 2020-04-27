@@ -34,7 +34,6 @@ pub(super) struct SendAnarchistAttack {
 impl Message for SendAnarchistAttack {
     type Result = ();
 }
-
 impl Handler<SendAnarchistAttack> for AttackSpawner {
     type Result = ();
 
@@ -60,7 +59,7 @@ impl AttackSpawner {
     }
 
     fn spawn_anarchists(&self, village: VillageKey, level: HoboLevel) {
-        // Send aa^random number of weak and hurried hobos + 1 stronger which is nor hurried
+        // Send a random number of weak and hurried hobos + 1 stronger which is nor hurried
         let mut rng = rand::thread_rng();
         let n = rng.gen_range(2, 4);
 

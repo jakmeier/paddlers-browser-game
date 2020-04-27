@@ -10,7 +10,7 @@ impl DB {
             .values(u)
             .get_result(self.dbconn())
     }
-    pub fn update_story_state(&self, p: PlayerKey, story_state: StoryState) -> QueryResult<Player> {
+    pub fn set_story_state(&self, p: PlayerKey, story_state: StoryState) -> QueryResult<Player> {
         let target = players::table.find(p.num());
         diesel::update(target)
             .set(players::story_state.eq(story_state))

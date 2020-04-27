@@ -51,10 +51,11 @@ pub(crate) fn purchase_prophet(
     )
 }
 
-pub fn purchase_building(
+pub (crate) fn purchase_building(
     pool: web::Data<crate::db::Pool>,
     body: web::Json<BuildingPurchase>,
     mut auth: Authentication,
+    addr: web::Data<crate::ActorAddresses>,
 ) -> impl Responder {
     let db: crate::db::DB = pool.get_ref().into();
 
@@ -75,7 +76,7 @@ pub fn purchase_building(
     db.try_buy_building(building, (body.x, body.y), body.village)
         .and_then(|_| {
             let player = auth.player_key(&db)?;
-            db.building_insertion_triggers(building, player)
+            db.building_insertion_triggers(building, player, addr)
         })
         .map_or_else(|e| HttpResponse::from(&e), |_| HttpResponse::Ok().into())
 }

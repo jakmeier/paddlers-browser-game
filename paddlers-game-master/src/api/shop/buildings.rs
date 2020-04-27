@@ -18,12 +18,17 @@ impl DB {
             })
     }
     /// Check for events to be executed upon inserting new buildings
-    pub fn building_insertion_triggers(&self, typ: BuildingType, player: PlayerKey) -> StringErr {
+    pub fn building_insertion_triggers(
+        &self,
+        typ: BuildingType,
+        player: PlayerKey,
+        addr: actix_web::web::Data<crate::ActorAddresses>,
+    ) -> StringErr {
         // Improvement: Would be nice if this comes from a central specification
         match typ {
             BuildingType::Temple => {
                 // Inserting a temple means story progress
-                self.update_story_state(player, StoryState::TempleBuilt)
+                self.update_story_state(player, StoryState::TempleBuilt, addr)
                     .map_err(|e| format!("Updating story state failed: {}", e))?;
             }
             _ => {}
