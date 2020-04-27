@@ -29,7 +29,8 @@ table! {
     attacks_to_hobos (attack_id, hobo_id) {
         attack_id -> Int8,
         hobo_id -> Int8,
-        position -> Journey_position,
+        satisfied -> Nullable<Bool>,
+        released -> Nullable<Timestamp>,
     }
 }
 

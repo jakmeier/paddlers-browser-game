@@ -26,6 +26,16 @@ impl SqlKey<HoboKey> for Hobo {
         HoboKey(self.id)
     }
 }
+impl SqlKey<VisitReportKey> for VisitReport {
+    fn key(&self) -> VisitReportKey {
+        VisitReportKey(self.id)
+    }
+}
+impl SqlKey<AttackKey> for Attack {
+    fn key(&self) -> AttackKey {
+        AttackKey(self.id)
+    }
+}
 
 impl Task {
     pub fn worker(&self) -> WorkerKey {

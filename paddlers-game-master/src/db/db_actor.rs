@@ -23,7 +23,8 @@ impl Handler<DeferredDbStatement> for DbActor {
                     let atu = AttackToHobo {
                         attack_id: attack.id,
                         hobo_id: hobo.num(),
-                        position: JourneyPosition::Travelling,
+                        satisfied: None,
+                        released: None,
                     };
                     self.db().insert_attack_to_hobo(&atu);
                 }

@@ -193,4 +193,23 @@ impl DB {
             .get_results(self.dbconn())
             .expect("Error loading data")
     }
+    pub fn insert_visit_report(&self, vr: NewVisitReport) -> VisitReport {
+        diesel::insert_into(visit_reports::dsl::visit_reports)
+            .values(vr)
+            .get_result(self.dbconn())
+            .expect("Inserting visit report")
+    }
+    pub fn insert_visit_report_rewards(&self, rewards: Vec<NewReward>) {
+        diesel::insert_into(rewards::dsl::rewards)
+            .values(rewards)
+            .execute(self.dbconn())
+            .expect("Inserting rewards");
+    }
+    pub fn set_satisfied(&self, hid: HoboKey, aid: AttackKey, satisfied: bool) {
+        let target = attacks_to_hobos::table.find((aid.num(), hid.num()));
+        diesel::update(target)
+            .set(attacks_to_hobos::satisfied.eq(satisfied))
+            .execute(self.dbconn())
+            .expect("setting satisfied");
+    }
 }

@@ -139,18 +139,10 @@ pub struct NewAttack {
 pub struct AttackToHobo {
     pub attack_id: i64,
     pub hobo_id: i64,
-    pub position: JourneyPosition,
-}
-
-#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
-#[cfg_attr(feature = "enum_utils", derive(EnumIter))]
-#[cfg_attr(feature = "graphql", derive(juniper::GraphQLEnum))]
-#[cfg_attr(feature = "sql_db", derive(DbEnum), DieselType = "Journey_position")]
-pub enum JourneyPosition {
-    Travelling,
-    Visiting,
-    Waiting,
-    Gone,
+    /// None (NULL) = not done yet
+    pub satisfied: Option<bool>,
+    /// if None (NULL), the unit is waiting in town unless it is hurried
+    pub released: Option<NaiveDateTime>,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
@@ -383,7 +375,6 @@ pub struct VisitReport {
 #[table_name = "visit_reports"]
 pub struct NewVisitReport {
     pub village_id: i64,
-    pub reported: NaiveDateTime,
     pub karma: i64,
 }
 

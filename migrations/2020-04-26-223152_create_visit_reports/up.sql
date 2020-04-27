@@ -3,20 +3,16 @@
 ALTER TABLE hobos 
 ADD COLUMN hurried BOOLEAN NOT NULL DEFAULT TRUE;
 
-CREATE TYPE JOURNEY_POSITION AS ENUM (
-    'travelling',
-    'visiting',
-    'waiting',
-    'gone'
-);
+ALTER TABLE attacks_to_hobos 
+ADD COLUMN satisfied BOOLEAN;
 
 ALTER TABLE attacks_to_hobos 
-ADD COLUMN position JOURNEY_POSITION NOT NULL DEFAULT 'travelling';
+ADD COLUMN released TIMESTAMP;
 
 CREATE TABLE visit_reports (
     id BIGSERIAL PRIMARY KEY,
     village_id BIGSERIAL NOT NULL REFERENCES villages(id),
-    reported TIMESTAMP NOT NULL,
+    reported TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     karma BIGINT NOT NULL
 );
 

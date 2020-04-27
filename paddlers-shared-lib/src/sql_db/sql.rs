@@ -1,6 +1,7 @@
 use crate::models::*;
 use crate::prelude::{HoboKey, PlayerKey, VillageKey, WorkerKey};
 use crate::schema::*;
+use chrono::NaiveDateTime;
 use diesel::prelude::*;
 
 pub trait GameDB {
@@ -130,6 +131,34 @@ pub trait GameDB {
             .load::<Hobo>(self.dbconn())
             .expect("Error loading data");
         results
+    }
+    fn attack_hobos_active_with_released_flag(
+        &self,
+        atk: &Attack,
+    ) -> Vec<(Hobo, Option<NaiveDateTime>)> {
+        let results = attacks_to_hobos::table
+            .inner_join(hobos::table)
+            .filter(attacks_to_hobos::attack_id.eq(atk.id))
+            .filter(attacks_to_hobos::satisfied.is_null())
+            .select((hobos::all_columns, attacks_to_hobos::released))
+            .limit(500)
+            .load::<(Hobo, Option<NaiveDateTime>)>(self.dbconn())
+            .expect("Error loading data");
+        results
+    }
+    fn attack_hobos_satisfied(&self, atk: &Attack) -> Vec<Hobo> {
+        let results = attacks_to_hobos::table
+            .inner_join(hobos::table)
+            .filter(attacks_to_hobos::attack_id.eq(atk.id))
+            .filter(attacks_to_hobos::satisfied.eq(true))
+            .select(hobos::all_columns)
+            .limit(500)
+            .load::<Hobo>(self.dbconn())
+            .expect("Error loading data");
+        results
+    }
+    fn attack_done(&self, atk: &Attack) -> bool {
+        self.attack_hobos_active_with_released_flag(atk).len() == 0
     }
     fn buildings(&self, village: VillageKey) -> Vec<Building> {
         let results = buildings::table

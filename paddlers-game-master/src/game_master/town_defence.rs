@@ -1,38 +1,65 @@
+//! This module deals with visitor groups (attacks) leaving towns again and calculating the outcome of the visit.
+//!
+//! A fight report is generated as soon as all visitors have left or have been satisfied.
+//! Usually, the satisfaction of each visitor is only computed when time is up for an attack to be finished.
+//! But there are two exceptions.
+//!     1) When a player has an open browser window, the frontend can detect that a visitor is satisfied and then notify the server
+//!     2) Units that wait in the town need to be checked regularly
+//!
+//! Effects that must be taken into consideration:
+//!     * Defensive towers (flowers etc) which are only available by computing proximity
+//!     * Direct effects on units, from abilities, which are explicitly stored on the db
+//!
+//! When a unit is defeated or leaves otherwise, it still has to stick around in the database until all units of the group are done.
+//! This can be marked in the db using the status on each HoboToAttack.
+
 use crate::db::DB;
-use chrono::Duration;
+use chrono::NaiveDateTime;
 use paddlers_shared_lib::game_mechanics::town::*;
 use paddlers_shared_lib::prelude::*;
 
 impl DB {
-    pub fn maybe_attack_now(&self, atk: &Attack, time_into_fight: Duration) {
-        let off = self.attack_hobos(atk);
+    /// Checks if all visitors have already left (or been satisfied).
+    /// If so, the visit is evaluated and a report with rewards is generated.
+    pub fn maybe_evaluate_attack(&self, atk: &Attack, now: NaiveDateTime) {
+        let time_into_fight = now - atk.arrival;
+        let off = self.attack_hobos_active_with_released_flag(atk);
+        let village = VillageKey(atk.destination_village_id);
+        let def = self.buildings(village);
+        let map_len = TOWN_X as f32;
+        let halve_map_len = ((TOWN_X + 1) / 2) as f32;
+        for (hobo, released) in &off {
+            let mut swum_distance = hobo.speed * time_into_fight.num_milliseconds() as f32 / 1000.0;
+            if hobo.hurried {
+                // hurried hobos swim right through
+                if swum_distance < map_len {
+                    // Need to wait
+                    continue;
+                }
+            } else {
+                swum_distance = if let Some(released) = released {
+                    let time_released = now - *released;
+                    halve_map_len + hobo.speed * time_released.num_milliseconds() as f32 / 1000.0
+                } else {
+                    halve_map_len
+                }
+                .min(swum_distance);
+            }
+            let ap = aura_def_pts(&def, swum_distance as usize) as i64;
+            let mut dmg = 0;
+            dmg += self.damage_from_effects(hobo);
+            dmg += ap;
+            let happy = dmg >= hobo.hp;
+            self.set_satisfied(hobo.key(), atk.key(), happy);
+        }
 
-        let seconds = seconds_to_complete(&off).ceil();
-        if time_into_fight > Duration::milliseconds((seconds * 1_000.0) as i64) {
-            let village = VillageKey(atk.destination_village_id);
-            let def = self.buildings(village);
-            self.execute_fight(&def, &off, village);
+        // Check if all are satisfied or have left otherwise, then finish visit
+        if self.attack_done(atk) {
+            self.generate_report(atk);
+            // TODO: Move survivors back or delete them
+            // defeated_units.for_each(|u| self.delete_hobo(u));
             self.delete_attack(atk);
         }
-    }
-
-    fn execute_fight(&self, defenders: &[Building], attackers: &[Hobo], village: VillageKey) {
-        // println!("Fight!");
-        // println!("{:#?} against {:#?}", defenders, attackers);
-        let ap = aura_def_pts(defenders) as i64;
-        // println!("Aura def = {}", ap);
-
-        let defeated_units = attackers
-            .into_iter()
-            .map(|a| (a, a.hp - ap as i64))
-            .map(|(a, hp)| (a, hp - self.damage_from_effects(a)))
-            .filter(|(_, hp)| *hp <= 0)
-            .map(|(a, _)| a);
-        let player = self.village(village).expect("Village of fight").owner();
-        self.collect_reward(defeated_units.clone(), village, player);
-        defeated_units.for_each(|u| self.delete_hobo(u));
-
-        // TODO: Move survivors back
     }
 
     fn damage_from_effects(&self, hobo: &Hobo) -> i64 {
@@ -42,14 +69,39 @@ impl DB {
             .filter(|e| e.strength.is_some())
             .fold(0, |acc, e| acc + e.strength.unwrap() as i64)
     }
+
+    fn generate_report(&self, atk: &Attack) {
+        let mut report = NewVisitReport {
+            village_id: atk.destination_village_id,
+            karma: 0,
+        };
+
+        let happy_hobos = self.attack_hobos_satisfied(atk);
+        report.karma = happy_hobos.len() as i64;
+
+        use std::ops::Add;
+        let feathers = happy_hobos.iter().map(reward_feathers).fold(0, i64::add);
+
+        let vr = self.insert_visit_report(report);
+
+        if feathers > 0 {
+            let rewards = vec![NewReward {
+                visit_report_id: vr.id,
+                resource_type: ResourceType::Feathers,
+                amount: feathers,
+            }];
+            self.insert_visit_report_rewards(rewards);
+        }
+    }
 }
 
-fn aura_def_pts(def: &[Building]) -> u32 {
+fn aura_def_pts(def: &[Building], x_distance_swum: usize) -> u32 {
     let mut sum = 0;
+    let min_x = 0.max(TOWN_X - x_distance_swum);
     for d in def {
         if d.attacks_per_cycle.is_none() {
             if let (Some(_range), Some(ap)) = (d.building_range, d.attack_power) {
-                if tiles_in_range(d) > 0 {
+                if tiles_in_range(d, min_x) > 0 {
                     sum += ap as u32;
                 }
             }
@@ -61,13 +113,13 @@ fn aura_def_pts(def: &[Building]) -> u32 {
 // This could later be extended with more map variations.
 // Then, it probably makes sense to move these functions to a trait
 
-fn tiles_in_range(b: &Building) -> usize {
+fn tiles_in_range(b: &Building, min_x: usize) -> usize {
     if b.building_range.is_none() {
         return 0;
     }
     let mut n = 0;
     let y = TOWN_LANE_Y;
-    for x in 0..TOWN_X {
+    for x in min_x..TOWN_X {
         let dx = diff(b.x, x);
         let dy = diff(b.y, y);
         let range = b.building_range.expect("No range");
@@ -78,11 +130,12 @@ fn tiles_in_range(b: &Building) -> usize {
     }
     n
 }
-fn seconds_to_complete(units: &[Hobo]) -> f32 {
-    let slowest_speed = units.iter().map(|u| u.speed).fold(std::f32::MAX, f32::min);
-    let map_len = TOWN_X as f32;
 
-    map_len / slowest_speed
+/// TODO [0.1.5]
+fn reward_feathers(unit: &Hobo) -> i64 {
+    let f = (1.0 + unit.hp as f32 * unit.speed / 4.0).log2().ceil() as i64;
+    // println!("{:#?} gives {} feathers", &unit, f);
+    f
 }
 
 // Simple helpers

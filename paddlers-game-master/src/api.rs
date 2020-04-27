@@ -51,7 +51,7 @@ pub(crate) fn purchase_prophet(
     )
 }
 
-pub (crate) fn purchase_building(
+pub(crate) fn purchase_building(
     pool: web::Data<crate::db::Pool>,
     body: web::Json<BuildingPurchase>,
     mut auth: Authentication,
