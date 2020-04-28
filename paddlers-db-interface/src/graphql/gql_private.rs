@@ -38,6 +38,45 @@ impl GqlAttack {
 }
 
 #[juniper::object (Context = Context)]
+impl GqlAttackReport {
+    fn id(&self) -> juniper::ID {
+        self.inner.id.to_string().into()
+    }
+    fn reported(&self) -> FieldResult<GqlTimestamp> {
+        datetime(&self.inner.reported)
+    }
+    fn karma(&self) -> i32 {
+        self.inner.karma as i32
+    }
+    fn feathers(&self) -> i32 {
+        self.resource(ResourceType::Feathers)
+    }
+    fn sticks(&self) -> i32 {
+        self.resource(ResourceType::Sticks)
+    }
+    fn logs(&self) -> i32 {
+        self.resource(ResourceType::Logs)
+    }
+}
+impl GqlAttackReport {
+    pub fn load_rewards(&mut self, ctx: &Context) {
+        if self.rewards.is_none() {
+            let db = ctx.db();
+            self.rewards = Some(db.rewards(self.inner.key()))
+        }
+    }
+    fn resource(&self, res: ResourceType) -> i32 {
+        self.rewards
+            .as_ref()
+            .unwrap()
+            .iter()
+            .find(|(rt, _n)| *rt == res)
+            .map(|(_rt, n)| *n as i32)
+            .unwrap_or(0)
+    }
+}
+
+#[juniper::object (Context = Context)]
 impl GqlBuilding {
     fn id(&self) -> juniper::ID {
         self.0.id.to_string().into()

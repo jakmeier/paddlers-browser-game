@@ -34,6 +34,7 @@ pub struct GqlHobo(pub paddlers_shared_lib::models::Hobo); // Note: Consider cha
 // Complete list of public objects with restricted fields access.
 pub struct GqlPlayer(pub paddlers_shared_lib::models::Player);
 pub struct GqlVillage(pub paddlers_shared_lib::models::Village);
+pub type Rewards = Vec<(ResourceType, i64)>; // Note: This is a bit of a botch and should be considered to change
 
 // Complete list of private objects.
 // Once these are created, all sub-fields are visible!
@@ -42,6 +43,11 @@ pub struct GqlVillage(pub paddlers_shared_lib::models::Village);
 struct PrivacyGuard;
 pub struct GqlAbility(pub paddlers_shared_lib::models::Ability, PrivacyGuard);
 pub struct GqlAttack(pub paddlers_shared_lib::models::Attack, PrivacyGuard);
+pub struct GqlAttackReport {
+    pub inner: paddlers_shared_lib::models::VisitReport,
+    pub rewards: Option<Rewards>,
+    _priv: PrivacyGuard,
+}
 pub struct GqlBuilding(pub paddlers_shared_lib::models::Building, PrivacyGuard);
 pub struct GqlEffect(pub paddlers_shared_lib::models::Effect, PrivacyGuard);
 pub struct GqlTask(pub paddlers_shared_lib::models::Task, PrivacyGuard);
@@ -167,6 +173,24 @@ impl GqlVillage {
             .village_hobos(self.0.key())
             .into_iter()
             .map(GqlHobo)
+            .collect())
+    }
+    /// Field Visibility: user
+    fn reports(&self, ctx: &Context) -> FieldResult<Vec<GqlAttackReport>> {
+        ctx.check_village_key(self.0.key())?;
+        Ok(ctx
+            .db()
+            .reports(self.0.key())
+            .into_iter()
+            .map(|report| GqlAttackReport {
+                inner: report,
+                rewards: None,
+                _priv: PrivacyGuard,
+            })
+            .map(|mut rep| {
+                rep.load_rewards(ctx);
+                rep
+            })
             .collect())
     }
 }

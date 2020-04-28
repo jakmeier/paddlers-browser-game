@@ -1,3 +1,4 @@
+use crate::api::keys::VisitReportKey;
 use crate::models::*;
 use crate::prelude::{HoboKey, PlayerKey, VillageKey, WorkerKey};
 use crate::schema::*;
@@ -398,5 +399,30 @@ pub trait GameDB {
             .load::<Player>(self.dbconn())
             .expect("Error loading data");
         results
+    }
+    fn reports(&self, v: VillageKey) -> Vec<VisitReport> {
+        let results = visit_reports::table
+            .filter(visit_reports::village_id.eq(v.num()))
+            .order_by(visit_reports::reported.desc())
+            .load::<VisitReport>(self.dbconn())
+            .expect("Error loading visit report");
+        results
+    }
+    fn rewards(&self, vr: VisitReportKey) -> Vec<(ResourceType, i64)> {
+        visit_reports::table
+            .inner_join(rewards::table)
+            .filter(visit_reports::id.eq(vr.num()))
+            .group_by(rewards::resource_type)
+            .select(
+                (
+                    rewards::resource_type,
+                    diesel::dsl::sql::<diesel::sql_types::BigInt>("SUM(amount)"),
+                ), // Diesel currently has no real support for group by
+                   // Hopefully to be added in 2020, see https://github.com/diesel-rs/diesel/issues/210)
+                   // Then, it may look something like that instead:
+                   // (rewards::resource_type, diesel::dsl::sum(rewards::amount))
+            )
+            .load::<(ResourceType, i64)>(self.dbconn())
+            .expect("Error loading rewards")
     }
 }
