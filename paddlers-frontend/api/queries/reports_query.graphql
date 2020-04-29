@@ -1,0 +1,11 @@
+query ReportsQuery($min_report_id: Int, $village_id: Int!) {
+  village(villageId: $village_id) {
+    reports(minId: $min_report_id) {
+      id
+      karma
+      feathers
+      sticks
+      logs
+    }
+  }
+}

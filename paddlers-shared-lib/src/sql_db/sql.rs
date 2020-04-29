@@ -400,9 +400,10 @@ pub trait GameDB {
             .expect("Error loading data");
         results
     }
-    fn reports(&self, v: VillageKey) -> Vec<VisitReport> {
+    fn reports(&self, v: VillageKey, min_id: Option<i64>) -> Vec<VisitReport> {
         let results = visit_reports::table
             .filter(visit_reports::village_id.eq(v.num()))
+            .filter(visit_reports::id.ge(min_id.unwrap_or(0)))
             .order_by(visit_reports::reported.desc())
             .load::<VisitReport>(self.dbconn())
             .expect("Error loading visit report");
@@ -416,7 +417,9 @@ pub trait GameDB {
             .select(
                 (
                     rewards::resource_type,
-                    diesel::dsl::sql::<diesel::sql_types::BigInt>("SUM(amount)"),
+                    diesel::dsl::sql::<diesel::sql_types::BigInt>(
+                        "COALESCE(SUM(amount),0)::bigint",
+                    ),
                 ), // Diesel currently has no real support for group by
                    // Hopefully to be added in 2020, see https://github.com/diesel-rs/diesel/issues/210)
                    // Then, it may look something like that instead:

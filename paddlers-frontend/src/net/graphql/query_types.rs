@@ -260,3 +260,12 @@ impl Into<StoryState> for PlayerStoryState {
         (&self).into()
     }
 }
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "api/schema.json",
+    query_path = "api/queries/reports_query.graphql"
+)]
+pub struct ReportsQuery;
+pub type ReportsRawResponse = Response<reports_query::ResponseData>;
+pub type ReportsResponse = reports_query::ResponseData;

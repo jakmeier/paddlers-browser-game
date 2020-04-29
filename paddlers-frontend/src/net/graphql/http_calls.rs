@@ -160,3 +160,25 @@ pub(super) fn http_read_leaderboard(
         Ok(response)
     }))
 }
+
+pub(super) fn http_read_reports(
+    min_report_id: Option<i64>,
+    village_id: VillageKey,
+) -> PadlResult<impl Future<Output = PadlResult<ReportsResponse>>> {
+    let request_body = ReportsQuery::build_query(reports_query::Variables {
+        min_report_id,
+        village_id: village_id.num(),
+    });
+    let request_string = &serde_json::to_string(&request_body)?;
+    let promise = ajax::send("POST", &graphql_url()?, request_string)?;
+    Ok(promise.map(|x| {
+        let raw_response: ReportsRawResponse = serde_json::from_str(&x?)?;
+        let response =
+            raw_response
+                .data
+                .ok_or(PadlError::dev_err(PadlErrorCode::InvalidGraphQLData(
+                    "reports",
+                )))?;
+        Ok(response)
+    }))
+}

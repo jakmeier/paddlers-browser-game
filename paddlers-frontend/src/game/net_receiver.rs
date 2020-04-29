@@ -6,7 +6,8 @@ use crate::init::loading::LoadingState;
 use crate::init::quicksilver_integration::{GameState, Signal};
 use crate::net::graphql::query_types::WorkerResponse;
 use crate::net::graphql::query_types::{
-    AttacksResponse, BuildingsResponse, HobosQueryResponse, VolatileVillageInfoResponse,
+    AttacksResponse, BuildingsResponse, HobosQueryResponse, ReportsResponse,
+    VolatileVillageInfoResponse,
 };
 use crate::net::NetMsg;
 use crate::prelude::*;
@@ -173,6 +174,9 @@ impl GameState {
                                 }
                             }
                         }
+                    }
+                    NetMsg::Reports(data) => {
+                        // TODO
                     }
                 }
             }

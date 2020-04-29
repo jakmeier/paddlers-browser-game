@@ -15,12 +15,14 @@ use std::sync::atomic::{AtomicI64, Ordering};
 
 pub struct GraphQlState {
     next_attack_id: AtomicI64,
+    next_report_id: AtomicI64,
 }
 
 impl GraphQlState {
     pub(super) const fn new() -> GraphQlState {
         GraphQlState {
             next_attack_id: AtomicI64::new(0),
+            next_report_id: AtomicI64::new(0),
         }
     }
 
@@ -128,6 +130,28 @@ impl GraphQlState {
                     .collect(),
             ))
         }))
+    }
+    pub(super) fn reports_query(
+        &'static self,
+    ) -> PadlResult<impl Future<Output = PadlResult<NetMsg>>> {
+        current_village_async().map(|fut| {
+            fut.and_then(move |village: VillageKey| {
+                http_read_reports(Some(self.next_report_id.load(Ordering::Relaxed)), village)
+                    .expect("Query building error")
+            })
+            .map(move |response| {
+                let data: ReportsResponse = response?;
+                let max_id = data
+                    .village
+                    .reports
+                    .iter()
+                    .map(|r| r.id.parse().unwrap())
+                    .fold(0, i64::max);
+                let next = self.next_report_id.load(Ordering::Relaxed).max(max_id + 1);
+                self.next_report_id.store(next, Ordering::Relaxed);
+                Ok(NetMsg::Reports(data))
+            })
+        })
     }
 }
 

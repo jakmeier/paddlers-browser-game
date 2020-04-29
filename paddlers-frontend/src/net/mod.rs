@@ -31,6 +31,7 @@ pub enum NetMsg {
     VillageInfo(VolatileVillageInfoResponse),
     UpdateWorkerTasks(WorkerTasksResponse),
     Workers(WorkerResponse),
+    Reports(ReportsResponse),
 }
 
 pub enum NetUpdateRequest {
@@ -184,6 +185,7 @@ impl std::fmt::Debug for NetMsg {
             Self::VillageInfo(_) => write!(f, "NetMsg: VillageInfo"),
             Self::UpdateWorkerTasks(_) => write!(f, "NetMsg: UpdateWorkerTasks"),
             Self::Workers(_) => write!(f, "NetMsg: Workers"),
+            Self::Reports(_) => write!(f, "NetMsg: Reports"),
         }
     }
 }
