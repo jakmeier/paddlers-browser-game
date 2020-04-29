@@ -17,14 +17,14 @@ pub struct UserInfo {
     user: Option<PadlUser>,
 }
 
-#[get("/")]
+#[get("/", rank = 6)]
 pub(crate) fn index() -> String {
     format!("GraphQL interface OK")
 }
 
 #[get("/graphiql")]
 pub fn graphiql() -> content::Html<String> {
-    juniper_rocket::graphiql_source("/graphql")
+    juniper_rocket::graphiql_source("/graphql/")
 }
 
 #[get("/?<request>")]

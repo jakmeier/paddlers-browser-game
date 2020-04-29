@@ -50,8 +50,30 @@ impl Context {
                 villages: vids,
             }))
         } else {
+            #[cfg(feature = "local")]
+            {
+                let tester_context = Self::tester_context(conn.clone());
+                if tester_context.is_some() {
+                    return tester_context;
+                }
+            }
             Some(Context::Public(UnauthenticatedContext { db: conn }))
         }
+    }
+    #[cfg(feature = "local")]
+    fn tester_context(conn: Arc<DbConn>) -> Option<Self> {
+        let uuid = uuid::Uuid::parse_str(paddlers_shared_lib::test_data::TEST_PLAYER_UUID).unwrap();
+        let player = conn.player_by_uuid(uuid)?;
+        let vids = conn
+            .player_villages(player.key())
+            .into_iter()
+            .map(|v| v.key())
+            .collect();
+        Some(Context::Authenticated(AuthenticatedContext {
+            db: conn,
+            user: player,
+            villages: vids,
+        }))
     }
     pub fn db(&self) -> &Arc<DbConn> {
         match self {

@@ -176,11 +176,11 @@ impl GqlVillage {
             .collect())
     }
     /// Field Visibility: user
-    fn reports(&self, ctx: &Context) -> FieldResult<Vec<GqlAttackReport>> {
+    fn reports(&self, ctx: &Context, min_id: Option<i32>) -> FieldResult<Vec<GqlAttackReport>> {
         ctx.check_village_key(self.0.key())?;
         Ok(ctx
             .db()
-            .reports(self.0.key())
+            .reports(self.0.key(), min_id.map(i64::from))
             .into_iter()
             .map(|report| GqlAttackReport {
                 inner: report,

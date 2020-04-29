@@ -19,6 +19,7 @@ pub mod graphql_types;
 pub mod models;
 pub mod prelude;
 pub mod story;
+pub mod test_data;
 
 #[cfg(feature = "game_mechanics")]
 pub mod game_mechanics;
