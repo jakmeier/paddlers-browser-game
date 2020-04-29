@@ -8,7 +8,7 @@ use crate::gui::utils::colors::DARK_BLUE;
 use crate::gui::z::*;
 use crate::init::quicksilver_integration::Signal;
 use crate::net::NetMsg;
-use crate::view::{ExperimentalSignalChannel, Frame};
+use crate::view::Frame;
 use quicksilver::prelude::Window as QuicksilverWindow;
 use quicksilver::prelude::{Col, Rectangle, Transform};
 use std::marker::PhantomData;
@@ -117,7 +117,6 @@ impl<'a, 'b> Frame for LeaderboardFrame<'a, 'b> {
         );
         std::mem::drop(ui_state);
         window.draw_ex(&main_area, Col(DARK_BLUE), Transform::IDENTITY, Z_TEXTURE);
-        state.render_menu_box(window)?;
         Ok(())
     }
     fn enter(&mut self, _state: &mut Self::State) -> Result<(), Self::Error> {
@@ -126,15 +125,6 @@ impl<'a, 'b> Frame for LeaderboardFrame<'a, 'b> {
     }
     fn leave(&mut self, _state: &mut Self::State) -> Result<(), Self::Error> {
         self.pane.hide()?;
-        Ok(())
-    }
-    fn left_click(
-        &mut self,
-        state: &mut Self::State,
-        pos: (i32, i32),
-        _signals: &mut ExperimentalSignalChannel,
-    ) -> Result<(), Self::Error> {
-        state.click_buttons(pos);
         Ok(())
     }
 }

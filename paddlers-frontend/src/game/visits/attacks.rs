@@ -1,6 +1,5 @@
-//! View for incoming and outgoing attacks
+//! For incoming visits (attacks)
 
-use crate::game::Game;
 use crate::gui::ui_state::UiState;
 use crate::gui::utils::colors::LIGHT_BLUE;
 use crate::gui::z::*;
@@ -8,7 +7,6 @@ use crate::init::quicksilver_integration::Signal;
 use crate::logging::ErrorQueue;
 use crate::net::state::current_village;
 use crate::prelude::*;
-use crate::view::ExperimentalSignalChannel;
 use crate::view::Frame;
 use crate::view::TextNode;
 use paddlers_shared_lib::api::attacks::*;
@@ -87,13 +85,13 @@ impl Attack {
     }
 }
 
-pub(crate) struct AttackFrame<'a, 'b> {
+pub(crate) struct VisitorFrame<'a, 'b> {
     incoming_attacks_table: HtmlElement,
     update_dispatcher: Dispatcher<'a, 'b>,
     pane: panes::PaneHandle,
 }
 
-impl<'a, 'b> AttackFrame<'a, 'b> {
+impl<'a, 'b> VisitorFrame<'a, 'b> {
     pub fn new(x: f32, y: f32, w: f32, h: f32) -> PadlResult<Self> {
         let pane = new_pane(
             x as u32,
@@ -112,7 +110,7 @@ impl<'a, 'b> AttackFrame<'a, 'b> {
             .with(UpdateAttackViewSystem::new(), "update_atk", &[])
             .build();
 
-        let mut attack = AttackFrame {
+        let mut attack = VisitorFrame {
             incoming_attacks_table: table,
             update_dispatcher,
             pane,
@@ -134,7 +132,7 @@ impl<'a, 'b> AttackFrame<'a, 'b> {
     }
 }
 
-impl<'a, 'b> Frame for AttackFrame<'a, 'b> {
+impl<'a, 'b> Frame for VisitorFrame<'a, 'b> {
     type Error = PadlError;
     type State = Game<'a, 'b>;
     type Graphics = Window;
@@ -179,7 +177,6 @@ impl<'a, 'b> Frame for AttackFrame<'a, 'b> {
         );
         std::mem::drop(ui_state);
         window.draw_ex(&main_area, Col(LIGHT_BLUE), Transform::IDENTITY, Z_TEXTURE);
-        state.render_menu_box(window)?;
         Ok(())
     }
     fn enter(&mut self, _state: &mut Self::State) -> Result<(), Self::Error> {
@@ -188,15 +185,6 @@ impl<'a, 'b> Frame for AttackFrame<'a, 'b> {
     }
     fn leave(&mut self, _state: &mut Self::State) -> Result<(), Self::Error> {
         self.pane.hide()?;
-        Ok(())
-    }
-    fn left_click(
-        &mut self,
-        state: &mut Self::State,
-        pos: (i32, i32),
-        _signals: &mut ExperimentalSignalChannel,
-    ) -> Result<(), Self::Error> {
-        state.click_buttons(pos);
         Ok(())
     }
 }

@@ -1,11 +1,12 @@
-use crate::game::attacks::AttackFrame;
 use crate::game::dialogue::DialogueFrame;
 use crate::game::leaderboard::LeaderboardFrame;
 use crate::game::map::MapFrame;
 use crate::game::town::TownFrame;
+use crate::game::visits::{
+    attacks::VisitorFrame, reports::ReportFrame, visitor_menu::VisitorMenuFrame,
+};
 use crate::game::Game;
-use crate::gui::input::UiView;
-use crate::gui::menu::{MapMenuFrame, TownMenuFrame};
+use crate::gui::menu::{MapMenuFrame, MenuBackgroundFrame, TownMenuFrame};
 use crate::prelude::*;
 use crate::Framer;
 use quicksilver::prelude::*;
@@ -32,6 +33,22 @@ pub(crate) fn load_viewer(game: &mut Game<'static, 'static>, ep: EventPool) -> F
         (0, 0), // TODO
     );
 
+    /* Menu background and buttons */
+    // Somehow, the town rendering gets messed up if TownFrame is added after this frame...
+    let menu = MenuBackgroundFrame::new();
+    viewer.add_frame(
+        Box::new(menu),
+        &[
+            UiView::Town,
+            UiView::Leaderboard,
+            UiView::Map,
+            UiView::Visitors(VisitorViewTab::IncomingAttacks),
+            UiView::Visitors(VisitorViewTab::Letters),
+        ],
+        (0, 0), // TODO
+        (0, 0), // TODO
+    );
+
     /* Map */
 
     let menu = MapFrame::new();
@@ -50,16 +67,36 @@ pub(crate) fn load_viewer(game: &mut Game<'static, 'static>, ep: EventPool) -> F
         (0, 0), // TODO
     );
 
-    /* Attacks */
+    /* Visitors */
 
-    let (w, h) = game.world.fetch::<ScreenResolution>().main_area();
-    let menu = AttackFrame::new(0.0, 0.0, w, h).expect("Attacks loading");
+    let menu = VisitorMenuFrame::new();
     viewer.add_frame(
         Box::new(menu),
-        &[UiView::Attacks],
+        &[
+            UiView::Visitors(VisitorViewTab::IncomingAttacks),
+            UiView::Visitors(VisitorViewTab::Letters),
+        ],
+        (0, 0), // TODO
+        (0, 0), // TODO
+    );
+
+    let (w, h) = game.world.fetch::<ScreenResolution>().main_area();
+    let menu = VisitorFrame::new(0.0, 0.0, w, h).expect("Attacks loading");
+    viewer.add_frame(
+        Box::new(menu),
+        &[UiView::Visitors(VisitorViewTab::IncomingAttacks)],
         (0, 0),
         (w as i32, h as i32),
     );
+
+    let frame = ReportFrame::new();
+    viewer.add_frame(
+        Box::new(frame),
+        &[UiView::Visitors(VisitorViewTab::Letters)],
+        (0, 0), // TODO
+        (0, 0), // TODO
+    );
+
     /* Leaderboard */
 
     let rect = Rectangle::new((0.0, 0.0), (w, h));

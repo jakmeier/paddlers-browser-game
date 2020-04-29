@@ -1,7 +1,8 @@
-pub mod buttons;
+mod menu_background;
 mod map_menu;
 mod town_menu;
 
+pub(crate) use menu_background::MenuBackgroundFrame;
 pub(crate) use map_menu::MapMenuFrame;
 pub(crate) use town_menu::TownMenuFrame;
 
@@ -72,17 +73,54 @@ impl ScreenResolution {
         }
     }
 }
+pub fn menu_box_inner_split(
+    menu_box_area: Rectangle,
+    resolution: ScreenResolution,
+) -> (Rectangle, Rectangle) {
+    let button_height = resolution.button_h();
+    let mut area = menu_box_area;
+    let y0 = menu_box_area.y();
+    let h0 = menu_box_area.height();
 
+    // Leaves border
+    let leaf_w = resolution.leaves_border_w();
+    let leaf_h = resolution.leaves_border_h();
+
+    let padding = resolution.menu_padding();
+    area.pos.x += leaf_w * 0.25 + padding * 0.5;
+    area.pos.y += leaf_h / 2.0;
+    area.size.x -= leaf_w + padding;
+    area.size.y -= leaf_h;
+
+    // skips space for buttons
+    let button_area = Rectangle::new((area.pos.x, area.pos.y), (area.width(), button_height));
+    area.pos.y += button_height;
+
+    // Duck steps
+    area.pos.y += resolution.duck_steps_h();
+    area.pos.y += 10.0;
+    area.size.y = y0 + h0 - area.pos.y - leaf_h;
+
+    // Return area that is left for other menus
+    (button_area, area)
+}
 impl Game<'_, '_> {
-    pub fn render_menu_box(&mut self, window: &mut Window) -> PadlResult<Rectangle> {
-        let resolution = *self.world.read_resource::<ScreenResolution>();
-        let button_height = resolution.button_h();
-
+    pub fn button_area(&self) -> Rectangle {
         let data = self.world.read_resource::<UiState>();
-        let mut area = data.menu_box_area;
-        let y0 = data.menu_box_area.y();
-        let h0 = data.menu_box_area.height();
-        std::mem::drop(data);
+        data.button_area.clone()
+    }
+    pub fn menu_box_area(&self) -> Rectangle {
+        let data = self.world.read_resource::<UiState>();
+        data.menu_box_area.clone()
+    }
+    pub fn inner_menu_area(&self) -> Rectangle {
+        let data = self.world.read_resource::<UiState>();
+        data.inner_menu_box_area.clone()
+    }
+
+    pub fn draw_menu_background(&mut self, window: &mut Window) -> PadlResult<()> {
+        let mut area = self.menu_box_area();
+        let resolution = *self.world.read_resource::<ScreenResolution>();
 
         // Menu Box Background
         window.draw_ex(&area, Col(LIGHT_GREEN), Transform::IDENTITY, Z_MENU_BOX);
@@ -98,28 +136,19 @@ impl Game<'_, '_> {
         area.size.x -= leaf_w + padding;
         area.size.y -= leaf_h;
 
-        // butttons
-        let mut y = area.y();
-        let button_area = Rectangle::new((area.pos.x, y), (area.width(), button_height));
-        self.render_buttons(window, &button_area)?;
-        y += button_height;
+        // skips space for butttons
+        let button_height = resolution.button_h();
+        area.pos.y += button_height;
 
-        // Duck steps
-        let h = resolution.duck_steps_h();
         draw_duck_step_line(
             window,
             &mut self.sprites,
-            Vector::new(area.x() - leaf_w * 0.5, y),
+            Vector::new(area.x() - leaf_w * 0.5, area.pos.y),
             area.x() + area.width() + leaf_w * 0.5,
-            h,
+            resolution.duck_steps_h(),
         );
-        y += h + 10.0;
-        let h = y0 + h0 - y - leaf_h;
-        area.pos.y = y;
-        area.size.y = h;
 
-        // Return area that is left for other menus
-        Ok(area)
+        Ok(())
     }
 
     pub fn render_entity_details(

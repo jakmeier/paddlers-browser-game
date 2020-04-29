@@ -29,7 +29,7 @@ impl<'a> System<'a> for HoverSystem {
                     }
                 }
             }
-            UiView::Attacks => {}
+            UiView::Visitors(_) => {}
             UiView::Leaderboard => {}
             UiView::Dialogue => {}
         }

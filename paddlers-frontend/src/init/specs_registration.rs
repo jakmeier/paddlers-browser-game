@@ -5,10 +5,10 @@ use specs::prelude::*;
 
 use crate::game::town::DefaultShop;
 use crate::game::{
-    attacks::Attack, components::*, player_info::PlayerInfo, town::Town,
+    visits::attacks::Attack, components::*, player_info::PlayerInfo, town::Town,
     town_resources::TownResources, units::hobos::Hobo, units::workers::Worker,
 };
-use crate::gui::{menu::buttons::MenuButtons, ui_state::*};
+use crate::gui::ui_state::*;
 use crate::logging::{text_to_user::TextBoard, AsyncErr, ErrorQueue};
 use crate::net::game_master_api::RestApiState;
 
@@ -25,7 +25,6 @@ pub(super) fn insert_resources(
     world.insert(ClockTick(0));
     world.insert(DefaultShop::new(&player_info));
     world.insert(errq);
-    world.insert(MenuButtons::new());
     world.insert(Now);
     world.insert(rest);
     world.insert(resolution);

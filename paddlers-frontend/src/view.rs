@@ -8,9 +8,8 @@ pub use frame::*;
 use paddlers_shared_lib::story::story_state::StoryState;
 pub use text_node::*;
 
-use crate::game::Game;
-use crate::gui::input::UiView;
 use crate::gui::ui_state::UiState;
+use crate::prelude::*;
 
 impl Game<'_, '_> {
     pub fn switch_view(&mut self, view: UiView) {
@@ -22,8 +21,8 @@ impl Game<'_, '_> {
         let ui: shred::Fetch<UiState> = self.world.fetch();
         let next = match (*ui).current_view {
             UiView::Map => UiView::Town,
-            UiView::Town => UiView::Attacks,
-            UiView::Attacks => UiView::Leaderboard,
+            UiView::Town => UiView::Visitors(VisitorViewTab::IncomingAttacks),
+            UiView::Visitors(_) => UiView::Leaderboard,
             UiView::Leaderboard => UiView::Map,
             UiView::Dialogue => return,
         };

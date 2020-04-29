@@ -47,7 +47,8 @@ impl<'a, 'b> Frame for TownMenuFrame<'a, 'b> {
         window: &mut Self::Graphics,
     ) -> Result<(), Self::Error> {
         self.text_provider.reset();
-        let inner_area = state.render_menu_box(window)?;
+        let inner_area = state.inner_menu_area();
+
         let resolution = *state.world.read_resource::<ScreenResolution>();
         let resources_height = resolution.resources_h();
         let entity = state.world.fetch::<UiState>().selected_entity;
@@ -78,7 +79,6 @@ impl<'a, 'b> Frame for TownMenuFrame<'a, 'b> {
         pos: (i32, i32),
         signals: &mut ExperimentalSignalChannel,
     ) -> Result<(), Self::Error> {
-        state.click_buttons(pos);
         let mut ms = state.world.write_resource::<MouseState>();
         *ms = MouseState(pos.into(), Some(MouseButton::Left));
         std::mem::drop(ms); // This drop is essential! The internal RefCell will not be release otherwise

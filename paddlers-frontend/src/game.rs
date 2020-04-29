@@ -1,5 +1,4 @@
 pub(crate) mod abilities;
-pub(crate) mod attacks;
 pub(crate) mod buildings;
 pub(crate) mod components;
 #[cfg(feature = "dev_view")]
@@ -20,6 +19,7 @@ pub(crate) mod story;
 pub(crate) mod town;
 pub(crate) mod town_resources;
 pub(crate) mod units;
+pub(crate) mod visits;
 
 use crate::game::town::new_temple_menu;
 use crate::game::{
@@ -173,10 +173,13 @@ impl Game<'_, '_> {
         let main_area = Rectangle::new_sized(main_size);
         let menu_area = Rectangle::new((main_size.x, 0), menu_size);
 
+        let (button_area, inner_area) = crate::gui::menu::menu_box_inner_split(menu_area, r);
+
         let mut data = self.world.write_resource::<UiState>();
         (*data).main_area = main_area;
         (*data).menu_box_area = menu_area;
-        std::mem::drop(data);
+        (*data).inner_menu_box_area = inner_area;
+        (*data).button_area = button_area;
 
         // TODO: refresh map and town (and make this method callable by user input)
     }

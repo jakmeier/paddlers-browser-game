@@ -8,8 +8,11 @@ pub struct UiState {
     pub selected_entity: Option<Entity>,
     pub hovered_entity: Option<Entity>,
     pub grabbed_item: Option<Grabbable>,
+    // TODO [0.1.4]: I think these four could go into frames.
     pub main_area: Rectangle,
     pub menu_box_area: Rectangle,
+    pub inner_menu_box_area: Rectangle,
+    pub button_area: Rectangle,
     /// Currently displayed view for easy access.
     /// Duplicate of FrameManager::currentView, should be considered to bre removed here.
     pub current_view: UiView,
@@ -30,6 +33,8 @@ impl UiState {
             hovered_entity: None,
             main_area: Rectangle::default(),
             menu_box_area: Rectangle::default(),
+            inner_menu_box_area: Rectangle::default(),
+            button_area: Rectangle::default(),
             current_view,
         }
     }

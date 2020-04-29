@@ -1,5 +1,5 @@
 use crate::game::{
-    attacks::Attack,
+    visits::attacks::Attack,
     components::NetObj,
     fight::Health,
     input::Clickable,

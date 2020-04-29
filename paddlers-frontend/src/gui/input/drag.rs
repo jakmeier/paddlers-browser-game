@@ -29,7 +29,7 @@ impl<'a> System<'a> for DragSystem {
                     let v = end - start;
                     map.drag(v * 0.02);
                 }
-                (UiView::Attacks, false) => {
+                (UiView::Visitors(_), false) => {
                     // NOP
                 }
                 (UiView::Leaderboard, false) => {

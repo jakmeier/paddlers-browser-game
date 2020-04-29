@@ -89,7 +89,7 @@ impl<'a> System<'a> for RightClickSystem {
                     }
                 }
             }
-            (UiView::Attacks, false) => {
+            (UiView::Visitors(_), false) => {
                 // NOP
             }
             (UiView::Leaderboard, false) => {
