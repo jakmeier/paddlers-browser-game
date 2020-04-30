@@ -79,3 +79,7 @@ paddlers-frontend/static/locale/%.mo: texts/%.po
 
 .PHONY: translations
 translations: paddlers-frontend/static/locale/en.mo paddlers-frontend/static/locale/de.mo
+
+.PHONY: images
+images:
+	$(MAKE) -C paddlers-frontend images
