@@ -19,6 +19,7 @@ use crate::view::FloatingText;
 use quicksilver::graphics::Mesh;
 use quicksilver::prelude::*;
 
+
 // Improvement: Would be nice to have Copy here (maybe with string interning)
 #[derive(Debug, Clone)]
 pub enum RenderVariant {
@@ -27,6 +28,7 @@ pub enum RenderVariant {
     ImgWithImgBackground(SpriteSet, SingleSprite),
     ImgWithColBackground(SpriteSet, Color),
     ImgWithHoverAlternative(SpriteSet, SpriteSet),
+    ImgWithHoverShape(SpriteSet, PadlShapeIndex),
     Text(String),
     TextWithColBackground(String, Color),
     Shape(PadlShapeIndex),
@@ -112,6 +114,26 @@ pub fn draw_image(
 
     window.draw_ex(&area, Img(&img), transform, z);
     Ok(())
+}
+pub fn draw_shape(
+    sprites: &mut Sprites,
+    window: &mut Window,
+    draw_area: &Rectangle,
+    i: PadlShapeIndex,
+    fit_strat: FitStrategy,
+) {
+    let shape = sprites.shape_index(i);
+    let place = shape.bounding_box.fit_into_ex(
+        &draw_area,
+        fit_strat,
+        true,
+    );
+    let factor = (
+        place.size.x / shape.bounding_box.size.x,
+        place.size.y / shape.bounding_box.size.y,
+    );
+    let t = Transform::translate(place.pos) * Transform::scale(factor);
+    extend_transformed(window.mesh(), &shape.mesh, t);
 }
 
 impl FloatingText {

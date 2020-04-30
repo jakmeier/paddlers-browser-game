@@ -140,6 +140,8 @@ pub enum SingleSprite {
     RogerLargeObedient,
     RogerLargeSad,
     RogerLargeAstonished,
+    Letters,
+    DuckShapes,
 }
 
 #[derive(Debug, Clone, Copy)]

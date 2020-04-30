@@ -72,19 +72,26 @@ impl InteractiveTableArea for UiBox {
                         Some(img)
                     }
                 }
+                RenderVariant::ImgWithHoverShape(img, hov) => {
+                    if window.mouse().pos().overlaps_rectangle(&draw_area) {
+                        draw_shape(
+                            sprites,
+                            window,
+                            &draw_area.padded(self.margin),
+                            *hov,
+                            FitStrategy::Center,
+                        );
+                    }
+                    Some(img)
+                }
                 RenderVariant::Shape(s) => {
-                    let shape = sprites.shape_index(*s);
-                    let place = shape.bounding_box.fit_into_ex(
+                    draw_shape(
+                        sprites,
+                        window,
                         &draw_area.padded(self.margin),
+                        *s,
                         FitStrategy::Center,
-                        true,
                     );
-                    let factor = (
-                        place.size.x / shape.bounding_box.size.x,
-                        place.size.y / shape.bounding_box.size.y,
-                    );
-                    let t = Transform::translate(place.pos) * Transform::scale(factor);
-                    extend_transformed(window.mesh(), &shape.mesh, t);
                     None
                 }
                 RenderVariant::Text(t) => {

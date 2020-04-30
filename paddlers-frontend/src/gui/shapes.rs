@@ -25,6 +25,12 @@ pub fn load_shapes() -> Vec<PadlShape> {
         bounding_box: base,
     });
 
+    let base = Rectangle::new_sized((600, 200));
+    shapes.push(PadlShape {
+        mesh: build_frame(base),
+        bounding_box: base,
+    });
+
     shapes
 }
 
@@ -32,6 +38,7 @@ pub fn load_shapes() -> Vec<PadlShape> {
 pub enum PadlShapeIndex {
     LeftArrow = 0,
     RightArrow = 1,
+    Frame = 2,
 }
 
 /// Shape used as button to go back/forth
@@ -82,6 +89,36 @@ fn build_arrow(total_area: Rectangle, left: bool) -> Mesh {
 
     tessellator
         .tessellate_path(path.into_iter(), &FillOptions::default(), &mut shape)
+        .unwrap();
+
+    mesh
+}
+
+fn build_frame(area: Rectangle) -> Mesh {
+    // Create enclosing path
+    let mut builder = Path::builder();
+    builder.move_to(point(area.x(), area.y()));
+    builder.line_to(point(area.x() + area.width(), area.y()));
+    builder.line_to(point(area.x() + area.width(), area.y() + area.height()));
+    builder.line_to(point(area.x(), area.y() + area.height()));
+    builder.close();
+
+    let path = builder.build();
+
+    // Tesselate path to mesh
+    let mut mesh = Mesh::new();
+    let mut tessellator = StrokeTessellator::new();
+    let mut shape = ShapeRenderer::new(&mut mesh, DARK_GREEN);
+    shape.set_z((Z_MENU_BOX_BUTTONS) as f32);
+
+    let thickness = 5.0;
+
+    tessellator
+        .tessellate_path(
+            path.into_iter(),
+            &StrokeOptions::default().with_line_width(thickness),
+            &mut shape,
+        )
         .unwrap();
 
     mesh
