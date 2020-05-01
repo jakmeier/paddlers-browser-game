@@ -130,6 +130,7 @@ impl NetState {
     fn work(&'static self) {
         if self.game_ready.load(Ordering::Relaxed) {
             self.spawn(self.gql_state.attacks_query());
+            self.spawn(self.gql_state.reports_query());
             self.spawn(self.gql_state.resource_query());
             self.spawn(GraphQlState::player_info_query());
         }

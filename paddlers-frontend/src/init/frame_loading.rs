@@ -89,7 +89,8 @@ pub(crate) fn load_viewer(game: &mut Game<'static, 'static>, ep: EventPool) -> F
         (w as i32, h as i32),
     );
 
-    let frame = ReportFrame::new();
+    let rect = Rectangle::new((0.0, 0.0), (w, h));
+    let frame = ReportFrame::new(rect).expect("Report frame loading");
     viewer.add_frame(
         Box::new(frame),
         &[UiView::Visitors(VisitorViewTab::Letters)],
@@ -99,7 +100,6 @@ pub(crate) fn load_viewer(game: &mut Game<'static, 'static>, ep: EventPool) -> F
 
     /* Leaderboard */
 
-    let rect = Rectangle::new((0.0, 0.0), (w, h));
     let menu = LeaderboardFrame::new(&rect).expect("Leaderboard loading");
     viewer.add_frame(
         Box::new(menu),

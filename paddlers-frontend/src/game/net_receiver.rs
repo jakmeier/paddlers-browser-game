@@ -176,7 +176,10 @@ impl GameState {
                         }
                     }
                     NetMsg::Reports(data) => {
-                        // TODO
+                        self.viewer.global_event(
+                            &mut self.game,
+                            &PadlEvent::Network(NetMsg::Reports(data)),
+                        )?;
                     }
                 }
             }

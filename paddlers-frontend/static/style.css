@@ -30,6 +30,27 @@ div.attack-table>:first-child {
     /* span from grid column line 1 to 4 (3 columns) */
 }
 
+section.letters {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+div.letter {
+    background-color: whitesmoke;
+    width: max-content;
+    padding: 4vh;
+    margin: 10px;
+}
+
+div.letter-res {
+    display: flex;
+}
+
+div.letter-res img {
+    height: 1em;
+    padding: 0 0.5em;
+}
+
 section.leaderboard {
     display: grid;
     grid-template-columns: 1fr 2fr 2fr;
