@@ -31,13 +31,14 @@ div.attack-table>:first-child {
 }
 
 section.letters {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-gap: 10px;
+    margin: 10px 20px 10px 10px;
 }
 
 div.letter {
     background-color: whitesmoke;
-    width: max-content;
     padding: 4vh;
     margin: 10px;
 }
@@ -49,6 +50,22 @@ div.letter-res {
 div.letter-res img {
     height: 1em;
     padding: 0 0.5em;
+}
+
+div.letter-button {
+    display: inline-block;
+    border: 1px solid rgb(122, 122, 122);
+    background-color: #000fa1;
+    color: #4099e5;
+    cursor: pointer;
+    padding: 0.3em;
+    text-align: center;
+    vertical-align: middle;
+    pointer-events: auto;
+}
+
+div.letter-button:hover {
+    color: whitesmoke;
 }
 
 section.leaderboard {

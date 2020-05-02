@@ -21,7 +21,7 @@ impl Game<'_, '_> {
         let ui: shred::Fetch<UiState> = self.world.fetch();
         let next = match (*ui).current_view {
             UiView::Map => UiView::Town,
-            UiView::Town => UiView::Visitors(VisitorViewTab::IncomingAttacks),
+            UiView::Town => UiView::Visitors(VisitorViewTab::Letters),
             UiView::Visitors(_) => UiView::Leaderboard,
             UiView::Leaderboard => UiView::Map,
             UiView::Dialogue => return,

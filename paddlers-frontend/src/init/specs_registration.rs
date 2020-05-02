@@ -5,8 +5,8 @@ use specs::prelude::*;
 
 use crate::game::town::DefaultShop;
 use crate::game::{
-    visits::attacks::Attack, components::*, player_info::PlayerInfo, town::Town,
-    town_resources::TownResources, units::hobos::Hobo, units::workers::Worker,
+    components::*, player_info::PlayerInfo, town::Town, town_resources::TownResources,
+    units::hobos::Hobo, units::workers::Worker, visits::attacks::Attack,
 };
 use crate::gui::ui_state::*;
 use crate::logging::{text_to_user::TextBoard, AsyncErr, ErrorQueue};

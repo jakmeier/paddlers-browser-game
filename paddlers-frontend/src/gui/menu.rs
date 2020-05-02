@@ -1,9 +1,9 @@
-mod menu_background;
 mod map_menu;
+mod menu_background;
 mod town_menu;
 
-pub(crate) use menu_background::MenuBackgroundFrame;
 pub(crate) use map_menu::MapMenuFrame;
+pub(crate) use menu_background::MenuBackgroundFrame;
 pub(crate) use town_menu::TownMenuFrame;
 
 use crate::game::{

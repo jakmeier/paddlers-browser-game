@@ -1,10 +1,10 @@
 use crate::game::{
-    visits::attacks::Attack,
     components::NetObj,
     fight::Health,
     input::Clickable,
     movement::{Moving, Position},
     status_effects::StatusEffects,
+    visits::attacks::Attack,
 };
 use crate::gui::{render::Renderable, sprites::*, utils::*, z::Z_VISITOR};
 use crate::net::graphql::query_types::HoboEffect;

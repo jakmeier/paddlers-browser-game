@@ -31,7 +31,7 @@ impl<'a, 'b> MenuBackgroundFrame<'a, 'b> {
             Self::button_render(SingleSprite::AttacksButton, SingleSprite::AttacksButtonHov);
         ui_box.add(
             UiElement::new(GameEvent::SwitchToView(UiView::Visitors(
-                VisitorViewTab::IncomingAttacks,
+                VisitorViewTab::Letters,
             )))
             .with_render_variant(atk_button),
         );

@@ -19,7 +19,6 @@ use crate::view::FloatingText;
 use quicksilver::graphics::Mesh;
 use quicksilver::prelude::*;
 
-
 // Improvement: Would be nice to have Copy here (maybe with string interning)
 #[derive(Debug, Clone)]
 pub enum RenderVariant {
@@ -123,11 +122,7 @@ pub fn draw_shape(
     fit_strat: FitStrategy,
 ) {
     let shape = sprites.shape_index(i);
-    let place = shape.bounding_box.fit_into_ex(
-        &draw_area,
-        fit_strat,
-        true,
-    );
+    let place = shape.bounding_box.fit_into_ex(&draw_area, fit_strat, true);
     let factor = (
         place.size.x / shape.bounding_box.size.x,
         place.size.y / shape.bounding_box.size.y,

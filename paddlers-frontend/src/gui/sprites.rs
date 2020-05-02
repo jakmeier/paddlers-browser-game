@@ -7,7 +7,7 @@ use crate::init::loading::start_loading_animations;
 use animation::AnimatedObject;
 use quicksilver::graphics::Image;
 use quicksilver::prelude::*;
-use stdweb::web::{html_element::ImageElement};
+use stdweb::web::html_element::ImageElement;
 
 /// Manager of all sprites.
 /// Cannot easily be in a component because Image is thread local.
