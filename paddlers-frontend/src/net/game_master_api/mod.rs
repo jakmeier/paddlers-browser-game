@@ -4,6 +4,7 @@ use super::{
 use crate::logging::AsyncErr;
 use crate::prelude::*;
 use futures_util::future::FutureExt;
+use paddlers_shared_lib::api::reports::ReportCollect;
 use paddlers_shared_lib::api::story::StoryStateTransition;
 use paddlers_shared_lib::api::{
     attacks::*, keys::VillageKey, shop::*, statistics::*, tasks::TaskList, PlayerInitData,
@@ -152,6 +153,17 @@ impl RestApiState {
         let promise = ajax::send(
             "POST",
             &format!("{}/story/transition", game_master_url()?),
+            request_string,
+        );
+        self.push_promise(promise, None);
+        Ok(())
+    }
+
+    pub fn http_collect_reward(&mut self, msg: ReportCollect) -> PadlResult<()> {
+        let request_string = &serde_json::to_string(&msg).unwrap();
+        let promise = ajax::send(
+            "POST",
+            &format!("{}/report/collect", game_master_url()?),
             request_string,
         );
         self.push_promise(promise, None);

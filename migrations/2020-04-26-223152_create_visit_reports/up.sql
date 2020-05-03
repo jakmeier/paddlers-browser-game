@@ -11,14 +11,14 @@ ADD COLUMN released TIMESTAMP;
 
 CREATE TABLE visit_reports (
     id BIGSERIAL PRIMARY KEY,
-    village_id BIGSERIAL NOT NULL REFERENCES villages(id),
+    village_id BIGSERIAL NOT NULL REFERENCES villages(id) ON DELETE CASCADE,
     reported TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     karma BIGINT NOT NULL
 );
 
 CREATE TABLE rewards (
     id BIGSERIAL PRIMARY KEY,
-    visit_report_id BIGSERIAL NOT NULL REFERENCES visit_reports(id),
+    visit_report_id BIGSERIAL NOT NULL REFERENCES visit_reports(id) ON DELETE CASCADE,
     resource_type RESOURCE_TYPE NOT NULL,
     amount BIGINT NOT NULL
 );

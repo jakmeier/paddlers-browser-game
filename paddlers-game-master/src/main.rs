@@ -13,6 +13,7 @@ mod statistics;
 mod town_view;
 mod worker_actions;
 
+use paddlers_shared_lib::api::reports::ReportCollect;
 use actix::prelude::*;
 use actix_cors::Cors;
 use actix_web::{http::header, web, App, HttpServer};
@@ -119,6 +120,11 @@ fn main() {
                 web::resource("/attacks/create")
                     .data(web::Json::<AttackDescriptor>)
                     .route(web::post().to_async(api::create_attack)),
+            )
+            .service(
+                web::resource("/report/collect")
+                    .data(web::Json::<ReportCollect>)
+                    .route(web::post().to_async(api::collect_report_rewards)),
             )
             .service(
                 web::resource("/story/transition")

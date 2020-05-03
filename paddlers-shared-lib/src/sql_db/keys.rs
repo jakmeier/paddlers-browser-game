@@ -54,3 +54,9 @@ impl Village {
         Some(PlayerKey(self.player_id?))
     }
 }
+
+impl VisitReport {
+    pub fn village(&self) -> VillageKey {
+        VillageKey(self.village_id)
+    }
+}

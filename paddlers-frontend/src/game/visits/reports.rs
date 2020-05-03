@@ -3,10 +3,12 @@ use crate::gui::ui_state::UiState;
 use crate::gui::utils::colors::LIGHT_BLUE;
 use crate::gui::z::*;
 use crate::init::quicksilver_integration::Signal;
+use crate::net::game_master_api::RestApiState;
 use crate::net::NetMsg;
 use crate::prelude::*;
 use crate::view::*;
 use core::marker::PhantomData;
+use paddlers_shared_lib::api::reports::ReportCollect;
 use paddlers_shared_lib::prelude::VisitReportKey;
 use quicksilver::prelude::{Col, Rectangle, Transform, Window};
 use specs::prelude::*;
@@ -45,27 +47,39 @@ impl<'a, 'b> ReportFrame<'a, 'b> {
     fn add_report(&mut self, report: Report, sprites: &Sprites) {
         let letter_node = document().create_element("div").unwrap();
         letter_node.set_attribute("class", "letter").unwrap();
+
         let text_node = document().create_element("p").unwrap();
         text_node.set_text_content("Thank you, was a very enjoyable visit!");
+
         let karma_node = self.new_res_node(report.karma, SingleSprite::Karma, sprites);
         let feathers_node = self.new_res_node(report.feathers, SingleSprite::Feathers, sprites);
         let button_node = document().create_element("div").unwrap();
         button_node.set_attribute("class", "letter-button").unwrap();
         button_node.set_text_content("Collect");
-        let id = report.id.num();
-        let node_ref = letter_node.clone();
-        let table_ref = self.table.clone();
-        button_node.add_event_listener::<event::ClickEvent, _>(move |_| {
-            println!("Clicked on report {}", id);
-            let _node = table_ref.remove_child(&node_ref).expect("Letter not found");
-            // TODO: Send request to backend
-            // remove event listener?
-        });
+        self.add_listener(&button_node, report, letter_node.clone());
+
         letter_node.append_child(&text_node);
         letter_node.append_child(&karma_node);
         letter_node.append_child(&feathers_node);
         letter_node.append_child(&button_node);
+
         self.table.append_child(&letter_node);
+    }
+    fn add_listener(&self, button_node: &Element, report: Report, parent: Element) {
+        let id = report.id.num();
+        let table_ref = self.table.clone();
+
+        let _handle = button_node.add_event_listener::<event::ClickEvent, _>(move |_| {
+            println!("Clicked on report {}", id);
+            let _node = table_ref.remove_child(&parent).expect("Letter not found");
+            let msg = ReportCollect {
+                reports: vec![report.id],
+            };
+            if let Err(e) = RestApiState::get().http_collect_reward(msg) {
+                println!("Failed to send API call {}", e);
+            }
+            // remove event listener?
+        });
     }
     fn new_res_node(&mut self, n: i64, s: SingleSprite, sprites: &Sprites) -> Element {
         let node = document().create_element("div").unwrap();

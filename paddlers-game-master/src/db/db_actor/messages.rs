@@ -36,3 +36,9 @@ where
         }
     }
 }
+
+/// Collect rewards and karma for report
+pub struct CollectReportRewardsMessage(pub VisitReport);
+impl Message for CollectReportRewardsMessage {
+    type Result = ();
+}

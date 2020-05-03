@@ -1,7 +1,9 @@
+mod reports;
 mod shop;
 mod story;
 
 pub(crate) use story::story_transition;
+pub(crate) use reports::collect_report_rewards;
 
 use crate::authentication::Authentication;
 use crate::game_master::attack_funnel::PlannedAttack;

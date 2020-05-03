@@ -359,7 +359,7 @@ pub enum WorkerFlagType {
     Work,
 }
 
-#[derive(Debug, Clone, Copy, Queryable)]
+#[derive(Debug, Clone, Copy, Queryable, Identifiable)]
 #[cfg(feature = "sql_db")]
 /// After a visitor group (an attack) has left, it may send a thank you letter afterwards with rewards
 pub struct VisitReport {

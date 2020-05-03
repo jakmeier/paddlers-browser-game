@@ -1,6 +1,5 @@
-use crate::api::keys::VisitReportKey;
 use crate::models::*;
-use crate::prelude::{HoboKey, PlayerKey, VillageKey, WorkerKey};
+use crate::prelude::{HoboKey, PlayerKey, VillageKey, VisitReportKey, WorkerKey};
 use crate::schema::*;
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
@@ -400,13 +399,20 @@ pub trait GameDB {
             .expect("Error loading data");
         results
     }
+    fn report(&self, id: VisitReportKey) -> Option<VisitReport> {
+        visit_reports::table
+            .filter(visit_reports::id.eq(id.num()))
+            .first(self.dbconn())
+            .optional()
+            .expect("Error loading visit report")
+    }
     fn reports(&self, v: VillageKey, min_id: Option<i64>) -> Vec<VisitReport> {
         let results = visit_reports::table
             .filter(visit_reports::village_id.eq(v.num()))
             .filter(visit_reports::id.ge(min_id.unwrap_or(0)))
             .order_by(visit_reports::reported.desc())
             .load::<VisitReport>(self.dbconn())
-            .expect("Error loading visit report");
+            .expect("Error loading visit reports");
         results
     }
     fn rewards(&self, vr: VisitReportKey) -> Vec<(ResourceType, i64)> {

@@ -205,6 +205,12 @@ impl DB {
             .execute(self.dbconn())
             .expect("Inserting rewards");
     }
+    pub fn delete_visit_report(&self, obj: &VisitReport) {
+        let result = diesel::delete(obj).execute(self.dbconn());
+        if result.is_err() {
+            println!("Couldn't delete {:?}", obj);
+        }
+    }
     pub fn set_satisfied(&self, hid: HoboKey, aid: AttackKey, satisfied: bool) {
         let target = attacks_to_hobos::table.find((aid.num(), hid.num()));
         diesel::update(target)

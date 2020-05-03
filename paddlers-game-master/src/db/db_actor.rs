@@ -41,6 +41,30 @@ impl Handler<NewHoboMessage> for DbActor {
     }
 }
 
+impl Handler<CollectReportRewardsMessage> for DbActor {
+    type Result = ();
+    fn handle(
+        &mut self,
+        msg: CollectReportRewardsMessage,
+        _ctx: &mut SyncContext<Self>,
+    ) -> Self::Result {
+        let report = msg.0;
+        let village = report.village();
+        let db = self.db();
+        for (resource_type, n) in db.rewards(report.key()) {
+            if let Err(e) = db.add_resource(resource_type, village, n) {
+                eprintln!("Reward collection failed: {}", e);
+            }
+        }
+        if let Some(player) = db.player_by_village(village) {
+            if let Err(e) = db.add_karma(player.key(), report.karma) {
+                eprintln!("Karma reward collection failed: {}", e);
+            }
+        }
+        db.delete_visit_report(&report);
+    }
+}
+
 impl DbActor {
     pub fn new(dbpool: Pool) -> Self {
         DbActor { dbpool: dbpool }
