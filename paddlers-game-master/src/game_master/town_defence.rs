@@ -81,23 +81,44 @@ impl DB {
 
         use std::ops::Add;
         let feathers = happy_hobos.iter().map(reward_feathers).fold(0, i64::add);
+        let sticks = happy_hobos.iter().map(reward_sticks).fold(0, i64::add);
+        let logs = happy_hobos.iter().map(reward_logs).fold(0, i64::add);
+
+        if report.karma + feathers + sticks + logs == 0 {
+            return;
+        }
 
         let vr = self.insert_visit_report(report);
 
+        let mut rewards = vec![];
         if feathers > 0 {
-            let rewards = vec![NewReward {
+            rewards.push(NewReward {
                 visit_report_id: vr.id,
                 resource_type: ResourceType::Feathers,
                 amount: feathers,
-            }];
-            self.insert_visit_report_rewards(rewards);
+            });
         }
+        if sticks > 0 {
+            rewards.push(NewReward {
+                visit_report_id: vr.id,
+                resource_type: ResourceType::Sticks,
+                amount: sticks,
+            });
+        }
+        if logs > 0 {
+            rewards.push(NewReward {
+                visit_report_id: vr.id,
+                resource_type: ResourceType::Logs,
+                amount: logs,
+            });
+        }
+        self.insert_visit_report_rewards(rewards);
     }
 }
 
 fn aura_def_pts(def: &[Building], x_distance_swum: usize) -> u32 {
     let mut sum = 0;
-    let min_x = 0.max(TOWN_X - x_distance_swum);
+    let min_x = 0.max(TOWN_X as i32 - x_distance_swum as i32) as usize;
     for d in def {
         if d.attacks_per_cycle.is_none() {
             if let (Some(_range), Some(ap)) = (d.building_range, d.attack_power) {
@@ -133,9 +154,31 @@ fn tiles_in_range(b: &Building, min_x: usize) -> usize {
 
 /// TODO [0.1.5]
 fn reward_feathers(unit: &Hobo) -> i64 {
-    let f = (1.0 + unit.hp as f32 * unit.speed / 4.0).log2().ceil() as i64;
-    // println!("{:#?} gives {} feathers", &unit, f);
-    f
+    let f = if unit.hurried {
+        (1.0 + unit.hp as f32 * unit.speed / 4.0).log2().floor()
+    } else {
+        (1.0 + unit.hp as f32 / 16.0).log2().ceil()
+    };
+    // println!("Unit {:?} gives {} feathers", unit, f);
+    f as i64
+}
+
+/// TODO [0.1.5]
+fn reward_sticks(unit: &Hobo) -> i64 {
+    if unit.id % 20 == 0 {
+        5
+    } else {
+        0
+    }
+}
+
+/// TODO [0.1.5]
+fn reward_logs(unit: &Hobo) -> i64 {
+    if unit.id % 60 == 11 {
+        5
+    } else {
+        0
+    }
 }
 
 // Simple helpers

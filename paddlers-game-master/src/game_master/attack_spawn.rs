@@ -78,7 +78,7 @@ impl AttackSpawner {
                 self.db_actor.send(msg)
             })
             .collect();
-        // string unhurried hobo
+        // strong unhurried hobo
         futures.push({
             let hobo = NewHobo {
                 color: Some(Self::gen_color(&mut rng)),

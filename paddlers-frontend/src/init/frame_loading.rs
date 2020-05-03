@@ -10,10 +10,12 @@ use crate::gui::menu::{MapMenuFrame, MenuBackgroundFrame, TownMenuFrame};
 use crate::prelude::*;
 use crate::Framer;
 use quicksilver::prelude::*;
+use specs::WorldExt;
 
 pub(crate) fn load_viewer(game: &mut Game<'static, 'static>, ep: EventPool) -> Framer {
     let view = game.entry_view();
     let mut viewer = Framer::new(view);
+    let resolution = *game.world.read_resource();
 
     /* Town */
 
@@ -90,7 +92,7 @@ pub(crate) fn load_viewer(game: &mut Game<'static, 'static>, ep: EventPool) -> F
     );
 
     let rect = Rectangle::new((0.0, 0.0), (w, h));
-    let frame = ReportFrame::new(rect).expect("Report frame loading");
+    let frame = ReportFrame::new(rect, resolution).expect("Report frame loading");
     viewer.add_frame(
         Box::new(frame),
         &[UiView::Visitors(VisitorViewTab::Letters)],

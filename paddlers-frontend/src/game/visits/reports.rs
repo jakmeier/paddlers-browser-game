@@ -24,19 +24,26 @@ struct Report {
     id: VisitReportKey,
     karma: i64,
     feathers: i64,
+    sticks: i64,
+    logs: i64,
 }
 
 impl<'a, 'b> ReportFrame<'a, 'b> {
-    pub fn new(area: Rectangle) -> PadlResult<Self> {
+    pub fn new(area: Rectangle, resolution: ScreenResolution) -> PadlResult<Self> {
+        let right_padding = resolution.leaves_border_w() * 0.75;
         let pane = panes::new_pane(
             area.x() as u32,
             area.y() as u32,
-            area.width() as u32,
+            (area.width() - right_padding) as u32 ,
             area.height() as u32,
             r#"<section class="letters"></section>"#,
         )?;
         pane.hide()?;
         let node = pane.first_inner_node()?;
+
+        let title = document().create_element("h2").unwrap();
+        title.set_text_content("Mailbox");
+        node.append_child(&title);
 
         Ok(ReportFrame {
             pane,
@@ -49,18 +56,39 @@ impl<'a, 'b> ReportFrame<'a, 'b> {
         letter_node.set_attribute("class", "letter").unwrap();
 
         let text_node = document().create_element("p").unwrap();
-        text_node.set_text_content("Thank you, was a very enjoyable visit!");
+        text_node.set_text_content(self.letter_text(&report));
+        letter_node.append_child(&text_node);
 
-        let karma_node = self.new_res_node(report.karma, SingleSprite::Karma, sprites);
-        let feathers_node = self.new_res_node(report.feathers, SingleSprite::Feathers, sprites);
+        if report.karma > 0 {
+            letter_node.append_child(&self.new_res_node(
+                report.karma,
+                SingleSprite::Karma,
+                sprites,
+            ));
+        }
+        if report.feathers > 0 {
+            letter_node.append_child(&self.new_res_node(
+                report.feathers,
+                SingleSprite::Feathers,
+                sprites,
+            ));
+        }
+        if report.sticks > 0 {
+            letter_node.append_child(&self.new_res_node(
+                report.sticks,
+                SingleSprite::Sticks,
+                sprites,
+            ));
+        }
+        if report.logs > 0 {
+            letter_node.append_child(&self.new_res_node(report.logs, SingleSprite::Logs, sprites));
+        }
+
         let button_node = document().create_element("div").unwrap();
         button_node.set_attribute("class", "letter-button").unwrap();
         button_node.set_text_content("Collect");
         self.add_listener(&button_node, report, letter_node.clone());
 
-        letter_node.append_child(&text_node);
-        letter_node.append_child(&karma_node);
-        letter_node.append_child(&feathers_node);
         letter_node.append_child(&button_node);
 
         self.table.append_child(&letter_node);
@@ -92,6 +120,16 @@ impl<'a, 'b> ReportFrame<'a, 'b> {
         node.append_child(&img);
         node
     }
+    fn letter_text(&self, report: &Report) -> &'static str {
+        match report.id.0 as usize % 5 {
+            0 => "Thank you, was a very enjoyable visit.",
+            1 => "Cheers!",
+            2 => "Thanks for showing me your town.",
+            3 => "See you again soon.",
+            4 => "A lovely place you have there.",
+            _ => unreachable!()
+        }
+    }
 }
 
 impl<'a, 'b> Frame for ReportFrame<'a, 'b> {
@@ -109,6 +147,8 @@ impl<'a, 'b> Frame for ReportFrame<'a, 'b> {
                             id: VisitReportKey(r.id.parse().unwrap()),
                             karma: r.karma,
                             feathers: r.feathers,
+                            logs: r.logs,
+                            sticks: r.sticks,
                         },
                         &state.sprites,
                     )

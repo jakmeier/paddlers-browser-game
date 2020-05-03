@@ -25,22 +25,25 @@ div.attack-table {
     padding: 10px;
 }
 
-div.attack-table>:first-child {
-    grid-column: 1 / 4;
+div.attack-table>:first-child ,
+section.letters>:first-child {
     /* span from grid column line 1 to 4 (3 columns) */
+    grid-column: 1 / 4;
+    text-align: center;
 }
 
 section.letters {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     grid-gap: 10px;
-    margin: 10px 20px 10px 10px;
+    margin: 10px 10px 10px 10px;
 }
 
 div.letter {
     background-color: whitesmoke;
     padding: 4vh;
     margin: 10px;
+    border-radius: 33px;
 }
 
 div.letter-res {
