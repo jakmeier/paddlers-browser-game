@@ -6,7 +6,9 @@ pub mod state;
 pub mod url;
 
 use crate::game::player_info::PlayerInfo;
+use game_master_api::RestApiState;
 use graphql::{query_types::*, GraphQlState};
+use std::sync::Arc;
 
 use stdweb::spawn_local;
 
@@ -46,6 +48,7 @@ struct NetState {
     game_ready: AtomicBool,
     chan: Option<Mutex<Sender<NetMsg>>>,
     gql_state: GraphQlState,
+    rest: Option<Arc<Mutex<RestApiState>>>,
 }
 static mut STATIC_NET_STATE: NetState = NetState {
     interval_ms: 5_000,
@@ -53,12 +56,14 @@ static mut STATIC_NET_STATE: NetState = NetState {
     game_ready: AtomicBool::new(false),
     chan: None,
     gql_state: GraphQlState::new(),
+    rest: None,
 };
 
 /// Initializes state necessary for networking
-pub fn init_net(chan: Sender<NetMsg>) {
+pub fn init_net(chan: Sender<NetMsg>, err_chan: Sender<PadlError>) {
     unsafe {
         STATIC_NET_STATE.chan = Some(Mutex::new(chan));
+        STATIC_NET_STATE.rest = Some(Arc::new(Mutex::new(RestApiState::new(err_chan))));
     }
 }
 /// Sets up continuous networking with the help of JS setTimeout

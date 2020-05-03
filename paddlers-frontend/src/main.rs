@@ -30,9 +30,21 @@ pub fn main() {
     setup_wasm();
     let version = env!("CARGO_PKG_VERSION");
     println!("Paddlers {}", version);
+
+    // Initialize panes, enabling HTML access
+    let resolution = crate::window::estimate_screen_size();
+    let (w, h) = resolution.pixels();
+    panes::init_ex(Some("game-root"), (0, 0), Some((w as u32, h as u32)))
+        .expect("Panes initialization failed");
+
+    // Set up loading state with interfaces to networking
     let (net_sender, net_receiver) = channel();
-    net::init_net(net_sender);
-    init::run(net_receiver);
+    let state = init::loading::LoadingState::new(resolution, net_receiver);
+    let err_send = state.base.async_err.clone_sender();
+
+    // Initialize networking
+    net::init_net(net_sender, err_send);
+    init::run(state);
 }
 
 /// Micro second precision

@@ -23,7 +23,7 @@ impl LoadingState {
             Ok(msg) => match msg {
                 NetMsg::Error(e) => match e.err {
                     PadlErrorCode::UserNotInDB => {
-                        self.base.rest.http_create_player()?;
+                        RestApiState::get().http_create_player()?;
                     }
                     _ => {
                         println!("Network Error: {}", e);

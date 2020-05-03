@@ -75,14 +75,8 @@ impl Game<'_, '_> {
     ) -> PadlResult<Self> {
         let (game_evt_send, game_evt_recv) = channel();
         let player_info = game_data.player_info.ok_or("Player Info not loaded")?;
-        let mut world = crate::init::init_world(
-            base.async_err,
-            resolution,
-            player_info,
-            base.rest,
-            base.errq,
-            base.tb,
-        );
+        let mut world =
+            crate::init::init_world(base.async_err, resolution, player_info, base.errq, base.tb);
         let mut dispatcher = DispatcherBuilder::new()
             .with(WorkerSystem::new(game_evt_send.clone()), "work", &[])
             .with(MoveSystem, "move", &["work"])
@@ -198,9 +192,6 @@ impl Game<'_, '_> {
     }
     pub fn map_mut(&mut self) -> GlobalMap {
         GlobalMap::combined(self.map.as_mut().unwrap(), self.world.write_resource())
-    }
-    pub fn rest(&mut self) -> specs::shred::FetchMut<RestApiState> {
-        self.world.write_resource()
     }
     pub fn player(&self) -> specs::shred::Fetch<PlayerInfo> {
         self.world.read_resource()

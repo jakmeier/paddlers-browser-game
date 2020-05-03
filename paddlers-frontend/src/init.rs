@@ -15,21 +15,18 @@ mod frame_loading;
 pub mod specs_registration;
 
 use crate::game::player_info::PlayerInfo;
+use crate::init::loading::LoadingState;
 use crate::init::quicksilver_integration::QuicksilverState;
 use crate::logging::{text_to_user::TextBoard, AsyncErr, ErrorQueue};
-use crate::net::game_master_api::RestApiState;
-use crate::net::NetMsg;
 use crate::prelude::*;
 use quicksilver::prelude::*;
 use specs::prelude::*;
 use specs_registration::{insert_resources, register_components};
-use std::sync::mpsc::Receiver;
 
 pub(super) fn init_world(
     async_err: AsyncErr,
     resolution: ScreenResolution,
     player_info: PlayerInfo,
-    rest: RestApiState,
     errq: ErrorQueue,
     tb: TextBoard,
 ) -> World {
@@ -39,25 +36,12 @@ pub(super) fn init_world(
     register_components(&mut world);
 
     // Resources
-    insert_resources(
-        &mut world,
-        async_err,
-        resolution,
-        player_info,
-        rest,
-        errq,
-        tb,
-    );
+    insert_resources(&mut world, async_err, resolution, player_info, errq, tb);
     world
 }
-pub fn run(net_chan: Receiver<NetMsg>) {
-    let resolution = crate::window::estimate_screen_size();
+pub(crate) fn run(state: LoadingState) {
+    let (w, h) = state.resolution.pixels();
 
-    let (w, h) = resolution.pixels();
-
-    // Initialize panes
-    panes::init_ex(Some("game-root"), (0, 0), Some((w as u32, h as u32)))
-        .expect("Panes initialization failed");
     // Load quicksilver canvas and loop
     let mut settings = Settings::default();
     settings.root_id = Some("game-root");
@@ -65,6 +49,6 @@ pub fn run(net_chan: Receiver<NetMsg>) {
         "Paddlers",
         Vector::new(w, h),
         settings,
-        || Ok(QuicksilverState::load(resolution, net_chan)),
+        || Ok(QuicksilverState::load(state)),
     );
 }

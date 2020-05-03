@@ -2,6 +2,7 @@ use crate::game::fight::*;
 use crate::game::movement::Position;
 use crate::gui::input::pointer::PointerManager;
 use crate::gui::ui_state::Now;
+use crate::net::game_master_api::RestApiState;
 use crate::net::state::current_village;
 use crate::prelude::*;
 use paddlers_shared_lib::prelude::*;
@@ -91,8 +92,7 @@ impl crate::game::Game<'_, '_> {
                             let tile_index = self.town().tile(pos.area.center());
                             std::mem::drop(pos_store);
 
-                            let r = self
-                                .rest()
+                            let r = RestApiState::get()
                                 .http_delete_building(tile_index, current_village());
                             self.check(r);
 

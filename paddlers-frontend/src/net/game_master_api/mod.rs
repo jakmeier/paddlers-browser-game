@@ -30,6 +30,17 @@ impl RestApiState {
             err_chan: Mutex::new(err_chan),
         }
     }
+    /// Get the global instance
+    pub fn get<'a>() -> std::sync::MutexGuard<'a, Self> {
+        unsafe {
+            super::STATIC_NET_STATE
+                .rest
+                .as_ref()
+                .expect("Tried to load REST API state before initialization")
+                .lock()
+                .unwrap()
+        }
+    }
     pub fn http_place_building(
         &mut self,
         pos: (usize, usize),
@@ -191,9 +202,9 @@ impl RestApiState {
 
 pub struct RestApiSystem;
 impl<'a> System<'a> for RestApiSystem {
-    type SystemData = (WriteExpect<'a, RestApiState>, ReadExpect<'a, AsyncErr>);
+    type SystemData = ReadExpect<'a, AsyncErr>;
 
-    fn run(&mut self, (mut state, error): Self::SystemData) {
-        state.poll_queue(&*error);
+    fn run(&mut self, error: Self::SystemData) {
+        RestApiState::get().poll_queue(&*error);
     }
 }

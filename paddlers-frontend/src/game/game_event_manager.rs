@@ -15,6 +15,7 @@ use crate::game::{
 };
 use crate::gui::input::UiView;
 use crate::init::quicksilver_integration::{GameState, Signal};
+use crate::net::game_master_api::RestApiState;
 use crate::prelude::*;
 use paddlers_shared_lib::api::story::StoryStateTransition;
 use specs::prelude::*;
@@ -53,7 +54,7 @@ impl GameState {
             }
             GameEvent::HttpBuyProphet => {
                 let player: PlayerInfo = *self.game.player().clone();
-                crate::game::town::purchase_prophet(&mut *self.game.rest(), &player)?;
+                crate::game::town::purchase_prophet(&player)?;
             }
             GameEvent::SendProphetAttack((x, y)) => {
                 if self.game.town().idle_prophets.len() == 0 {
@@ -90,7 +91,7 @@ impl GameState {
                     before: self.game.story_state(),
                     after: new_state,
                 };
-                self.game.rest().http_update_story_state(t)?;
+                RestApiState::get().http_update_story_state(t)?;
                 self.viewer
                     .handle_signal(&mut self.game, Signal::NewStoryState(new_state))?;
             }

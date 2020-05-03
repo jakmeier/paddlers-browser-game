@@ -33,7 +33,6 @@ impl Town {
         lazy: Read<'a, LazyUpdate>,
         resources: &TownResources,
         mut errq: WriteExpect<'a, ErrorQueue>,
-        mut rest: WriteExpect<'a, RestApiState>,
         ep: &EventPool,
     ) {
         let click_output = ui_menu.ui.click(mouse_pos).unwrap_or_else(|e| {
@@ -65,7 +64,6 @@ impl Town {
                         tile,
                         container_area.size(),
                         &lazy,
-                        &mut rest,
                     )
                     .unwrap_or_else(|e| errq.push(e));
                 } else {
@@ -122,7 +120,6 @@ impl Town {
         lazy: &Read<'a, LazyUpdate>,
         resources: &mut Write<'a, TownResources>,
         errq: &mut WriteExpect<'a, ErrorQueue>,
-        rest: &mut WriteExpect<'a, RestApiState>,
         // TODO: Only temporary experiment
         signals: &mut WriteExpect<'a, crate::view::ExperimentalSignalChannel>,
     ) -> Option<NewTaskDescriptor> {
@@ -132,7 +129,8 @@ impl Town {
                 Grabbable::NewBuilding(bt) => {
                     let bt = *bt;
                     if let Some(pos) = self.get_buildable_tile(mouse_pos) {
-                        rest.http_place_building(pos, bt, current_village())
+                        RestApiState::get()
+                            .http_place_building(pos, bt, current_village())
                             .unwrap_or_else(|e| errq.push(e));
                         resources.spend(&bt.price());
                         self.insert_new_building(&entities, &lazy, pos, bt);

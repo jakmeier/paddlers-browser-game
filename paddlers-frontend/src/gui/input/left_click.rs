@@ -8,7 +8,6 @@ use crate::game::{
 };
 use crate::gui::ui_state::UiState;
 use crate::logging::ErrorQueue;
-use crate::net::game_master_api::RestApiState;
 use crate::prelude::*;
 use quicksilver::prelude::*;
 use specs::prelude::*;
@@ -30,7 +29,6 @@ impl<'a> System<'a> for TownLeftClickSystem {
         Read<'a, DefaultShop>,
         Write<'a, TownResources>,
         Write<'a, Town>,
-        WriteExpect<'a, RestApiState>,
         WriteExpect<'a, ErrorQueue>,
         Read<'a, LazyUpdate>,
         ReadStorage<'a, Position>,
@@ -54,7 +52,6 @@ impl<'a> System<'a> for TownLeftClickSystem {
             shop,
             mut resources,
             mut town,
-            mut rest,
             mut errq,
             lazy,
             position,
@@ -91,7 +88,6 @@ impl<'a> System<'a> for TownLeftClickSystem {
                         lazy,
                         &*resources,
                         errq,
-                        rest,
                         &self.event_pool,
                     );
                 }
@@ -110,7 +106,6 @@ impl<'a> System<'a> for TownLeftClickSystem {
                 &lazy,
                 &mut resources,
                 &mut errq,
-                &mut rest,
                 &mut signals,
             );
             if let Some(job) = maybe_job {
@@ -140,7 +135,6 @@ impl<'a> System<'a> for TownLeftClickSystem {
                     job,
                     destination.unwrap(),
                     &*town,
-                    &mut *rest,
                     &mut *errq,
                     &mut containers,
                     &mana,
@@ -165,7 +159,6 @@ impl<'a> System<'a> for MapLeftClickSystem {
         WriteExpect<'a, UiState>,
         Write<'a, TownResources>,
         Write<'a, Town>,
-        WriteExpect<'a, RestApiState>,
         WriteExpect<'a, ErrorQueue>,
         Read<'a, LazyUpdate>,
         ReadStorage<'a, Position>,
@@ -181,7 +174,6 @@ impl<'a> System<'a> for MapLeftClickSystem {
             ui_state,
             resources,
             mut town,
-            rest,
             errq,
             lazy,
             position,
@@ -211,7 +203,6 @@ impl<'a> System<'a> for MapLeftClickSystem {
                         lazy,
                         &*resources,
                         errq,
-                        rest,
                         &self.event_pool,
                     );
                 }

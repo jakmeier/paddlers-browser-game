@@ -10,14 +10,12 @@ use crate::game::{
 };
 use crate::gui::ui_state::*;
 use crate::logging::{text_to_user::TextBoard, AsyncErr, ErrorQueue};
-use crate::net::game_master_api::RestApiState;
 
 pub(super) fn insert_resources(
     world: &mut World,
     async_err: AsyncErr,
     resolution: ScreenResolution,
     player_info: PlayerInfo,
-    rest: RestApiState,
     errq: ErrorQueue,
     tb: TextBoard,
 ) {
@@ -26,7 +24,6 @@ pub(super) fn insert_resources(
     world.insert(DefaultShop::new(&player_info));
     world.insert(errq);
     world.insert(Now);
-    world.insert(rest);
     world.insert(resolution);
     world.insert(tb);
     world.insert(Town::new(resolution));

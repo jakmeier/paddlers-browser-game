@@ -16,7 +16,6 @@ use crate::gui::utils::*;
 use crate::init::quicksilver_integration::GameState;
 use crate::init::quicksilver_integration::QuicksilverState;
 use crate::logging::{error::PadlError, text_to_user::TextBoard, AsyncErr, ErrorQueue};
-use crate::net::game_master_api::RestApiState;
 use crate::net::graphql::query_types::WorkerResponse;
 use crate::net::NetMsg;
 use crate::prelude::{PadlResult, ScreenResolution, TextDb};
@@ -28,10 +27,8 @@ use std::sync::mpsc::{channel, Receiver};
 /// like networking and error handling.
 pub struct BaseState {
     pub err_recv: Receiver<PadlError>,
-    // pub err_send: Sender<PadlError>,
     pub async_err: AsyncErr,
     pub net_chan: Receiver<NetMsg>,
-    pub rest: RestApiState,
     pub errq: ErrorQueue,
     pub tb: TextBoard,
 }
@@ -42,9 +39,9 @@ pub(crate) struct LoadingState {
     pub game_data: GameLoadingData,
     pub viewer_data: Vec<PadlEvent>,
     pub base: BaseState,
+    pub resolution: ScreenResolution,
     images: Vec<Asset<Image>>,
     locale: Asset<TextDb>,
-    resolution: ScreenResolution,
     preload_float: FloatingText,
 }
 
@@ -65,17 +62,15 @@ impl LoadingState {
         crate::net::request_client_state();
         let preload_float = FloatingText::try_default().expect("FloatingText");
         let (err_send, err_recv) = channel();
-        let err_send_clone = err_send.clone();
-        let rest = RestApiState::new(err_send_clone);
         let async_err = AsyncErr::new(err_send);
         let base = BaseState {
             err_recv,
             async_err,
             net_chan,
-            rest,
             errq: ErrorQueue::default(),
             tb: TextBoard::default(),
         };
+
         let game_data = GameLoadingData::default();
         // For leaderboard network event
         let viewer_data = vec![];

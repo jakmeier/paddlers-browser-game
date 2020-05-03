@@ -13,11 +13,11 @@ pub fn new_temple_menu(player_info: &PlayerInfo) -> UiMenu {
     )
 }
 
-pub fn purchase_prophet(rest: &mut RestApiState, player_info: &PlayerInfo) -> PadlResult<()> {
+pub fn purchase_prophet(player_info: &PlayerInfo) -> PadlResult<()> {
     if player_info.prophets_limit() <= player_info.prophets_total() {
         return PadlErrorCode::NotEnoughKarma.usr();
     }
-    rest.http_buy_prophet(ProphetPurchase {
+    RestApiState::get().http_buy_prophet(ProphetPurchase {
         village: current_village(),
     })?;
     Ok(())

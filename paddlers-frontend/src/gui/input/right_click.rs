@@ -2,7 +2,6 @@ use super::{MouseState, UiView};
 use crate::game::{components::*, movement::*, town::Town, units::workers::*};
 use crate::gui::ui_state::UiState;
 use crate::logging::ErrorQueue;
-use crate::net::game_master_api::RestApiState;
 use quicksilver::prelude::*;
 use specs::prelude::*;
 
@@ -14,7 +13,6 @@ impl<'a> System<'a> for RightClickSystem {
         Read<'a, MouseState>,
         WriteExpect<'a, UiState>,
         Read<'a, Town>,
-        WriteExpect<'a, RestApiState>,
         WriteExpect<'a, ErrorQueue>,
         Entities<'a>,
         WriteStorage<'a, Worker>,
@@ -32,7 +30,6 @@ impl<'a> System<'a> for RightClickSystem {
             mouse_state,
             mut ui_state,
             town,
-            mut rest,
             mut errq,
             entities,
             mut worker,
@@ -80,7 +77,6 @@ impl<'a> System<'a> for RightClickSystem {
                                 new_job,
                                 destination,
                                 &*town,
-                                &mut *rest,
                                 &mut *errq,
                                 &mut containers,
                                 &mana,

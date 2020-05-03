@@ -55,7 +55,6 @@ impl Worker {
         job: NewTaskDescriptor,
         destination: TileIndex,
         town: &Town,
-        rest: &mut RestApiState,
         errq: &mut ErrorQueue,
         containers: &mut WriteStorage<'a, EntityContainer>,
         mana: &ReadStorage<'a, Mana>,
@@ -64,7 +63,8 @@ impl Worker {
             self.try_create_task_list(entity, start, destination, job, &town, containers, mana);
         match msg {
             Ok(msg) => {
-                rest.http_overwrite_tasks(msg)
+                RestApiState::get()
+                    .http_overwrite_tasks(msg)
                     .unwrap_or_else(|e| errq.push(e));
             }
             Err(e) => {
@@ -158,13 +158,12 @@ pub fn move_worker_out_of_building<'a>(
     tile: TileIndex,
     size: Vector,
     lazy: &Read<'a, LazyUpdate>,
-    rest: &mut WriteExpect<'a, RestApiState>,
 ) -> PadlResult<()> {
     let worker = workers.get_mut(worker_e).unwrap();
     let http_msg = worker.go_idle(tile);
     match http_msg {
         Ok(msg) => {
-            rest.http_overwrite_tasks(msg)?;
+            RestApiState::get().http_overwrite_tasks(msg)?;
         }
         Err(e) => {
             println!("Failure on moving out of building: {}", e);

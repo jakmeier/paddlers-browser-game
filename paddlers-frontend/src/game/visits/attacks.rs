@@ -5,6 +5,7 @@ use crate::gui::utils::colors::LIGHT_BLUE;
 use crate::gui::z::*;
 use crate::init::quicksilver_integration::Signal;
 use crate::logging::ErrorQueue;
+use crate::net::game_master_api::RestApiState;
 use crate::net::state::current_village;
 use crate::prelude::*;
 use crate::view::Frame;
@@ -35,7 +36,7 @@ impl Game<'_, '_> {
                 to: target,
                 units: vec![hobo],
             };
-            self.rest().http_send_attack(atk)?;
+            RestApiState::get().http_send_attack(atk)?;
             Ok(())
         } else {
             PadlErrorCode::NotEnoughUnits.usr()

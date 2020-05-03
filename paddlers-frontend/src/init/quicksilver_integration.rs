@@ -14,7 +14,6 @@ use crate::net::game_master_api::RestApiState;
 use crate::prelude::*;
 use crate::view::FrameSignal;
 use paddlers_shared_lib::story::story_state::StoryState;
-use std::sync::mpsc::Receiver;
 
 use crate::game::story::scene::SceneIndex;
 use crate::game::*;
@@ -73,8 +72,8 @@ impl FrameSignal<PadlEvent> for Signal {
     }
 }
 impl QuicksilverState {
-    pub fn load(resolution: ScreenResolution, net_chan: Receiver<NetMsg>) -> Self {
-        Self::Loading(LoadingState::new(resolution, net_chan))
+    pub fn load(state: LoadingState) -> Self {
+        Self::Loading(state)
     }
 }
 impl State for QuicksilverState {
@@ -86,7 +85,7 @@ impl State for QuicksilverState {
             Self::Loading(state) => {
                 let err = state.update_net();
                 state.queue_error(err);
-                state.base.rest.poll_queue(&state.base.async_err);
+                RestApiState::get().poll_queue(&state.base.async_err);
                 let q = &mut state.base.errq;
                 q.pull_async(&mut state.base.err_recv, &mut state.base.tb);
                 self.try_finalize();
@@ -175,7 +174,7 @@ impl GameState {
         }
 
         {
-            let mut rest = self.game.world.write_resource::<RestApiState>();
+            let mut rest = RestApiState::get();
             let err = self.game.stats.track_frame(&mut *rest, utc_now());
             self.game.check(err);
         }
