@@ -146,10 +146,7 @@ pub trait GameDB {
             .expect("Error loading data");
         results
     }
-    fn attack_hobos_with_attack_info(
-        &self,
-        atk: &Attack,
-    ) -> Vec<(Hobo, AttackToHobo)> {
+    fn attack_hobos_with_attack_info(&self, atk: &Attack) -> Vec<(Hobo, AttackToHobo)> {
         let results = attacks_to_hobos::table
             .inner_join(hobos::table)
             .filter(attacks_to_hobos::attack_id.eq(atk.id))

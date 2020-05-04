@@ -1,3 +1,9 @@
+pub mod defence;
+pub mod town_layout;
+
+#[cfg(test)]
+mod defence_test;
+
 use crate::game_mechanics::building::*;
 use crate::models::BuildingType;
 use crate::models::*;
