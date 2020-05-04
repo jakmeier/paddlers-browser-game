@@ -55,86 +55,86 @@ pub(crate) fn insert_hobos(world: &mut World) -> PadlResult<()> {
     let effects = Vec::<HoboEffect>::new();
 
     insert_duck(
-        world, pos0, color, birth_time, speed, hp, ul, netid, &effects,
+        world, pos0, color, birth_time, speed, hp, ul, netid, &effects, None,
     )?;
     insert_duck(
-        world, pos1, color, birth_time, speed, hp, ul, netid, &effects,
+        world, pos1, color, birth_time, speed, hp, ul, netid, &effects, None,
     )?;
 
     let dt = 5_000_000;
 
     let birth_time = birth_time - dt;
     insert_duck(
-        world, pos0, color, birth_time, speed, hp, ul, netid, &effects,
+        world, pos0, color, birth_time, speed, hp, ul, netid, &effects, None,
     )?;
     insert_duck(
-        world, pos1, color, birth_time, speed, hp, ul, netid, &effects,
-    )?;
-    let birth_time = birth_time - dt;
-    insert_duck(
-        world, pos0, color, birth_time, speed, hp, ul, netid, &effects,
-    )?;
-    insert_duck(
-        world, pos1, color, birth_time, speed, hp, ul, netid, &effects,
+        world, pos1, color, birth_time, speed, hp, ul, netid, &effects, None,
     )?;
     let birth_time = birth_time - dt;
     insert_duck(
-        world, pos0, color, birth_time, speed, hp, ul, netid, &effects,
+        world, pos0, color, birth_time, speed, hp, ul, netid, &effects, None,
     )?;
     insert_duck(
-        world, pos1, color, birth_time, speed, hp, ul, netid, &effects,
+        world, pos1, color, birth_time, speed, hp, ul, netid, &effects, None,
     )?;
     let birth_time = birth_time - dt;
     insert_duck(
-        world, pos0, color, birth_time, speed, hp, ul, netid, &effects,
+        world, pos0, color, birth_time, speed, hp, ul, netid, &effects, None,
     )?;
     insert_duck(
-        world, pos1, color, birth_time, speed, hp, ul, netid, &effects,
+        world, pos1, color, birth_time, speed, hp, ul, netid, &effects, None,
+    )?;
+    let birth_time = birth_time - dt;
+    insert_duck(
+        world, pos0, color, birth_time, speed, hp, ul, netid, &effects, None,
+    )?;
+    insert_duck(
+        world, pos1, color, birth_time, speed, hp, ul, netid, &effects, None,
     )?;
 
     let birth_time = birth_time - 10 * dt;
     let color0 = UnitColor::Yellow;
     let color1 = UnitColor::White;
     insert_duck(
-        world, pos0, color0, birth_time, speed, hp, ul, netid, &effects,
+        world, pos0, color0, birth_time, speed, hp, ul, netid, &effects, None,
     )?;
     insert_duck(
-        world, pos1, color1, birth_time, speed, hp, ul, netid, &effects,
-    )?;
-    let birth_time = birth_time - dt;
-    insert_duck(
-        world, pos0, color1, birth_time, speed, hp, ul, netid, &effects,
-    )?;
-    insert_duck(
-        world, pos1, color0, birth_time, speed, hp, ul, netid, &effects,
+        world, pos1, color1, birth_time, speed, hp, ul, netid, &effects, None,
     )?;
     let birth_time = birth_time - dt;
     insert_duck(
-        world, pos0, color0, birth_time, speed, hp, ul, netid, &effects,
+        world, pos0, color1, birth_time, speed, hp, ul, netid, &effects, None,
     )?;
     insert_duck(
-        world, pos1, color1, birth_time, speed, hp, ul, netid, &effects,
+        world, pos1, color0, birth_time, speed, hp, ul, netid, &effects, None,
     )?;
     let birth_time = birth_time - dt;
     insert_duck(
-        world, pos0, color1, birth_time, speed, hp, ul, netid, &effects,
+        world, pos0, color0, birth_time, speed, hp, ul, netid, &effects, None,
     )?;
     insert_duck(
-        world, pos1, color0, birth_time, speed, hp, ul, netid, &effects,
+        world, pos1, color1, birth_time, speed, hp, ul, netid, &effects, None,
+    )?;
+    let birth_time = birth_time - dt;
+    insert_duck(
+        world, pos0, color1, birth_time, speed, hp, ul, netid, &effects, None,
+    )?;
+    insert_duck(
+        world, pos1, color0, birth_time, speed, hp, ul, netid, &effects, None,
     )?;
     let birth_time = birth_time - 2 * dt;
     insert_duck(
-        world, pos0, color0, birth_time, speed, hp, ul, netid, &effects,
+        world, pos0, color0, birth_time, speed, hp, ul, netid, &effects, None,
     )?;
     insert_duck(
-        world, pos1, color1, birth_time, speed, hp, ul, netid, &effects,
+        world, pos1, color1, birth_time, speed, hp, ul, netid, &effects, None,
     )?;
     let birth_time = birth_time - dt;
     insert_duck(
-        world, pos0, color1, birth_time, speed, hp, ul, netid, &effects,
+        world, pos0, color1, birth_time, speed, hp, ul, netid, &effects, None,
     )?;
     insert_duck(
-        world, pos1, color0, birth_time, speed, hp, ul, netid, &effects,
+        world, pos1, color0, birth_time, speed, hp, ul, netid, &effects, None,
     )?;
 
     Ok(())

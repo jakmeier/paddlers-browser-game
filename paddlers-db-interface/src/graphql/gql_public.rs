@@ -29,7 +29,10 @@ pub struct GqlMapSlice {
     pub high_x: i32,
 }
 pub struct GqlStream(pub paddlers_shared_lib::models::Stream);
-pub struct GqlHobo(pub paddlers_shared_lib::models::Hobo); // Note: Consider changing this to private
+pub struct GqlHobo(pub paddlers_shared_lib::models::Hobo);
+pub struct GqlAttackUnit(pub GqlHobo, pub GqlHoboAttackInfo);
+/// Additional information for a hobo that is currently attacking
+pub struct GqlHoboAttackInfo(pub paddlers_shared_lib::models::AttackToHobo);
 
 // Complete list of public objects with restricted fields access.
 pub struct GqlPlayer(pub paddlers_shared_lib::models::Player);
@@ -222,6 +225,10 @@ impl GqlHobo {
             .into_iter()
             .map(GqlEffect::authorized)
             .collect()
+    }
+    /// Field Visibility: public
+    pub fn hurried(&self, ctx: &Context) -> bool {
+        self.0.hurried
     }
     /// Field Visibility: public
     pub fn idle(&self, ctx: &Context) -> bool {

@@ -106,6 +106,7 @@ impl<'a, 'b> ReportFrame<'a, 'b> {
             if let Err(e) = RestApiState::get().http_collect_reward(msg) {
                 println!("Failed to send API call {}", e);
             }
+            crate::net::request_resource_update();
             // remove event listener?
         });
     }

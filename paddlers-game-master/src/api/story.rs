@@ -80,7 +80,7 @@ impl DB {
                     hp: 1,
                     speed: 0.25,
                     home: village.key().num(),
-                    hurried: true,
+                    hurried: false,
                 };
                 let msg = NewHoboMessage(hobo);
                 let future = addr

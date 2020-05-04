@@ -11,12 +11,12 @@ impl GqlAttack {
     fn id(&self) -> juniper::ID {
         self.0.id.to_string().into()
     }
-    fn units(&self, ctx: &Context) -> FieldResult<Vec<GqlHobo>> {
+    fn units(&self, ctx: &Context) -> FieldResult<Vec<GqlAttackUnit>> {
         Ok(ctx
             .db()
-            .attack_hobos(&self.0)
+            .attack_hobos_with_attack_info(&self.0)
             .into_iter()
-            .map(GqlHobo)
+            .map(|(hobo, info)| GqlAttackUnit(GqlHobo(hobo), GqlHoboAttackInfo(info)))
             .collect())
     }
     fn departure(&self) -> FieldResult<GqlTimestamp> {
@@ -34,6 +34,24 @@ impl GqlAttack {
             .and_then(|village| village.owner())
             .and_then(|pid| db.player(pid))
             .map(|player| GqlPlayer(player)))
+    }
+}
+#[juniper::object (Context = Context)]
+impl GqlAttackUnit {
+    fn hobo(&self) -> &GqlHobo {
+        &self.0
+    }
+    fn info(&self) -> &GqlHoboAttackInfo {
+        &self.1
+    }
+}
+#[juniper::object (Context = Context)]
+impl GqlHoboAttackInfo {
+    fn released(&self) -> FieldResult<Option<GqlTimestamp>> {
+        Ok(self.0.released.as_ref().map(GqlTimestamp::from_chrono))
+    }
+    fn satisfied(&self) -> FieldResult<Option<bool>> {
+        Ok(self.0.satisfied)
     }
 }
 

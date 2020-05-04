@@ -1,6 +1,6 @@
 use crate::game::Now;
 use crate::Timestamp;
-use quicksilver::geom::{Rectangle, Vector};
+use quicksilver::geom::{about_equal, Rectangle, Vector};
 use specs::prelude::*;
 use specs::storage::BTreeStorage;
 
@@ -22,17 +22,38 @@ pub struct Moving {
     pub max_speed: f32,
 }
 
+#[derive(Component, Debug)]
+#[storage(BTreeStorage)]
+pub struct TargetPosition {
+    pub pos: Vector,
+}
+
 pub struct MoveSystem;
 impl<'a> System<'a> for MoveSystem {
     type SystemData = (
+        Entities<'a>,
         Read<'a, Now>,
-        ReadStorage<'a, Moving>,
+        WriteStorage<'a, Moving>,
         WriteStorage<'a, Position>,
+        WriteStorage<'a, TargetPosition>,
     );
 
-    fn run(&mut self, (t, vel, mut pos): Self::SystemData) {
-        for (vel, pos) in (&vel, &mut pos).join() {
-            pos.area.pos = vel.position(t.0);
+    fn run(&mut self, (entities, t, mut vel, mut pos, mut target_pos): Self::SystemData) {
+        let mut remove_from_vel = vec![];
+        for (e, v, pos) in (&entities, &mut vel, &mut pos).join() {
+            let mut new_pos = v.position(t.0);
+            if let Some(target) = target_pos.get(e) {
+                // test if target position is reached or crossed
+                if target.is_reached(pos.area.pos, new_pos) {
+                    new_pos = target.pos;
+                    remove_from_vel.push(e);
+                    target_pos.remove(e);
+                }
+            }
+            pos.area.pos = new_pos;
+        }
+        for e in remove_from_vel {
+            vel.remove(e);
         }
     }
 }
@@ -69,5 +90,24 @@ impl Moving {
         self.start_pos = self.position(timestamp);
         self.start_ts = timestamp;
         self.momentum = (0.0, 0.0).into();
+    }
+}
+
+impl TargetPosition {
+    pub fn new(pos: Vector) -> Self {
+        TargetPosition { pos }
+    }
+    /// Given a movement between the two points, is the target position reached now?
+    fn is_reached(&self, before: Vector, after: Vector) -> bool {
+        // uses about_equal for floats
+        if before == self.pos {
+            true
+        } else if about_equal(self.pos.y, after.y) {
+            (after.x - self.pos.x).signum() != (before.x - self.pos.x).signum()
+        } else if about_equal(self.pos.x, after.x) {
+            (after.y - self.pos.y).signum() != (before.y - self.pos.y).signum()
+        } else {
+            false
+        }
     }
 }

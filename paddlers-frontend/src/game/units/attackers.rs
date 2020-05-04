@@ -2,7 +2,7 @@ use crate::game::{
     components::NetObj,
     fight::Health,
     input::Clickable,
-    movement::{Moving, Position},
+    movement::{Moving, Position, TargetPosition},
     status_effects::StatusEffects,
     visits::attacks::Attack,
 };
@@ -27,12 +27,13 @@ pub fn insert_duck(
     ul: f32,
     netid: i64,
     effects: &[HoboEffect],
+    final_pos: Option<Vector>,
 ) -> PadlResult<Entity> {
     let pos = pos.into();
     let speed = speed.into();
     let size: Vector = Vector::new(ATTACKER_SIZE_FACTOR_X * ul, ATTACKER_SIZE_FACTOR_Y * ul).into();
     let status_effects = StatusEffects::from_gql_query(effects)?;
-    let entity = world
+    let mut builder = world
         .create_entity()
         .with(Position::new(pos, size, Z_VISITOR))
         .with(Moving::new(birth_time, pos, speed, speed.len()))
@@ -40,9 +41,11 @@ pub fn insert_duck(
         .with(Clickable)
         .with(status_effects)
         .with(NetObj::hobo(netid))
-        .with(Health::new_full_health(hp))
-        .build();
-    Ok(entity)
+        .with(Health::new_full_health(hp));
+    if let Some(pos) = final_pos {
+        builder = builder.with(TargetPosition::new(pos));
+    }
+    Ok(builder.build())
 }
 
 pub fn change_duck_sprite_to_happy(r: &mut Renderable) {
@@ -97,18 +100,24 @@ impl AttacksQueryVillageAttacksUnits {
         pos_rank: usize,
         ul: f32,
     ) -> PadlResult<Entity> {
-        let v = -self.speed as f32 * ul;
+        let v = -self.hobo.speed as f32 * ul;
         let w = TOWN_X as f32 * ul;
         let x = w - ul * ATTACKER_SIZE_FACTOR_X;
         let y = TOWN_LANE_Y as f32 * ul;
         let pos = Vector::new(x, y) + attacker_position_rank_offset(pos_rank, ul);
-        let hp = self.hp;
-        let netid = self.id.parse().expect("Parsing id");
+        let hp = self.hobo.hp;
+        let netid = self.hobo.id.parse().expect("Parsing id");
         let color = self
+            .hobo
             .color
             .as_ref()
             .map(|c| c.into())
             .unwrap_or(UnitColor::Yellow);
+        let final_pos = if self.hobo.hurried {
+            Some(Vector::new(-w, pos.y))
+        } else {
+            Some(Vector::new(TOWN_RESTING_X as f32 * ul, pos.y))
+        };
         insert_duck(
             world,
             pos,
@@ -118,7 +127,8 @@ impl AttacksQueryVillageAttacksUnits {
             hp,
             ul,
             netid,
-            &self.effects,
+            &self.hobo.effects,
+            final_pos,
         )
     }
 }

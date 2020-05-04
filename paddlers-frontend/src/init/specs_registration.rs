@@ -54,6 +54,7 @@ pub fn register_components(world: &mut World) {
     world.register::<Range>();
     world.register::<Renderable>();
     world.register::<StatusEffects>();
+    world.register::<TargetPosition>();
     world.register::<UiMenu>();
     world.register::<VillageMetaInfo>();
     world.register::<Worker>();

@@ -3,14 +3,20 @@ query AttacksQuery($min_attack_id: Int, $village_id: Int!) {
     attacks(minId: $min_attack_id) {
       id
       units {
-        id
-        color
-        hp
-        speed
-        effects {
-          attribute
-          startTime
-          strength
+        hobo {
+          id
+          color
+          hp
+          speed
+          hurried
+          effects {
+            attribute
+            startTime
+            strength
+          }
+        }
+        info {
+          released
         }
       }
       departure

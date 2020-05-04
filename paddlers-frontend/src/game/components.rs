@@ -4,7 +4,7 @@ pub use super::forestry::ForestComponent;
 pub use super::level::Level;
 pub use super::mana::Mana;
 pub use super::map::{MapPosition, VillageMetaInfo};
-pub use super::movement::{Moving, Position};
+pub use super::movement::{Moving, Position, TargetPosition};
 pub use super::status_effects::StatusEffects;
 pub use crate::gui::{animation::AnimationState, input::Clickable, render::Renderable};
 use crate::gui::{

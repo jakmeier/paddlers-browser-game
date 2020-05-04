@@ -22,7 +22,7 @@ fn timestamp(s: &String) -> graphql_types::GqlTimestamp {
 )]
 pub struct AttacksQuery;
 pub type AttacksResponse = Response<attacks_query::ResponseData>;
-pub type HoboEffect = attacks_query::AttacksQueryVillageAttacksUnitsEffects;
+pub type HoboEffect = attacks_query::AttacksQueryVillageAttacksUnitsHoboEffects;
 pub type HoboAttribute = attacks_query::HoboAttributeType;
 
 impl attacks_query::AttacksQueryVillageAttacks {

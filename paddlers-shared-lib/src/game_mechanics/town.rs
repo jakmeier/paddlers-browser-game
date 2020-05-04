@@ -3,9 +3,14 @@ use crate::models::BuildingType;
 use crate::models::*;
 use std::collections::HashMap;
 
+/// Width of town in unit lengths
 pub const TOWN_X: usize = 9;
+/// Height of town in unit lengths
 pub const TOWN_Y: usize = 7;
+/// The town Y coordinate where the river flows through
 pub const TOWN_LANE_Y: usize = 3;
+/// The town X where resting paddlers will wait
+pub const TOWN_RESTING_X: usize = 4;
 
 #[derive(Debug)]
 pub struct TownMap(pub [[TownTileType; TOWN_Y]; TOWN_X]);

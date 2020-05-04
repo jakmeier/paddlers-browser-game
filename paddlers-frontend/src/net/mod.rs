@@ -92,6 +92,8 @@ pub fn start_network_thread() {
 /// Sends all requests out necessary for the client state
 pub fn request_client_state() {
     unsafe {
+    // TODO: Instead of forcing a request every time the 10s are too long, use something smarter.$
+    // E.g.: Once a second check what needs to be updated and then allow this list to be altered from outside
         if STATIC_NET_STATE.logged_in.load(Ordering::Relaxed) {
             STATIC_NET_STATE.spawn(STATIC_NET_STATE.gql_state.buildings_query());
             STATIC_NET_STATE.spawn(STATIC_NET_STATE.gql_state.workers_query());
@@ -115,6 +117,11 @@ pub fn request_map_read(min: i32, max: i32) {
 pub fn request_worker_tasks_update(unit_id: i64) {
     unsafe {
         STATIC_NET_STATE.spawn(STATIC_NET_STATE.gql_state.worker_tasks_query(unit_id));
+    }
+}
+pub fn request_resource_update() {
+    unsafe {
+        STATIC_NET_STATE.spawn(STATIC_NET_STATE.gql_state.resource_query());
     }
 }
 pub fn request_player_update() {
