@@ -1,7 +1,6 @@
 use crate::models::*;
 use crate::prelude::{HoboKey, PlayerKey, VillageKey, VisitReportKey, WorkerKey};
 use crate::schema::*;
-use chrono::NaiveDateTime;
 use diesel::prelude::*;
 
 pub trait GameDB {
@@ -132,17 +131,14 @@ pub trait GameDB {
             .expect("Error loading data");
         results
     }
-    fn attack_hobos_active_with_released_flag(
-        &self,
-        atk: &Attack,
-    ) -> Vec<(Hobo, Option<NaiveDateTime>)> {
+    fn attack_hobos_active_with_attack_info(&self, atk: &Attack) -> Vec<(Hobo, AttackToHobo)> {
         let results = attacks_to_hobos::table
             .inner_join(hobos::table)
             .filter(attacks_to_hobos::attack_id.eq(atk.id))
             .filter(attacks_to_hobos::satisfied.is_null())
-            .select((hobos::all_columns, attacks_to_hobos::released))
+            .select((hobos::all_columns, attacks_to_hobos::all_columns))
             .limit(500)
-            .load::<(Hobo, Option<NaiveDateTime>)>(self.dbconn())
+            .load::<(Hobo, AttackToHobo)>(self.dbconn())
             .expect("Error loading data");
         results
     }
@@ -168,7 +164,7 @@ pub trait GameDB {
         results
     }
     fn attack_done(&self, atk: &Attack) -> bool {
-        self.attack_hobos_active_with_released_flag(atk).len() == 0
+        self.attack_hobos_active_with_attack_info(atk).len() == 0
     }
     fn buildings(&self, village: VillageKey) -> Vec<Building> {
         let results = buildings::table

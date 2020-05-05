@@ -60,3 +60,12 @@ impl VisitReport {
         VillageKey(self.village_id)
     }
 }
+
+impl Attack {
+    pub fn destination(&self) -> VillageKey {
+        VillageKey(self.destination_village_id)
+    }
+    pub fn origin(&self) -> Option<VillageKey> {
+        self.origin_village_id.map(VillageKey)
+    }
+}

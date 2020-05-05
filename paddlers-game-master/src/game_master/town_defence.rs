@@ -14,43 +14,40 @@
 //! This can be marked in the db using the status on each HoboToAttack.
 
 use crate::db::DB;
+use crate::town_view::TownView;
 use chrono::NaiveDateTime;
 use paddlers_shared_lib::game_mechanics::town::*;
 use paddlers_shared_lib::prelude::*;
+
+struct AttackingHobo<'a> {
+    hobo: &'a Hobo,
+    attack_to_hobo: &'a AttackToHobo,
+    effects: &'a [Effect],
+    attack: &'a Attack,
+}
 
 impl DB {
     /// Checks if all visitors have already left (or been satisfied).
     /// If so, the visit is evaluated and a report with rewards is generated.
     pub fn maybe_evaluate_attack(&self, atk: &Attack, now: NaiveDateTime) {
-        let time_into_fight = now - atk.arrival;
-        let off = self.attack_hobos_active_with_released_flag(atk);
-        let village = VillageKey(atk.destination_village_id);
-        let def = self.buildings(village);
-        let map_len = TOWN_X as f32;
-        let halve_map_len = ((TOWN_X + 1) / 2) as f32;
-        for (hobo, released) in &off {
-            let mut swum_distance = hobo.speed * time_into_fight.num_milliseconds() as f32 / 1000.0;
-            if hobo.hurried {
-                // hurried hobos swim right through
-                if swum_distance < map_len {
-                    // Need to wait
-                    continue;
-                }
-            } else {
-                swum_distance = if let Some(released) = released {
-                    let time_released = now - *released;
-                    halve_map_len + hobo.speed * time_released.num_milliseconds() as f32 / 1000.0
-                } else {
-                    halve_map_len
-                }
-                .min(swum_distance);
+        let now = now.timestamp_millis();
+        let village = atk.destination();
+        let active_units = self.attack_hobos_active_with_attack_info(atk);
+        let town = TownView::load_village(&self, village);
+
+        for (hobo, info) in &active_units {
+            let effects = self.effects_on_hobo(hobo.key());
+            let unit = AttackingHobo {
+                hobo: hobo,
+                attack_to_hobo: info,
+                effects: &effects,
+                attack: atk,
+            };
+            if town.hp_left(&unit, now) == 0 {
+                self.set_satisfied(hobo.key(), atk.key(), true);
+            } else if town.hobo_left_town(&unit, now) {
+                self.set_satisfied(hobo.key(), atk.key(), false);
             }
-            let ap = aura_def_pts(&def, swum_distance as usize) as i64;
-            let mut dmg = 0;
-            dmg += self.damage_from_effects(hobo);
-            dmg += ap;
-            let happy = dmg >= hobo.hp;
-            self.set_satisfied(hobo.key(), atk.key(), happy);
         }
 
         // Check if all are satisfied or have left otherwise, then finish visit
@@ -60,14 +57,6 @@ impl DB {
             // defeated_units.for_each(|u| self.delete_hobo(u));
             self.delete_attack(atk);
         }
-    }
-
-    fn damage_from_effects(&self, hobo: &Hobo) -> i64 {
-        self.effects_on_hobo(hobo.key())
-            .iter()
-            .filter(|e| e.attribute == HoboAttributeType::Health)
-            .filter(|e| e.strength.is_some())
-            .fold(0, |acc, e| acc + e.strength.unwrap() as i64)
     }
 
     fn generate_report(&self, atk: &Attack) {
@@ -116,42 +105,6 @@ impl DB {
     }
 }
 
-fn aura_def_pts(def: &[Building], x_distance_swum: usize) -> u32 {
-    let mut sum = 0;
-    let min_x = 0.max(TOWN_X as i32 - x_distance_swum as i32) as usize;
-    for d in def {
-        if d.attacks_per_cycle.is_none() {
-            if let (Some(_range), Some(ap)) = (d.building_range, d.attack_power) {
-                if tiles_in_range(d, min_x) > 0 {
-                    sum += ap as u32;
-                }
-            }
-        }
-    }
-    sum
-}
-
-// This could later be extended with more map variations.
-// Then, it probably makes sense to move these functions to a trait
-
-fn tiles_in_range(b: &Building, min_x: usize) -> usize {
-    if b.building_range.is_none() {
-        return 0;
-    }
-    let mut n = 0;
-    let y = TOWN_LANE_Y;
-    for x in min_x..TOWN_X {
-        let dx = diff(b.x, x);
-        let dy = diff(b.y, y);
-        let range = b.building_range.expect("No range");
-        let in_range = dx * dx + dy * dy <= range * range;
-        if in_range {
-            n += 1;
-        }
-    }
-    n
-}
-
 /// TODO [0.1.5]
 fn reward_feathers(unit: &Hobo) -> i64 {
     let f = if unit.hurried {
@@ -181,8 +134,52 @@ fn reward_logs(unit: &Hobo) -> i64 {
     }
 }
 
-// Simple helpers
+impl<'a> IAttackingHobo for AttackingHobo<'a> {
+    fn max_hp(&self) -> u32 {
+        self.hobo.hp as u32
+    }
+    fn speed(&self) -> f32 {
+        self.hobo.speed
+    }
+    fn hurried(&self) -> bool {
+        self.hobo.hurried
+    }
+    fn arrival(&self) -> i64 {
+        self.attack.arrival.timestamp_millis() as i64
+    }
+    fn released(&self) -> Option<i64> {
+        self.attack_to_hobo
+            .released
+            .map(|t| t.timestamp_millis() as i64)
+    }
+    fn effects_strength(&self) -> i32 {
+        self.effects
+            .iter()
+            .filter(|e| e.attribute == HoboAttributeType::Health)
+            .filter(|e| e.strength.is_some())
+            .fold(0, |acc, e| acc + e.strength.unwrap() as i64) as i32
+    }
+}
 
-fn diff(b: i32, a: usize) -> f32 {
-    (a.max(b as usize) - a.min(b as usize)) as f32
+impl ITownLayoutMarker for TownView {
+    const LAYOUT: TownLayout = TownLayout::Basic;
+}
+impl IDefendingTown for TownView {
+    type AuraId = i64;
+    fn auras_in_range(&self, index: &Self::Index, _time: i64) -> Vec<(Self::AuraId, i32)> {
+        let mut auras = vec![];
+        for b in &self.buildings_with_aura {
+            if b.attacks_per_cycle.is_none() {
+                if let (Some(range), Some(ap)) = (b.building_range, b.attack_power) {
+                    let dx = (b.x - index.0).abs();
+                    let dy = (b.y - index.1).abs();
+                    let in_range = (dx * dx + dy * dy) as f32 <= range * range;
+                    if in_range {
+                        auras.push((b.id, ap));
+                    }
+                }
+            }
+        }
+        auras
+    }
 }

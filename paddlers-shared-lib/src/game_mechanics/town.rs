@@ -1,6 +1,9 @@
 pub mod defence;
 pub mod town_layout;
 
+pub use defence::{IAttackingHobo, IDefendingTown};
+pub use town_layout::{ITownLayout, ITownLayoutMarker, TownLayout};
+
 #[cfg(test)]
 mod defence_test;
 
@@ -21,6 +24,7 @@ pub const TOWN_RESTING_X: usize = 4;
 #[derive(Debug)]
 pub struct TownMap(pub [[TownTileType; TOWN_Y]; TOWN_X]);
 pub type TileIndex = (usize, usize);
+pub type TownLayoutIndex = (i32, i32);
 
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub enum TownTileType {
@@ -48,16 +52,20 @@ pub struct TileState<I: Eq + std::hash::Hash + Clone + Copy + std::fmt::Debug> {
 }
 
 impl TownMap {
-    pub fn basic_map() -> TownMap {
-        let mut map = [[TownTileType::EMPTY; TOWN_Y]; TOWN_X];
-        for x in 0..TOWN_X {
-            for y in 0..TOWN_Y {
-                if y == TOWN_LANE_Y {
-                    map[x][y] = TownTileType::LANE;
+    pub fn new(layout: TownLayout) -> TownMap {
+        match layout {
+            TownLayout::Basic => {
+                let mut map = [[TownTileType::EMPTY; TOWN_Y]; TOWN_X];
+                for x in 0..TOWN_X {
+                    for y in 0..TOWN_Y {
+                        if y == TOWN_LANE_Y {
+                            map[x][y] = TownTileType::LANE;
+                        }
+                    }
                 }
+                TownMap(map)
             }
         }
-        TownMap(map)
     }
     pub fn distance_to_lane(&self, i: TileIndex) -> f32 {
         // Only works for simple map!

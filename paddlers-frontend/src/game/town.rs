@@ -44,7 +44,7 @@ const Y: usize = TOWN_Y;
 
 impl Town {
     pub fn new(resolution: ScreenResolution) -> Self {
-        let map = TownMap::basic_map();
+        let map = TownMap::new(TownLayout::Basic);
         Town {
             map: map,
             state: TownState::new(),

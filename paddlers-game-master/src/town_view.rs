@@ -3,18 +3,25 @@ use paddlers_shared_lib::game_mechanics::forestry::tree_size;
 use paddlers_shared_lib::game_mechanics::town::*;
 use paddlers_shared_lib::prelude::*;
 
+/// Game master state of a town.
+/// It is usually loaded from the database before doing some complex checks which repeatedly require the town state.
+///
+/// Note: For the future, this might be a good idea to put in its own (lazy) caching-layer, probably handled by its own actor.
+/// [Github #4](https://github.com/jakmeier/paddlers-browser-game/issues/4)
 pub struct TownView {
     pub map: TownMap,
     pub state: TownState<i64>,
+    pub buildings_with_aura: Vec<Building>,
 }
 
 impl TownView {
     pub(crate) fn load_village(db: &DB, village: VillageKey) -> Self {
-        let mut map = TownMap::basic_map();
+        let mut map = TownMap::new(TownLayout::Basic);
         let mut state = TownState::new();
         let now = chrono::Utc::now().naive_utc();
 
         let buildings = db.buildings(village);
+        let mut buildings_with_aura = vec![];
         for b in buildings {
             let idx = (b.x as usize, b.y as usize);
             map[idx] = TownTileType::BUILDING(b.building_type);
@@ -31,6 +38,12 @@ impl TownView {
                 _ => 0,
             };
             state.forest_size += forest_supply;
+            if b.attacks_per_cycle.is_none()
+                && b.building_range.is_some()
+                && b.attack_power.is_some()
+            {
+                buildings_with_aura.push(b);
+            }
         }
 
         let workers = db.workers(village);
@@ -45,8 +58,9 @@ impl TownView {
         }
 
         TownView {
-            map: map,
-            state: state,
+            map,
+            state,
+            buildings_with_aura,
         }
     }
 

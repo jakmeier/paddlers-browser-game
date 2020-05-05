@@ -11,7 +11,6 @@ pub trait ITownLayoutMarker {
     const LAYOUT: TownLayout;
 }
 
-pub type TownLayoutIndex = (i32, i32);
 pub enum TownLayout {
     Basic,
 }

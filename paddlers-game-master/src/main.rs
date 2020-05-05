@@ -13,7 +13,6 @@ mod statistics;
 mod town_view;
 mod worker_actions;
 
-use paddlers_shared_lib::api::reports::ReportCollect;
 use actix::prelude::*;
 use actix_cors::Cors;
 use actix_web::{http::header, web, App, HttpServer};
@@ -22,6 +21,7 @@ use game_master::{
     attack_funnel::AttackFunnel, attack_spawn::AttackSpawner, economy_worker::EconomyWorker,
     town_worker::TownWorker, GameMaster,
 };
+use paddlers_shared_lib::api::reports::ReportCollect;
 use paddlers_shared_lib::api::story::StoryStateTransition;
 use paddlers_shared_lib::{
     api::{
