@@ -223,7 +223,7 @@ impl<'a, 'b> Game<'a, 'b> {
     pub fn load_attacking_hobos(&mut self, response: AttacksResponse) -> PadlResult<()> {
         if let Some(data) = response.data {
             for atk in data.village.attacks {
-                atk.create_entities(&mut self.world)?;
+                atk.create_entities(self)?;
             }
         }
         Ok(())

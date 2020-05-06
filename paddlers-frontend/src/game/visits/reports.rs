@@ -34,7 +34,7 @@ impl<'a, 'b> ReportFrame<'a, 'b> {
         let pane = panes::new_pane(
             area.x() as u32,
             area.y() as u32,
-            (area.width() - right_padding) as u32 ,
+            (area.width() - right_padding) as u32,
             area.height() as u32,
             r#"<section class="letters"></section>"#,
         )?;
@@ -128,7 +128,7 @@ impl<'a, 'b> ReportFrame<'a, 'b> {
             2 => "Thanks for showing me your town.",
             3 => "See you again soon.",
             4 => "A lovely place you have there.",
-            _ => unreachable!()
+            _ => unreachable!(),
         }
     }
 }

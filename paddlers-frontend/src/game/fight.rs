@@ -49,6 +49,14 @@ pub struct Health {
     pub aura_effects: Vec<Index>,
 }
 impl Health {
+    pub fn new(hp: i64, hp_left: i64, aura_effects: Vec<Index>) -> Self {
+        Health {
+            max_hp: hp,
+            hp: hp_left,
+            aura_effects,
+        }
+    }
+    #[allow(dead_code)]
     pub fn new_full_health(hp: i64) -> Self {
         Health {
             max_hp: hp,

@@ -3,6 +3,7 @@ pub mod path_finding;
 pub mod task_factory;
 mod temple_shop;
 pub mod tiling;
+pub mod town_defence;
 mod town_frame;
 pub mod town_input;
 pub mod town_render;

@@ -20,7 +20,7 @@ use stdweb::web::{HtmlElement, IElement, INode, Node};
 #[derive(Component, Debug)]
 #[storage(HashMapStorage)]
 pub struct Attack {
-    arrival: Timestamp,
+    pub arrival: Timestamp,
     size: u32,
     description: String,
     dom_node: Option<TextNode>,
