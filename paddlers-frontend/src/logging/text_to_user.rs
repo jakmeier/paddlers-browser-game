@@ -35,7 +35,7 @@ impl TextBoard {
         self.display_message(msg, BLUE, 3_000_000)
     }
     fn display_message(&mut self, msg: String, col: Color, time_us: i64) -> PadlResult<()> {
-        let show_until = utc_now() + time_us;
+        let show_until = utc_now() + Timestamp::from_us(time_us);
         let float = Self::new_float(msg, col)?;
         self.messages.push(TextMessage { float, show_until });
         Ok(())

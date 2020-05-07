@@ -14,8 +14,10 @@ use specs::prelude::*;
 use specs::world::EntitiesRes;
 
 #[derive(Default, Debug, Component)]
-#[storage(NullStorage)]
-pub struct Building;
+#[storage(HashMapStorage)]
+pub struct Building {
+    pub built: Timestamp,
+}
 
 impl Town {
     pub fn insert_new_building(
@@ -56,7 +58,7 @@ impl Town {
                 RenderVariant::ImgWithImgBackground(bt.sprite(), SingleSprite::Grass),
                 building_ingame_scaling(bt),
             ))
-            .with(Building)
+            .with(Building { built: created })
             .with(Clickable);
 
         if let Some(r) = range {
@@ -143,7 +145,7 @@ impl buildings_query::BuildingsQueryVillageBuildings {
             buildings_query::BuildingType::TEMPLE => BuildingType::Temple,
             _ => panic!("Unexpected BuildingType"),
         };
-        let created = GqlTimestamp::from_string(&self.creation).unwrap().0;
+        let created = GqlTimestamp::from_string(&self.creation).unwrap().into();
 
         let entities = game.world.entities();
         let lazy = game.world.read_resource::<LazyUpdate>();

@@ -25,19 +25,6 @@ pub struct ClockTick(pub u32);
 /// Real-time timestamp of frame rendering
 pub struct Now(pub Timestamp);
 
-#[allow(dead_code)]
-impl Now {
-    pub fn micros(&self) -> i64 {
-        self.0
-    }
-    pub fn millis(&self) -> i64 {
-        self.0 / 1000
-    }
-    pub fn seconds(&self) -> i64 {
-        self.0 / 1000_000
-    }
-}
-
 impl UiState {
     pub fn new(current_view: UiView) -> Self {
         UiState {

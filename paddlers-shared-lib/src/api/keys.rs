@@ -1,7 +1,7 @@
 //! Common key types for cross-layer entities.
 //! The only purpose of these keys is to provide static type checks.
 
-use crate::PadlId;
+use crate::prelude::PadlId;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]

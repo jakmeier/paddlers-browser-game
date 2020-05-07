@@ -203,7 +203,7 @@ impl Game<'_, '_> {
         self.world.read_resource()
     }
     pub fn update_time_reference(&mut self) {
-        if self.time_zero != 0 {
+        if self.time_zero.micros() != 0 {
             let t = utc_now();
             let mut ts = self.world.write_resource::<Now>();
             *ts = Now(t);

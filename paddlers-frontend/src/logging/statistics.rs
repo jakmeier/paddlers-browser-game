@@ -23,7 +23,7 @@ impl Statistician {
     /// Call this once per frame to keep track of FPS and occasionally log data back to server
     pub fn track_frame(&mut self, rest: &mut RestApiState, now: Timestamp) -> PadlResult<()> {
         self.frames += 1;
-        if self.last_sent + INTERVAL_SECONDS * 1_000_000 < now {
+        if self.last_sent + Timestamp::from_seconds(INTERVAL_SECONDS) < now {
             self.send(rest, now)?;
             self.last_sent = now;
             self.frames = 0;
@@ -33,11 +33,11 @@ impl Statistician {
 
     fn send(&mut self, rest: &mut RestApiState, now: Timestamp) -> PadlResult<()> {
         let interval_us = now - self.last_sent;
-        let fps = 1_000_000.0 * self.frames as f64 / interval_us as f64;
+        let fps = 1_000_000.0 * self.frames as f64 / interval_us.micros() as f64;
         let duration_us = now - self.session_start;
         let msg = FrontendRuntimeStatistics {
             browser: browser_info(),
-            session_duration_s: duration_us / 1_000_000,
+            session_duration_s: duration_us.seconds(),
             fps: fps,
         };
         rest.http_send_statistics(msg)

@@ -218,7 +218,7 @@ impl UiElement {
     fn draw_overlay(&self, window: &mut Window, area: &Rectangle, now: Timestamp) {
         if let Some((start, end)) = self.overlay {
             if now > start && now < end {
-                let progress = (now - start) as f32 / (end - start) as f32;
+                let progress = (now - start).micros() as f32 / (end - start).micros() as f32;
                 let center = area.center();
                 let border = [
                     Vector::new(center.x, area.y()),

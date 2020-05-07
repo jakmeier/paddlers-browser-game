@@ -10,6 +10,7 @@ extern crate diesel_migrations;
 extern crate strum_macros;
 
 #[cfg(feature = "web")]
+#[allow(unused_imports)]
 #[macro_use]
 extern crate stdweb;
 
@@ -25,6 +26,7 @@ pub mod display;
 pub mod graphql_types;
 pub mod models;
 pub mod prelude;
+pub mod shared_types;
 pub mod story;
 pub mod test_data;
 
@@ -42,6 +44,3 @@ pub use sql_db::*;
 
 #[cfg(feature = "user_authentication")]
 pub mod user_authentication;
-
-/// The default ID Type for referencing objects across the Paddlers services.
-pub type PadlId = i64;

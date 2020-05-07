@@ -55,7 +55,7 @@ impl AbilitySet {
                     ),
                 );
                 if let Some(t) = lu {
-                    el = el.with_cooldown(t, t + ability.cooldown().num_microseconds().unwrap());
+                    el = el.with_cooldown(t, t + ability.cooldown());
                 }
                 ui.add(el);
             }

@@ -54,7 +54,7 @@ impl Attack {
         }
     }
     fn arrival(&self) -> String {
-        let t = crate::seconds(self.arrival - utc_now());
+        let t = (self.arrival - utc_now()).seconds();
         if t > 0 {
             t.to_string() + "s"
         } else {
@@ -206,7 +206,7 @@ impl<'a> System<'a> for UpdateAttackViewSystem {
 
     fn run(&mut self, (mut attack, mut errq): Self::SystemData) {
         let now = utc_now();
-        if now - self.last_update < 1_000_000 {
+        if (now - self.last_update).micros() < 1_000_000 {
             return;
         }
         self.last_update = now;

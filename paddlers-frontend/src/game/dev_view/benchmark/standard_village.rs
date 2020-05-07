@@ -61,7 +61,7 @@ pub(crate) fn insert_hobos(world: &mut World) -> PadlResult<()> {
         world, pos1, color, birth_time, speed, hp, ul, netid, &effects, None,
     )?;
 
-    let dt = 5_000_000;
+    let dt = chrono::Duration::seconds(5);
 
     let birth_time = birth_time - dt;
     insert_duck(
@@ -92,7 +92,7 @@ pub(crate) fn insert_hobos(world: &mut World) -> PadlResult<()> {
         world, pos1, color, birth_time, speed, hp, ul, netid, &effects, None,
     )?;
 
-    let birth_time = birth_time - 10 * dt;
+    let birth_time = birth_time - dt * 10;
     let color0 = UnitColor::Yellow;
     let color1 = UnitColor::White;
     insert_duck(
@@ -122,7 +122,7 @@ pub(crate) fn insert_hobos(world: &mut World) -> PadlResult<()> {
     insert_duck(
         world, pos1, color0, birth_time, speed, hp, ul, netid, &effects, None,
     )?;
-    let birth_time = birth_time - 2 * dt;
+    let birth_time = birth_time - dt * 2;
     insert_duck(
         world, pos0, color0, birth_time, speed, hp, ul, netid, &effects, None,
     )?;

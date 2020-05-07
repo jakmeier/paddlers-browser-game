@@ -109,8 +109,8 @@ impl AttacksQueryVillageAttacks {
         game: &mut Game<'a, 'b>,
     ) -> PadlResult<Vec<Entity>> {
         let ul = game.world.fetch::<ScreenResolution>().unit_length();
-        let birth_time = GqlTimestamp::from_string(&self.arrival).unwrap().0;
-        let now = game.world.fetch::<Now>().millis();
+        let birth_time = GqlTimestamp::from_string(&self.arrival).unwrap().into();
+        let now = game.world.fetch::<Now>().0.millis();
 
         let description = self
             .attacker

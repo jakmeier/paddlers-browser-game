@@ -47,8 +47,7 @@ pub fn main() {
     init::run(state);
 }
 
-/// Micro second precision
-pub type Timestamp = i64;
+pub use paddlers_shared_lib::shared_types::Timestamp;
 
 use crate::prelude::PadlEvent;
 use quicksilver::prelude::Window;
@@ -61,8 +60,3 @@ pub(crate) type Framer = FrameManager<
     prelude::PadlError,
     init::quicksilver_integration::Signal,
 >;
-
-#[inline]
-pub fn seconds(t: Timestamp) -> i64 {
-    t / 1_000_000
-}

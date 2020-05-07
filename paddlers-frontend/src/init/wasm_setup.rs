@@ -32,7 +32,7 @@ pub fn utc_now() -> crate::Timestamp {
     )
     .try_into()
     .expect("Reading time");
-    millis as i64 * 1000
+    crate::Timestamp::from_millis(millis as i64)
 }
 
 /// Extension trait for stdweb::web::INode

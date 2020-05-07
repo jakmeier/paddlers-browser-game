@@ -111,7 +111,7 @@ impl PointerManager<'_, '_> {
             (ButtonState::Released, MouseButton::Left) => {
                 if let Some((start_pos, start_t)) = self.pointer_down {
                     if !self.dragging && start_pos.distance_2(pos) < MIN_DRAG_DISTANCE_2 {
-                        let key = if now - start_t < LONG_CLICK_DELAY {
+                        let key = if now - start_t < Timestamp::from_us(LONG_CLICK_DELAY) {
                             PointerButton::Primary
                         } else {
                             PointerButton::Secondary

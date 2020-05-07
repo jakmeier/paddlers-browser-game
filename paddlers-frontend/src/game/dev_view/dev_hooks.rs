@@ -26,7 +26,7 @@ impl Game<'_, '_> {
         if let Some(test) = self.active_test.as_mut() {
             test.record_end_of_frame();
             if let Some(result) = test.result() {
-                let date = crate::seconds(utc_now());
+                let date = utc_now().seconds();
                 #[cfg(feature = "mobile_debug")]
                 let device = "phone";
                 #[cfg(not(feature = "mobile_debug"))]

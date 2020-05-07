@@ -166,9 +166,12 @@ impl ITownLayoutMarker for TownView {
 }
 impl IDefendingTown for TownView {
     type AuraId = i64;
-    fn auras_in_range(&self, index: &Self::Index, _time: i64) -> Vec<(Self::AuraId, i32)> {
+    fn auras_in_range(&self, index: &Self::Index, time: i64) -> Vec<(Self::AuraId, i32)> {
         let mut auras = vec![];
         for b in &self.buildings_with_aura {
+            if time < b.creation.timestamp_millis() {
+                continue;
+            }
             if b.attacks_per_cycle.is_none() {
                 if let (Some(range), Some(ap)) = (b.building_range, b.attack_power) {
                     let dx = (b.x - index.0).abs();

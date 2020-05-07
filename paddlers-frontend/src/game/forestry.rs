@@ -28,7 +28,7 @@ impl<'a> System<'a> for ForestrySystem {
         let mut total = 0;
         for (tree, r) in (&mut forest, &mut rend).join() {
             let before = tree.score;
-            let t = chrono::Duration::microseconds(now - tree.planted);
+            let t = chrono::Duration::microseconds((now - tree.planted).micros());
             tree.score = tree_size(t);
             if tree.score != before {
                 if let RenderVariant::ImgWithImgBackground(ref mut img, _bkg) = r.kind {

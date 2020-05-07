@@ -23,6 +23,5 @@ macro_rules! webprintln {
 #[macro_export]
 /// for printing that should only happen on the web
 macro_rules! webprintln {
-    ($($tt:tt)*) => {{
-    }}
+    ($($tt:tt)*) => {{}};
 }

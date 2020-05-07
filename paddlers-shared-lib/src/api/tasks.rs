@@ -2,7 +2,7 @@ use crate::api::keys::WorkerKey;
 #[cfg(feature = "game_mechanics")]
 use crate::game_mechanics::town::TileIndex;
 use crate::models::*;
-use crate::PadlId;
+use crate::prelude::PadlId;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Serialize, Deserialize, Debug)]

@@ -140,7 +140,7 @@ impl GameState {
             let now = self.game.world.read_resource::<Now>().0;
             let mut tick = self.game.world.write_resource::<ClockTick>();
             let us_draw_rate = 1_000_000 / 60;
-            *tick = ClockTick((now / us_draw_rate) as u32);
+            *tick = ClockTick((now.micros() / us_draw_rate) as u32);
         }
         {
             let mut q = self.game.world.write_resource::<ErrorQueue>();

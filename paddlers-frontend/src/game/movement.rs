@@ -84,9 +84,9 @@ impl Moving {
         }
     }
     pub fn position(&self, t: Timestamp) -> Vector {
-        self.start_pos + self.momentum * (t - self.start_ts) as f32 / 1_000_000
+        self.start_pos + self.momentum * (t - self.start_ts).micros() as f32 / 1_000_000
     }
-    pub fn stand_still(&mut self, timestamp: i64) {
+    pub fn stand_still(&mut self, timestamp: Timestamp) {
         self.start_pos = self.position(timestamp);
         self.start_ts = timestamp;
         self.momentum = (0.0, 0.0).into();

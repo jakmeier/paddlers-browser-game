@@ -9,7 +9,7 @@ pub use serde::Deserialize;
 type GqlTimestamp = String;
 
 pub fn parse_timestamp(s: &String) -> Timestamp {
-    timestamp(s).0
+    timestamp(s).into()
 }
 fn timestamp(s: &String) -> graphql_types::GqlTimestamp {
     graphql_types::GqlTimestamp::from_string(s).unwrap()
@@ -90,7 +90,7 @@ impl VillageUnitsTask {
         Ok(WorkerTask {
             task_type: (&self.task_type).into(),
             position: (self.x as usize, self.y as usize),
-            start_time: timestamp(&self.start_time).0,
+            start_time: timestamp(&self.start_time).into(),
             target,
         })
     }
@@ -131,7 +131,7 @@ impl WorkerTaskEx {
         Ok(WorkerTask {
             task_type: (&self.task_type).into(),
             position: (self.x as usize, self.y as usize),
-            start_time: timestamp(&self.start_time).0,
+            start_time: timestamp(&self.start_time).into(),
             target,
         })
     }

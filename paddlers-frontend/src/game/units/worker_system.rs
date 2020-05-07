@@ -136,7 +136,7 @@ impl<'a> System<'a> for WorkerSystem {
 fn update_cooldown(ui: &mut UiMenu, ability: AbilityType, now: Timestamp) {
     let click = ClickOutput::Ability(ability);
     if let Some(el) = ui.ui.find_by_on_click(click) {
-        el.overlay = Some((now, now + ability.cooldown().num_microseconds().unwrap()));
+        el.overlay = Some((now, now + ability.cooldown()));
     }
 }
 
