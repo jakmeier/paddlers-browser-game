@@ -76,12 +76,14 @@ fn unhurried_hobo_satisfied_and_gone() {
 fn unhurried_hobo_resting() {
     let mut hobo = TestHobo::new();
     hobo.max_hp = 10;
-    hobo.effects_strength = 8;
+    hobo.effects_strength = 6;
     hobo.hurried = false;
     hobo.released = None;
     let mut town = TestTown::new();
     let aura = TestAura::new(3);
     town.add_aura(aura, &[(1, Y), (2, Y), (3, Y)]);
+    let aura = TestAura::new(2);
+    town.add_aura(aura, &[(7, Y), (8, Y), (9, Y)]);
 
     let now = 100_000;
 
@@ -92,7 +94,7 @@ fn unhurried_hobo_resting() {
     assert_eq!(hobo_hp_left, 2);
 
     let dmg = town.aura_damage(&hobo, now);
-    assert_eq!(dmg, 0);
+    assert_eq!(dmg, 2);
 
     let dmg = town.total_damage(&hobo, now);
     assert_eq!(dmg, 8);

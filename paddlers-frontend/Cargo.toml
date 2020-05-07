@@ -8,7 +8,7 @@ categories = ["wasm", "game"]
 
 
 [dependencies]
-paddlers-shared-lib = { path = "../paddlers-shared-lib", features = ["enum_utils", "game_mechanics"] }
+paddlers-shared-lib = { path = "../paddlers-shared-lib", features = ["enum_utils", "game_mechanics", "web"] }
 panes = { git = "https://github.com/jakmeier/panes", rev = "39de99f30400ac5b961eaa14516154f50a992b62" }
 # quicksilver = { version = "0.3", default-features = false, features = ["fonts", "complex_shapes"] }
 quicksilver = { git = "https://github.com/jakmeier/quicksilver", default-features = false, features = ["complex_shapes"], rev = "ee836faf9688d2d6ad87f96a57aa386670a6c6de" }

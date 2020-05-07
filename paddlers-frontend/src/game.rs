@@ -88,6 +88,9 @@ impl Game<'_, '_> {
         dispatcher.setup(&mut world);
 
         let now = utc_now();
+        let mut ts = world.write_resource::<Now>();
+        *ts = Now(now);
+        std::mem::drop(ts);
 
         if let Some(temple) = world.read_resource::<Town>().temple {
             let mut menus = world.write_storage::<UiMenu>();
@@ -124,9 +127,12 @@ impl Game<'_, '_> {
                 .buildings_response
                 .ok_or("No buildings response")?,
         )?;
+        // Make sure buildings are loaded properly before inserting any types of units
+        game.world.maintain();
         game.load_workers_from_net_response(game_data.worker_response.ok_or("No worker response")?);
         game.load_hobos_from_net_response(game_data.hobos_response.ok_or("No hobos response")?)?;
         game.load_attacking_hobos(game_data.attacking_hobos.ok_or("No attacks response")?)?;
+        // Make sure all units are loaded properly before story triggers are added
         game.world.maintain();
         game.load_story_state()?;
         Ok(game)

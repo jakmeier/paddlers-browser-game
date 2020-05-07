@@ -11,6 +11,7 @@ use crate::game_master::attack_spawn::{AttackSpawner, SendAnarchistAttack};
 use actix::prelude::*;
 use chrono::NaiveDateTime;
 use paddlers_shared_lib::game_mechanics::hobos::HoboLevel;
+use paddlers_shared_lib::game_mechanics::town::TOWN_X;
 use paddlers_shared_lib::prelude::Player;
 use paddlers_shared_lib::prelude::VillageKey;
 use paddlers_shared_lib::sql::GameDB;
@@ -110,7 +111,7 @@ fn check_attacks(db: &DB) {
         let attacks = db.attacks(village.key(), None);
         let now = chrono::Utc::now().naive_utc();
         for atk in attacks.iter() {
-            if atk.arrival < now {
+            if atk.arrival + chrono::Duration::seconds(2 * TOWN_X as i64) < now {
                 db.maybe_evaluate_attack(atk, now);
             }
         }
