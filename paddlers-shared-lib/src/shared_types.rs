@@ -22,6 +22,10 @@ impl Timestamp {
         Timestamp(s * 1_000_000)
     }
     #[inline(always)]
+    pub fn from_float_seconds(s: f32) -> Self {
+        Timestamp((s * 1_000_000.0) as i64)
+    }
+    #[inline(always)]
     pub fn micros(&self) -> i64 {
         self.0
     }
@@ -32,6 +36,10 @@ impl Timestamp {
     #[inline(always)]
     pub fn seconds(&self) -> i64 {
         self.0 / 1000_000
+    }
+    #[inline(always)]
+    pub fn seconds_float(&self) -> f32 {
+        self.0 as f32 / 1000_000.0
     }
 }
 
@@ -51,7 +59,7 @@ impl std::ops::Sub for Timestamp {
     }
 }
 
-use chrono::Duration;
+use chrono::{Duration, NaiveDateTime};
 impl std::ops::Add<Duration> for Timestamp {
     type Output = Self;
 
@@ -65,5 +73,10 @@ impl std::ops::Sub<Duration> for Timestamp {
 
     fn sub(self, other: Duration) -> Self {
         Self(self.0 - other.num_microseconds().unwrap())
+    }
+}
+impl From<NaiveDateTime> for Timestamp {
+    fn from(other: NaiveDateTime) -> Self {
+        Timestamp::from_us(other.timestamp() * 1_000_000 + other.timestamp_subsec_micros() as i64)
     }
 }

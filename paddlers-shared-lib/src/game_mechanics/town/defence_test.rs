@@ -1,14 +1,15 @@
 use super::defence::*;
 use super::town_layout::*;
 use super::*;
+use crate::shared_types::Timestamp;
 use std::collections::HashMap;
 
 struct TestHobo {
     max_hp: u32,
     speed: f32,
     hurried: bool,
-    arrival: i64,
-    released: Option<i64>,
+    arrival: Timestamp,
+    released: Option<Timestamp>,
     effects_strength: i32,
 }
 struct TestTown {
@@ -20,7 +21,7 @@ struct TestAura {
     strength: i32,
 }
 
-const Y: i32 = TOWN_LANE_Y as i32;
+const Y: usize = TOWN_LANE_Y;
 
 #[test]
 fn hurried_hobo_satisfied_and_gone() {
@@ -31,7 +32,7 @@ fn hurried_hobo_satisfied_and_gone() {
     let aura = TestAura::new(3);
     town.add_aura(aura, &[(1, Y), (2, Y), (3, Y)]);
 
-    let now = 100_000;
+    let now = Timestamp::from_seconds(100);
 
     let hobo_left_town = town.hobo_left_town(&hobo, now);
     assert!(hobo_left_town);
@@ -52,12 +53,12 @@ fn unhurried_hobo_satisfied_and_gone() {
     hobo.max_hp = 10;
     hobo.effects_strength = 8;
     hobo.hurried = false;
-    hobo.released = Some(0);
+    hobo.released = Some(Timestamp::from_seconds(0));
     let mut town = TestTown::new();
     let aura = TestAura::new(3);
     town.add_aura(aura, &[(1, Y), (2, Y), (3, Y)]);
 
-    let now = 100_000;
+    let now = Timestamp::from_seconds(100);
 
     let hobo_left_town = town.hobo_left_town(&hobo, now);
     assert!(hobo_left_town);
@@ -85,7 +86,7 @@ fn unhurried_hobo_resting() {
     let aura = TestAura::new(2);
     town.add_aura(aura, &[(7, Y), (8, Y), (9, Y)]);
 
-    let now = 100_000;
+    let now = Timestamp::from_seconds(100);
 
     let hobo_left_town = town.hobo_left_town(&hobo, now);
     assert!(!hobo_left_town);
@@ -100,13 +101,37 @@ fn unhurried_hobo_resting() {
     assert_eq!(dmg, 8);
 }
 
+#[test]
+fn unhurried_hobo_released() {
+    let now = Timestamp::from_seconds(10);
+
+    let mut hobo = TestHobo::new();
+    hobo.max_hp = 100;
+    hobo.hurried = false;
+    hobo.speed = 0.5;
+    hobo.released = Some(now - Timestamp::from_seconds(2));
+    let mut town = TestTown::new();
+
+    let aura_placed_early = TestAura::new(3);
+    town.add_aura(aura_placed_early, &[(3, Y)]);
+
+    let aura_placed_too_late = TestAura::new(2);
+    town.add_aura(aura_placed_too_late, &[(1, Y)]);
+
+    let hobo_left_town = town.hobo_left_town(&hobo, now);
+    assert!(!hobo_left_town);
+
+    let hobo_hp_left = town.hp_left(&hobo, now);
+    assert_eq!(hobo_hp_left, 97);
+}
+
 impl TestHobo {
     fn new() -> Self {
         TestHobo {
             max_hp: 100,
             speed: 0.5,
             hurried: true,
-            arrival: 0,
+            arrival: Timestamp::from_seconds(0),
             released: None,
             effects_strength: 0,
         }
@@ -123,10 +148,10 @@ impl IAttackingHobo for TestHobo {
     fn hurried(&self) -> bool {
         self.hurried
     }
-    fn arrival(&self) -> i64 {
+    fn arrival(&self) -> Timestamp {
         self.arrival
     }
-    fn released(&self) -> Option<i64> {
+    fn released(&self) -> Option<Timestamp> {
         self.released
     }
     fn effects_strength(&self) -> i32 {
@@ -138,7 +163,7 @@ impl ITownLayoutMarker for TestTown {
 }
 impl IDefendingTown for TestTown {
     type AuraId = usize;
-    fn auras_in_range(&self, index: &Self::Index, _time: i64) -> Vec<(Self::AuraId, i32)> {
+    fn auras_in_range(&self, index: &Self::Index, _time: Timestamp) -> Vec<(Self::AuraId, i32)> {
         if let Some(auras) = self.building_auras.get(index) {
             auras.iter().map(|aura| (aura.id, aura.strength)).collect()
         } else {

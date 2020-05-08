@@ -30,7 +30,7 @@ impl DB {
     /// Checks if all visitors have already left (or been satisfied).
     /// If so, the visit is evaluated and a report with rewards is generated.
     pub fn maybe_evaluate_attack(&self, atk: &Attack, now: NaiveDateTime) {
-        let now = now.timestamp_millis();
+        let now: Timestamp = now.into();
         let village = atk.destination();
         let active_units = self.attack_hobos_active_with_attack_info(atk);
         let town = TownView::load_village(&self, village);
@@ -144,13 +144,11 @@ impl<'a> IAttackingHobo for AttackingHobo<'a> {
     fn hurried(&self) -> bool {
         self.hobo.hurried
     }
-    fn arrival(&self) -> i64 {
-        self.attack.arrival.timestamp_millis() as i64
+    fn arrival(&self) -> Timestamp {
+        self.attack.arrival.into()
     }
-    fn released(&self) -> Option<i64> {
-        self.attack_to_hobo
-            .released
-            .map(|t| t.timestamp_millis() as i64)
+    fn released(&self) -> Option<Timestamp> {
+        self.attack_to_hobo.released.map(|t| t.into())
     }
     fn effects_strength(&self) -> i32 {
         self.effects
@@ -166,16 +164,16 @@ impl ITownLayoutMarker for TownView {
 }
 impl IDefendingTown for TownView {
     type AuraId = i64;
-    fn auras_in_range(&self, index: &Self::Index, time: i64) -> Vec<(Self::AuraId, i32)> {
+    fn auras_in_range(&self, index: &Self::Index, time: Timestamp) -> Vec<(Self::AuraId, i32)> {
         let mut auras = vec![];
         for b in &self.buildings_with_aura {
-            if time < b.creation.timestamp_millis() {
+            if time < b.creation.into() {
                 continue;
             }
             if b.attacks_per_cycle.is_none() {
                 if let (Some(range), Some(ap)) = (b.building_range, b.attack_power) {
-                    let dx = (b.x - index.0).abs();
-                    let dy = (b.y - index.1).abs();
+                    let dx = (b.x - index.0 as i32).abs();
+                    let dy = (b.y - index.1 as i32).abs();
                     let in_range = (dx * dx + dy * dy) as f32 <= range * range;
                     if in_range {
                         auras.push((b.id, ap));

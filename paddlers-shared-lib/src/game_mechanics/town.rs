@@ -24,7 +24,7 @@ pub const TOWN_RESTING_X: usize = 4;
 #[derive(Debug)]
 pub struct TownMap(pub [[TownTileType; TOWN_Y]; TOWN_X]);
 pub type TileIndex = (usize, usize);
-pub type TownLayoutIndex = (i32, i32);
+pub type TownLayoutIndex = (usize, usize);
 
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub enum TownTileType {
