@@ -4,16 +4,28 @@
 //! Based solely on this information, the computation is defined inside the traits.
 //! The frontend and the backend can therefore use his computation by implementing the traits.
 use super::town_layout::ITownLayout;
+use super::{TOWN_RESTING_X, TOWN_X};
 use crate::shared_types::*;
 
 /// Provides information about a hobo currently attacking
 pub trait IAttackingHobo {
+    // TO IMPLEMENT
     fn max_hp(&self) -> u32;
     fn speed(&self) -> f32;
     fn hurried(&self) -> bool;
     fn arrival(&self) -> Timestamp;
     fn released(&self) -> Option<Timestamp>;
     fn effects_strength(&self) -> i32;
+
+    // PROVIDED
+    /// Returns the duration it takes the hobo to reach the resting place, after having reached the town.
+    fn time_until_resting(&self) -> Timestamp {
+        Self::s_time_until_resting(self.speed())
+    }
+    fn s_time_until_resting(speed: f32) -> Timestamp {
+        let distance_until_resting = TOWN_X - TOWN_RESTING_X;
+        Timestamp::from_float_seconds(distance_until_resting as f32 / speed)
+    }
 }
 
 /// Trait for town information required to perform hp computations

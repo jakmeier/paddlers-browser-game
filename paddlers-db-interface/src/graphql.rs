@@ -140,7 +140,9 @@ impl Query {
     // Object Visibility: user
     fn hobo(ctx: &Context, hobo_id: i32) -> FieldResult<GqlHobo> {
         Ok(GqlHobo(
-            ctx.db().hobo(hobo_id as i64).ok_or("No such unit exists")?,
+            ctx.db()
+                .hobo(HoboKey(hobo_id as i64))
+                .ok_or("No such unit exists")?,
         ))
     }
     // Object Visibility: public

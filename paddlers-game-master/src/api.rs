@@ -172,7 +172,7 @@ pub(crate) fn create_attack(
         .into_iter()
         .map(move |hobo_key| {
             let db: crate::db::DB = pool.clone().get_ref().into();
-            web::block(move || match db.hobo(hobo_key.num()) {
+            web::block(move || match db.hobo(hobo_key) {
                 Some(hobo) => Ok(hobo),
                 None => Err("Invalid hobo"),
             })

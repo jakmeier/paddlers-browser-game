@@ -10,6 +10,7 @@ use paddlers_shared_lib::prelude::*;
 pub enum Event {
     WorkerTask { task_id: TaskKey },
     CheckRestingVisitors { village_id: VillageKey },
+    CheckVisitorHp { hobo_id: HoboKey },
 }
 
 impl Event {
@@ -31,6 +32,14 @@ impl Event {
                     for (hobo, attack_id) in &visitors[MAX_VISITOR_QUEUE..] {
                         db.release_resting_visitor(hobo.key(), *attack_id)
                     }
+                }
+                None
+            }
+            Self::CheckVisitorHp { hobo_id } => {
+                let now = chrono::Utc::now().naive_utc();
+                for (atk, _info) in db.hobo_attack_info(*hobo_id) {
+                    // Performance: Checking the entire attack is a bit of an overkill (was the easiest to implement without code duplication)
+                    db.maybe_evaluate_attack(&atk, now);
                 }
                 None
             }

@@ -9,10 +9,11 @@
 
 use crate::db::*;
 use crate::game_master::event::Event;
+use crate::game_master::town_defence::AttackingHobo;
 use crate::game_master::town_worker::{TownWorker, TownWorkerEventMsg};
 use actix::prelude::*;
 use chrono::{offset::TimeZone, NaiveDateTime, Utc};
-use paddlers_shared_lib::game_mechanics::map::map_distance;
+use paddlers_shared_lib::game_mechanics::{map::map_distance, town::defence::IAttackingHobo};
 use paddlers_shared_lib::prelude::*;
 use std::ops::Add;
 
@@ -52,11 +53,12 @@ impl Handler<PlannedAttack> for AttackFunnel {
 
         // TODO (Correctness): Somehow efficiently check that hobos are not attacking already
         let unit_count = msg.hobos.len();
-        let unhurried_count = msg
+        let unhurried = msg
             .hobos
             .iter()
-            .map(|h| if h.hurried { 0 } else { 1 })
-            .fold(0, |h, acc| acc + h);
+            .cloned()
+            .filter(|h| !h.hurried)
+            .collect::<Vec<_>>();
         let hobos = msg.hobos.into_iter().map(|h| h.key()).collect();
 
         let min_secs = 15;
@@ -78,12 +80,14 @@ impl Handler<PlannedAttack> for AttackFunnel {
             destination_village_id: msg.destination_village.id,
         };
 
+        // Put new attack in DB
         let pa = ScheduledAttack { attack, hobos };
         self.db_actor
             .try_send(DeferredDbStatement::NewAttack(pa))
             .expect("Sending attack failed");
 
-        if unhurried_count > 0 {
+        // Validate the resting queue the attack arrives, unless there is no unhurried hobo
+        if unhurried.len() > 0 {
             let delayed_event = Event::CheckRestingVisitors {
                 village_id: msg.destination_village.key(),
             };
@@ -92,6 +96,21 @@ impl Handler<PlannedAttack> for AttackFunnel {
                 .try_send(TownWorkerEventMsg(
                     delayed_event,
                     Utc.from_utc_datetime(&time),
+                ))
+                .expect("Sending event failed");
+        }
+        // For all unhurried hobos, the hp should be checked when they reach the resting place
+        for hobo in unhurried {
+            let delayed_event = Event::CheckVisitorHp {
+                hobo_id: hobo.key(),
+            };
+            let swim_time: chrono::Duration =
+                AttackingHobo::s_time_until_resting(hobo.speed).into();
+            let event_time = arrival + swim_time;
+            self.town_worker
+                .try_send(TownWorkerEventMsg(
+                    delayed_event,
+                    Utc.from_utc_datetime(&event_time),
                 ))
                 .expect("Sending event failed");
         }

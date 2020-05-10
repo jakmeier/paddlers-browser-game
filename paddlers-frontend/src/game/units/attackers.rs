@@ -100,9 +100,7 @@ pub fn change_duck_sprite_to_happy(r: &mut Renderable) {
     }
 }
 
-use crate::net::graphql::attacks_query::{
-    AttacksQueryVillageAttacks, AttacksQueryVillageAttacksUnits,
-};
+use crate::net::graphql::attacks_query::AttacksQueryVillageAttacks;
 impl AttacksQueryVillageAttacks {
     pub(crate) fn create_entities<'a, 'b>(
         self,
@@ -125,13 +123,8 @@ impl AttacksQueryVillageAttacks {
         for (i, unit) in self.units.into_iter().enumerate() {
             let unit_rep = AttackingHobo { unit, attack: &atk };
             let effects = game.touched_auras(&unit_rep, now);
-            let builder = unit_rep.unit.create_entity(
-                game.world.create_entity(),
-                birth_time,
-                i,
-                ul,
-                effects,
-            )?;
+            let builder =
+                unit_rep.create_entity(game.world.create_entity(), birth_time, i, ul, effects)?;
             out.push(builder.build());
         }
 
@@ -140,7 +133,7 @@ impl AttacksQueryVillageAttacks {
         Ok(out)
     }
 }
-impl<'a> AttacksQueryVillageAttacksUnits {
+impl<'a> AttackingHobo<'a> {
     fn create_entity(
         &self,
         builder: specs::EntityBuilder<'a>,
@@ -149,40 +142,53 @@ impl<'a> AttacksQueryVillageAttacksUnits {
         ul: f32,
         auras: Vec<(<Game<'_, '_> as IDefendingTown>::AuraId, i32)>,
     ) -> PadlResult<specs::EntityBuilder<'a>> {
-        let v = -self.hobo.speed as f32 * ul;
+        let v = -self.unit.hobo.speed as f32 * ul;
         let w = TOWN_X as f32 * ul;
         let x = w - ul * ATTACKER_SIZE_FACTOR_X;
         let y = TOWN_LANE_Y as f32 * ul;
-        let pos = Vector::new(x, y) + attacker_position_rank_offset(pos_rank, ul);
-        let hp = self.hobo.hp;
-        let netid = self.hobo.id.parse().expect("Parsing id");
+        let mut pos = Vector::new(x, y) + attacker_position_rank_offset(pos_rank, ul);
+        let mut t0 = birth;
+        let hp = self.unit.hobo.hp;
+        let netid = self.unit.hobo.id.parse().expect("Parsing id");
         let color = self
+            .unit
             .hobo
             .color
             .as_ref()
             .map(|c| c.into())
             .unwrap_or(UnitColor::Yellow);
-        let final_pos = if self.hobo.hurried {
+        let final_pos = if self.unit.hobo.hurried || self.unit.info.released.is_some() {
             Some(Vector::new(-w, pos.y))
         } else {
             Some(Vector::new(TOWN_RESTING_X as f32 * ul, pos.y))
         };
 
         // Simulate all interactions with buildings for the visitor which happened in the past
-        let dmg = <Game<'_, '_> as IDefendingTown>::damage(&auras);
+        let dmg = <Game<'_, '_> as IDefendingTown>::damage(&auras) + self.effects_strength();
         let hp_left = (hp - dmg as i64).max(0);
         let aura_ids = auras.into_iter().map(|a| a.0).collect();
         let health = Health::new(hp, hp_left, aura_ids);
+
+        // Adapt position for units that have been resting and then released
+        if let Some(released) = &self.unit.info.released {
+            let released = GqlTimestamp::from_string(released).unwrap().into();
+            let time_until_resting = self.time_until_resting();
+            if released > birth + time_until_resting {
+                pos.x = TOWN_RESTING_X as f32 * ul;
+                t0 = released;
+            }
+        }
+
         build_new_duck_entity(
             builder,
             pos,
             color,
-            birth,
+            t0,
             (v as f32, 0.0),
             health,
             ul,
             netid,
-            &self.hobo.effects,
+            &self.unit.hobo.effects,
             final_pos,
         )
     }

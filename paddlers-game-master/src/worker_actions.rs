@@ -56,7 +56,7 @@ pub(crate) fn validate_task_list(
     for task in tl.tasks.iter() {
         // Validate target hobo exists if there is one
         if let Some(target_id) = task.target {
-            db.hobo(target_id).ok_or("No such hobo id")?;
+            db.hobo(HoboKey(target_id)).ok_or("No such hobo id")?;
         }
 
         validate_ability(db, task.task_type, worker_id, timestamp)?;

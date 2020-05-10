@@ -90,7 +90,7 @@ pub struct NewWorker {
 }
 
 #[cfg(feature = "sql_db")]
-#[derive(Debug, Queryable, Identifiable, AsChangeset)]
+#[derive(Debug, Queryable, Identifiable, AsChangeset, Clone)]
 pub struct Hobo {
     pub id: i64,
     pub home: i64,

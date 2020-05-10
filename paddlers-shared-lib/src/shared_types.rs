@@ -67,7 +67,6 @@ impl std::ops::Add<Duration> for Timestamp {
         Self(self.0 + other.num_microseconds().unwrap())
     }
 }
-
 impl std::ops::Sub<Duration> for Timestamp {
     type Output = Self;
 
@@ -75,6 +74,12 @@ impl std::ops::Sub<Duration> for Timestamp {
         Self(self.0 - other.num_microseconds().unwrap())
     }
 }
+impl Into<Duration> for Timestamp {
+    fn into(self) -> Duration {
+        Duration::microseconds(self.micros())
+    }
+}
+
 impl From<NaiveDateTime> for Timestamp {
     fn from(other: NaiveDateTime) -> Self {
         Timestamp::from_us(other.timestamp() * 1_000_000 + other.timestamp_subsec_micros() as i64)

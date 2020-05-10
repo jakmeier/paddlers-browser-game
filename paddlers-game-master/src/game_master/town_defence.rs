@@ -19,7 +19,7 @@ use chrono::NaiveDateTime;
 use paddlers_shared_lib::game_mechanics::town::*;
 use paddlers_shared_lib::prelude::*;
 
-struct AttackingHobo<'a> {
+pub(crate) struct AttackingHobo<'a> {
     hobo: &'a Hobo,
     attack_to_hobo: &'a AttackToHobo,
     effects: &'a [Effect],
@@ -45,6 +45,9 @@ impl DB {
             };
             if town.hp_left(&unit, now) == 0 {
                 self.set_satisfied(hobo.key(), atk.key(), true);
+                if !hobo.hurried && info.released.is_none() {
+                    self.release_resting_visitor(hobo.key(), atk.key());
+                }
             } else if town.hobo_left_town(&unit, now) {
                 self.set_satisfied(hobo.key(), atk.key(), false);
             }

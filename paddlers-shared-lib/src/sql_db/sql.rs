@@ -28,9 +28,9 @@ pub trait GameDB {
             .optional()
             .expect("Error loading data")
     }
-    fn hobo(&self, hobo_id: i64) -> Option<Hobo> {
+    fn hobo(&self, hobo_id: HoboKey) -> Option<Hobo> {
         let results = hobos::table
-            .filter(hobos::id.eq(hobo_id))
+            .filter(hobos::id.eq(hobo_id.num()))
             .get_result::<Hobo>(self.dbconn())
             .optional()
             .expect("Error loading data");
@@ -366,6 +366,14 @@ pub trait GameDB {
             .load::<Effect>(self.dbconn())
             .expect("Error loading data");
         results
+    }
+    fn hobo_attack_info(&self, hid: HoboKey) -> Vec<(Attack, AttackToHobo)> {
+        attacks_to_hobos::table
+            .inner_join(attacks::table)
+            .filter(attacks_to_hobos::hobo_id.eq(hid.num()))
+            .select((attacks::all_columns, attacks_to_hobos::all_columns))
+            .get_results(self.dbconn())
+            .expect("Error in lookup")
     }
     fn hobo_is_attacking(&self, hid: HoboKey) -> bool {
         diesel::select(diesel::dsl::exists(
