@@ -1,5 +1,4 @@
-use crate::models::*;
-use crate::prelude::{HoboKey, PlayerKey, VillageKey, VisitReportKey, WorkerKey};
+use crate::prelude::*;
 use crate::schema::*;
 use diesel::prelude::*;
 
@@ -121,10 +120,10 @@ pub trait GameDB {
             .expect("Error loading data");
         results as usize
     }
-    fn attack_hobos(&self, atk: &Attack) -> Vec<Hobo> {
+    fn attack_hobos(&self, atk: AttackKey) -> Vec<Hobo> {
         let results = attacks_to_hobos::table
             .inner_join(hobos::table)
-            .filter(attacks_to_hobos::attack_id.eq(atk.id))
+            .filter(attacks_to_hobos::attack_id.eq(atk.num()))
             .select(hobos::all_columns)
             .limit(500)
             .load::<Hobo>(self.dbconn())
@@ -166,6 +165,28 @@ pub trait GameDB {
     fn attack_done(&self, atk: &Attack) -> bool {
         self.attack_hobos_active_with_attack_info(atk).len() == 0
     }
+    /// Visitors resting in town right now
+    fn resting_visitors(&self, village_id: VillageKey) -> Vec<(Hobo, AttackKey)> {
+        attacks_to_hobos::table
+            .inner_join(attacks::table)
+            .inner_join(hobos::table)
+            .inner_join(villages::table.on(villages::id.eq(attacks::destination_village_id)))
+            .filter(villages::id.eq(village_id.num()))
+            // condition for "resting"
+            .filter(hobos::hurried.eq(false))
+            .filter(attacks_to_hobos::satisfied.is_null())
+            .filter(attacks::arrival.le(diesel::dsl::now.at_time_zone("UTC")))
+            //
+            .order_by(attacks::arrival.asc())
+            .select((hobos::all_columns, attacks::id))
+            .limit(500)
+            .load::<(Hobo, i64)>(self.dbconn())
+            .expect("Error loading data")
+            .into_iter()
+            .map(|(hobo, key)| (hobo, AttackKey(key)))
+            .collect()
+    }
+
     fn buildings(&self, village: VillageKey) -> Vec<Building> {
         let results = buildings::table
             .filter(buildings::village_id.eq(village.num()))
@@ -269,9 +290,9 @@ pub trait GameDB {
             .optional()
             .expect("Error loading data")
     }
-    fn task(&self, task_id: i64) -> Option<Task> {
+    fn task(&self, task_id: TaskKey) -> Option<Task> {
         tasks::table
-            .find(task_id)
+            .find(task_id.num())
             .first(self.dbconn())
             .optional()
             .expect("Error loading task")

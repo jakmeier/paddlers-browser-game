@@ -18,9 +18,11 @@ pub trait IAttackingHobo {
 
 /// Trait for town information required to perform hp computations
 pub trait IDefendingTown: ITownLayout {
+    // TO IMPLEMENT
     type AuraId: Ord + PartialEq;
     fn auras_in_range(&self, index: &Self::Index, time: Timestamp) -> Vec<(Self::AuraId, i32)>;
 
+    // PROVIDED
     fn hp_left<HOBO: IAttackingHobo>(&self, attacker: &HOBO, now: Timestamp) -> u32 {
         attacker
             .max_hp()

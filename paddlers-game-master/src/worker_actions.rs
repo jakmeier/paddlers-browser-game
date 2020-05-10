@@ -93,7 +93,7 @@ pub(crate) fn replace_worker_tasks(
         execute_worker_tasks(db, worker_id, village_id).expect("Worker has no current task");
     if let Some(next_task) = db.earliest_future_task(worker_id) {
         let event = Event::WorkerTask {
-            task_id: current_task.id,
+            task_id: current_task.key(),
         };
         worker
             .send(TownWorkerEventMsg(
@@ -157,7 +157,7 @@ fn execute_worker_tasks(db: &DB, worker_id: WorkerKey, village: VillageKey) -> O
     let current_task = tasks.pop();
     let mut town = TownView::load_village(db, village);
     for task in tasks {
-        if let Err(e) = finish_task(db, task.id, Some(task), Some(&mut town)) {
+        if let Err(e) = finish_task(db, task.key(), Some(task), Some(&mut town)) {
             println!("Executing task failed: {}", e)
         }
     }
@@ -166,7 +166,7 @@ fn execute_worker_tasks(db: &DB, worker_id: WorkerKey, village: VillageKey) -> O
 
 pub(crate) fn finish_task(
     db: &DB,
-    task_id: i64,
+    task_id: TaskKey,
     task: Option<Task>,
     town: Option<&mut TownView>,
 ) -> Result<Option<(Event, DateTime<Utc>)>, Box<dyn std::error::Error>> {

@@ -53,8 +53,9 @@ impl DB {
         // Check if all are satisfied or have left otherwise, then finish visit
         if self.attack_done(atk) {
             self.generate_report(atk);
-            // TODO: Move survivors back or delete them
-            // defeated_units.for_each(|u| self.delete_hobo(u));
+            if atk.origin_village_id.is_none() {
+                self.delete_attack_hobos(atk.key());
+            }
             self.delete_attack(atk);
         }
     }

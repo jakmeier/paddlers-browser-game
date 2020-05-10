@@ -20,6 +20,8 @@ pub const TOWN_Y: usize = 7;
 pub const TOWN_LANE_Y: usize = 3;
 /// The town X where resting paddlers will wait
 pub const TOWN_RESTING_X: usize = 4;
+/// How many unhurried visitors can be resting in a town
+pub const MAX_VISITOR_QUEUE: usize = 1;
 
 #[derive(Debug)]
 pub struct TownMap(pub [[TownTileType; TOWN_Y]; TOWN_X]);

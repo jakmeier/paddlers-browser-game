@@ -17,10 +17,13 @@ impl DB {
             .get_result(self.dbconn())
     }
 
-    pub fn delete_hobo(&self, hobo: &Hobo) {
-        let result = diesel::delete(hobo).execute(self.dbconn());
-        if result.is_err() {
-            println!("Couldn't delete hobo {:?}", hobo);
+    pub fn delete_attack_hobos(&self, atk: AttackKey) {
+        // Performance: This is a lot of sequential queries, could be reduced to one
+        for hobo in self.attack_hobos(atk) {
+            let result = diesel::delete(&hobo).execute(self.dbconn());
+            if result.is_err() {
+                println!("Couldn't delete hobo {:?}", hobo);
+            }
         }
     }
 
@@ -217,5 +220,12 @@ impl DB {
             .set(attacks_to_hobos::satisfied.eq(satisfied))
             .execute(self.dbconn())
             .expect("setting satisfied");
+    }
+    pub fn release_resting_visitor(&self, hid: HoboKey, aid: AttackKey) {
+        let target = attacks_to_hobos::table.find((aid.num(), hid.num()));
+        diesel::update(target)
+            .set(attacks_to_hobos::released.eq(diesel::dsl::now.at_time_zone("UTC").nullable()))
+            .execute(self.dbconn())
+            .expect("setting released");
     }
 }

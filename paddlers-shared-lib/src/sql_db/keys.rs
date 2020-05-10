@@ -37,6 +37,11 @@ impl SqlKey<AttackKey> for Attack {
     }
 }
 
+impl SqlKey<TaskKey> for Task {
+    fn key(&self) -> TaskKey {
+        TaskKey(self.id)
+    }
+}
 impl Task {
     pub fn worker(&self) -> WorkerKey {
         WorkerKey(self.worker_id)

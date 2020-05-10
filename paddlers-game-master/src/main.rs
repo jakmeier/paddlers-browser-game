@@ -65,11 +65,12 @@ fn main() {
     let db_actor = SyncArbiter::start(2, move || DbActor::new(db.clone()));
 
     // Spawn all "normal" actors onto the actix system
-    let attack_funnel = AttackFunnel::new(dbpool.clone(), db_actor.clone()).start();
+    let town_worker_actor = TownWorker::new(dbpool.clone()).start();
+    let attack_funnel =
+        AttackFunnel::new(dbpool.clone(), db_actor.clone(), town_worker_actor.clone()).start();
     let attack_worker =
         AttackSpawner::new(dbpool.clone(), db_actor.clone(), attack_funnel.clone()).start();
     let gm_actor = GameMaster::new(dbpool.clone(), &attack_worker).start();
-    let town_worker_actor = TownWorker::new(dbpool.clone()).start();
     let econ_worker = EconomyWorker::new(dbpool.clone()).start();
 
     // Also spawn the HTTP server on the same runtime

@@ -3,6 +3,8 @@ use chrono::{DateTime, Utc};
 use std::cmp::Ordering;
 use std::collections::BinaryHeap;
 
+/// For delayed execution of events.
+/// This queue is being poled constantly by the `TownWorker`
 pub struct EventQueue {
     queue: BinaryHeap<TimedEvent>,
 }

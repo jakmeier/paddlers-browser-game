@@ -1,12 +1,17 @@
 //! Funnels planned attacks
 //!
 //! All attacks on villages should go through this funnel.
-//! This module should then guarantee that no two attacks reach a town at the same time
-//! and that no hobo is involved in more than one attack at the time.
+//! This module should then guarantee some consistencies about attacks in a village.
+//! For now, the consistency rules are:
+//!     - No two attacks reach a town at the same time
+//!     - No hobo is involved in more than one attack at the time
+//!     - The maximum number of resting hobos is not surpassed
 
 use crate::db::*;
+use crate::game_master::event::Event;
+use crate::game_master::town_worker::{TownWorker, TownWorkerEventMsg};
 use actix::prelude::*;
-use chrono::NaiveDateTime;
+use chrono::{offset::TimeZone, NaiveDateTime, Utc};
 use paddlers_shared_lib::game_mechanics::map::map_distance;
 use paddlers_shared_lib::prelude::*;
 use std::ops::Add;
@@ -14,6 +19,7 @@ use std::ops::Add;
 pub struct AttackFunnel {
     dbpool: Pool,
     db_actor: Addr<DbActor>,
+    town_worker: Addr<TownWorker>,
 }
 
 impl Actor for AttackFunnel {
@@ -46,6 +52,11 @@ impl Handler<PlannedAttack> for AttackFunnel {
 
         // TODO (Correctness): Somehow efficiently check that hobos are not attacking already
         let unit_count = msg.hobos.len();
+        let unhurried_count = msg
+            .hobos
+            .iter()
+            .map(|h| if h.hurried { 0 } else { 1 })
+            .fold(0, |h, acc| acc + h);
         let hobos = msg.hobos.into_iter().map(|h| h.key()).collect();
 
         let min_secs = 15;
@@ -71,14 +82,28 @@ impl Handler<PlannedAttack> for AttackFunnel {
         self.db_actor
             .try_send(DeferredDbStatement::NewAttack(pa))
             .expect("Sending attack failed");
+
+        if unhurried_count > 0 {
+            let delayed_event = Event::CheckRestingVisitors {
+                village_id: msg.destination_village.key(),
+            };
+            let time = arrival;
+            self.town_worker
+                .try_send(TownWorkerEventMsg(
+                    delayed_event,
+                    Utc.from_utc_datetime(&time),
+                ))
+                .expect("Sending event failed");
+        }
     }
 }
 
 impl AttackFunnel {
-    pub fn new(dbpool: Pool, db_actor: Addr<DbActor>) -> Self {
+    pub fn new(dbpool: Pool, db_actor: Addr<DbActor>, town_worker: Addr<TownWorker>) -> Self {
         AttackFunnel {
-            dbpool: dbpool,
-            db_actor: db_actor,
+            dbpool,
+            db_actor,
+            town_worker,
         }
     }
     fn db(&self) -> DB {
@@ -99,7 +124,7 @@ impl AttackFunnel {
         let len = already_running_attacks.len();
         while i < len {
             let atk = &already_running_attacks[i];
-            let n = db.attack_hobos(atk).len();
+            let n = db.attack_hobos(atk.key()).len();
             let d = Self::attack_duration(n);
             if atk.arrival + d <= earliest {
                 // No conflict with i, i is earlier than new attack

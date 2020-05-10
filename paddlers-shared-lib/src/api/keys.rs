@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 pub struct PlayerKey(pub PadlId);
-#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub struct VillageKey(pub PadlId);
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 pub struct HoboKey(pub PadlId);
@@ -16,6 +16,8 @@ pub struct WorkerKey(pub PadlId);
 pub struct AttackKey(pub PadlId);
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 pub struct VisitReportKey(pub PadlId);
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
+pub struct TaskKey(pub PadlId);
 
 impl Into<i64> for VillageKey {
     fn into(self) -> i64 {
@@ -77,6 +79,17 @@ impl Into<i64> for VisitReportKey {
     }
 }
 impl VisitReportKey {
+    pub fn num(&self) -> i64 {
+        self.0
+    }
+}
+
+impl Into<i64> for TaskKey {
+    fn into(self) -> i64 {
+        self.0
+    }
+}
+impl TaskKey {
     pub fn num(&self) -> i64 {
         self.0
     }

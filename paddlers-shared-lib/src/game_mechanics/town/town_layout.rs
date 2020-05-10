@@ -2,7 +2,7 @@ use super::*;
 
 /// The town layout defines where the lane goes through the tile-grid.
 /// Using this abstract view, it's possible to determine in which tile a unit is after walking a certain distance.
-/// 
+///
 /// A path is defined as list of tiles.
 /// At t=0, a unit walking that path is just walking into path_tile[0].
 /// It then has to walk a full tile before path_tile[1] is reached.
