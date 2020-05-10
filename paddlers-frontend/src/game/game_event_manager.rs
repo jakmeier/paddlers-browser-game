@@ -9,15 +9,16 @@
 //!
 //! Try to keep computations in here short and simple.
 
-use crate::game::story::StoryAction;
 use crate::game::{
-    components::*, player_info::PlayerInfo, units::attackers::change_duck_sprite_to_happy,
+    components::*, player_info::PlayerInfo, story::StoryAction,
+    units::attackers::change_duck_sprite_to_happy, units::attackers::Visitor,
 };
 use crate::gui::input::UiView;
 use crate::init::quicksilver_integration::{GameState, Signal};
 use crate::net::game_master_api::RestApiState;
 use crate::prelude::*;
 use paddlers_shared_lib::api::story::StoryStateTransition;
+use paddlers_shared_lib::prelude::*;
 use specs::prelude::*;
 use std::sync::mpsc::Sender;
 
@@ -50,6 +51,17 @@ impl GameState {
                 let mut rend_store = self.game.world.write_storage::<Renderable>();
                 if let Some(mut rend) = rend_store.get_mut(id) {
                     change_duck_sprite_to_happy(&mut rend);
+                }
+                let hobo_store = self.game.world.read_storage::<Visitor>();
+                if let Some(hobo) = hobo_store.get(id) {
+                    if !hobo.hurried {
+                        let net_store = self.game.world.read_storage::<NetObj>();
+                        let net_id = net_store.get(id).ok_or(PadlError::dev_err(
+                            PadlErrorCode::MissingComponent("NetObj"),
+                        ))?;
+                        RestApiState::get().http_notify_visitor_satisfied(HoboKey(net_id.id))?;
+                        // TODO: Request new hobo state AFTER game master has responded
+                    }
                 }
             }
             GameEvent::HttpBuyProphet => {

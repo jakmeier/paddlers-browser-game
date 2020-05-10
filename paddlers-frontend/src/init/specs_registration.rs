@@ -1,4 +1,5 @@
 use crate::game::story::entity_trigger::EntityTrigger;
+use crate::game::units::attackers::Visitor;
 use crate::prelude::*;
 use crate::view::entry_view;
 use specs::prelude::*;
@@ -57,5 +58,6 @@ pub fn register_components(world: &mut World) {
     world.register::<TargetPosition>();
     world.register::<UiMenu>();
     world.register::<VillageMetaInfo>();
+    world.register::<Visitor>();
     world.register::<Worker>();
 }

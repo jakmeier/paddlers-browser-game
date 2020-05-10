@@ -93,7 +93,6 @@ pub trait IDefendingTown: ITownLayout {
                 &tiles,
             ));
             if let Some(released) = self.left_rest_place(attacker) {
-                println!("Released at {:?}", released);
                 let tiles = self.path_from_rest_place();
                 auras.append(&mut self.touched_auras_on_path(released, now, attacker, &tiles));
             }

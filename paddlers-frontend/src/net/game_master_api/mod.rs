@@ -7,7 +7,7 @@ use futures_util::future::FutureExt;
 use paddlers_shared_lib::api::reports::ReportCollect;
 use paddlers_shared_lib::api::story::StoryStateTransition;
 use paddlers_shared_lib::api::{
-    attacks::*, keys::VillageKey, shop::*, statistics::*, tasks::TaskList, PlayerInitData,
+    attacks::*, keys::*, shop::*, statistics::*, tasks::TaskList, PlayerInitData,
 };
 use specs::prelude::*;
 use std::collections::VecDeque;
@@ -142,6 +142,20 @@ impl RestApiState {
         let promise = ajax::send(
             "POST",
             &format!("{}/attacks/create", game_master_url()?),
+            request_string,
+        );
+        self.push_promise(promise, None);
+        Ok(())
+    }
+
+    pub fn http_notify_visitor_satisfied(&mut self, msg: HoboKey) -> PadlResult<()> {
+        let request_string = &serde_json::to_string(&msg).unwrap();
+        let promise = ajax::send(
+            "POST",
+            &format!(
+                "{}/attacks/notifications/visitor_satisfied",
+                game_master_url()?
+            ),
             request_string,
         );
         self.push_promise(promise, None);

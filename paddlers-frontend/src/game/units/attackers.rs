@@ -19,6 +19,13 @@ use specs::prelude::*;
 const ATTACKER_SIZE_FACTOR_X: f32 = 0.6;
 const ATTACKER_SIZE_FACTOR_Y: f32 = 0.4;
 
+#[derive(Default, Debug, Component)]
+#[storage(HashMapStorage)]
+/// A visitor is an attacking hobo
+pub struct Visitor {
+    pub hurried: bool,
+}
+
 #[cfg(feature = "dev_view")]
 pub fn insert_duck(
     world: &mut World,
@@ -44,6 +51,7 @@ pub fn insert_duck(
         netid,
         effects,
         final_pos,
+        false,
     )
     .map(specs::EntityBuilder::build)
 }
@@ -59,6 +67,7 @@ pub fn build_new_duck_entity<'a>(
     netid: i64,
     effects: &[HoboEffect],
     final_pos: Option<Vector>,
+    hurried: bool,
 ) -> PadlResult<specs::EntityBuilder<'a>> {
     let pos = pos.into();
     let speed = speed.into();
@@ -75,6 +84,7 @@ pub fn build_new_duck_entity<'a>(
         .with(Clickable)
         .with(status_effects)
         .with(NetObj::hobo(netid))
+        .with(Visitor { hurried })
         .with(hp);
     if let Some(pos) = final_pos {
         builder = builder.with(TargetPosition::new(pos));
@@ -190,6 +200,7 @@ impl<'a> AttackingHobo<'a> {
             netid,
             &self.unit.hobo.effects,
             final_pos,
+            self.unit.hobo.hurried,
         )
     }
 }

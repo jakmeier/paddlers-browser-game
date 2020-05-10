@@ -23,6 +23,7 @@ use game_master::{
 };
 use paddlers_shared_lib::api::reports::ReportCollect;
 use paddlers_shared_lib::api::story::StoryStateTransition;
+use paddlers_shared_lib::prelude::HoboKey;
 use paddlers_shared_lib::{
     api::{
         attacks::AttackDescriptor,
@@ -121,6 +122,11 @@ fn main() {
                 web::resource("/attacks/create")
                     .data(web::Json::<AttackDescriptor>)
                     .route(web::post().to_async(api::create_attack)),
+            )
+            .service(
+                web::resource("/attacks/notifications/visitor_satisfied")
+                    .data(web::Json::<HoboKey>)
+                    .route(web::post().to(api::visitor_satisfied_notification)),
             )
             .service(
                 web::resource("/report/collect")

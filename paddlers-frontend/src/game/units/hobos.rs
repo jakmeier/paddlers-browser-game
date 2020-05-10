@@ -34,6 +34,10 @@ fn new_hobo(world: &mut World, id: &str) -> PadlResult<Entity> {
     let id = id
         .parse()
         .map_err(|_| PadlError::dev_err(PadlErrorCode::InvalidGraphQLData("HoboId")))?;
-    let entity = world.create_entity().with(NetObj::hobo(id)).build();
+    let entity = world
+        .create_entity()
+        .with(NetObj::hobo(id))
+        .with(Hobo)
+        .build();
     Ok(entity)
 }
