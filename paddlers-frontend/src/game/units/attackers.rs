@@ -24,6 +24,7 @@ const ATTACKER_SIZE_FACTOR_Y: f32 = 0.4;
 /// A visitor is an attacking hobo
 pub struct Visitor {
     pub hurried: bool,
+    pub speed: f32,
 }
 
 #[cfg(feature = "dev_view")]
@@ -84,7 +85,10 @@ pub fn build_new_duck_entity<'a>(
         .with(Clickable)
         .with(status_effects)
         .with(NetObj::hobo(netid))
-        .with(Visitor { hurried })
+        .with(Visitor {
+            hurried,
+            speed: speed.len(),
+        })
         .with(hp);
     if let Some(pos) = final_pos {
         builder = builder.with(TargetPosition::new(pos));
