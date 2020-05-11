@@ -1,3 +1,7 @@
+mod visitor_maintenance;
+
+pub use visitor_maintenance::*;
+
 use crate::game::town::town_defence::AttackingHobo;
 use crate::game::{
     components::NetObj,
@@ -25,6 +29,8 @@ const ATTACKER_SIZE_FACTOR_Y: f32 = 0.4;
 pub struct Visitor {
     pub hurried: bool,
     pub speed: f32,
+    pub arrival: Timestamp,
+    pub rank_offset: usize,
 }
 
 #[cfg(feature = "dev_view")]
@@ -40,19 +46,26 @@ pub fn insert_duck(
     effects: &[HoboEffect],
     final_pos: Option<Vector>,
 ) -> PadlResult<Entity> {
-    let builder = world.create_entity();
+    let mut builder = world.create_entity();
+    let pos = pos.into();
+    let speed: Vector = speed.into();
+    builder = builder.with(Moving::new(birth_time, pos, speed, speed.len()));
+    if let Some(pos) = final_pos {
+        builder = builder.with(TargetPosition::new(pos));
+    }
+
     build_new_duck_entity(
         builder,
         pos,
         color,
         birth_time,
-        speed,
+        speed.len(),
         Health::new_full_health(hp),
         ul,
         netid,
         effects,
-        final_pos,
         false,
+        0,
     )
     .map(specs::EntityBuilder::build)
 }
@@ -61,57 +74,37 @@ pub fn build_new_duck_entity<'a>(
     builder: specs::EntityBuilder<'a>,
     pos: impl Into<Vector>,
     color: UnitColor,
-    birth_time: Timestamp,
-    speed: impl Into<Vector>,
+    arrival: Timestamp,
+    speed: f32,
     hp: Health,
     ul: f32,
     netid: i64,
     effects: &[HoboEffect],
-    final_pos: Option<Vector>,
     hurried: bool,
+    rank_offset: usize,
 ) -> PadlResult<specs::EntityBuilder<'a>> {
-    let pos = pos.into();
-    let speed = speed.into();
     let size: Vector = Vector::new(ATTACKER_SIZE_FACTOR_X * ul, ATTACKER_SIZE_FACTOR_Y * ul).into();
     let status_effects = StatusEffects::from_gql_query(effects)?;
     let mut renderable = Renderable::new(hobo_sprite_sad(color));
     if hp.hp == 0 {
         change_duck_sprite_to_happy(&mut renderable);
     }
-    let mut builder = builder
+    let pos = pos.into();
+    let builder = builder
         .with(Position::new(pos, size, Z_VISITOR))
-        .with(Moving::new(birth_time, pos, speed, speed.len()))
         .with(renderable)
         .with(Clickable)
         .with(status_effects)
         .with(NetObj::hobo(netid))
         .with(Visitor {
             hurried,
-            speed: speed.len(),
+            speed,
+            arrival,
+            rank_offset,
         })
         .with(hp);
-    if let Some(pos) = final_pos {
-        builder = builder.with(TargetPosition::new(pos));
-    }
-    Ok(builder)
-}
 
-pub fn change_duck_sprite_to_happy(r: &mut Renderable) {
-    match r.kind {
-        RenderVariant::ImgWithImgBackground(SpriteSet::Simple(ref mut img), _bkg) => match img {
-            SingleSprite::Duck => {
-                *img = SingleSprite::DuckHappy;
-            }
-            SingleSprite::CamoDuck => {
-                *img = SingleSprite::CamoDuckHappy;
-            }
-            SingleSprite::WhiteDuck => {
-                *img = SingleSprite::WhiteDuckHappy;
-            }
-            _ => {}
-        },
-        _ => {}
-    }
+    Ok(builder)
 }
 
 use crate::net::graphql::attacks_query::AttacksQueryVillageAttacks;
@@ -137,8 +130,14 @@ impl AttacksQueryVillageAttacks {
         for (i, unit) in self.units.into_iter().enumerate() {
             let unit_rep = AttackingHobo { unit, attack: &atk };
             let effects = game.touched_auras(&unit_rep, now);
-            let builder =
-                unit_rep.create_entity(game.world.create_entity(), birth_time, i, ul, effects)?;
+            let builder = unit_rep.create_entity(
+                game.world.create_entity(),
+                now,
+                birth_time,
+                i,
+                ul,
+                effects,
+            )?;
             out.push(builder.build());
         }
 
@@ -150,13 +149,14 @@ impl AttacksQueryVillageAttacks {
 impl<'a> AttackingHobo<'a> {
     fn create_entity(
         &self,
-        builder: specs::EntityBuilder<'a>,
+        mut builder: specs::EntityBuilder<'a>,
+        now: Timestamp,
         birth: Timestamp,
         pos_rank: usize,
         ul: f32,
         auras: Vec<(<Game<'_, '_> as IDefendingTown>::AuraId, i32)>,
     ) -> PadlResult<specs::EntityBuilder<'a>> {
-        let v = -self.unit.hobo.speed as f32 * ul;
+        let v = self.unit.hobo.speed as f32 * ul;
         let w = TOWN_X as f32 * ul;
         let x = w - ul * ATTACKER_SIZE_FACTOR_X;
         let y = TOWN_LANE_Y as f32 * ul;
@@ -171,11 +171,7 @@ impl<'a> AttackingHobo<'a> {
             .as_ref()
             .map(|c| c.into())
             .unwrap_or(UnitColor::Yellow);
-        let final_pos = if self.unit.hobo.hurried || self.unit.info.released.is_some() {
-            Some(Vector::new(-w, pos.y))
-        } else {
-            Some(Vector::new(TOWN_RESTING_X as f32 * ul, pos.y))
-        };
+        let time_until_resting = self.time_until_resting();
 
         // Simulate all interactions with buildings for the visitor which happened in the past
         let dmg = <Game<'_, '_> as IDefendingTown>::damage(&auras) + self.effects_strength();
@@ -183,28 +179,40 @@ impl<'a> AttackingHobo<'a> {
         let aura_ids = auras.into_iter().map(|a| a.0).collect();
         let health = Health::new(hp, hp_left, aura_ids);
 
-        // Adapt position for units that have been resting and then released
+        // Adapt position for units that have been resting and were then released
         if let Some(released) = &self.unit.info.released {
             let released = GqlTimestamp::from_string(released).unwrap().into();
-            let time_until_resting = self.time_until_resting();
             if released > birth + time_until_resting {
                 pos.x = TOWN_RESTING_X as f32 * ul;
                 t0 = released;
             }
         }
 
+        // Insert components for movement (unless visitor is currently resting)
+        let can_rest = !self.unit.hobo.hurried && self.unit.info.released.is_none();
+        let resting = can_rest && birth + time_until_resting <= now;
+        if !resting {
+            builder = builder.with(Moving::new(t0, pos, Vector::new(-v, 0.0), v));
+            if can_rest {
+                let final_pos = Vector::new(TOWN_RESTING_X as f32 * ul, pos.y);
+                builder = builder.with(TargetPosition::new(final_pos));
+            }
+        } else {
+            pos.x = TOWN_RESTING_X as f32 * ul;
+        }
+
         build_new_duck_entity(
             builder,
             pos,
             color,
-            t0,
-            (v as f32, 0.0),
+            birth,
+            v,
             health,
             ul,
             netid,
             &self.unit.hobo.effects,
-            final_pos,
             self.unit.hobo.hurried,
+            pos_rank,
         )
     }
 }

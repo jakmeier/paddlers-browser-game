@@ -29,7 +29,7 @@ impl Event {
                 // Release all visitors that are queued beyond the limit
                 let visitors = db.resting_visitors(*village_id);
                 if visitors.len() > MAX_VISITOR_QUEUE {
-                    for (hobo, attack_id) in &visitors[MAX_VISITOR_QUEUE..] {
+                    for (hobo, attack_id) in &visitors[0..visitors.len() - MAX_VISITOR_QUEUE] {
                         db.release_resting_visitor(hobo.key(), *attack_id)
                     }
                 }

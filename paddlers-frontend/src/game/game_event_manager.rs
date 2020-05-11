@@ -14,14 +14,11 @@ use crate::game::{
     units::attackers::change_duck_sprite_to_happy, units::attackers::Visitor,
 };
 use crate::gui::input::UiView;
-use crate::gui::ui_state::Now;
 use crate::init::quicksilver_integration::{GameState, Signal};
 use crate::net::game_master_api::RestApiState;
 use crate::prelude::*;
 use paddlers_shared_lib::api::story::StoryStateTransition;
-use paddlers_shared_lib::game_mechanics::town::*;
 use paddlers_shared_lib::prelude::*;
-use quicksilver::geom::Vector;
 use specs::prelude::*;
 use std::sync::mpsc::Sender;
 
@@ -62,13 +59,8 @@ impl GameState {
                         if v_store.get(id).is_none() {
                             // hobo currently stopped (in frontend)
                             // => Set it moving again, assuming it has been released by the game-master
-                            let ul = self.game.world.fetch::<ScreenResolution>().unit_length();
-                            let now = self.game.world.fetch::<Now>().0;
-                            let speed = hobo.speed;
-                            let momentum = Vector::new(-speed, 0.0);
-                            let pos =
-                                Vector::new(TOWN_RESTING_X as f32 * ul, TOWN_LANE_Y as f32 * ul);
-                            v_store.insert(id, Moving::new(now, pos, momentum, speed))?;
+                            let moving = self.game.release_and_move_visitor(hobo);
+                            v_store.insert(id, moving)?;
                         }
                         // Tell backend that release might be required
                         let net_store = self.game.world.read_storage::<NetObj>();

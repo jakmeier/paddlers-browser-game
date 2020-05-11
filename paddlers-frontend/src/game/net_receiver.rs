@@ -85,6 +85,7 @@ impl GameState {
                     }
                     NetMsg::Attacks(response) => {
                         self.game.load_attacking_hobos(response)?;
+                        self.game.check_resting_queue()?;
                     }
                     NetMsg::Buildings(response) => {
                         self.game.load_buildings_from_net_response(response)?;
