@@ -41,7 +41,7 @@ impl Into<HoboAttributeType> for &HoboAttribute {
         match self {
             HoboAttribute::HEALTH => HoboAttributeType::Health,
             HoboAttribute::SPEED => HoboAttributeType::Speed,
-            _ => panic!("Unexpected attribute"),
+            HoboAttribute::Other(_) => panic!("Unexpected attribute"),
         }
     }
 }
@@ -100,7 +100,7 @@ impl Into<AbilityType> for &VillageUnitsAbilityType {
         match self {
             VillageUnitsAbilityType::WORK => AbilityType::Work,
             VillageUnitsAbilityType::WELCOME => AbilityType::Welcome,
-            _ => panic!("Unexpected ability"),
+            VillageUnitsAbilityType::Other(_) => panic!("Unexpected ability"),
         }
     }
 }
@@ -185,7 +185,7 @@ impl Into<TaskType> for &WorkerTaskType {
             WorkerTaskType::DEFEND => TaskType::Defend,
             WorkerTaskType::WELCOME_ABILITY => TaskType::WelcomeAbility,
             WorkerTaskType::COLLECT_REWARD => TaskType::CollectReward,
-            _ => panic!("Unexpected task type"),
+            WorkerTaskType::Other(_) => panic!("Unexpected task type"),
         }
     }
 }
@@ -204,7 +204,7 @@ impl Into<TaskType> for &VillageUnitsTaskType {
             VillageUnitsTaskType::DEFEND => TaskType::Defend,
             VillageUnitsTaskType::WELCOME_ABILITY => TaskType::WelcomeAbility,
             VillageUnitsTaskType::COLLECT_REWARD => TaskType::CollectReward,
-            _ => panic!("Unexpected task type"),
+            VillageUnitsTaskType::Other(_) => panic!("Unexpected task type"),
         }
     }
 }
@@ -221,7 +221,7 @@ impl Into<UnitColor> for &attacks_query::UnitColor {
             attacks_query::UnitColor::WHITE => UnitColor::White,
             attacks_query::UnitColor::CAMO => UnitColor::Camo,
             attacks_query::UnitColor::PROPHET => UnitColor::Prophet,
-            _ => panic!("Unexpected unit color"),
+            attacks_query::UnitColor::Other(_) => panic!("Unexpected unit color"),
         }
     }
 }
@@ -251,7 +251,7 @@ impl Into<StoryState> for &PlayerStoryState {
                 StoryState::StickGatheringStationBuild
             }
             PlayerStoryState::GATHERING_STICKS => StoryState::GatheringSticks,
-            _ => panic!("Unexpected story state"),
+            PlayerStoryState::Other(_) => panic!("Unexpected story state"),
         }
     }
 }
