@@ -297,6 +297,15 @@ pub trait GameDB {
             .optional()
             .expect("Error loading task")
     }
+    fn stream(&self, id: StreamKey) -> Stream {
+        let result = streams::table.find(id.num()).first(self.dbconn());
+        match result {
+            Ok(s) => s,
+            Err(e) => {
+                panic!("Failed loading {:?}", id);
+            }
+        }
+    }
     fn streams(&self, low_x: f32, high_x: f32) -> Vec<Stream> {
         let results = streams::table
             .filter(streams::start_x.ge(low_x))
