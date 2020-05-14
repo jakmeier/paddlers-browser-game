@@ -35,6 +35,7 @@ pub struct GqlAttackUnit(pub GqlHobo, pub GqlHoboAttackInfo);
 pub struct GqlHoboAttackInfo(pub paddlers_shared_lib::models::AttackToHobo);
 
 // Complete list of public objects with restricted fields access.
+pub struct GqlBuilding(pub paddlers_shared_lib::models::Building);
 pub struct GqlPlayer(pub paddlers_shared_lib::models::Player);
 pub struct GqlVillage(pub paddlers_shared_lib::models::Village);
 pub type Rewards = Vec<(ResourceType, i64)>; // Note: This is a bit of a botch and should be considered to change
@@ -51,7 +52,6 @@ pub struct GqlAttackReport {
     pub rewards: Option<Rewards>,
     _priv: PrivacyGuard,
 }
-pub struct GqlBuilding(pub paddlers_shared_lib::models::Building, PrivacyGuard);
 pub struct GqlEffect(pub paddlers_shared_lib::models::Effect, PrivacyGuard);
 pub struct GqlTask(pub paddlers_shared_lib::models::Task, PrivacyGuard);
 pub struct GqlWorker(pub paddlers_shared_lib::models::Worker, PrivacyGuard);
@@ -135,14 +135,13 @@ impl GqlVillage {
             .map(GqlWorker::authorized)
             .collect())
     }
-    /// Field Visibility: user
+    /// Field Visibility: public
     fn buildings(&self, ctx: &Context) -> FieldResult<Vec<GqlBuilding>> {
-        ctx.check_village_key(self.0.key())?;
         Ok(ctx
             .db()
             .buildings(self.0.key())
             .into_iter()
-            .map(GqlBuilding::authorized)
+            .map(GqlBuilding)
             .collect())
     }
     #[graphql(arguments(min_id(
@@ -195,6 +194,34 @@ impl GqlVillage {
                 rep
             })
             .collect())
+    }
+}
+
+#[juniper::object (Context = Context)]
+impl GqlBuilding {
+    fn id(&self) -> juniper::ID {
+        self.0.id.to_string().into()
+    }
+    fn x(&self) -> i32 {
+        self.0.x
+    }
+    fn y(&self) -> i32 {
+        self.0.y
+    }
+    fn building_type(&self) -> &paddlers_shared_lib::models::BuildingType {
+        &self.0.building_type
+    }
+    fn building_range(&self) -> Option<f64> {
+        self.0.building_range.map(f64::from)
+    }
+    fn attack_power(&self) -> Option<f64> {
+        self.0.attack_power.map(f64::from)
+    }
+    fn attacks_per_cycle(&self) -> Option<i32> {
+        self.0.attacks_per_cycle
+    }
+    fn creation(&self) -> FieldResult<GqlTimestamp> {
+        datetime(&self.0.creation)
     }
 }
 
@@ -284,11 +311,6 @@ impl GqlAbility {
 impl GqlAttack {
     pub(super) fn authorized(inner: paddlers_shared_lib::models::Attack) -> Self {
         GqlAttack(inner, PrivacyGuard)
-    }
-}
-impl GqlBuilding {
-    pub(super) fn authorized(inner: paddlers_shared_lib::models::Building) -> Self {
-        GqlBuilding(inner, PrivacyGuard)
     }
 }
 impl GqlEffect {

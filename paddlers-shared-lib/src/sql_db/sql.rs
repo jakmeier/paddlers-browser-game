@@ -302,7 +302,7 @@ pub trait GameDB {
         match result {
             Ok(s) => s,
             Err(e) => {
-                panic!("Failed loading {:?}", id);
+                panic!("Failed loading {:?}. Error: {}", id, e);
             }
         }
     }

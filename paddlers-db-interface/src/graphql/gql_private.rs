@@ -95,34 +95,6 @@ impl GqlAttackReport {
 }
 
 #[juniper::object (Context = Context)]
-impl GqlBuilding {
-    fn id(&self) -> juniper::ID {
-        self.0.id.to_string().into()
-    }
-    fn x(&self) -> i32 {
-        self.0.x
-    }
-    fn y(&self) -> i32 {
-        self.0.y
-    }
-    fn building_type(&self) -> &paddlers_shared_lib::models::BuildingType {
-        &self.0.building_type
-    }
-    fn building_range(&self) -> Option<f64> {
-        self.0.building_range.map(f64::from)
-    }
-    fn attack_power(&self) -> Option<f64> {
-        self.0.attack_power.map(f64::from)
-    }
-    fn attacks_per_cycle(&self) -> Option<i32> {
-        self.0.attacks_per_cycle
-    }
-    fn creation(&self) -> FieldResult<GqlTimestamp> {
-        datetime(&self.0.creation)
-    }
-}
-
-#[juniper::object (Context = Context)]
 impl GqlTask {
     fn id(&self) -> juniper::ID {
         self.0.id.to_string().into()
