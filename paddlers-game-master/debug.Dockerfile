@@ -25,7 +25,7 @@ RUN cargo build --manifest-path=paddlers-game-master/Cargo.toml
 RUN rm ./paddlers-game-master/src/*.rs
 COPY ./paddlers-game-master/src ./paddlers-game-master/src
 RUN rm ./paddlers-game-master/target/debug/deps/paddlers_game*
-RUN cargo build --manifest-path=paddlers-game-master/Cargo.toml
+RUN cargo build --manifest-path=paddlers-game-master/Cargo.toml --features=local_test
 
 
 FROM buildpack-deps:stretch as GameMaster

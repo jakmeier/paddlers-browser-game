@@ -13,9 +13,19 @@ impl DB {
     pub fn new_pool() -> Pool {
         let url = paddlers_shared_lib::get_db_url();
         let manager = diesel::r2d2::ConnectionManager::<PgConnection>::new(url);
-        r2d2::Pool::builder()
-            .build(manager)
-            .expect("Failed to create pool.")
+        let mut builder = r2d2::Pool::builder();
+
+        #[cfg(feature = "local_test")]
+        {
+            builder = builder.max_size(5);
+        }
+
+        #[cfg(not(feature = "local_test"))]
+        {
+            builder = builder.max_size(50);
+        }
+
+        builder.build(manager).expect("Failed to create pool.")
     }
 }
 
