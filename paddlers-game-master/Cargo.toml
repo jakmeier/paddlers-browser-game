@@ -20,3 +20,6 @@ toml = "0.5"
 env_logger = "0.7.1"
 log = "0.4.8"
 dotenv = "0.15.0"
+
+[features]
+local_test = []
