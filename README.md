@@ -28,8 +28,6 @@ Many things are lacking, including:
 
 ## Demo
 
-*(May 15) Note: The demo has technical problems when too many players sign up. If you are hanging in the loading screen, this is the reason. I periodically clean the database, hence you can try again later and maybe then it will work. Sadly, you will also lose all game progress. Hopefully, a fix will be available soon.*
-
 A [live-demo](https://demo.paddlers.ch) of the current state is online now! Usually, the latest tagged commit is deployed. However, it's only semi-automated deployment at this point, therefore the deployed version may diverge from the master branch.
 
 Currently deployed version: 0.1.2
