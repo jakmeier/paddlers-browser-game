@@ -198,9 +198,19 @@ impl<'a, 'b> Game<'a, 'b> {
         response: BuildingsResponse,
     ) -> PadlResult<()> {
         if let Some(data) = response.data {
-            self.flush_buildings()?;
-            self.town_world_mut().maintain();
-            data.create_entities(&mut self.town_context);
+            if let Some(ctx) = self.town_context.context_by_key_mut(data.village_id()) {
+                let world = ctx.world_mut();
+                flush_buildings(world)?;
+                world.maintain();
+                data.create_entities(self.town_context.active_context_mut());
+            } else {
+                println!(
+                    "{:?} not active. Active: {:?}",
+                    data.village_id(),
+                    self.town_context.active_context()
+                );
+                return PadlErrorCode::DataForInactiveTownReceived("buildings").dev();
+            }
         } else {
             println!("No buildings available");
         }

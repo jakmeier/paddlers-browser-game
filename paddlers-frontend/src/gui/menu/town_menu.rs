@@ -20,23 +20,10 @@ pub(crate) struct TownMenuFrame<'a, 'b> {
     bank_component: ResourcesComponent,
     hover_component: ResourcesComponent,
     resources_area: Rectangle,
+    foreign_town_menu: UiBox,
     left_click_dispatcher: Dispatcher<'a, 'b>,
 }
-impl TownMenuFrame<'_, '_> {
-    pub fn new<'a, 'b>(ep: EventPool) -> PadlResult<Self> {
-        let left_click_dispatcher = DispatcherBuilder::new()
-            .with(TownMenuLeftClickSystem::new(ep), "", &[])
-            .build();
 
-        Ok(TownMenuFrame {
-            text_provider: TableTextProvider::new(),
-            left_click_dispatcher,
-            resources_area: Rectangle::default(),
-            bank_component: ResourcesComponent::new()?,
-            hover_component: ResourcesComponent::new()?,
-        })
-    }
-}
 impl<'a, 'b> Frame for TownMenuFrame<'a, 'b> {
     type Error = PadlError;
     type State = Game<'a, 'b>;
@@ -49,24 +36,54 @@ impl<'a, 'b> Frame for TownMenuFrame<'a, 'b> {
         window: &mut Self::Graphics,
     ) -> Result<(), Self::Error> {
         self.text_provider.reset();
-        let inner_area = state.inner_menu_area();
-
-        let world = state.town_world();
+        let world = state.town_context.world();
+        let mut area = state.inner_menu_area();
         let resolution = *world.read_resource::<ScreenResolution>();
         let resources_height = resolution.resources_h();
-        let entity = world.fetch::<UiState>().selected_entity;
+        let foreign = state.town_context.is_foreign();
+        let now = world.fetch::<Now>().0;
+        let selected_entity = world.fetch::<UiState>().selected_entity;
 
-        let (resources_area, menu_area) = inner_area.cut_horizontal(resources_height);
-        self.resources_area = resources_area;
-        self.bank_component.show()?;
-        render_town_menu(
-            state,
-            window,
-            entity,
-            &menu_area,
-            &mut self.text_provider,
-            &mut self.hover_component,
-        )?;
+        if foreign {
+            self.bank_component.hide()?;
+            let extras_h = area.height() / 3.0;
+            let (extras_area, remainder) = area.cut_horizontal(extras_h);
+            area = remainder;
+            self.render_foreign_town_extras(&mut state.sprites, window, &extras_area, now)?;
+        } else {
+            let (resources_area, remainder) = area.cut_horizontal(resources_height);
+            area = remainder;
+            self.resources_area = resources_area;
+            self.bank_component.show()?;
+        }
+
+        if let Some(selected_entity) = selected_entity {
+            let (img_area, table_area) = menu_selected_entity_spacing(&area);
+            draw_entity_img(
+                world,
+                &mut state.sprites,
+                window,
+                selected_entity,
+                &img_area,
+            )?;
+            draw_town_entity_details_table(
+                world,
+                &mut state.sprites,
+                window,
+                selected_entity,
+                &table_area,
+                &mut self.text_provider,
+                &mut self.hover_component,
+            )?;
+        } else if !foreign {
+            state.render_default_shop(
+                window,
+                &area,
+                &mut self.text_provider,
+                &mut self.hover_component,
+            )?;
+        }
+
         self.text_provider.finish_draw();
         Ok(())
     }
@@ -93,14 +110,31 @@ impl<'a, 'b> Frame for TownMenuFrame<'a, 'b> {
         }
         std::mem::drop(ui_state);
 
-        let ms = MouseState(pos.into(), Some(MouseButton::Left));
-        state.town_world_mut().insert(ms);
-        self.left_click_dispatcher.dispatch(state.town_world());
-        // TODO: Only temporary experiment
-        let mut result_signals = state
-            .town_world()
-            .write_resource::<ExperimentalSignalChannel>();
-        signals.append(&mut result_signals);
+        let foreign = state.town_context.is_foreign();
+        if foreign {
+            if let Some((click_output, _condition)) = self.foreign_town_menu.click(mouse_pos)? {
+                match click_output {
+                    ClickOutput::Event(evt) => {
+                        state.event_pool.send(evt)?;
+                    }
+                    _ => {
+                        return PadlErrorCode::DevMsg(
+                            "Unexpected ClickOutput in foreign town menu",
+                        )
+                        .dev();
+                    }
+                }
+            }
+        } else {
+            let ms = MouseState(pos.into(), Some(MouseButton::Left));
+            state.town_world_mut().insert(ms);
+            self.left_click_dispatcher.dispatch(state.town_world());
+            // TODO: Only temporary experiment
+            let mut result_signals = state
+                .town_world()
+                .write_resource::<ExperimentalSignalChannel>();
+            signals.append(&mut result_signals);
+        }
         Ok(())
     }
     fn right_click(&mut self, state: &mut Self::State, pos: (i32, i32)) -> Result<(), Self::Error> {
@@ -139,34 +173,50 @@ impl<'a, 'b> Frame for TownMenuFrame<'a, 'b> {
         Ok(())
     }
 }
+impl TownMenuFrame<'_, '_> {
+    pub fn new<'a, 'b>(ep: EventPool) -> PadlResult<Self> {
+        let left_click_dispatcher = DispatcherBuilder::new()
+            .with(TownMenuLeftClickSystem::new(ep), "", &[])
+            .build();
 
-fn render_town_menu(
-    state: &mut Game<'_, '_>,
-    window: &mut Window,
-    entity: Option<Entity>,
-    area: &Rectangle,
-    text_provider: &mut TableTextProvider,
-    hover_component: &mut ResourcesComponent,
-) -> PadlResult<()> {
-    match entity {
-        Some(id) => {
-            let (img_area, table_area) = menu_selected_entity_spacing(&area);
-            let world = state.town_context.world();
-            let sprites = &mut state.sprites;
-            draw_entity_img(world, sprites, window, id, &img_area)?;
-            draw_town_entity_details_table(
-                world,
-                sprites,
-                window,
-                id,
-                &table_area,
-                text_provider,
-                hover_component,
-            )?;
-        }
-        None => {
-            state.render_default_shop(window, area, text_provider, hover_component)?;
-        }
+        let mut foreign_town_menu = UiBox::new(1, 1, 1.0, 1.0);
+        foreign_town_menu.add(
+            UiElement::new(ClickOutput::Event(GameEvent::LoadHomeVillage))
+                .with_text("Go Home".to_owned())
+                .with_background_color(LIGHT_BLUE),
+        );
+
+        Ok(TownMenuFrame {
+            text_provider: TableTextProvider::new(),
+            left_click_dispatcher,
+            resources_area: Rectangle::default(),
+            bank_component: ResourcesComponent::new()?,
+            hover_component: ResourcesComponent::new()?,
+            foreign_town_menu,
+        })
     }
-    Ok(())
+
+    fn render_foreign_town_extras(
+        &mut self,
+        sprites: &mut Sprites,
+        window: &mut Window,
+        area: &Rectangle,
+        now: Timestamp,
+    ) -> PadlResult<()> {
+        let mut table = vec![];
+        table.push(TableRow::InteractiveArea(&mut self.foreign_town_menu));
+
+        draw_table(
+            window,
+            sprites,
+            &mut table,
+            area,
+            &mut self.text_provider,
+            40.0,
+            Z_MENU_TEXT,
+            now,
+            TableVerticalAlignment::Top,
+        )?;
+        Ok(())
+    }
 }

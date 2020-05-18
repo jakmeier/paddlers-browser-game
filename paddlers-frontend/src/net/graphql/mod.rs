@@ -69,6 +69,14 @@ impl GraphQlState {
             .map(|response| Ok(NetMsg::Buildings(response?)))
         })
     }
+    pub(super) fn foreign_buildings_query(
+        &self,
+        vid: VillageKey,
+    ) -> impl Future<Output = PadlResult<NetMsg>> {
+        http_read_buildings(vid)
+            .expect("Query building error")
+            .map(|response| Ok(NetMsg::Buildings(response?)))
+    }
     pub(super) fn workers_query(&self) -> PadlResult<impl Future<Output = PadlResult<NetMsg>>> {
         current_village_async().map(|fut| {
             fut.and_then(move |village: VillageKey| {

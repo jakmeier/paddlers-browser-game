@@ -9,7 +9,8 @@ use crate::game::{
 };
 use crate::gui::{render::Renderable, sprites::*, utils::*, z::Z_BUILDINGS};
 use crate::prelude::*;
-use paddlers_shared_lib::{game_mechanics::attributes::Attributes, graphql_types::*, models::*};
+use paddlers_shared_lib::prelude::*;
+use paddlers_shared_lib::{game_mechanics::attributes::Attributes, graphql_types::*};
 use specs::prelude::*;
 use specs::world::EntitiesRes;
 
@@ -114,6 +115,9 @@ fn building_ingame_scaling(b: BuildingType) -> f32 {
 
 use crate::net::graphql::buildings_query;
 impl buildings_query::ResponseData {
+    pub(crate) fn village_id(&self) -> VillageKey {
+        VillageKey(self.village.id)
+    }
     pub(crate) fn create_entities(&self, town_context: &mut TownContext) -> Vec<Entity> {
         self.village
             .buildings

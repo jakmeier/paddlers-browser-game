@@ -1,5 +1,6 @@
 query BuildingsQuery($village_id: Int!) {
   village(villageId: $village_id) {
+    id
     buildings {
       id
       x

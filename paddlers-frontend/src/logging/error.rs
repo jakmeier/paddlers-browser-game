@@ -91,6 +91,7 @@ pub enum PadlErrorCode {
     DialogueEmpty,
     UserNotInDB,
     AuthorizationRequired,
+    DataForInactiveTownReceived(&'static str),
 }
 
 impl fmt::Display for PadlErrorCode {
@@ -166,6 +167,9 @@ impl fmt::Display for PadlErrorCode {
             }
             PadlErrorCode::AuthorizationRequired => {
                 write!(f, "The requested resource permits authorized access only.")
+            }
+            PadlErrorCode::DataForInactiveTownReceived(data) => {
+                write!(f, "Received data {} for town that is not active.", data)
             }
         }
     }

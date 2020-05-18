@@ -1,6 +1,6 @@
 //! Runtime performance tests
 
-use crate::game::Game;
+use crate::game::*;
 use crate::prelude::*;
 use crate::specs::WorldExt;
 
@@ -34,7 +34,7 @@ impl TestData {
             Test::Vanilla => { /* NOP */ }
             s => {
                 game.flush_hobos().expect("Flushing hobos");
-                game.flush_buildings().expect("Flushing buildings");
+                flush_buildings(game.town_context.world()).expect("Flushing buildings");
                 match s {
                     Test::Vanilla => unreachable!(),
                     Test::Empty => { /* NOP */ }

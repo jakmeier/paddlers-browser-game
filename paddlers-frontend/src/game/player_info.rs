@@ -8,7 +8,7 @@ pub struct PlayerInfo {
     karma: i64,
     /// Prophets currently owned by player that are not ruling a village, yet
     prophets: i64,
-    villages: i64,
+    village_count: i64,
     story_state: StoryState,
 }
 
@@ -17,7 +17,7 @@ impl From<PlayerQueryResponse> for PlayerInfo {
         PlayerInfo {
             karma: p.karma,
             prophets: p.prophet_count,
-            villages: p.village_count,
+            village_count: p.village_count,
             story_state: p.story_state.into(),
         }
     }
@@ -43,11 +43,11 @@ impl PlayerInfo {
     }
     #[inline]
     pub fn prophets_limit(&self) -> i64 {
-        prophets_allowed(self.karma) - self.villages + 1
+        prophets_allowed(self.karma) - self.village_count + 1
     }
     #[inline]
     pub fn prophets_total(&self) -> i64 {
-        self.prophets + self.villages - 1
+        self.prophets + self.village_count - 1
     }
     #[inline]
     pub fn prophet_price(&self) -> Price {

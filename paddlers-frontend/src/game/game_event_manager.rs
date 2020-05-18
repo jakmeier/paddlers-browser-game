@@ -17,6 +17,7 @@ use crate::gui::input::UiView;
 use crate::gui::ui_state::Now;
 use crate::init::quicksilver_integration::{GameState, Signal};
 use crate::net::game_master_api::RestApiState;
+use crate::net::request_foreign_town;
 use crate::prelude::*;
 use paddlers_shared_lib::api::story::StoryStateTransition;
 use paddlers_shared_lib::prelude::*;
@@ -37,6 +38,7 @@ pub type VillageCoordinate = (i32, i32);
 pub enum GameEvent {
     HoboSatisfied(Entity),
     HttpBuyProphet,
+    LoadHomeVillage,
     LoadVillage(VillageKey),
     SendProphetAttack(VillageCoordinate),
     StoryActions(Vec<StoryAction>),
@@ -99,9 +101,13 @@ impl GameState {
                     self.try_handle_story_action(a)?;
                 }
             }
-            GameEvent::LoadVillage(coordinate) => {
-                println!("Go to village {:?}", coordinate);
-                // TODO
+            GameEvent::LoadVillage(vid) => {
+                self.game.town_context.load_foreign(vid);
+                self.game.switch_view(UiView::Town);
+                request_foreign_town(vid);
+            }
+            GameEvent::LoadHomeVillage => {
+                self.game.town_context.reset_to_home();
             }
         }
         Ok(())

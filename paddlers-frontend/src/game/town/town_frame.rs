@@ -1,6 +1,8 @@
 use crate::game::{
-    buildings::Building, components::*, player_info::PlayerInfo,
-    town::temple_shop::new_temple_menu, town::Town, units::workers::Worker, Game,
+    buildings::Building, components::*, fight::*, forestry::ForestrySystem, movement::MoveSystem,
+    player_info::PlayerInfo, story::entity_trigger::EntityTriggerSystem,
+    town::temple_shop::new_temple_menu, town::Town, units::worker_system::WorkerSystem,
+    units::workers::Worker, Game,
 };
 use crate::gui::{
     input::{left_click::TownLeftClickSystem, MouseState},
@@ -18,6 +20,7 @@ use std::ops::Deref;
 
 pub(crate) struct TownFrame<'a, 'b> {
     left_click_dispatcher: Dispatcher<'a, 'b>,
+    town_dispatcher: Dispatcher<'a, 'b>,
     // Graphics optimization
     pub background_cache: Option<Mesh>,
 }
@@ -30,7 +33,10 @@ impl<'a, 'b> Frame for TownFrame<'a, 'b> {
     type Signal = Signal;
     fn update(&mut self, state: &mut Self::State) -> Result<(), Self::Error> {
         state.prepare_town_resources();
-        state.town_context.update();
+        let world = state.town_world_mut();
+        world.maintain();
+        self.town_dispatcher.dispatch(world);
+
         Ok(())
     }
     fn draw(
@@ -162,12 +168,21 @@ impl<'a, 'b> Frame for TownFrame<'a, 'b> {
 impl<'a, 'b> TownFrame<'a, 'b> {
     pub fn new(ep: EventPool) -> Self {
         let left_click_dispatcher = DispatcherBuilder::new()
-            .with(TownLeftClickSystem::new(ep), "", &[])
+            .with(TownLeftClickSystem::new(ep.clone()), "", &[])
+            .build();
+
+        let town_dispatcher = DispatcherBuilder::new()
+            .with(WorkerSystem::new(ep.clone()), "work", &[])
+            .with(MoveSystem, "move", &["work"])
+            .with(FightSystem::new(ep.clone()), "fight", &["move"])
+            .with(ForestrySystem, "forest", &[])
+            .with(EntityTriggerSystem::new(ep), "ets", &[])
             .build();
 
         TownFrame {
             left_click_dispatcher,
             background_cache: None,
+            town_dispatcher,
         }
     }
     fn temple(&self, world: &World) -> Option<Entity> {
@@ -196,6 +211,6 @@ impl<'a, 'b> Game<'a, 'b> {
     }
     fn copy_res<T: Clone + 'static>(&mut self) {
         let res: T = self.world.read_resource::<T>().deref().clone();
-        self.town_context.town_world.insert::<T>(res);
+        self.town_context.world_mut().insert::<T>(res);
     }
 }

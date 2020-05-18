@@ -187,7 +187,7 @@ impl Game<'_, '_> {
             self.town().forest_usage(),
         ));
         table.push(total_aura_details(self.town().ambience()));
-        let shop = &mut self.town_context.town_world.write_resource::<DefaultShop>();
+        let shop = &mut self.town_context.world().write_resource::<DefaultShop>();
         Self::draw_shop_prices(window, &mut area, &mut shop.ui, res_comp)?;
 
         table.push(TableRow::InteractiveArea(&mut shop.ui));

@@ -21,7 +21,7 @@ pub(crate) mod town_resources;
 pub(crate) mod units;
 pub(crate) mod visits;
 
-use crate::game::{components::*, player_info::PlayerInfo, town::TownContext};
+use crate::game::{components::*, player_info::PlayerInfo, town::TownContextManager};
 use crate::gui::{input, sprites::*, ui_state::*};
 use crate::init::loading::BaseState;
 use crate::init::loading::GameLoadingData;
@@ -55,7 +55,7 @@ pub(crate) struct Game<'a, 'b> {
     // TODO: [0.1.4] These would better fit into frame state, however,
     // there is currently no good solution to share it between main-frame and menu-frame
     pub map: Option<GlobalMapPrivateState>,
-    pub town_context: TownContext<'a, 'b>,
+    pub town_context: TownContextManager,
 
     #[cfg(feature = "dev_view")]
     pub palette: bool,
@@ -73,12 +73,8 @@ impl Game<'_, '_> {
     ) -> PadlResult<Self> {
         let (game_evt_send, game_evt_recv) = channel();
         let player_info = game_data.player_info.ok_or("Player Info not loaded")?;
-        let town_context = TownContext::new(
-            resolution,
-            game_evt_send.clone(),
-            player_info.clone(),
-            base.async_err.clone(),
-        );
+        let town_context =
+            TownContextManager::new(resolution, player_info.clone(), base.async_err.clone());
         let mut world =
             crate::init::init_world(base.async_err, resolution, player_info, base.errq, base.tb);
         let mut dispatcher = DispatcherBuilder::new()
@@ -210,20 +206,6 @@ impl Game<'_, '_> {
             .delete_entities(&dead)
             .expect("Something bad happened when deleting dead entities");
     }
-    /// Deletes all building entities (lazy, requires world.maintain())
-    fn flush_buildings(&self) -> PadlResult<()> {
-        let b = self
-            .town_context
-            .town_world
-            .read_storage::<buildings::Building>();
-        for (entity, _marker) in (&self.world.entities(), &b).join() {
-            self.world
-                .entities()
-                .delete(entity)
-                .map_err(|_| PadlError::dev_err(PadlErrorCode::EcsError("Delete building")))?;
-        }
-        Ok(())
-    }
     /// Deletes all worker entities (lazy, requires world.maintain())
     fn flush_workers(&self) -> PadlResult<()> {
         let w = self.town_world().read_storage::<units::workers::Worker>();
@@ -282,4 +264,16 @@ impl Game<'_, '_> {
         let mut tb = self.world.write_resource::<TextBoard>();
         tb.display_confirmation(msg)
     }
+}
+
+/// Deletes all building entities (lazy, requires world.maintain())
+fn flush_buildings(world: &World) -> PadlResult<()> {
+    let b = world.read_storage::<buildings::Building>();
+    for (entity, _marker) in (&world.entities(), &b).join() {
+        world
+            .entities()
+            .delete(entity)
+            .map_err(|_| PadlError::dev_err(PadlErrorCode::EcsError("Delete building")))?;
+    }
+    Ok(())
 }

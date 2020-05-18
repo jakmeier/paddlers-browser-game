@@ -1,28 +1,94 @@
-use crate::game::{
-    fight::*, forestry::ForestrySystem, movement::MoveSystem, player_info::PlayerInfo,
-    story::entity_trigger::EntityTriggerSystem, town::Town,
-    units::worker_system::WorkerSystem,
-};
+use crate::game::{player_info::PlayerInfo, town::Town};
 use crate::init::specs_registration::*;
 use crate::logging::AsyncErr;
 use crate::prelude::*;
+use paddlers_shared_lib::prelude::*;
 use specs::prelude::*;
 
+/// Orchestrates TownContexts to be displayed.
+///
+/// At the moment, only the main town of the player currently logged in and one foreign town are stored.
+/// In the future, this could also hold a cache of several villages to ensure quick loading when clicking through many towns and going back to previously visited ones.
+pub struct TownContextManager {
+    home_town: TownContext,
+    foreign_town: Option<TownContext>,
+}
 /// Data structure holding all info that is specific to one town.
 /// This can be swapped out to display another town, including foreign towns.
-pub struct TownContext<'a, 'b> {
+pub struct TownContext {
+    id: VillageKey,
     pub town_world: World,
-    // pub town_resources: TownResources,
-    // FIXME: This should be shared between towns, no need to have different dispatchers
-    dispatcher: Dispatcher<'a, 'b>,
 }
 
-impl<'a, 'b> TownContext<'a, 'b> {
-    pub fn new(
+impl TownContextManager {
+    pub fn new(resolution: ScreenResolution, player_info: PlayerInfo, async_err: AsyncErr) -> Self {
+        let vid = crate::net::state::current_village();
+        Self {
+            home_town: TownContext::new(resolution, player_info, async_err, vid),
+            foreign_town: None,
+        }
+    }
+    pub fn load_foreign(&mut self, v: VillageKey) {
+        let home_data = self.home_town.world();
+        let resolution = *home_data.fetch::<ScreenResolution>();
+        let player_info = *home_data.fetch::<PlayerInfo>();
+        let async_err = (*home_data.fetch::<AsyncErr>()).clone();
+        self.foreign_town = Some(TownContext::new(resolution, player_info, async_err, v));
+    }
+    pub fn reset_to_home(&mut self) {
+        self.foreign_town = None;
+    }
+    pub fn is_foreign(&self) -> bool {
+        self.foreign_town.is_some()
+    }
+    // pub fn context_by_key(&self, vid: VillageKey) -> Option<&TownContext> {
+    //     if self.home_town.id == vid {
+    //         Some(&self.home_town)
+    //     } else {
+    //         self.foreign_town.as_ref().filter(|v| v.id == vid)
+    //     }
+    // }
+    pub fn context_by_key_mut(&mut self, vid: VillageKey) -> Option<&mut TownContext> {
+        if self.home_town.id == vid {
+            Some(&mut self.home_town)
+        } else {
+            self.foreign_town.as_mut().filter(|v| v.id == vid)
+        }
+    }
+    pub fn active_context(&self) -> &TownContext {
+        if let Some(ctx) = self.foreign_town.as_ref() {
+            ctx
+        } else {
+            &self.home_town
+        }
+    }
+    pub fn active_context_mut(&mut self) -> &mut TownContext {
+        if let Some(ctx) = self.foreign_town.as_mut() {
+            ctx
+        } else {
+            &mut self.home_town
+        }
+    }
+    pub fn world(&self) -> &World {
+        self.active_context().world()
+    }
+    pub fn world_mut(&mut self) -> &mut World {
+        self.active_context_mut().world_mut()
+    }
+    pub fn town(&self) -> specs::shred::Fetch<Town> {
+        self.active_context().town()
+    }
+    pub fn town_mut(&self) -> specs::shred::FetchMut<Town> {
+        self.active_context().town_mut()
+    }
+}
+
+impl TownContext {
+    fn new(
         resolution: ScreenResolution,
-        game_evt_send: EventPool,
         player_info: PlayerInfo,
         async_err: AsyncErr,
+        vid: VillageKey,
     ) -> Self {
         let mut world = World::new();
         register_town_components(&mut world);
@@ -30,20 +96,9 @@ impl<'a, 'b> TownContext<'a, 'b> {
         let town = Town::new(resolution);
         insert_town_resources(&mut world, player_info, async_err, town);
 
-        let mut dispatcher = DispatcherBuilder::new()
-            .with(WorkerSystem::new(game_evt_send.clone()), "work", &[])
-            .with(MoveSystem, "move", &["work"])
-            .with(FightSystem::new(game_evt_send.clone()), "fight", &["move"])
-            .with(ForestrySystem, "forest", &[])
-            .with(EntityTriggerSystem::new(game_evt_send.clone()), "ets", &[])
-            .build();
-
-        dispatcher.setup(&mut world);
-
         Self {
             town_world: world,
-            // town_resources: TownResources::default(),
-            dispatcher,
+            id: vid,
         }
     }
     pub fn world(&self) -> &World {
@@ -51,10 +106,6 @@ impl<'a, 'b> TownContext<'a, 'b> {
     }
     pub fn world_mut(&mut self) -> &mut World {
         &mut self.town_world
-    }
-    pub fn update(&mut self) {
-        self.town_world.maintain();
-        self.dispatcher.dispatch(&mut self.town_world)
     }
     pub fn town(&self) -> specs::shred::Fetch<Town> {
         self.town_world.fetch()
@@ -70,5 +121,13 @@ impl<'a, 'b> Game<'a, 'b> {
     }
     pub fn town_world_mut(&mut self) -> &mut World {
         self.town_context.world_mut()
+    }
+}
+
+impl std::fmt::Debug for TownContext {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Point")
+            .field("village id", &self.id)
+            .finish()
     }
 }

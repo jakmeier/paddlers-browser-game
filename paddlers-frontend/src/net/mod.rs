@@ -8,6 +8,7 @@ pub mod url;
 use crate::game::player_info::PlayerInfo;
 use game_master_api::RestApiState;
 use graphql::{query_types::*, GraphQlState};
+use paddlers_shared_lib::prelude::VillageKey;
 use std::sync::Arc;
 
 use stdweb::spawn_local;
@@ -50,6 +51,7 @@ struct NetState {
     gql_state: GraphQlState,
     rest: Option<Arc<Mutex<RestApiState>>>,
 }
+// FIXME: This is probably better packed in a thread_local!()
 static mut STATIC_NET_STATE: NetState = NetState {
     interval_ms: 5_000,
     logged_in: AtomicBool::new(false),
@@ -89,7 +91,7 @@ pub fn start_network_thread() {
         STATIC_NET_STATE.work();
     }
 }
-/// Sends all requests out necessary for the client state
+/// Sends all requests out necessary for the client state to display a full game view including the home town
 pub fn request_client_state() {
     unsafe {
         // TODO: Instead of forcing a request every time the 10s are too long, use something smarter.$
@@ -131,6 +133,12 @@ pub fn request_player_update() {
         } else {
             stdweb::web::set_timeout(request_player_update, 10);
         }
+    }
+}
+pub fn request_foreign_town(vid: VillageKey) {
+    unsafe {
+        STATIC_NET_STATE.spawn(Ok(STATIC_NET_STATE.gql_state.foreign_buildings_query(vid)));
+        // TODO: Other state
     }
 }
 impl NetState {
