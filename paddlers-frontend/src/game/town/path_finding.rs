@@ -17,7 +17,7 @@ impl Town {
         destination: TileIndex,
         radius: f32,
     ) -> Option<TileIndex> {
-        let valid = self.tiles_in_rectified_circle(destination, radius);
+        let valid = Self::tiles_in_rectified_circle(destination, radius);
 
         let successors = |v: &TileIndex| self.successors(*v);
         let success = |v: &TileIndex| valid.contains(v);

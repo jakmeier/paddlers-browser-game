@@ -98,7 +98,7 @@ impl AttackSpawner {
                 .map_err(|e| eprintln!("Attack spawn failed: {:?}", e))
                 .map(move |hobos| {
                     let hobos = hobos.into_iter().map(|h| h.0).collect();
-                    let db : DB = (&pool).into();
+                    let db: DB = (&pool).into();
 
                     let pa = PlannedAttack {
                         origin_village: None,

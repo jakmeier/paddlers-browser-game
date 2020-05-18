@@ -3,7 +3,6 @@ use specs::WorldExt;
 use stdweb::web::*;
 // use stdweb::unstable::TryInto;
 use crate::game::Game;
-use crate::gui::ui_state::UiState;
 use crate::gui::utils::colors::DARK_BLUE;
 use crate::gui::z::*;
 use crate::init::quicksilver_integration::Signal;
@@ -107,7 +106,7 @@ impl<'a, 'b> Frame for LeaderboardFrame<'a, 'b> {
         state: &mut Self::State,
         window: &mut Self::Graphics,
     ) -> Result<(), Self::Error> {
-        let ui_state = state.world.read_resource::<UiState>();
+        let ui_state = state.world.read_resource::<ViewState>();
         let main_area = Rectangle::new(
             (0, 0),
             (

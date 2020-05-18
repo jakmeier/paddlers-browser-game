@@ -13,20 +13,21 @@ use crate::prelude::*;
 
 impl Game<'_, '_> {
     pub fn switch_view(&mut self, view: UiView) {
-        let ui: &mut UiState = &mut *self.world.fetch_mut();
-        ui.leave_view();
-        ui.current_view = view;
+        {
+            let ui: &mut UiState = &mut *self.world.fetch_mut();
+            ui.leave_view();
+        }
+        self.world.insert(view);
     }
     pub fn toggle_view(&mut self) {
-        let ui: shred::Fetch<UiState> = self.world.fetch();
-        let next = match (*ui).current_view {
+        let view = *self.world.fetch::<UiView>();
+        let next = match view {
             UiView::Map => UiView::Town,
             UiView::Town => UiView::Visitors(VisitorViewTab::Letters),
             UiView::Visitors(_) => UiView::Leaderboard,
             UiView::Leaderboard => UiView::Map,
             UiView::Dialogue => return,
         };
-        std::mem::drop(ui);
 
         self.switch_view(next);
     }

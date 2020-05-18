@@ -3,7 +3,6 @@ use crate::game::{
     components::*,
     input::Clickable,
     movement::{Moving, Position},
-    town::Town,
     units::workers::*,
 };
 use crate::gui::{animation::*, render::Renderable, sprites::*, utils::*, z::Z_UNITS};
@@ -87,13 +86,13 @@ pub fn create_worker_entities(
     response: &WorkerResponse,
     world: &mut World,
     now: Timestamp,
+    resolution: ScreenResolution,
 ) -> Vec<PadlResult<Entity>> {
     response
         .iter()
         .map(|w| {
-            let town = world.read_resource::<Town>();
-            let area = town.tile_area((w.x as usize, w.y as usize));
-            std::mem::drop(town);
+            let area = resolution.tile_area((w.x as usize, w.y as usize));
+            std::mem::drop(resolution);
             w.create_entity(world, now, area)
         })
         .collect()

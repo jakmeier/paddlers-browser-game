@@ -1,6 +1,6 @@
 use super::UiView;
 use crate::game::map::GlobalMapSharedState;
-use crate::gui::ui_state::UiState;
+use crate::gui::ui_state::ViewState;
 use quicksilver::prelude::*;
 use specs::prelude::*;
 
@@ -11,14 +11,15 @@ impl<'a> System<'a> for DragSystem {
     type SystemData = (
         Write<'a, Drag>,
         Write<'a, GlobalMapSharedState>,
-        ReadExpect<'a, UiState>,
+        ReadExpect<'a, ViewState>,
+        ReadExpect<'a, UiView>,
     );
 
-    fn run(&mut self, (mut drag, mut map, ui_state): Self::SystemData) {
+    fn run(&mut self, (mut drag, mut map, ui_state, view): Self::SystemData) {
         if let Some((start, end)) = drag.0.take() {
             let in_menu_area = start.overlaps_rectangle(&(*ui_state).menu_box_area);
 
-            match (ui_state.current_view, in_menu_area) {
+            match (*view, in_menu_area) {
                 (_, true) => {
                     // NOP
                 }

@@ -20,7 +20,7 @@ impl<'a> System<'a> for ForestrySystem {
     type SystemData = (
         WriteStorage<'a, ForestComponent>,
         WriteStorage<'a, Renderable>,
-        Write<'a, Town>,
+        WriteExpect<'a, Town>,
     );
 
     fn run(&mut self, (mut forest, mut rend, mut town): Self::SystemData) {

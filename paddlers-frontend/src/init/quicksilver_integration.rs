@@ -56,6 +56,7 @@ pub(crate) enum PadlEvent {
 /// Signals are a way to broadcast events for event listeners across views.
 pub enum Signal {
     ResourcesUpdated,              // Notification
+    PlayerInfoUpdated,             // Notification
     BuildingBuilt(BuildingType),   // Signal
     Scene(SceneIndex, SlideIndex), // Signal(?)
     NewStoryState(StoryState),     // Notification
@@ -127,7 +128,7 @@ impl GameState {
             self.game.initialize_with_window(window);
         });
 
-        let view = self.game.world.fetch::<UiState>().current_view;
+        let view = *self.game.world.fetch::<UiView>();
         let err = self.viewer.set_view(view, &mut self.game);
         self.game.check(err);
         let err = self.viewer.update(&mut self.game);

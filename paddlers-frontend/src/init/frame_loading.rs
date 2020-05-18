@@ -19,7 +19,7 @@ pub(crate) fn load_viewer(game: &mut Game<'static, 'static>, ep: EventPool) -> F
 
     /* Town */
 
-    let menu = TownFrame::new();
+    let menu = TownFrame::new(ep.clone());
     viewer.add_frame(
         Box::new(menu),
         &[UiView::Town],
@@ -27,7 +27,7 @@ pub(crate) fn load_viewer(game: &mut Game<'static, 'static>, ep: EventPool) -> F
         (0, 0), // TODO
     );
 
-    let menu = TownMenuFrame::new(game, ep.clone()).expect("Town menu loading");
+    let menu = TownMenuFrame::new(ep.clone()).expect("Town menu loading");
     viewer.add_frame(
         Box::new(menu),
         &[UiView::Town],

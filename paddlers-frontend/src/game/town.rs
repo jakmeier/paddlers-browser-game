@@ -1,14 +1,17 @@
-mod default_shop;
 pub mod path_finding;
 pub mod task_factory;
-mod temple_shop;
 pub mod tiling;
 pub mod town_defence;
-mod town_frame;
 pub mod town_input;
 pub mod town_render;
+
+mod default_shop;
+mod temple_shop;
+mod town_context;
+mod town_frame;
 pub use default_shop::*;
 pub(crate) use temple_shop::*;
+pub(crate) use town_context::*;
 pub(crate) use town_frame::*;
 
 use crate::gui::{
@@ -27,17 +30,11 @@ pub type TileState = TileStateEx<specs::Entity>;
 pub struct Town {
     map: TownMap,
     state: TownState<specs::Entity>,
-    resolution: ScreenResolution,
+    pub resolution: ScreenResolution,
     // Could possibly be added to TownState, depends on further developments of the backend.
     pub total_ambience: i64,
-    pub temple: Option<specs::Entity>,
     pub idle_prophets: Vec<specs::Entity>,
     pub faith: u8,
-}
-impl Default for Town {
-    fn default() -> Self {
-        Town::new(ScreenResolution::Mid)
-    }
 }
 
 pub const X: usize = TOWN_X;
@@ -51,7 +48,6 @@ impl Town {
             state: TownState::new(),
             resolution: resolution,
             total_ambience: 0,
-            temple: None,
             idle_prophets: vec![],
             faith: 100,
         }
@@ -92,14 +88,14 @@ impl Town {
     }
 
     pub fn get_buildable_tile(&self, pos: impl Into<Vector>) -> Option<TileIndex> {
-        let (x, y) = self.tile(pos);
+        let (x, y) = self.resolution.tile(pos);
         if self.is_buildable((x, y)) {
             Some((x, y))
         } else {
             None
         }
     }
-    fn tiles_in_rectified_circle(&self, tile: TileIndex, radius: f32) -> Vec<TileIndex> {
+    fn tiles_in_rectified_circle(tile: TileIndex, radius: f32) -> Vec<TileIndex> {
         let r = radius.ceil() as usize;
         let xmin = tile.0.saturating_sub(r);
         let ymin = tile.1.saturating_sub(r);
@@ -124,7 +120,7 @@ impl Town {
         tiles
     }
     pub fn lane_in_range(&self, pos: TileIndex, range: f32) -> Vec<TileIndex> {
-        self.tiles_in_rectified_circle(pos, range)
+        Self::tiles_in_rectified_circle(pos, range)
             .into_iter()
             .filter(|xy| self.map[*xy] == TileType::LANE)
             .collect()

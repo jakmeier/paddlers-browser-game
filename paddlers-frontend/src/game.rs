@@ -21,11 +21,7 @@ pub(crate) mod town_resources;
 pub(crate) mod units;
 pub(crate) mod visits;
 
-use crate::game::town::new_temple_menu;
-use crate::game::{
-    components::*, fight::*, forestry::ForestrySystem, player_info::PlayerInfo,
-    story::entity_trigger::EntityTriggerSystem, units::worker_system::WorkerSystem,
-};
+use crate::game::{components::*, player_info::PlayerInfo, town::TownContext};
 use crate::gui::{input, sprites::*, ui_state::*};
 use crate::init::loading::BaseState;
 use crate::init::loading::GameLoadingData;
@@ -39,17 +35,16 @@ use game_event_manager::GameEvent;
 use map::{GlobalMap, GlobalMapPrivateState};
 use movement::*;
 use quicksilver::prelude::*;
+use shred::{Fetch, FetchMut};
 use specs::prelude::*;
 use std::sync::mpsc::{channel, Receiver};
 use town::{DefaultShop, Town};
-use town_resources::TownResources;
 
 pub(crate) struct Game<'a, 'b> {
     pub dispatcher: Dispatcher<'a, 'b>,
     pub world: World,
     pub sprites: Sprites,
     pub locale: TextDb,
-    pub resources: TownResources,
     pub net: Receiver<NetMsg>,
     pub time_zero: Timestamp,
     pub total_updates: u64,
@@ -57,7 +52,10 @@ pub(crate) struct Game<'a, 'b> {
     pub game_event_receiver: Receiver<GameEvent>,
     pub event_pool: EventPool,
     pub stats: Statistician,
+    // TODO: [0.1.4] These would better fit into frame state, however,
+    // there is currently no good solution to share it between main-frame and menu-frame
     pub map: Option<GlobalMapPrivateState>,
+    pub town_context: TownContext<'a, 'b>,
 
     #[cfg(feature = "dev_view")]
     pub palette: bool,
@@ -75,32 +73,22 @@ impl Game<'_, '_> {
     ) -> PadlResult<Self> {
         let (game_evt_send, game_evt_recv) = channel();
         let player_info = game_data.player_info.ok_or("Player Info not loaded")?;
+        let town_context = TownContext::new(
+            resolution,
+            game_evt_send.clone(),
+            player_info.clone(),
+            base.async_err.clone(),
+        );
         let mut world =
             crate::init::init_world(base.async_err, resolution, player_info, base.errq, base.tb);
         let mut dispatcher = DispatcherBuilder::new()
-            .with(WorkerSystem::new(game_evt_send.clone()), "work", &[])
-            .with(MoveSystem, "move", &["work"])
-            .with(FightSystem::new(game_evt_send.clone()), "fight", &["move"])
-            .with(ForestrySystem, "forest", &[])
             .with(RestApiSystem, "rest", &[])
-            .with(EntityTriggerSystem::new(game_evt_send.clone()), "ets", &[])
             .build();
         dispatcher.setup(&mut world);
 
         let now = utc_now();
-        let mut ts = world.write_resource::<Now>();
-        *ts = Now(now);
-        std::mem::drop(ts);
+        world.insert::<Now>(Now(now));
 
-        if let Some(temple) = world.read_resource::<Town>().temple {
-            let mut menus = world.write_storage::<UiMenu>();
-            // This insert overwrites existing entries
-            menus
-                .insert(temple, new_temple_menu(&player_info))
-                .map_err(|_| {
-                    PadlError::dev_err(PadlErrorCode::EcsError("Temple menu insertion failed"))
-                })?;
-        }
         world.maintain();
         let mut game = Game {
             dispatcher: dispatcher,
@@ -109,13 +97,13 @@ impl Game<'_, '_> {
             locale,
             net: base.net_chan,
             time_zero: now,
-            resources: TownResources::default(),
             total_updates: 0,
             async_err_receiver: base.err_recv,
             game_event_receiver: game_evt_recv,
             event_pool: game_evt_send,
             stats: Statistician::new(now),
             map: None,
+            town_context,
             #[cfg(feature = "dev_view")]
             palette: false,
             #[cfg(feature = "dev_view")]
@@ -129,11 +117,14 @@ impl Game<'_, '_> {
         )?;
         // Make sure buildings are loaded properly before inserting any types of units
         game.world.maintain();
+        game.town_world_mut().maintain();
         game.load_workers_from_net_response(game_data.worker_response.ok_or("No worker response")?);
         game.load_hobos_from_net_response(game_data.hobos_response.ok_or("No hobos response")?)?;
         game.load_attacking_hobos(game_data.attacking_hobos.ok_or("No attacks response")?)?;
+        game.load_player_info(game_data.player_info.ok_or("No player info loaded")?)?;
         // Make sure all units are loaded properly before story triggers are added
         game.world.maintain();
+        game.town_world_mut().maintain();
         game.load_story_state()?;
         Ok(game)
     }
@@ -147,10 +138,6 @@ impl Game<'_, '_> {
     }
 
     pub fn main_update_loop(&mut self, window: &mut Window) -> Result<()> {
-        {
-            let mut res = self.world.write_resource::<TownResources>();
-            *res = self.resources;
-        }
         {
             self.map_mut().update();
         }
@@ -175,7 +162,7 @@ impl Game<'_, '_> {
 
         let (button_area, inner_area) = crate::gui::menu::menu_box_inner_split(menu_area, r);
 
-        let mut data = self.world.write_resource::<UiState>();
+        let mut data = self.world.write_resource::<ViewState>();
         (*data).main_area = main_area;
         (*data).menu_box_area = menu_area;
         (*data).inner_menu_box_area = inner_area;
@@ -184,17 +171,17 @@ impl Game<'_, '_> {
         // TODO: refresh map and town (and make this method callable by user input)
     }
     pub fn init_map(&mut self) {
-        let main_area = self.world.read_resource::<UiState>().main_area;
+        let main_area = self.world.read_resource::<ViewState>().main_area;
         let (private, shared) = GlobalMap::new(main_area.size());
         self.map = Some(private);
         self.world.insert(shared);
     }
 
-    pub fn town(&self) -> specs::shred::Fetch<Town> {
-        self.world.read_resource()
+    pub fn town(&self) -> Fetch<Town> {
+        self.town_context.town()
     }
-    pub fn town_mut(&mut self) -> specs::shred::FetchMut<Town> {
-        self.world.write_resource()
+    pub fn town_mut(&self) -> FetchMut<Town> {
+        self.town_context.town_mut()
     }
     pub fn map_mut(&mut self) -> GlobalMap {
         GlobalMap::combined(self.map.as_mut().unwrap(), self.world.write_resource())
@@ -211,21 +198,24 @@ impl Game<'_, '_> {
     }
     /// Removes entities outside the map
     pub fn reaper(&mut self, map: &Rectangle) {
-        let p = self.world.read_storage::<Position>();
+        let p = self.town_world().read_storage::<Position>();
         let mut dead = vec![];
-        for (entity, position) in (&self.world.entities(), &p).join() {
+        for (entity, position) in (&self.town_world().entities(), &p).join() {
             if !position.area.overlaps_rectangle(map) {
                 dead.push(entity);
             }
         }
         std::mem::drop(p);
-        self.world
+        self.town_world_mut()
             .delete_entities(&dead)
             .expect("Something bad happened when deleting dead entities");
     }
     /// Deletes all building entities (lazy, requires world.maintain())
     fn flush_buildings(&self) -> PadlResult<()> {
-        let b = self.world.read_storage::<buildings::Building>();
+        let b = self
+            .town_context
+            .town_world
+            .read_storage::<buildings::Building>();
         for (entity, _marker) in (&self.world.entities(), &b).join() {
             self.world
                 .entities()
@@ -236,9 +226,9 @@ impl Game<'_, '_> {
     }
     /// Deletes all worker entities (lazy, requires world.maintain())
     fn flush_workers(&self) -> PadlResult<()> {
-        let w = self.world.read_storage::<units::workers::Worker>();
-        for (entity, _marker) in (&self.world.entities(), &w).join() {
-            self.world
+        let w = self.town_world().read_storage::<units::workers::Worker>();
+        for (entity, _marker) in (&self.town_world().entities(), &w).join() {
+            self.town_world()
                 .entities()
                 .delete(entity)
                 .map_err(|_| PadlError::dev_err(PadlErrorCode::EcsError("Delete worker")))?;
@@ -247,8 +237,9 @@ impl Game<'_, '_> {
     }
     /// Deletes all home hobo entities (lazy, requires world.maintain())
     fn flush_home_hobos(&self) -> PadlResult<()> {
-        let w = self.world.read_storage::<units::hobos::Hobo>();
-        for (entity, _marker) in (&self.world.entities(), &w).join() {
+        let world = self.town_world();
+        let w = world.read_storage::<units::hobos::Hobo>();
+        for (entity, _marker) in (&world.entities(), &w).join() {
             self.world
                 .entities()
                 .delete(entity)
@@ -272,8 +263,9 @@ impl Game<'_, '_> {
     }
     fn worker_entity_by_net_id(&self, net_id: i64) -> PadlResult<Entity> {
         // TODO: Efficient NetId lookup
-        let net = self.world.read_storage::<NetObj>();
-        let ent = self.world.entities();
+        let world = self.town_world();
+        let net = world.read_storage::<NetObj>();
+        let ent = world.entities();
         NetObj::lookup_worker(net_id, &net, &ent)
     }
     /// Transforms a PadlResult to an Option, handing errors to the error queue

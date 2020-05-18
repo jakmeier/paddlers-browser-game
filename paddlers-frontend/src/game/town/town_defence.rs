@@ -51,9 +51,10 @@ impl<'a, 'b> IDefendingTown for Game<'a, 'b> {
     fn auras_in_range(&self, index: &Self::Index, time: Timestamp) -> Vec<(Self::AuraId, i32)> {
         let mut out = vec![];
 
-        let auras = self.world.read_component::<Aura>();
-        let buildings = self.world.read_component::<Building>();
-        let entities = self.world.entities();
+        let world = self.town_world();
+        let auras = world.read_component::<Aura>();
+        let buildings = world.read_component::<Building>();
+        let entities = world.entities();
         for (aura, e, b) in (&auras, &entities, &buildings).join() {
             if time < b.built {
                 continue;

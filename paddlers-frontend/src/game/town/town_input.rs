@@ -48,14 +48,14 @@ impl Town {
         }
         match click_output {
             Some((ClickOutput::Ability(ability), _)) => {
-                (*ui_state).grabbed_item = Some(Grabbable::Ability(ability));
+                ui_state.set_grabbed_item(Grabbable::Ability(ability));
             }
             Some((ClickOutput::Entity(clicked_entity), _)) => {
                 if let Some(container) = containers.get_mut(menu_entity) {
                     container.remove_entity(clicked_entity);
                     ui_menu.ui.remove(clicked_entity.into());
                     let container_area = position.get(menu_entity).unwrap().area;
-                    let tile = self.tile(container_area.pos);
+                    let tile = self.resolution.tile(container_area.pos);
                     move_worker_out_of_building(
                         self,
                         clicked_entity,
@@ -91,18 +91,18 @@ impl Town {
     pub fn click_default_shop<'a>(
         mouse_pos: Vector,
         mut ui_state: WriteExpect<'a, UiState>,
-        shop: Read<'a, DefaultShop>,
-        resources: Write<'a, TownResources>,
+        shop: ReadExpect<'a, DefaultShop>,
+        resources: WriteExpect<'a, TownResources>,
     ) -> PadlResult<()> {
         let maybe_grab = shop.click(mouse_pos)?;
         match maybe_grab {
             None => {}
             Some((g, None)) => {
-                (*ui_state).grabbed_item = Some(g);
+                ui_state.set_grabbed_item(g);
             }
             Some((g, Some(condition))) => {
                 check_condition(&condition, &*resources)?;
-                (*ui_state).grabbed_item = Some(g);
+                ui_state.set_grabbed_item(g);
             }
         }
         Ok(())
@@ -118,31 +118,29 @@ impl Town {
         clickable: &ReadStorage<'a, Clickable>,
         net_ids: &ReadStorage<'a, NetObj>,
         lazy: &Read<'a, LazyUpdate>,
-        resources: &mut Write<'a, TownResources>,
+        resources: &mut WriteExpect<'a, TownResources>,
         errq: &mut WriteExpect<'a, ErrorQueue>,
         // TODO: Only temporary experiment
         signals: &mut WriteExpect<'a, crate::view::ExperimentalSignalChannel>,
     ) -> Option<NewTaskDescriptor> {
         let maybe_top_hit = Self::clickable_lookup(entities, mouse_pos, position, clickable);
-        if let Some(grabbed) = &(*ui_state).grabbed_item {
+        if let Some(grabbed) = ui_state.take_grabbed_item() {
             match grabbed {
                 Grabbable::NewBuilding(bt) => {
-                    let bt = *bt;
                     if let Some(pos) = self.get_buildable_tile(mouse_pos) {
                         RestApiState::get()
                             .http_place_building(pos, bt, current_village())
                             .unwrap_or_else(|e| errq.push(e));
                         resources.spend(&bt.price());
                         self.insert_new_building(&entities, &lazy, pos, bt);
-                        (*ui_state).grabbed_item = None;
                         let signal = Signal::BuildingBuilt(bt);
                         signals.push_back(signal);
+                    } else {
+                        ui_state.set_grabbed_item(grabbed);
                     }
                 }
                 Grabbable::Ability(a) => {
-                    let a = *a;
                     let target = maybe_top_hit.and_then(|e| net_ids.get(e)).map(|n| n.id);
-                    (*ui_state).grabbed_item = None;
                     match a {
                         AbilityType::Welcome => {
                             if target.is_some() {

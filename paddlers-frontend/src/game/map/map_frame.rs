@@ -2,6 +2,7 @@ use super::*;
 use crate::game::Game;
 use crate::init::quicksilver_integration::Signal;
 use crate::prelude::*;
+use crate::quicksilver::geom::Shape;
 use crate::view::{ExperimentalSignalChannel, Frame};
 use quicksilver::prelude::Window;
 use std::marker::PhantomData;
@@ -29,7 +30,7 @@ impl<'a, 'b> Frame for MapFrame<'a, 'b> {
         state: &mut Self::State,
         window: &mut Self::Graphics,
     ) -> Result<(), Self::Error> {
-        let ui_state = state.world.read_resource::<UiState>();
+        let ui_state = state.world.read_resource::<ViewState>();
         let area = Rectangle::new(
             (0, 0),
             (
@@ -54,13 +55,18 @@ impl<'a, 'b> Frame for MapFrame<'a, 'b> {
         _signals: &mut ExperimentalSignalChannel,
     ) -> Result<(), Self::Error> {
         let mut map = state.world.fetch_mut::<GlobalMapSharedState>();
-        map.left_click_on_main_area(
-            pos.into(),
-            &mut *state.world.write_resource(),
-            state.world.entities(),
-            state.world.read_storage(),
-            state.world.read_storage(),
-        );
+
+        let pos: Vector = pos.into();
+        let main_area = state.world.read_resource::<ViewState>().main_area;
+        if pos.overlaps_rectangle(&main_area) {
+            map.left_click_on_main_area(
+                pos,
+                &mut *state.world.write_resource(),
+                state.world.entities(),
+                state.world.read_storage(),
+                state.world.read_storage(),
+            );
+        }
         Ok(())
     }
 }

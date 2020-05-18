@@ -39,9 +39,9 @@ impl<'a> System<'a> for WorkerSystem {
         WriteStorage<'a, Mana>,
         WriteStorage<'a, Level>,
         ReadStorage<'a, Renderable>,
-        Write<'a, Town>,
-        Write<'a, ErrorQueue>,
-        Read<'a, Now>,
+        WriteExpect<'a, Town>,
+        WriteExpect<'a, ErrorQueue>,
+        ReadExpect<'a, Now>,
     );
 
     fn run(
@@ -71,7 +71,7 @@ impl<'a> System<'a> for WorkerSystem {
                 match task.task_type {
                     TaskType::Walk => {
                         let position_now = mov.position(task.start_time);
-                        let position_after = town.tile_area(task.position).pos;
+                        let position_after = town.resolution.tile_area(task.position).pos;
                         if about_equal(position_now.x, position_after.x)
                             && about_equal(position_now.y, position_after.y)
                         {

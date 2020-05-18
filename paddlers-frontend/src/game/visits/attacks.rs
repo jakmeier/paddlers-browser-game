@@ -1,6 +1,5 @@
 //! For incoming visits (attacks)
 
-use crate::gui::ui_state::UiState;
 use crate::gui::utils::colors::LIGHT_BLUE;
 use crate::gui::z::*;
 use crate::init::quicksilver_integration::Signal;
@@ -168,7 +167,7 @@ impl<'a, 'b> Frame for VisitorFrame<'a, 'b> {
         state: &mut Self::State,
         window: &mut Self::Graphics,
     ) -> Result<(), Self::Error> {
-        let ui_state = state.world.read_resource::<UiState>();
+        let ui_state = state.world.read_resource::<ViewState>();
         let main_area = Rectangle::new(
             (0, 0),
             (

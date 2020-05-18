@@ -1,12 +1,15 @@
 use crate::game::Game;
-use crate::gui::gui_components::ResourcesComponent;
-use crate::gui::gui_components::TableTextProvider;
-use crate::gui::input::{left_click::MapLeftClickSystem, MouseState};
-use crate::gui::ui_state::UiState;
+use crate::gui::{
+    gui_components::{ResourcesComponent, TableTextProvider},
+    input::left_click::MapLeftClickSystem,
+    input::MouseState,
+    menu::*,
+    ui_state::UiState,
+};
 use crate::init::quicksilver_integration::Signal;
 use crate::prelude::*;
 use crate::view::{ExperimentalSignalChannel, Frame};
-use quicksilver::prelude::{MouseButton, Window};
+use quicksilver::prelude::{MouseButton, Shape, Window};
 use specs::prelude::*;
 
 pub(crate) struct MapMenuFrame<'a, 'b> {
@@ -44,12 +47,17 @@ impl<'a, 'b> Frame for MapMenuFrame<'a, 'b> {
 
         let selected_entity = state.world.fetch::<UiState>().selected_entity;
         if let Some(e) = selected_entity {
-            state.render_entity_details(
+            let (img_area, table_area) = menu_selected_entity_spacing(&inner_area);
+            let world = &state.world;
+            let sprites = &mut state.sprites;
+            draw_entity_img(world, sprites, window, e, &img_area)?;
+            draw_map_entity_details_table(
+                world,
+                sprites,
                 window,
-                &inner_area,
                 e,
+                &table_area,
                 &mut self.text_provider,
-                &mut self._hover_component,
             )?;
         }
         self.text_provider.finish_draw();
@@ -61,9 +69,17 @@ impl<'a, 'b> Frame for MapMenuFrame<'a, 'b> {
         pos: (i32, i32),
         _signals: &mut ExperimentalSignalChannel,
     ) -> Result<(), Self::Error> {
-        let mut ms = state.world.write_resource::<MouseState>();
-        *ms = MouseState(pos.into(), Some(MouseButton::Left));
-        std::mem::drop(ms); // This drop is essential! The internal RefCell will not be release otherwise
+        // This can be removed once the frame positions are checked properly before right_click is called
+        let ui_state = state.world.fetch::<ViewState>();
+        let mouse_pos: Vector = pos.into();
+        let in_menu_area = mouse_pos.overlaps_rectangle(&(*ui_state).menu_box_area);
+        if !in_menu_area {
+            return Ok(());
+        }
+        std::mem::drop(ui_state);
+
+        let ms = MouseState(mouse_pos, Some(MouseButton::Left));
+        state.world.insert(ms);
         self.left_click_dispatcher.dispatch(&state.world);
         Ok(())
     }

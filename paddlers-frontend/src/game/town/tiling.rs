@@ -1,21 +1,19 @@
 use super::{TileIndex, TileState, Town};
+use crate::resolution::ScreenResolution;
 use quicksilver::prelude::*;
 
-impl Town {
+impl ScreenResolution {
     pub fn tile(&self, pos: impl Into<Vector>) -> (usize, usize) {
-        let ul = self.resolution.unit_length();
-        Self::find_tile(pos, ul)
+        let ul = self.unit_length();
+        Town::find_tile(pos, ul)
     }
-    pub fn find_tile(pos: impl Into<Vector>, ul: f32) -> (usize, usize) {
-        let v = pos.into();
-        let x = (v.x / ul) as usize;
-        let y = (v.y / ul) as usize;
-        (x, y)
-    }
+
+    /// Returns a quicksilver::Rectangle with the pixel position of a tile
     pub fn tile_area(&self, i: TileIndex) -> Rectangle {
-        let ul = self.resolution.unit_length();
+        let ul = self.unit_length();
         Rectangle::new(Vector::from((i.0 as u32, i.1 as u32)) * ul, (ul, ul))
     }
+
     pub fn next_tile_in_direction(
         &self,
         pos: impl Into<Vector>,
@@ -23,7 +21,7 @@ impl Town {
     ) -> (usize, usize) {
         let dir = dir.into();
         let mut pos = pos.into();
-        let ul = self.resolution.unit_length();
+        let ul = self.unit_length();
         if dir.x < 0.0 {
             pos.x = (pos.x / ul).floor() * ul;
         } else if dir.x > 0.0 {
@@ -34,9 +32,10 @@ impl Town {
         } else if dir.y > 0.0 {
             pos.y = (pos.y / ul).ceil() * ul;
         }
-        Self::find_tile(pos, ul)
+        Town::find_tile(pos, ul)
     }
-
+}
+impl Town {
     pub fn tile_state(&self, i: TileIndex) -> Option<&TileState> {
         self.state.get(&i)
     }
@@ -62,5 +61,12 @@ impl Town {
             return false;
         }
         maybe_tile.unwrap().is_walkable()
+    }
+
+    pub fn find_tile(pos: impl Into<Vector>, ul: f32) -> (usize, usize) {
+        let v = pos.into();
+        let x = (v.x / ul) as usize;
+        let y = (v.y / ul) as usize;
+        (x, y)
     }
 }

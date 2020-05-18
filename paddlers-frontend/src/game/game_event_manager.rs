@@ -10,10 +10,11 @@
 //! Try to keep computations in here short and simple.
 
 use crate::game::{
-    components::*, player_info::PlayerInfo, story::StoryAction,
-    units::attackers::change_duck_sprite_to_happy, units::attackers::Visitor,
+    components::*, player_info::PlayerInfo, story::StoryAction, units::attackers::Visitor,
+    units::attackers::*,
 };
 use crate::gui::input::UiView;
+use crate::gui::ui_state::Now;
 use crate::init::quicksilver_integration::{GameState, Signal};
 use crate::net::game_master_api::RestApiState;
 use crate::prelude::*;
@@ -25,6 +26,9 @@ use std::sync::mpsc::Sender;
 /// The SPECS systems' endpoint
 pub type EventPool = Sender<GameEvent>;
 
+/// Coordinates of a village in world map
+pub type VillageCoordinate = (i32, i32);
+
 #[derive(Debug, PartialEq, Clone)]
 /// This used to be just for `Game<'_,'_>` but now was moved up to `GameState`.
 /// It is questionable if that makes sense. Ideally, this would be just `TownEvent`, staying in the scope of a single frame.
@@ -33,9 +37,10 @@ pub type EventPool = Sender<GameEvent>;
 pub enum GameEvent {
     HoboSatisfied(Entity),
     HttpBuyProphet,
-    SendProphetAttack((i32, i32)),
-    SwitchToView(UiView),
+    LoadVillage(VillageKey),
+    SendProphetAttack(VillageCoordinate),
     StoryActions(Vec<StoryAction>),
+    SwitchToView(UiView),
 }
 
 impl GameState {
@@ -48,22 +53,26 @@ impl GameState {
     fn try_handle_event(&mut self, evt: GameEvent) -> PadlResult<()> {
         match evt {
             GameEvent::HoboSatisfied(id) => {
-                let mut rend_store = self.game.world.write_storage::<Renderable>();
+                let now = *self.game.world.fetch::<Now>();
+                let resolution = *self.game.world.fetch::<ScreenResolution>();
+                let town_world = self.game.town_world_mut();
+                let mut rend_store = town_world.write_storage::<Renderable>();
                 if let Some(mut rend) = rend_store.get_mut(id) {
                     change_duck_sprite_to_happy(&mut rend);
                 }
-                let hobo_store = self.game.world.read_storage::<Visitor>();
+                std::mem::drop(rend_store);
+                let hobo_store = town_world.read_storage::<Visitor>();
                 if let Some(hobo) = hobo_store.get(id) {
                     if !hobo.hurried {
-                        let mut v_store = self.game.world.write_storage::<Moving>();
+                        let mut v_store = town_world.write_storage::<Moving>();
                         if v_store.get(id).is_none() {
                             // hobo currently stopped (in frontend)
                             // => Set it moving again, assuming it has been released by the game-master
-                            let moving = self.game.release_and_move_visitor(hobo);
+                            let moving = release_and_move_visitor(hobo, resolution, now);
                             v_store.insert(id, moving)?;
                         }
                         // Tell backend that release might be required
-                        let net_store = self.game.world.read_storage::<NetObj>();
+                        let net_store = town_world.read_storage::<NetObj>();
                         let net_id = net_store.get(id).ok_or(PadlError::dev_err(
                             PadlErrorCode::MissingComponent("NetObj"),
                         ))?;
@@ -76,9 +85,6 @@ impl GameState {
                 crate::game::town::purchase_prophet(&player)?;
             }
             GameEvent::SendProphetAttack((x, y)) => {
-                if self.game.town().idle_prophets.len() == 0 {
-                    return PadlErrorCode::NotEnoughUnits.usr();
-                }
                 self.game.send_prophet_attack((x, y))?;
                 // TODO: Only confirm if HTTP OK is returned
                 // (Probably do this after cleaning pu network and promise handling)
@@ -92,6 +98,10 @@ impl GameState {
                 for a in actions {
                     self.try_handle_story_action(a)?;
                 }
+            }
+            GameEvent::LoadVillage(coordinate) => {
+                println!("Go to village {:?}", coordinate);
+                // TODO
             }
         }
         Ok(())

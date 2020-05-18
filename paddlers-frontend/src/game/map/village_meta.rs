@@ -1,11 +1,21 @@
+use crate::game::components::UiMenu;
+use crate::game::game_event_manager::VillageCoordinate;
+use crate::game::GameEvent;
 use crate::gui::gui_components::TableRow;
+use crate::gui::{
+    gui_components::{ClickOutput, UiBox, UiElement},
+    sprites::*,
+    utils::*,
+};
+use paddlers_shared_lib::prelude::VillageKey;
 use specs::prelude::*;
 use specs::storage::BTreeStorage;
 
 #[derive(Component, Debug, Clone)]
 #[storage(BTreeStorage)]
 pub struct VillageMetaInfo {
-    pub coordinates: (i32, i32),
+    pub id: VillageKey,
+    pub coordinates: VillageCoordinate,
     player: Option<PlayerMetaInfo>,
 }
 
@@ -24,6 +34,7 @@ impl From<MapQueryMapVillages> for VillageMetaInfo {
             karma: p.karma,
         });
         VillageMetaInfo {
+            id: VillageKey(village.id),
             coordinates: (village.x as i32, village.y as i32),
             player,
         }
@@ -47,5 +58,25 @@ impl VillageMetaInfo {
             "Anarchists".to_owned()
         };
         TableRow::Text(text)
+    }
+    pub fn new_village_menu(&self, owned: bool) -> UiMenu {
+        let mut menu = UiMenu {
+            ui: UiBox::new(2, 2, 10.0, 2.0),
+        };
+        if !owned {
+            menu.ui.add(
+                UiElement::new(ClickOutput::Event(GameEvent::LoadVillage(self.id)))
+                    .with_text("Descend".to_owned())
+                    .with_background_color(LIGHT_BLUE),
+            );
+            menu.ui.add(
+                UiElement::new(ClickOutput::Event(GameEvent::SendProphetAttack(
+                    self.coordinates,
+                )))
+                .with_image(SpriteSet::Simple(SingleSprite::Prophet))
+                .with_background_color(RED),
+            );
+        }
+        menu
     }
 }

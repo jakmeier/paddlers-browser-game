@@ -4,6 +4,7 @@ query MapQuery($lowX: Int!, $highX: Int!){
             controlPoints
         }
         villages {
+            id
             x
             y
             owner {

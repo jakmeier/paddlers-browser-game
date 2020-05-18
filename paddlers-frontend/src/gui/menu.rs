@@ -2,6 +2,7 @@ mod map_menu;
 mod menu_background;
 mod town_menu;
 
+use crate::gui::sprites::Sprites;
 pub(crate) use map_menu::MapMenuFrame;
 pub(crate) use menu_background::MenuBackgroundFrame;
 pub(crate) use town_menu::TownMenuFrame;
@@ -20,7 +21,7 @@ use crate::gui::{
     gui_components::*,
     render::Renderable,
     sprites::{SingleSprite, SpriteIndex},
-    ui_state::{Now, UiState},
+    ui_state::Now,
     utils::*,
     z::*,
 };
@@ -104,17 +105,37 @@ pub fn menu_box_inner_split(
     // Return area that is left for other menus
     (button_area, area)
 }
+
+/// Returns the areas for the menu image and the table below
+pub fn menu_selected_entity_spacing(area: &Rectangle) -> (Rectangle, Rectangle) {
+    let mut img_bg_area = area.clone();
+    img_bg_area.size.y = img_bg_area.height() / 3.0;
+    let img_bg_area = img_bg_area
+        .fit_square(FitStrategy::Center)
+        .shrink_to_center(0.8);
+    let text_y = img_bg_area.y() + img_bg_area.height();
+    let text_area = Rectangle::new(
+        (area.x(), text_y),
+        (area.width(), area.y() + area.height() - text_y),
+    )
+    .padded(20.0);
+
+    // self.draw_entity_details_img(window, e, &img_bg_area)?;
+    // self.draw_entity_details_table(window, e, &text_area, text_provider, hover_res_comp)?;
+    (img_bg_area, text_area)
+}
+
 impl Game<'_, '_> {
     pub fn button_area(&self) -> Rectangle {
-        let data = self.world.read_resource::<UiState>();
+        let data = self.world.read_resource::<ViewState>();
         data.button_area.clone()
     }
     pub fn menu_box_area(&self) -> Rectangle {
-        let data = self.world.read_resource::<UiState>();
+        let data = self.world.read_resource::<ViewState>();
         data.menu_box_area.clone()
     }
     pub fn inner_menu_area(&self) -> Rectangle {
-        let data = self.world.read_resource::<UiState>();
+        let data = self.world.read_resource::<ViewState>();
         data.inner_menu_box_area.clone()
     }
 
@@ -151,162 +172,6 @@ impl Game<'_, '_> {
         Ok(())
     }
 
-    pub fn render_entity_details(
-        &mut self,
-        window: &mut Window,
-        area: &Rectangle,
-        e: Entity,
-        text_provider: &mut TableTextProvider,
-        hover_res_comp: &mut ResourcesComponent,
-    ) -> PadlResult<()> {
-        let mut img_bg_area = area.clone();
-        img_bg_area.size.y = img_bg_area.height() / 3.0;
-        let img_bg_area = img_bg_area
-            .fit_square(FitStrategy::Center)
-            .shrink_to_center(0.8);
-        let text_y = img_bg_area.y() + img_bg_area.height();
-        let text_area = Rectangle::new(
-            (area.x(), text_y),
-            (area.width(), area.y() + area.height() - text_y),
-        )
-        .padded(20.0);
-
-        self.draw_entity_details_img(window, e, &img_bg_area)?;
-        self.draw_entity_details_table(window, e, &text_area, text_provider, hover_res_comp)?;
-        Ok(())
-    }
-
-    fn draw_entity_details_img(
-        &mut self,
-        window: &mut Window,
-        e: Entity,
-        area: &Rectangle,
-    ) -> PadlResult<()> {
-        let r = self.world.read_storage::<Renderable>();
-        let sprites = &mut self.sprites;
-        let inner_area = area.shrink_to_center(0.8);
-        if let Some(rd) = r.get(e) {
-            match rd.kind {
-                RenderVariant::ImgWithImgBackground(main, background) => {
-                    draw_static_image(
-                        sprites,
-                        window,
-                        &area,
-                        SpriteIndex::Simple(background),
-                        Z_MENU_BOX + 1,
-                        FitStrategy::Center,
-                    )?;
-                    draw_static_image(
-                        sprites,
-                        window,
-                        &inner_area,
-                        main.default(),
-                        Z_MENU_BOX + 2,
-                        FitStrategy::Center,
-                    )?;
-                }
-                RenderVariant::ImgWithColBackground(main, col) => {
-                    window.draw_ex(area, Col(col), Transform::IDENTITY, Z_MENU_BOX + 1);
-                    draw_static_image(
-                        sprites,
-                        window,
-                        &inner_area,
-                        main.default(),
-                        Z_MENU_BOX + 2,
-                        FitStrategy::Center,
-                    )?;
-                }
-                _ => panic!("Not implemented"),
-            }
-        }
-        Ok(())
-    }
-
-    fn draw_entity_details_table(
-        &mut self,
-        window: &mut Window,
-        e: Entity,
-        area: &Rectangle,
-        text_provider: &mut TableTextProvider,
-        res_comp: &mut ResourcesComponent,
-    ) -> PadlResult<()> {
-        let mut area = *area;
-        let mut table = vec![];
-
-        let villages = self.world.read_storage::<VillageMetaInfo>();
-        if let Some(v) = villages.get(e) {
-            for row in v.village_details().into_iter() {
-                table.push(row);
-            }
-        }
-
-        let health = self.world.read_storage::<Health>();
-        if let Some(health) = health.get(e) {
-            table.push(health_details(health));
-        }
-
-        let lvls = self.world.read_storage::<Level>();
-        if let Some(level) = lvls.get(e) {
-            table.extend(level.menu_table_infos());
-        }
-
-        let mana = self.world.read_storage::<Mana>();
-        if let Some(m) = mana.get(e) {
-            table.extend(m.menu_table_infos());
-        }
-
-        let aura = self.world.read_storage::<Aura>();
-        if let Some(aura) = aura.get(e) {
-            table.push(aura_details(aura));
-        }
-        let forest = self.world.read_storage::<ForestComponent>();
-        if let Some(forest) = forest.get(e) {
-            table.push(tree_details(forest));
-        }
-
-        let mut container = self.world.write_storage::<EntityContainer>();
-        if let Some(c) = container.get_mut(e) {
-            table.push(TableRow::Text(format!(
-                "{}/{} occupied",
-                c.count(),
-                c.capacity
-            )));
-        }
-
-        let temple = self.town().temple;
-        if let Some(temple) = temple {
-            if e == temple {
-                let player_info = self.player();
-                table.extend(temple_details(&player_info));
-            }
-        }
-        let effects = self.world.read_storage::<StatusEffects>();
-        if let Some(ef) = effects.get(e) {
-            let list = ef.menu_table_infos();
-            if list.len() > 0 {
-                TableRow::Text("Status effects".to_owned());
-                table.extend(list);
-            }
-        }
-        let mut ui_area = self.world.write_storage::<UiMenu>();
-        if let Some(ui) = ui_area.get_mut(e) {
-            Self::draw_shop_prices(window, &mut area, &mut ui.ui, res_comp)?;
-            table.push(TableRow::InteractiveArea(&mut ui.ui));
-        }
-        draw_table(
-            window,
-            &mut self.sprites,
-            &mut table,
-            &area,
-            text_provider,
-            40.0,
-            Z_MENU_TEXT,
-            self.world.read_resource::<Now>().0,
-            TableVerticalAlignment::Top,
-        )?;
-        Ok(())
-    }
-
     fn render_default_shop(
         &mut self,
         window: &mut Window,
@@ -322,7 +187,7 @@ impl Game<'_, '_> {
             self.town().forest_usage(),
         ));
         table.push(total_aura_details(self.town().ambience()));
-        let shop = &mut self.world.write_resource::<DefaultShop>();
+        let shop = &mut self.town_context.town_world.write_resource::<DefaultShop>();
         Self::draw_shop_prices(window, &mut area, &mut shop.ui, res_comp)?;
 
         table.push(TableRow::InteractiveArea(&mut shop.ui));
@@ -335,7 +200,7 @@ impl Game<'_, '_> {
             text_provider,
             60.0,
             Z_MENU_TEXT,
-            self.world.read_resource::<Now>().0,
+            self.town_context.world().read_resource::<Now>().0,
             TableVerticalAlignment::Top,
         )
     }
@@ -351,6 +216,168 @@ impl Game<'_, '_> {
         ui.draw_hover_info(window, res_comp, &price_tag_area)?;
         Ok(())
     }
+}
+
+pub fn draw_entity_img(
+    world: &World,
+    sprites: &mut Sprites,
+    window: &mut Window,
+    e: Entity,
+    area: &Rectangle,
+) -> PadlResult<()> {
+    let r = world.read_storage::<Renderable>();
+    let inner_area = area.shrink_to_center(0.8);
+    if let Some(rd) = r.get(e) {
+        match rd.kind {
+            RenderVariant::ImgWithImgBackground(main, background) => {
+                draw_static_image(
+                    sprites,
+                    window,
+                    &area,
+                    SpriteIndex::Simple(background),
+                    Z_MENU_BOX + 1,
+                    FitStrategy::Center,
+                )?;
+                draw_static_image(
+                    sprites,
+                    window,
+                    &inner_area,
+                    main.default(),
+                    Z_MENU_BOX + 2,
+                    FitStrategy::Center,
+                )?;
+            }
+            RenderVariant::ImgWithColBackground(main, col) => {
+                window.draw_ex(area, Col(col), Transform::IDENTITY, Z_MENU_BOX + 1);
+                draw_static_image(
+                    sprites,
+                    window,
+                    &inner_area,
+                    main.default(),
+                    Z_MENU_BOX + 2,
+                    FitStrategy::Center,
+                )?;
+            }
+            _ => panic!("Not implemented"),
+        }
+    }
+    Ok(())
+}
+
+pub fn draw_map_entity_details_table(
+    world: &World,
+    sprites: &mut Sprites,
+    window: &mut Window,
+    e: Entity,
+    area: &Rectangle,
+    text_provider: &mut TableTextProvider,
+) -> PadlResult<()> {
+    let mut table = vec![];
+    {
+        let villages = world.read_storage::<VillageMetaInfo>();
+        if let Some(v) = villages.get(e) {
+            for row in v.village_details().into_iter() {
+                table.push(row);
+            }
+        }
+    }
+    let mut ui_area = world.write_storage::<UiMenu>();
+    if let Some(ui) = ui_area.get_mut(e) {
+        table.push(TableRow::InteractiveArea(&mut ui.ui));
+    }
+
+    draw_table(
+        window,
+        sprites,
+        &mut table,
+        area,
+        text_provider,
+        40.0,
+        Z_MENU_TEXT,
+        world.read_resource::<Now>().0,
+        TableVerticalAlignment::Top,
+    )?;
+    Ok(())
+}
+pub fn draw_town_entity_details_table(
+    world: &World,
+    sprites: &mut Sprites,
+    window: &mut Window,
+    e: Entity,
+    area: &Rectangle,
+    text_provider: &mut TableTextProvider,
+    res_comp: &mut ResourcesComponent,
+) -> PadlResult<()> {
+    let mut area = *area;
+    let mut table = vec![];
+
+    let health = world.read_storage::<Health>();
+    if let Some(health) = health.get(e) {
+        table.push(health_details(health));
+    }
+
+    let lvls = world.read_storage::<Level>();
+    if let Some(level) = lvls.get(e) {
+        table.extend(level.menu_table_infos());
+    }
+
+    let mana = world.read_storage::<Mana>();
+    if let Some(m) = mana.get(e) {
+        table.extend(m.menu_table_infos());
+    }
+
+    let aura = world.read_storage::<Aura>();
+    if let Some(aura) = aura.get(e) {
+        table.push(aura_details(aura));
+    }
+    let forest = world.read_storage::<ForestComponent>();
+    if let Some(forest) = forest.get(e) {
+        table.push(tree_details(forest));
+    }
+
+    let mut container = world.write_storage::<EntityContainer>();
+    if let Some(c) = container.get_mut(e) {
+        table.push(TableRow::Text(format!(
+            "{}/{} occupied",
+            c.count(),
+            c.capacity
+        )));
+    }
+
+    let buildings = world.write_storage::<Building>();
+    if let Some(b) = buildings.get(e) {
+        if b.bt == BuildingType::Temple {
+            let player_info = world.read_resource::<PlayerInfo>();
+            table.extend(temple_details(&player_info));
+        }
+    }
+    let effects = world.read_storage::<StatusEffects>();
+    if let Some(ef) = effects.get(e) {
+        let list = ef.menu_table_infos();
+        if list.len() > 0 {
+            TableRow::Text("Status effects".to_owned());
+            table.extend(list);
+        }
+    }
+
+    let mut ui_area = world.write_storage::<UiMenu>();
+    if let Some(ui) = ui_area.get_mut(e) {
+        Game::draw_shop_prices(window, &mut area, &mut ui.ui, res_comp)?;
+        table.push(TableRow::InteractiveArea(&mut ui.ui));
+    }
+
+    draw_table(
+        window,
+        sprites,
+        &mut table,
+        &area,
+        text_provider,
+        40.0,
+        Z_MENU_TEXT,
+        world.read_resource::<Now>().0,
+        TableVerticalAlignment::Top,
+    )?;
+    Ok(())
 }
 
 fn aura_details(aura: &Aura) -> TableRow {

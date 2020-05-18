@@ -1,15 +1,18 @@
 use crate::game::town::DefaultShop;
+use crate::game::town_resources::TownResources;
 use crate::game::Game;
-use crate::gui::gui_components::ResourcesComponent;
-use crate::gui::gui_components::TableTextProvider;
-use crate::gui::input::{left_click::TownLeftClickSystem, MouseState};
-use crate::gui::ui_state::UiState;
-use crate::gui::utils::*;
+use crate::gui::{
+    gui_components::{ResourcesComponent, TableTextProvider},
+    input::{left_click::TownMenuLeftClickSystem, MouseState},
+    menu::*,
+    ui_state::UiState,
+    utils::*,
+};
 use crate::init::quicksilver_integration::Signal;
 use crate::prelude::*;
 use crate::resolution::ScreenResolution;
 use crate::view::{ExperimentalSignalChannel, Frame};
-use quicksilver::prelude::{MouseButton, Rectangle, Window};
+use quicksilver::prelude::{MouseButton, Rectangle, Shape, Window};
 use specs::prelude::*;
 
 pub(crate) struct TownMenuFrame<'a, 'b> {
@@ -20,11 +23,10 @@ pub(crate) struct TownMenuFrame<'a, 'b> {
     left_click_dispatcher: Dispatcher<'a, 'b>,
 }
 impl TownMenuFrame<'_, '_> {
-    pub fn new<'a, 'b>(game: &mut Game<'a, 'b>, ep: EventPool) -> PadlResult<Self> {
-        let mut left_click_dispatcher = DispatcherBuilder::new()
-            .with(TownLeftClickSystem::new(ep), "", &[])
+    pub fn new<'a, 'b>(ep: EventPool) -> PadlResult<Self> {
+        let left_click_dispatcher = DispatcherBuilder::new()
+            .with(TownMenuLeftClickSystem::new(ep), "", &[])
             .build();
-        left_click_dispatcher.setup(&mut game.world);
 
         Ok(TownMenuFrame {
             text_provider: TableTextProvider::new(),
@@ -49,9 +51,10 @@ impl<'a, 'b> Frame for TownMenuFrame<'a, 'b> {
         self.text_provider.reset();
         let inner_area = state.inner_menu_area();
 
-        let resolution = *state.world.read_resource::<ScreenResolution>();
+        let world = state.town_world();
+        let resolution = *world.read_resource::<ScreenResolution>();
         let resources_height = resolution.resources_h();
-        let entity = state.world.fetch::<UiState>().selected_entity;
+        let entity = world.fetch::<UiState>().selected_entity;
 
         let (resources_area, menu_area) = inner_area.cut_horizontal(resources_height);
         self.resources_area = resources_area;
@@ -79,25 +82,57 @@ impl<'a, 'b> Frame for TownMenuFrame<'a, 'b> {
         pos: (i32, i32),
         signals: &mut ExperimentalSignalChannel,
     ) -> Result<(), Self::Error> {
-        let mut ms = state.world.write_resource::<MouseState>();
-        *ms = MouseState(pos.into(), Some(MouseButton::Left));
-        std::mem::drop(ms); // This drop is essential! The internal RefCell will not be release otherwise
-        self.left_click_dispatcher.dispatch(&state.world);
+        let town_world = state.town_world();
+
+        // This can be removed once the frame positions are checked properly before right_click is called
+        let ui_state = town_world.fetch_mut::<ViewState>();
+        let mouse_pos: Vector = pos.into();
+        let in_menu_area = mouse_pos.overlaps_rectangle(&(*ui_state).menu_box_area);
+        if !in_menu_area {
+            return Ok(());
+        }
+        std::mem::drop(ui_state);
+
+        let ms = MouseState(pos.into(), Some(MouseButton::Left));
+        state.town_world_mut().insert(ms);
+        self.left_click_dispatcher.dispatch(state.town_world());
         // TODO: Only temporary experiment
-        let mut result_signals = state.world.write_resource::<ExperimentalSignalChannel>();
+        let mut result_signals = state
+            .town_world()
+            .write_resource::<ExperimentalSignalChannel>();
         signals.append(&mut result_signals);
+        Ok(())
+    }
+    fn right_click(&mut self, state: &mut Self::State, pos: (i32, i32)) -> Result<(), Self::Error> {
+        let town_world = state.town_world();
+
+        // This can be removed once the frame positions are checked properly before right_click is called
+        let view_state = town_world.fetch_mut::<ViewState>();
+        let mouse_pos: Vector = pos.into();
+        let in_menu_area = mouse_pos.overlaps_rectangle(&(*view_state).menu_box_area);
+        if !in_menu_area {
+            return Ok(());
+        }
+        // Right click cancels grabbed item (take removes from option)
+        let mut ui_state = town_world.fetch_mut::<UiState>();
+        ui_state.take_grabbed_item();
         Ok(())
     }
     fn event(&mut self, state: &mut Self::State, e: &Self::Event) -> Result<(), Self::Error> {
         match e {
             PadlEvent::Signal(Signal::ResourcesUpdated) => {
-                self.bank_component
-                    .draw(&self.resources_area, &state.resources.non_zero_resources())?;
+                self.bank_component.draw(
+                    &self.resources_area,
+                    &state
+                        .town_world()
+                        .fetch::<TownResources>()
+                        .non_zero_resources(),
+                )?;
             }
             PadlEvent::Signal(Signal::NewStoryState(s)) => {
                 // FIXME: redundant with the same call also in dialogue
                 state.set_story_state(*s);
-                DefaultShop::reload(&mut state.world);
+                DefaultShop::reload(state.town_world_mut());
             }
             _ => {}
         }
@@ -115,7 +150,19 @@ fn render_town_menu(
 ) -> PadlResult<()> {
     match entity {
         Some(id) => {
-            state.render_entity_details(window, area, id, text_provider, hover_component)?;
+            let (img_area, table_area) = menu_selected_entity_spacing(&area);
+            let world = state.town_context.world();
+            let sprites = &mut state.sprites;
+            draw_entity_img(world, sprites, window, id, &img_area)?;
+            draw_town_entity_details_table(
+                world,
+                sprites,
+                window,
+                id,
+                &table_area,
+                text_provider,
+                hover_component,
+            )?;
         }
         None => {
             state.render_default_shop(window, area, text_provider, hover_component)?;

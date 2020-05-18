@@ -38,115 +38,34 @@ impl Renderable {
 }
 
 impl Game<'_, '_> {
+    /// Global overlay that is always drawn, despite of current view
     pub fn draw_main(&mut self, window: &mut Window) -> PadlResult<()> {
-        let ui_state = self.world.read_resource::<UiState>();
-        let hovered_entity = ui_state.hovered_entity;
-        let grabbed_item = ui_state.grabbed_item.clone();
-        std::mem::drop(ui_state);
-
         self.render_text_messages(window)?;
 
-        if let Some(entity) = hovered_entity {
-            self.render_hovering(window, entity)?;
-        }
-        if let Some(grabbed) = grabbed_item {
-            self.render_grabbed_item(window, &grabbed)?;
-            window.set_cursor(MouseCursor::None);
-        } else {
-            window.set_cursor(MouseCursor::Default);
-        }
         #[cfg(feature = "dev_view")]
         self.draw_dev_view(window);
         Ok(())
     }
+    pub fn draw_town_main(&mut self, window: &mut Window) -> PadlResult<()> {
+        let world = self.town_context.world();
+        let ui_state = world.read_resource::<UiState>();
+        let hovered_entity = ui_state.hovered_entity;
+        let grabbed_item = ui_state.grabbed_item().clone();
+        std::mem::drop(ui_state);
 
-    pub fn render_town_entities(&mut self, window: &mut Window) -> PadlResult<()> {
-        let world = &self.world;
-        let pos_store = world.read_storage::<Position>();
-        let rend_store = world.read_storage::<Renderable>();
-        let animation_store = world.read_storage::<AnimationState>();
         let sprites = &mut self.sprites;
-        let entities = self.world.entities();
-        let tick = self.world.read_resource::<ClockTick>();
-        for (e, pos, r) in (&entities, &pos_store, &rend_store).join() {
-            let mut area = pos.area;
-            if r.in_game_transformation.is_normal() {
-                area = area.shrink_to_center(r.in_game_transformation);
-            }
-            match r.kind {
-                RenderVariant::ImgWithImgBackground(i, _) => {
-                    if let Some(animation) = animation_store.get(e) {
-                        draw_animated_sprite(
-                            sprites,
-                            window,
-                            &area,
-                            i,
-                            pos.z,
-                            FitStrategy::TopLeft,
-                            animation,
-                            tick.0,
-                        )?;
-                    } else {
-                        draw_static_image(
-                            sprites,
-                            window,
-                            &area,
-                            i.default(),
-                            pos.z,
-                            FitStrategy::TopLeft,
-                        )?;
-                    }
-                }
-                _ => panic!("Not implemented"),
-            }
+        if let Some(entity) = hovered_entity {
+            render_hovering(world, window, sprites, entity)?;
         }
-        Ok(())
-    }
-
-    pub fn render_hovering(&mut self, window: &mut Window, entity: Entity) -> PadlResult<()> {
-        let position_store = self.world.read_storage::<Position>();
-        let range_store = self.world.read_storage::<Range>();
-        let health_store = self.world.read_storage::<Health>();
-
-        if let Some((range, p)) = (&range_store, &position_store)
-            .join()
-            .get(entity, &self.world.entities())
-        {
-            range.draw(window, &self.town(), &p.area)?;
+        if let Some(grabbed) = grabbed_item {
+            render_grabbed_item(world, window, sprites, &grabbed)?;
+            window.set_cursor(MouseCursor::None);
+        } else {
+            window.set_cursor(MouseCursor::Default);
         }
 
-        if let Some((health, p)) = (&health_store, &position_store)
-            .join()
-            .get(entity, &self.world.entities())
-        {
-            render_health(&health, &mut self.sprites, window, &p.area)?;
-        }
-        Ok(())
-    }
+        render_town_entities(world, window, sprites)?;
 
-    pub fn render_grabbed_item(&mut self, window: &mut Window, item: &Grabbable) -> PadlResult<()> {
-        let mouse = window.mouse().pos();
-        let ul = self.world.fetch::<ScreenResolution>().unit_length();
-        let center = mouse - (ul / 2.0, ul / 2.0).into();
-        let max_area = Rectangle::new(center, (ul, ul));
-        match item {
-            Grabbable::NewBuilding(building_type) => draw_static_image(
-                &mut self.sprites,
-                window,
-                &max_area,
-                building_type.sprite().default(),
-                Z_GRABBED_ITEM,
-                FitStrategy::TopLeft,
-            )?,
-            Grabbable::Ability(ability) => draw_static_image(
-                &mut self.sprites,
-                window,
-                &max_area.shrink_to_center(0.375),
-                ability.sprite().default(),
-                Z_GRABBED_ITEM,
-                FitStrategy::TopLeft,
-            )?,
-        }
         Ok(())
     }
 
@@ -161,6 +80,109 @@ impl Game<'_, '_> {
         tb.draw(&area)?;
         Ok(())
     }
+}
+
+pub fn render_town_entities(
+    world: &World,
+    window: &mut Window,
+    sprites: &mut Sprites,
+) -> PadlResult<()> {
+    let pos_store = world.read_storage::<Position>();
+    let rend_store = world.read_storage::<Renderable>();
+    let animation_store = world.read_storage::<AnimationState>();
+    let entities = world.entities();
+    let tick = world.read_resource::<ClockTick>();
+    for (e, pos, r) in (&entities, &pos_store, &rend_store).join() {
+        let mut area = pos.area;
+        if r.in_game_transformation.is_normal() {
+            area = area.shrink_to_center(r.in_game_transformation);
+        }
+        match r.kind {
+            RenderVariant::ImgWithImgBackground(i, _) => {
+                if let Some(animation) = animation_store.get(e) {
+                    draw_animated_sprite(
+                        sprites,
+                        window,
+                        &area,
+                        i,
+                        pos.z,
+                        FitStrategy::TopLeft,
+                        animation,
+                        tick.0,
+                    )?;
+                } else {
+                    draw_static_image(
+                        sprites,
+                        window,
+                        &area,
+                        i.default(),
+                        pos.z,
+                        FitStrategy::TopLeft,
+                    )?;
+                }
+            }
+            _ => panic!("Not implemented"),
+        }
+    }
+    Ok(())
+}
+
+pub fn render_hovering(
+    world: &World,
+    window: &mut Window,
+    sprites: &mut Sprites,
+    entity: Entity,
+) -> PadlResult<()> {
+    let position_store = world.read_storage::<Position>();
+    let range_store = world.read_storage::<Range>();
+    let health_store = world.read_storage::<Health>();
+    let resolution = world.read_resource::<ScreenResolution>();
+
+    if let Some((range, p)) = (&range_store, &position_store)
+        .join()
+        .get(entity, &world.entities())
+    {
+        range.draw(window, &p.area, *resolution)?;
+    }
+
+    if let Some((health, p)) = (&health_store, &position_store)
+        .join()
+        .get(entity, &world.entities())
+    {
+        render_health(&health, sprites, window, &p.area)?;
+    }
+    Ok(())
+}
+
+pub fn render_grabbed_item(
+    world: &World,
+    window: &mut Window,
+    sprites: &mut Sprites,
+    item: &Grabbable,
+) -> PadlResult<()> {
+    let mouse = window.mouse().pos();
+    let ul = world.fetch::<ScreenResolution>().unit_length();
+    let center = mouse - (ul / 2.0, ul / 2.0).into();
+    let max_area = Rectangle::new(center, (ul, ul));
+    match item {
+        Grabbable::NewBuilding(building_type) => draw_static_image(
+            sprites,
+            window,
+            &max_area,
+            building_type.sprite().default(),
+            Z_GRABBED_ITEM,
+            FitStrategy::TopLeft,
+        )?,
+        Grabbable::Ability(ability) => draw_static_image(
+            sprites,
+            window,
+            &max_area.shrink_to_center(0.375),
+            ability.sprite().default(),
+            Z_GRABBED_ITEM,
+            FitStrategy::TopLeft,
+        )?,
+    }
+    Ok(())
 }
 
 fn render_health(
@@ -215,9 +237,14 @@ fn render_health(
 }
 
 impl Range {
-    fn draw(&self, window: &mut Window, town: &Town, area: &Rectangle) -> PadlResult<()> {
+    fn draw(
+        &self,
+        window: &mut Window,
+        area: &Rectangle,
+        resolution: ScreenResolution,
+    ) -> PadlResult<()> {
         // TODO Check if this aligns 100% with server. Also consider changing interface to TileIndex instead of center
-        town.shadow_rectified_circle(window, area.center(), self.range);
+        Town::shadow_rectified_circle(resolution, window, area.center(), self.range);
         Ok(())
     }
 }

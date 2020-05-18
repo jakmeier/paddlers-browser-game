@@ -15,13 +15,13 @@ impl Game<'_, '_> {
             .iter()
             .filter(|h| h.color == Some(HobosQueryUnitColor::PROPHET))
             .filter(|h| h.idle)
-            .map(|h| new_hobo(&mut self.world, &h.id))
+            .map(|h| new_hobo(self.town_world_mut(), &h.id))
             .collect::<Result<Vec<_>, _>>()?;
         // Ignore all other hobos (for now)
         Ok(())
     }
     pub fn hobo_key(&self, e: Entity) -> PadlResult<HoboKey> {
-        let net = self.world.read_storage::<NetObj>();
+        let net = self.town_world().read_storage::<NetObj>();
         if let Some(obj) = net.get(e) {
             Ok(HoboKey(obj.id))
         } else {

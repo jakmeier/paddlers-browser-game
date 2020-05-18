@@ -101,7 +101,7 @@ impl Worker {
         click: &Vector,
         town: &Town,
     ) -> Option<(TaskType, TileIndex)> {
-        let destination = town.tile(*click); // TODO: destination is not always where it has been clicked
+        let destination = town.resolution.tile(*click); // TODO: destination is not always where it has been clicked
         let job = town
             .available_tasks(destination)
             .into_iter()
@@ -132,7 +132,7 @@ impl Worker {
 pub fn move_worker_into_building<'a>(
     containers: &mut WriteStorage<'a, EntityContainer>,
     ui_menus: &mut WriteStorage<'a, UiMenu>,
-    town: &mut Write<'a, Town>,
+    town: &mut WriteExpect<'a, Town>,
     lazy: &Read<'a, LazyUpdate>,
     rend: &ReadStorage<'a, Renderable>,
     worker_e: Entity,

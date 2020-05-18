@@ -21,7 +21,7 @@ use crate::logging::{text_to_user::TextBoard, AsyncErr, ErrorQueue};
 use crate::prelude::*;
 use quicksilver::prelude::*;
 use specs::prelude::*;
-use specs_registration::{insert_resources, register_components};
+use specs_registration::{insert_global_resources, register_global_components};
 
 pub(super) fn init_world(
     async_err: AsyncErr,
@@ -33,10 +33,10 @@ pub(super) fn init_world(
     let mut world = World::new();
 
     // Components
-    register_components(&mut world);
+    register_global_components(&mut world);
 
     // Resources
-    insert_resources(&mut world, async_err, resolution, player_info, errq, tb);
+    insert_global_resources(&mut world, async_err, resolution, player_info, errq, tb);
     world
 }
 pub(crate) fn run(state: LoadingState) {

@@ -90,18 +90,18 @@ impl Town {
     }
 
     pub fn shadow_rectified_circle(
-        &self,
+        resolution: ScreenResolution,
         window: &mut Window,
         center: impl Into<Vector>,
         radius: f32,
     ) {
-        let tile = self.tile(center);
-        for (x, y) in self.tiles_in_rectified_circle(tile, radius) {
-            self.shadow_tile(window, (x, y));
+        let tile = resolution.tile(center);
+        for (x, y) in Town::tiles_in_rectified_circle(tile, radius) {
+            Self::shadow_tile(resolution, window, (x, y));
         }
     }
 
-    fn shadow_tile(&self, window: &mut Window, coordinates: (usize, usize)) {
+    fn shadow_tile(resolution: ScreenResolution, window: &mut Window, coordinates: (usize, usize)) {
         let shadow_col = Color {
             r: 1.0,
             g: 1.0,
@@ -109,7 +109,7 @@ impl Town {
             a: 0.3,
         };
         let (x, y) = coordinates;
-        let ul = self.resolution.unit_length();
+        let ul = resolution.unit_length();
         let pos = (x as f32 * ul, y as f32 * ul);
         let size = (ul, ul);
         let area = Rectangle::new(pos, size);

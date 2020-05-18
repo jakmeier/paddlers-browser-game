@@ -1,5 +1,4 @@
 use crate::gui::sprites::*;
-use crate::gui::ui_state::UiState;
 use crate::gui::utils::colors::LIGHT_BLUE;
 use crate::gui::z::*;
 use crate::init::quicksilver_integration::Signal;
@@ -94,11 +93,9 @@ impl<'a, 'b> ReportFrame<'a, 'b> {
         self.table.append_child(&letter_node);
     }
     fn add_listener(&self, button_node: &Element, report: Report, parent: Element) {
-        let id = report.id.num();
         let table_ref = self.table.clone();
 
         let _handle = button_node.add_event_listener::<event::ClickEvent, _>(move |_| {
-            println!("Clicked on report {}", id);
             let _node = table_ref.remove_child(&parent).expect("Letter not found");
             let msg = ReportCollect {
                 reports: vec![report.id],
@@ -164,7 +161,7 @@ impl<'a, 'b> Frame for ReportFrame<'a, 'b> {
         state: &mut Self::State,
         window: &mut Self::Graphics,
     ) -> Result<(), Self::Error> {
-        let ui_state = state.world.read_resource::<UiState>();
+        let ui_state = state.world.read_resource::<ViewState>();
         let main_area = Rectangle::new(
             (0, 0),
             (

@@ -1,3 +1,4 @@
+use crate::game::town::TownContext;
 use crate::game::{
     components::*,
     fight::{Aura, Range},
@@ -5,7 +6,6 @@ use crate::game::{
     input::Clickable,
     movement::Position,
     town::{TileIndex, Town},
-    Game,
 };
 use crate::gui::{render::Renderable, sprites::*, utils::*, z::Z_BUILDINGS};
 use crate::prelude::*;
@@ -13,10 +13,11 @@ use paddlers_shared_lib::{game_mechanics::attributes::Attributes, graphql_types:
 use specs::prelude::*;
 use specs::world::EntitiesRes;
 
-#[derive(Default, Debug, Component)]
+#[derive(Debug, Component)]
 #[storage(HashMapStorage)]
 pub struct Building {
     pub built: Timestamp,
+    pub bt: BuildingType,
 }
 
 impl Town {
@@ -50,7 +51,7 @@ impl Town {
         range: Option<f32>,
         created: crate::Timestamp,
     ) -> Entity {
-        let area = self.tile_area(tile_index);
+        let area = self.resolution.tile_area(tile_index);
         let mut builder = lazy
             .create_entity(entities)
             .with(Position::new(area.pos, area.size, Z_BUILDINGS))
@@ -58,7 +59,7 @@ impl Town {
                 RenderVariant::ImgWithImgBackground(bt.sprite(), SingleSprite::Grass),
                 building_ingame_scaling(bt),
             ))
-            .with(Building { built: created })
+            .with(Building { built: created, bt })
             .with(Clickable);
 
         if let Some(r) = range {
@@ -98,13 +99,6 @@ impl Town {
         self.place_building(tile_index, bt, builder.entity);
 
         let entity = builder.build();
-
-        match bt {
-            BuildingType::Temple => {
-                self.temple = Some(entity);
-            }
-            _ => {}
-        }
         entity
     }
 }
@@ -120,17 +114,17 @@ fn building_ingame_scaling(b: BuildingType) -> f32 {
 
 use crate::net::graphql::buildings_query;
 impl buildings_query::ResponseData {
-    pub(crate) fn create_entities(&self, game: &mut Game) -> Vec<Entity> {
+    pub(crate) fn create_entities(&self, town_context: &mut TownContext) -> Vec<Entity> {
         self.village
             .buildings
             .iter()
-            .map(|u| u.create_entity(game))
+            .map(|u| u.create_entity(town_context))
             .collect()
     }
 }
 
 impl buildings_query::BuildingsQueryVillageBuildings {
-    fn create_entity(&self, game: &mut Game) -> Entity {
+    fn create_entity(&self, town_context: &mut TownContext) -> Entity {
         let coordinates = (self.x as usize, self.y as usize);
         let maybe_range = self.building_range.map(|f| f as f32);
         let maybe_ap = self.attack_power.map(|f| f as i64);
@@ -147,9 +141,9 @@ impl buildings_query::BuildingsQueryVillageBuildings {
         };
         let created = GqlTimestamp::from_string(&self.creation).unwrap().into();
 
-        let entities = game.world.entities();
-        let lazy = game.world.read_resource::<LazyUpdate>();
-        let mut town = game.world.write_resource::<Town>();
+        let entities = town_context.town_world.entities();
+        let lazy = town_context.town_world.read_resource::<LazyUpdate>();
+        let mut town = town_context.town_mut();
         town.insert_building(
             &entities,
             &lazy,

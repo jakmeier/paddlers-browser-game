@@ -67,7 +67,7 @@ impl LoadingState {
             err_recv,
             async_err,
             net_chan,
-            errq: ErrorQueue::default(),
+            errq: ErrorQueue::new_endpoint(),
             tb: TextBoard::default(),
         };
 

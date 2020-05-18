@@ -1,6 +1,6 @@
 //! Processes and routes mouse-like input.
 //! Triggers the corresponding mouse-click systems when necessary.
-use super::{drag::*, HoverSystem, MouseState, RightClickSystem};
+use super::{drag::*, HoverSystem, MouseState};
 use crate::prelude::*;
 use crate::Framer;
 use quicksilver::prelude::*;
@@ -11,7 +11,6 @@ const LONG_CLICK_DELAY: i64 = 500_000; // [us]
 const MIN_DRAG_DISTANCE_2: f32 = 1000.0; // [browser pixel coordinates^2]
 
 pub struct PointerManager<'a, 'b> {
-    click_dispatcher: Dispatcher<'a, 'b>,
     hover_dispatcher: Dispatcher<'a, 'b>,
     drag_dispatcher: Dispatcher<'a, 'b>,
     buffered_click: Option<(Vector, PointerButton)>,
@@ -31,11 +30,6 @@ impl PointerManager<'_, '_> {
     pub fn init(mut world: &mut World) -> Self {
         world.insert(MouseState::default());
 
-        let mut click_dispatcher = DispatcherBuilder::new()
-            .with(RightClickSystem, "rc", &[])
-            .build();
-        click_dispatcher.setup(&mut world);
-
         let mut hover_dispatcher = DispatcherBuilder::new()
             .with(HoverSystem, "hov", &[])
             .build();
@@ -48,7 +42,6 @@ impl PointerManager<'_, '_> {
         drag_dispatcher.setup(&mut world);
 
         PointerManager {
-            click_dispatcher,
             hover_dispatcher,
             drag_dispatcher,
             buffered_click: None,
@@ -70,7 +63,6 @@ impl PointerManager<'_, '_> {
             };
             game.check(err);
             Self::update(&mut game.world, &pos, Some(button));
-            self.click_dispatcher.dispatch(&mut game.world);
         }
         self.buffered_click = None;
 
@@ -131,8 +123,7 @@ impl PointerManager<'_, '_> {
             PointerButton::Primary => MouseButton::Left,
             PointerButton::Secondary => MouseButton::Right,
         });
-        let mut ms = world.write_resource::<MouseState>();
-        *ms = MouseState(*position, key);
+        world.insert(MouseState(*position, key));
     }
 
     // Current implementation only queues a single click and drops what doesn't fit

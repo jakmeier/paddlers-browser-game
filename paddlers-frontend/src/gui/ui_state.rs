@@ -3,43 +3,63 @@ use crate::prelude::*;
 use quicksilver::prelude::*;
 use specs::prelude::*;
 
-// #[derive(Clone)]
+#[derive(Clone)]
+/// UI state that foes beyond frames
 pub struct UiState {
     pub selected_entity: Option<Entity>,
     pub hovered_entity: Option<Entity>,
-    pub grabbed_item: Option<Grabbable>,
+    grabbed_item: Option<Grabbable>,
+}
+
+#[derive(Clone)]
+/// State for current view, which probably should be removed eventually because it is redundant
+pub struct ViewState {
     // TODO [0.1.4]: I think these four could go into frames.
     pub main_area: Rectangle,
     pub menu_box_area: Rectangle,
     pub inner_menu_box_area: Rectangle,
     pub button_area: Rectangle,
-    /// Currently displayed view for easy access.
-    /// Duplicate of FrameManager::currentView, should be considered to bre removed here.
-    pub current_view: UiView,
 }
 
-#[derive(Default)]
+#[derive(Default, Copy, Clone)]
 /// Global animation ticker
 pub struct ClockTick(pub u32);
-#[derive(Default)]
+#[derive(Default, Copy, Clone)]
 /// Real-time timestamp of frame rendering
 pub struct Now(pub Timestamp);
 
 impl UiState {
-    pub fn new(current_view: UiView) -> Self {
+    pub fn new() -> Self {
         UiState {
             grabbed_item: None,
             selected_entity: None,
             hovered_entity: None,
-            main_area: Rectangle::default(),
-            menu_box_area: Rectangle::default(),
-            inner_menu_box_area: Rectangle::default(),
-            button_area: Rectangle::default(),
-            current_view,
         }
     }
     pub fn leave_view(&mut self) {
         self.selected_entity = None;
         self.grabbed_item = None;
+    }
+    #[inline]
+    pub fn take_grabbed_item(&mut self) -> Option<Grabbable> {
+        self.grabbed_item.take()
+    }
+    #[inline]
+    pub fn grabbed_item(&self) -> &Option<Grabbable> {
+        &self.grabbed_item
+    }
+    #[inline]
+    pub fn set_grabbed_item(&mut self, g: Grabbable) {
+        self.grabbed_item = Some(g)
+    }
+}
+impl ViewState {
+    pub fn new() -> Self {
+        Self {
+            main_area: Rectangle::default(),
+            menu_box_area: Rectangle::default(),
+            inner_menu_box_area: Rectangle::default(),
+            button_area: Rectangle::default(),
+        }
     }
 }

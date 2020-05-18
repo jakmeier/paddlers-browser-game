@@ -4,17 +4,7 @@ mod map_segment;
 mod map_tesselation;
 mod village_meta;
 
-use crate::game::components::UiMenu;
-use crate::game::GameEvent;
-use crate::gui::{
-    gui_components::{ClickOutput, UiBox, UiElement},
-    input::Clickable,
-    render::Renderable,
-    sprites::*,
-    ui_state::*,
-    utils::*,
-    z::*,
-};
+use crate::gui::{input::Clickable, render::Renderable, sprites::*, ui_state::*, utils::*, z::*};
 use crate::net::authentication::read_jwt_preferred_username;
 use map_position::*;
 use map_segment::MapSegment;
@@ -247,7 +237,7 @@ impl GlobalMapPrivateState {
                 )))
                 .with(Clickable)
                 .with((*village).clone())
-                .with(UiMenu::new_village_menu(village.coordinates, is_mine))
+                .with(village.new_village_menu(is_mine))
                 .build();
         }
 
@@ -272,21 +262,5 @@ impl GlobalMapSharedState {
 
         ui_state.selected_entity =
             map_position_lookup(map_coordinates, entities, position, clickable);
-    }
-}
-
-impl UiMenu {
-    pub fn new_village_menu(village: (i32, i32), owned: bool) -> Self {
-        let mut menu = UiMenu {
-            ui: UiBox::new(2, 1, 10.0, 2.0),
-        };
-        if !owned {
-            menu.ui.add(
-                UiElement::new(ClickOutput::Event(GameEvent::SendProphetAttack(village)))
-                    .with_image(SpriteSet::Simple(SingleSprite::Prophet))
-                    .with_background_color(RED),
-            );
-        }
-        menu
     }
 }

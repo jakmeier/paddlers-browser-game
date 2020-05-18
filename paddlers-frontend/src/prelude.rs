@@ -1,6 +1,7 @@
 pub(crate) use crate::game::game_event_manager::{EventPool, GameEvent};
 pub(crate) use crate::game::Game;
 pub(crate) use crate::gui::input::{UiView, VisitorViewTab};
+pub(crate) use crate::gui::ui_state::ViewState;
 pub(crate) use crate::gui::utils::{JmrRectangle, JmrVector};
 pub(crate) use crate::i18n::{TextDb, TextKey};
 pub(crate) use crate::init::quicksilver_integration::PadlEvent;

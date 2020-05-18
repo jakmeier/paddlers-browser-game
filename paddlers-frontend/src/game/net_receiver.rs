@@ -1,6 +1,6 @@
+use crate::game::town_resources::TownResources;
 use crate::game::{
-    components::*, town::new_temple_menu, units::worker_factory::create_worker_entities,
-    units::workers::Worker,
+    components::*, units::worker_factory::create_worker_entities, units::workers::Worker,
 };
 use crate::init::loading::LoadingState;
 use crate::init::quicksilver_integration::{GameState, Signal};
@@ -10,6 +10,7 @@ use crate::net::graphql::query_types::{
 };
 use crate::net::NetMsg;
 use crate::prelude::*;
+use crate::view::ExperimentalSignalChannel;
 use std::convert::TryInto;
 use std::sync::mpsc::TryRecvError;
 
@@ -125,19 +126,7 @@ impl GameState {
                         }
                     }
                     NetMsg::Player(player_info) => {
-                        if let Some(temple) = self.game.town().temple {
-                            let mut menus = self.game.world.write_storage::<UiMenu>();
-                            // This insert overwrites existing entries
-                            menus
-                                .insert(temple, new_temple_menu(&player_info))
-                                .map_err(|_| {
-                                    PadlError::dev_err(PadlErrorCode::EcsError(
-                                        "Temple menu insertion failed",
-                                    ))
-                                })?;
-                        }
-                        *self.game.world.write_resource() = DefaultShop::new(&player_info);
-                        *self.game.world.write_resource() = player_info;
+                        self.game.load_player_info(player_info)?;
                     }
                     NetMsg::VillageInfo(response) => {
                         self.game.load_village_info(response)?;
@@ -146,19 +135,20 @@ impl GameState {
                     }
                     NetMsg::Workers(response) => {
                         self.game.flush_workers()?;
-                        self.game.world.maintain();
+                        self.game.town_world_mut().maintain();
                         self.game.load_workers_from_net_response(response);
                     }
                     NetMsg::UpdateWorkerTasks(unit) => {
                         let entity = self
                             .game
                             .worker_entity_by_net_id(unit.id.parse().unwrap())?;
-                        let workers = &mut self.game.world.write_storage::<Worker>();
+                        let world = self.game.town_world_mut();
+                        let workers = &mut world.write_storage::<Worker>();
                         let worker = workers.get_mut(entity).unwrap();
                         worker.tasks.clear();
 
-                        let net = self.game.world.read_storage::<NetObj>();
-                        let ent = self.game.world.entities();
+                        let net = world.read_storage::<NetObj>();
+                        let ent = world.entities();
                         for task in unit.tasks {
                             match task.create(&net, &ent) {
                                 Ok(task) => worker.tasks.push_back(task),
@@ -194,7 +184,8 @@ impl GameState {
 impl<'a, 'b> Game<'a, 'b> {
     pub fn load_workers_from_net_response(&mut self, response: WorkerResponse) {
         let now = self.world.read_resource::<Now>().0;
-        let results = create_worker_entities(&response, &mut self.world, now);
+        let resolution = *self.world.read_resource::<ScreenResolution>();
+        let results = create_worker_entities(&response, self.town_world_mut(), now, resolution);
         let mut q = self.world.write_resource::<ErrorQueue>();
         for res in results.into_iter() {
             if let Err(e) = res {
@@ -208,8 +199,8 @@ impl<'a, 'b> Game<'a, 'b> {
     ) -> PadlResult<()> {
         if let Some(data) = response.data {
             self.flush_buildings()?;
-            self.world.maintain();
-            data.create_entities(self);
+            self.town_world_mut().maintain();
+            data.create_entities(&mut self.town_context);
         } else {
             println!("No buildings available");
         }
@@ -234,8 +225,16 @@ impl<'a, 'b> Game<'a, 'b> {
             self.town_mut().faith = data.village.faith.try_into().map_err(|_| {
                 PadlError::dev_err(PadlErrorCode::InvalidGraphQLData("Faith does not fit u8"))
             })?;
-            self.resources.update(data);
+            self.town_world().fetch_mut::<TownResources>().update(data);
         }
+        Ok(())
+    }
+    pub fn load_player_info(&mut self, player_info: PlayerInfo) -> PadlResult<()> {
+        self.world.insert(player_info.clone());
+        self.town_world_mut().insert(DefaultShop::new(&player_info));
+        self.town_world_mut().insert(player_info);
+        let mut signals = self.world.write_resource::<ExperimentalSignalChannel>();
+        signals.push_back(Signal::PlayerInfoUpdated);
         Ok(())
     }
 }

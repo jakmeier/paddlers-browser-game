@@ -36,9 +36,10 @@ impl Game<'_, '_> {
         Ok(())
     }
     fn add_trigger_to_hero(&mut self, trigger: EntityTrigger) -> PadlResult<()> {
-        let (workers, entities) = self.world.system_data();
+        let world = self.town_world();
+        let (workers, entities) = world.system_data();
         let hero_id = Worker::find_hero(workers, entities)?;
-        let mut triggers: WriteStorage<'_, EntityTrigger> = self.world.write_storage();
+        let mut triggers: WriteStorage<'_, EntityTrigger> = world.write_storage();
         triggers.insert(hero_id, trigger)?;
         Ok(())
     }
@@ -61,7 +62,7 @@ impl EntityTriggerSystem {
 impl<'a> System<'a> for EntityTriggerSystem {
     type SystemData = (
         WriteStorage<'a, EntityTrigger>,
-        Write<'a, ErrorQueue>,
+        WriteExpect<'a, ErrorQueue>,
         ReadExpect<'a, UiState>,
     );
     fn run(&mut self, (mut triggers, mut errors, ui): Self::SystemData) {

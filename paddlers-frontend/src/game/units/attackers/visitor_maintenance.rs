@@ -26,13 +26,31 @@ pub fn change_duck_sprite_to_happy(r: &mut Renderable) {
     }
 }
 
+/// Set visitor moving again (Without server communication)
+pub fn release_and_move_visitor(
+    visitor: &Visitor,
+    resolution: ScreenResolution,
+    now: Now,
+) -> Moving {
+    let ul = resolution.unit_length();
+    let now = now.0;
+    let speed = visitor.speed;
+    let momentum = Vector::new(-speed, 0.0);
+    let x = TOWN_RESTING_X as f32 * ul;
+    let y =
+        TOWN_LANE_Y as f32 * ul + super::attacker_position_rank_offset(visitor.rank_offset, ul).y;
+    let pos = Vector::new(x, y);
+    Moving::new(now, pos, momentum, speed)
+}
+
 impl<'a, 'b> Game<'a, 'b> {
     /// Ensure there are not too many visitors resting in the town. (Without consulting the server)
     pub fn check_resting_queue(&mut self) -> PadlResult<()> {
-        let visitors = self.world.read_component::<Visitor>();
-        let hps = self.world.read_component::<Health>();
-        let positions = self.world.read_component::<Position>();
-        let entities = self.world.entities();
+        let town_world = self.town_world();
+        let visitors = town_world.read_component::<Visitor>();
+        let hps = town_world.read_component::<Health>();
+        let positions = town_world.read_component::<Position>();
+        let entities = town_world.entities();
         let now = self.world.fetch::<Now>().0;
         let ul = self.world.fetch::<ScreenResolution>().unit_length();
 
@@ -49,24 +67,15 @@ impl<'a, 'b> Game<'a, 'b> {
 
         let to_release = resting_visitors.len().saturating_sub(MAX_VISITOR_QUEUE);
         if to_release > 0 {
-            let mut mov = self.world.write_component::<Moving>();
+            let world = self.town_world();
+            let now = *world.fetch::<Now>();
+            let resolution = *world.fetch::<ScreenResolution>();
+            let mut mov = world.write_component::<Moving>();
             resting_visitors.sort_by(|a, b| a.0.arrival.partial_cmp(&b.0.arrival).unwrap());
             for (visitor, e) in &resting_visitors[0..to_release] {
-                mov.insert(*e, self.release_and_move_visitor(visitor))?;
+                mov.insert(*e, release_and_move_visitor(visitor, resolution, now))?;
             }
         }
         Ok(())
-    }
-    /// Set visitor moving again (Without server communication)
-    pub fn release_and_move_visitor(&self, visitor: &Visitor) -> Moving {
-        let ul = self.world.fetch::<ScreenResolution>().unit_length();
-        let now = self.world.fetch::<Now>().0;
-        let speed = visitor.speed;
-        let momentum = Vector::new(-speed, 0.0);
-        let x = TOWN_RESTING_X as f32 * ul;
-        let y = TOWN_LANE_Y as f32 * ul
-            + super::attacker_position_rank_offset(visitor.rank_offset, ul).y;
-        let pos = Vector::new(x, y);
-        Moving::new(now, pos, momentum, speed)
     }
 }
