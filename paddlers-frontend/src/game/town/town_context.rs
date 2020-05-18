@@ -21,6 +21,7 @@ pub struct TownContext {
 }
 
 impl TownContextManager {
+    /// Create the TownContextManager and load the home town into it
     pub fn new(resolution: ScreenResolution, player_info: PlayerInfo, async_err: AsyncErr) -> Self {
         let vid = crate::net::state::current_village();
         Self {
@@ -28,6 +29,7 @@ impl TownContextManager {
             foreign_town: None,
         }
     }
+    /// Load a new town context for a foreign town
     pub fn load_foreign(&mut self, v: VillageKey) {
         let home_data = self.home_town.world();
         let resolution = *home_data.fetch::<ScreenResolution>();
@@ -35,19 +37,15 @@ impl TownContextManager {
         let async_err = (*home_data.fetch::<AsyncErr>()).clone();
         self.foreign_town = Some(TownContext::new(resolution, player_info, async_err, v));
     }
+    /// Remove all loaded foreign towns from the view and display home again
     pub fn reset_to_home(&mut self) {
         self.foreign_town = None;
     }
+    /// Return true if there is currently a foreign town being displayed
     pub fn is_foreign(&self) -> bool {
         self.foreign_town.is_some()
     }
-    // pub fn context_by_key(&self, vid: VillageKey) -> Option<&TownContext> {
-    //     if self.home_town.id == vid {
-    //         Some(&self.home_town)
-    //     } else {
-    //         self.foreign_town.as_ref().filter(|v| v.id == vid)
-    //     }
-    // }
+
     pub fn context_by_key_mut(&mut self, vid: VillageKey) -> Option<&mut TownContext> {
         if self.home_town.id == vid {
             Some(&mut self.home_town)
@@ -74,6 +72,12 @@ impl TownContextManager {
     }
     pub fn world_mut(&mut self) -> &mut World {
         self.active_context_mut().world_mut()
+    }
+    pub fn home_world(&self) -> &World {
+        self.home_town.world()
+    }
+    pub fn home_world_mut(&mut self) -> &mut World {
+        self.home_town.world_mut()
     }
     pub fn town(&self) -> specs::shred::Fetch<Town> {
         self.active_context().town()

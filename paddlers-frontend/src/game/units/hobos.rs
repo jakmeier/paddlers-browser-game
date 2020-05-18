@@ -1,3 +1,4 @@
+use crate::game::town::TownContext;
 use crate::game::{components::NetObj, Game};
 use crate::net::graphql::query_types::{HobosQueryResponse, HobosQueryUnitColor};
 use crate::prelude::*;
@@ -9,17 +10,6 @@ use specs::prelude::*;
 pub struct Hobo;
 
 impl Game<'_, '_> {
-    pub fn insert_hobos(&mut self, hobos: HobosQueryResponse) -> PadlResult<()> {
-        // Insert idle prophets
-        self.town_mut().idle_prophets = hobos
-            .iter()
-            .filter(|h| h.color == Some(HobosQueryUnitColor::PROPHET))
-            .filter(|h| h.idle)
-            .map(|h| new_hobo(self.town_world_mut(), &h.id))
-            .collect::<Result<Vec<_>, _>>()?;
-        // Ignore all other hobos (for now)
-        Ok(())
-    }
     pub fn hobo_key(&self, e: Entity) -> PadlResult<HoboKey> {
         let net = self.town_world().read_storage::<NetObj>();
         if let Some(obj) = net.get(e) {
@@ -28,6 +18,18 @@ impl Game<'_, '_> {
             PadlErrorCode::MissingComponent("Prophet Hobo").dev()
         }
     }
+}
+
+pub fn insert_hobos(ctx: &mut TownContext, hobos: HobosQueryResponse) -> PadlResult<()> {
+    // Insert idle prophets
+    ctx.town_mut().idle_prophets = hobos
+        .iter()
+        .filter(|h| h.color == Some(HobosQueryUnitColor::PROPHET))
+        .filter(|h| h.idle)
+        .map(|h| new_hobo(ctx.world_mut(), &h.id))
+        .collect::<Result<Vec<_>, _>>()?;
+    // Ignore all other hobos (for now)
+    Ok(())
 }
 
 fn new_hobo(world: &mut World, id: &str) -> PadlResult<Entity> {

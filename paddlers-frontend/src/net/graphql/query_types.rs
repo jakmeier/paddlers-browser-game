@@ -144,6 +144,7 @@ impl WorkerTaskEx {
 )]
 pub struct HobosQuery;
 pub type HobosQueryRawResponse = Response<hobos_query::ResponseData>;
+pub type HobosQueryResponseVillage = hobos_query::HobosQueryVillage;
 pub type HobosQueryResponse = Vec<hobos_query::HobosQueryVillageHobos>;
 pub type HobosQueryUnitColor = hobos_query::UnitColor;
 

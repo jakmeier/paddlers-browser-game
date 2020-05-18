@@ -131,7 +131,7 @@ impl AttacksQueryVillageAttacks {
             let unit_rep = AttackingHobo { unit, attack: &atk };
             let effects = game.touched_auras(&unit_rep, now);
             let builder = unit_rep.create_entity(
-                game.town_world_mut().create_entity(),
+                game.town_context.home_world_mut().create_entity(),
                 now,
                 birth_time,
                 i,

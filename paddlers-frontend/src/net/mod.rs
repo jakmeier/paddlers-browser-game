@@ -27,13 +27,13 @@ pub enum NetMsg {
     Attacks(AttacksResponse),
     Buildings(BuildingsResponse),
     Error(PadlError),
-    Hobos(HobosQueryResponse),
+    Hobos(HobosQueryResponse, VillageKey),
     Leaderboard(usize, Vec<(String, i64)>),
     Map(MapResponse, i32, i32),
     Player(PlayerInfo),
     VillageInfo(VolatileVillageInfoResponse),
     UpdateWorkerTasks(WorkerTasksResponse),
-    Workers(WorkerResponse),
+    Workers(WorkerResponse, VillageKey),
     Reports(ReportsResponse),
 }
 
@@ -199,13 +199,13 @@ impl std::fmt::Debug for NetMsg {
             Self::Attacks(_) => write!(f, "NetMsg: Attacks"),
             Self::Buildings(_) => write!(f, "NetMsg: Buildings"),
             Self::Error(_) => write!(f, "NetMsg: Error"),
-            Self::Hobos(_) => write!(f, "NetMsg: Hobos"),
+            Self::Hobos(_, _) => write!(f, "NetMsg: Hobos"),
             Self::Leaderboard(_, _) => write!(f, "NetMsg: Leaderboard"),
             Self::Map(_, _, _) => write!(f, "NetMsg: Map"),
             Self::Player(_) => write!(f, "NetMsg: Player"),
             Self::VillageInfo(_) => write!(f, "NetMsg: VillageInfo"),
             Self::UpdateWorkerTasks(_) => write!(f, "NetMsg: UpdateWorkerTasks"),
-            Self::Workers(_) => write!(f, "NetMsg: Workers"),
+            Self::Workers(_, _) => write!(f, "NetMsg: Workers"),
             Self::Reports(_) => write!(f, "NetMsg: Reports"),
         }
     }

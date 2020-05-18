@@ -23,7 +23,7 @@ pub(super) fn insert_global_resources(
     tb: TextBoard,
 ) {
     world.insert(ClockTick(0));
-    world.insert(Now);
+    world.insert(Now(utc_now()));
     world.insert(UiState::new());
     world.insert(ViewState::new());
     world.insert(async_err);
@@ -59,6 +59,7 @@ pub fn insert_town_resources(
     world.insert(DefaultShop::new(&player_info));
     world.insert(Drag::default());
     world.insert(ErrorQueue::new_endpoint());
+    world.insert(Now(utc_now()));
     world.insert(TownResources::default());
     world.insert(UiState::new());
     world.insert(ViewState::new());

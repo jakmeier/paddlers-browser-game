@@ -33,7 +33,7 @@ impl TestData {
         match setting {
             Test::Vanilla => { /* NOP */ }
             s => {
-                game.flush_hobos().expect("Flushing hobos");
+                flush_hobos(game.town_world()).expect("Flushing hobos");
                 flush_buildings(game.town_context.world()).expect("Flushing buildings");
                 match s {
                     Test::Vanilla => unreachable!(),

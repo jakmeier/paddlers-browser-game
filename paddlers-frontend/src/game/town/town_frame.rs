@@ -1,7 +1,6 @@
 use crate::game::{
-    buildings::Building, components::*, fight::*, forestry::ForestrySystem, movement::MoveSystem,
-    player_info::PlayerInfo, story::entity_trigger::EntityTriggerSystem,
-    town::temple_shop::new_temple_menu, town::Town, units::worker_system::WorkerSystem,
+    components::*, fight::*, forestry::ForestrySystem, movement::MoveSystem,
+    story::entity_trigger::EntityTriggerSystem, town::Town, units::worker_system::WorkerSystem,
     units::workers::Worker, Game,
 };
 use crate::gui::{
@@ -68,18 +67,7 @@ impl<'a, 'b> Frame for TownFrame<'a, 'b> {
     fn event(&mut self, state: &mut Self::State, e: &Self::Event) -> Result<(), Self::Error> {
         match e {
             PadlEvent::Signal(Signal::PlayerInfoUpdated) => {
-                let player_info = state.world.fetch::<PlayerInfo>();
-                if let Some(temple) = self.temple(&state.world) {
-                    let mut menus = state.world.write_storage::<UiMenu>();
-                    // This insert overwrites existing entries
-                    menus
-                        .insert(temple, new_temple_menu(&player_info))
-                        .map_err(|_| {
-                            PadlError::dev_err(PadlErrorCode::EcsError(
-                                "Temple menu insertion failed",
-                            ))
-                        })?;
-                }
+                state.update_temple()?;
             }
             _ => {}
         }
@@ -185,22 +173,12 @@ impl<'a, 'b> TownFrame<'a, 'b> {
             town_dispatcher,
         }
     }
-    fn temple(&self, world: &World) -> Option<Entity> {
-        let buildings = world.read_component::<Building>();
-        let entities = world.entities();
-        for (b, e) in (&buildings, &entities).join() {
-            if b.bt == BuildingType::Temple {
-                return Some(e);
-            }
-        }
-        None
-    }
 }
 impl<'a, 'b> Game<'a, 'b> {
     /// Copy over Resources from global world to town world
     // Note: This is ugly but how else to share resources?
     //       The best solution I could think of would be to call all systems directly, instead of using a dispatcher.
-    fn prepare_town_resources(&mut self) {
+    pub(crate) fn prepare_town_resources(&mut self) {
         self.copy_res::<Now>();
         self.copy_res::<ClockTick>();
         self.copy_res::<ScreenResolution>();

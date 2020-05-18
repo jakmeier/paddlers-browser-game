@@ -78,9 +78,6 @@ impl Town {
         }
 
         match bt {
-            BuildingType::Temple => {
-                builder = builder.with(UiMenu::new_shop_menu());
-            }
             BuildingType::BundlingStation => {
                 builder = builder
                     .with(EntityContainer::new(bt.capacity(), TaskType::GatherSticks))

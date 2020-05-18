@@ -1,4 +1,6 @@
+use crate::game::town::TownContext;
 use crate::game::town_resources::TownResources;
+use crate::game::units::hobos::insert_hobos;
 use crate::game::{
     components::*, units::worker_factory::create_worker_entities, units::workers::Worker,
 };
@@ -11,6 +13,7 @@ use crate::net::graphql::query_types::{
 use crate::net::NetMsg;
 use crate::prelude::*;
 use crate::view::ExperimentalSignalChannel;
+use paddlers_shared_lib::prelude::*;
 use std::convert::TryInto;
 use std::sync::mpsc::TryRecvError;
 
@@ -29,7 +32,7 @@ impl LoadingState {
                         println!("Network Error: {}", e);
                     }
                 },
-                NetMsg::Workers(response) => {
+                NetMsg::Workers(response, _vid) => {
                     self.progress.report_progress_for(&response, 1);
                     self.game_data.worker_response = Some(response);
                 }
@@ -41,7 +44,7 @@ impl LoadingState {
                     self.progress.report_progress_for(&response, 1);
                     self.game_data.buildings_response = Some(response);
                 }
-                NetMsg::Hobos(hobos) => {
+                NetMsg::Hobos(hobos, _vid) => {
                     self.progress.report_progress_for(&hobos, 1);
                     self.game_data.hobos_response = Some(hobos);
                 }
@@ -91,8 +94,9 @@ impl GameState {
                     NetMsg::Buildings(response) => {
                         self.game.load_buildings_from_net_response(response)?;
                     }
-                    NetMsg::Hobos(hobos) => {
-                        self.game.load_hobos_from_net_response(hobos)?;
+                    NetMsg::Hobos(hobos, vid) => {
+                        let ctx = self.game.maybe_town_context_mut(vid, "villages")?;
+                        load_hobos_from_net_response(ctx, hobos)?;
                     }
                     NetMsg::Leaderboard(offset, list) => {
                         self.viewer.global_event(
@@ -133,10 +137,11 @@ impl GameState {
                         self.viewer
                             .event(&mut self.game, &PadlEvent::Signal(Signal::ResourcesUpdated))?;
                     }
-                    NetMsg::Workers(response) => {
-                        self.game.flush_workers()?;
-                        self.game.town_world_mut().maintain();
-                        self.game.load_workers_from_net_response(response);
+                    NetMsg::Workers(response, vid) => {
+                        let ctx = self.game.maybe_town_context_mut(vid, "workers")?;
+                        flush_workers(ctx.world())?;
+                        ctx.world_mut().maintain();
+                        load_workers_from_net_response(ctx, response);
                     }
                     NetMsg::UpdateWorkerTasks(unit) => {
                         let entity = self
@@ -182,17 +187,6 @@ impl GameState {
     }
 }
 impl<'a, 'b> Game<'a, 'b> {
-    pub fn load_workers_from_net_response(&mut self, response: WorkerResponse) {
-        let now = self.world.read_resource::<Now>().0;
-        let resolution = *self.world.read_resource::<ScreenResolution>();
-        let results = create_worker_entities(&response, self.town_world_mut(), now, resolution);
-        let mut q = self.world.write_resource::<ErrorQueue>();
-        for res in results.into_iter() {
-            if let Err(e) = res {
-                q.push(e);
-            }
-        }
-    }
     pub fn load_buildings_from_net_response(
         &mut self,
         response: BuildingsResponse,
@@ -204,22 +198,11 @@ impl<'a, 'b> Game<'a, 'b> {
                 world.maintain();
                 data.create_entities(self.town_context.active_context_mut());
             } else {
-                println!(
-                    "{:?} not active. Active: {:?}",
-                    data.village_id(),
-                    self.town_context.active_context()
-                );
                 return PadlErrorCode::DataForInactiveTownReceived("buildings").dev();
             }
         } else {
             println!("No buildings available");
         }
-        Ok(())
-    }
-    /// Home hobos (not attackers) are loaded
-    pub fn load_hobos_from_net_response(&mut self, hobos: HobosQueryResponse) -> PadlResult<()> {
-        self.flush_home_hobos()?;
-        self.insert_hobos(hobos)?;
         Ok(())
     }
     pub fn load_attacking_hobos(&mut self, response: AttacksResponse) -> PadlResult<()> {
@@ -247,4 +230,37 @@ impl<'a, 'b> Game<'a, 'b> {
         signals.push_back(Signal::PlayerInfoUpdated);
         Ok(())
     }
+    fn maybe_town_context_mut(
+        &mut self,
+        vid: VillageKey,
+        what: &'static str,
+    ) -> PadlResult<&mut TownContext> {
+        self.town_context
+            .context_by_key_mut(vid)
+            .ok_or(PadlError::dev_err(
+                PadlErrorCode::DataForInactiveTownReceived(what),
+            ))
+    }
+}
+pub fn load_workers_from_net_response(ctx: &mut TownContext, response: WorkerResponse) {
+    let world = ctx.world_mut();
+    let now = world.read_resource::<Now>().0;
+    let resolution = *world.read_resource::<ScreenResolution>();
+    let results = create_worker_entities(&response, world, now, resolution);
+    let mut q = world.write_resource::<ErrorQueue>();
+    for res in results.into_iter() {
+        if let Err(e) = res {
+            q.push(e);
+        }
+    }
+}
+/// Home hobos (not attackers) are loaded
+pub fn load_hobos_from_net_response(
+    ctx: &mut TownContext,
+    hobos: HobosQueryResponse,
+) -> PadlResult<()> {
+    let world = ctx.world_mut();
+    flush_home_hobos(world)?;
+    insert_hobos(ctx, hobos)?;
+    Ok(())
 }

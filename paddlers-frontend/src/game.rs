@@ -21,6 +21,7 @@ pub(crate) mod town_resources;
 pub(crate) mod units;
 pub(crate) mod visits;
 
+use crate::game::net_receiver::*;
 use crate::game::{components::*, player_info::PlayerInfo, town::TownContextManager};
 use crate::gui::{input, sprites::*, ui_state::*};
 use crate::init::loading::BaseState;
@@ -105,6 +106,7 @@ impl Game<'_, '_> {
             #[cfg(feature = "dev_view")]
             active_test: None,
         };
+        game.prepare_town_resources();
         game.load_village_info(game_data.village_info.ok_or("No village info")?)?;
         game.load_buildings_from_net_response(
             game_data
@@ -114,14 +116,22 @@ impl Game<'_, '_> {
         // Make sure buildings are loaded properly before inserting any types of units
         game.world.maintain();
         game.town_world_mut().maintain();
-        game.load_workers_from_net_response(game_data.worker_response.ok_or("No worker response")?);
-        game.load_hobos_from_net_response(game_data.hobos_response.ok_or("No hobos response")?)?;
+        load_workers_from_net_response(
+            game.town_context.active_context_mut(),
+            game_data.worker_response.ok_or("No worker response")?,
+        );
+        load_hobos_from_net_response(
+            game.town_context.active_context_mut(),
+            game_data.hobos_response.ok_or("No hobos response")?,
+        )?;
         game.load_attacking_hobos(game_data.attacking_hobos.ok_or("No attacks response")?)?;
         game.load_player_info(game_data.player_info.ok_or("No player info loaded")?)?;
         // Make sure all units are loaded properly before story triggers are added
         game.world.maintain();
         game.town_world_mut().maintain();
         game.load_story_state()?;
+        game.update_temple()?;
+
         Ok(game)
     }
 
@@ -188,8 +198,7 @@ impl Game<'_, '_> {
     pub fn update_time_reference(&mut self) {
         if self.time_zero.micros() != 0 {
             let t = utc_now();
-            let mut ts = self.world.write_resource::<Now>();
-            *ts = Now(t);
+            self.world.insert(Now(t));
         }
     }
     /// Removes entities outside the map
@@ -205,43 +214,6 @@ impl Game<'_, '_> {
         self.town_world_mut()
             .delete_entities(&dead)
             .expect("Something bad happened when deleting dead entities");
-    }
-    /// Deletes all worker entities (lazy, requires world.maintain())
-    fn flush_workers(&self) -> PadlResult<()> {
-        let w = self.town_world().read_storage::<units::workers::Worker>();
-        for (entity, _marker) in (&self.town_world().entities(), &w).join() {
-            self.town_world()
-                .entities()
-                .delete(entity)
-                .map_err(|_| PadlError::dev_err(PadlErrorCode::EcsError("Delete worker")))?;
-        }
-        Ok(())
-    }
-    /// Deletes all home hobo entities (lazy, requires world.maintain())
-    fn flush_home_hobos(&self) -> PadlResult<()> {
-        let world = self.town_world();
-        let w = world.read_storage::<units::hobos::Hobo>();
-        for (entity, _marker) in (&world.entities(), &w).join() {
-            self.world
-                .entities()
-                .delete(entity)
-                .map_err(|_| PadlError::dev_err(PadlErrorCode::EcsError("Delete hobo")))?;
-        }
-        Ok(())
-    }
-    /// Deletes all hobo entities (lazy, requires world.maintain())
-    #[allow(dead_code)]
-    fn flush_hobos(&self) -> PadlResult<()> {
-        let w = self.world.read_storage::<components::NetObj>();
-        for (entity, netid) in (&self.world.entities(), &w).join() {
-            if netid.is_hobo() {
-                self.world
-                    .entities()
-                    .delete(entity)
-                    .map_err(|_| PadlError::dev_err(PadlErrorCode::EcsError("Delete hobo")))?;
-            }
-        }
-        Ok(())
     }
     fn worker_entity_by_net_id(&self, net_id: i64) -> PadlResult<Entity> {
         // TODO: Efficient NetId lookup
@@ -274,6 +246,42 @@ fn flush_buildings(world: &World) -> PadlResult<()> {
             .entities()
             .delete(entity)
             .map_err(|_| PadlError::dev_err(PadlErrorCode::EcsError("Delete building")))?;
+    }
+    Ok(())
+}
+/// Deletes all worker entities (lazy, requires world.maintain())
+fn flush_workers(world: &World) -> PadlResult<()> {
+    let w = world.read_storage::<units::workers::Worker>();
+    for (entity, _marker) in (&world.entities(), &w).join() {
+        world
+            .entities()
+            .delete(entity)
+            .map_err(|_| PadlError::dev_err(PadlErrorCode::EcsError("Delete worker")))?;
+    }
+    Ok(())
+}
+/// Deletes all home hobo entities (lazy, requires world.maintain())
+fn flush_home_hobos(world: &World) -> PadlResult<()> {
+    let w = world.read_storage::<units::hobos::Hobo>();
+    for (entity, _marker) in (&world.entities(), &w).join() {
+        world
+            .entities()
+            .delete(entity)
+            .map_err(|_| PadlError::dev_err(PadlErrorCode::EcsError("Delete hobo")))?;
+    }
+    Ok(())
+}
+/// Deletes all hobo entities (lazy, requires world.maintain())
+#[allow(dead_code)] // Used for benchmarks
+fn flush_hobos(world: &World) -> PadlResult<()> {
+    let w = world.read_storage::<components::NetObj>();
+    for (entity, netid) in (&world.entities(), &w).join() {
+        if netid.is_hobo() {
+            world
+                .entities()
+                .delete(entity)
+                .map_err(|_| PadlError::dev_err(PadlErrorCode::EcsError("Delete hobo")))?;
+        }
     }
     Ok(())
 }

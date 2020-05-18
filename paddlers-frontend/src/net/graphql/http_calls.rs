@@ -66,7 +66,7 @@ pub(super) fn http_read_workers(
 
 pub(super) fn http_read_hobos(
     village_id: VillageKey,
-) -> PadlResult<impl Future<Output = PadlResult<HobosQueryResponse>>> {
+) -> PadlResult<impl Future<Output = PadlResult<HobosQueryResponseVillage>>> {
     let request_body = HobosQuery::build_query(hobos_query::Variables {
         village_id: village_id.num(),
     });
@@ -80,7 +80,7 @@ pub(super) fn http_read_hobos(
                 .ok_or(PadlError::dev_err(PadlErrorCode::InvalidGraphQLData(
                     "village hobos",
                 )))?;
-        Ok(data.village.hobos)
+        Ok(data.village)
     }))
 }
 

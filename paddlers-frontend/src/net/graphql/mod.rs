@@ -85,7 +85,8 @@ impl GraphQlState {
             .map(|response| {
                 if let Some(data) = response?.data {
                     let workers = data.village.workers;
-                    Ok(NetMsg::Workers(workers))
+                    let village = VillageKey(data.village.id);
+                    Ok(NetMsg::Workers(workers, village))
                 } else {
                     gql_empty_error("workers")
                 }
@@ -97,7 +98,10 @@ impl GraphQlState {
             fut.and_then(move |village: VillageKey| {
                 http_read_hobos(village).expect("Query building error")
             })
-            .map(|response| Ok(NetMsg::Hobos(response?)))
+            .map(|village| {
+                let village = village?;
+                Ok(NetMsg::Hobos(village.hobos, VillageKey(village.id)))
+            })
         })
     }
     pub(super) fn worker_tasks_query(
