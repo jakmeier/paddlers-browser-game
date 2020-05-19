@@ -52,6 +52,7 @@ macro_rules! object_key {
 }
 
 object_key!(Attack, AttackKey);
+object_key!(Building, BuildingKey);
 object_key!(Hobo, HoboKey);
 object_key!(Player, PlayerKey);
 object_key!(Stream, StreamKey);

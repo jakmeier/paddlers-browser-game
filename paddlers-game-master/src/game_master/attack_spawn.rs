@@ -73,6 +73,7 @@ impl AttackSpawner {
                     speed: 0.0625,
                     home: village.num(), // TODO: anarchists home
                     hurried: true,
+                    nest: None,
                 };
                 let msg = NewHoboMessage(hobo);
                 self.db_actor.send(msg)
@@ -86,6 +87,7 @@ impl AttackSpawner {
                 speed: 0.25,
                 home: village.num(), // TODO: anarchists home
                 hurried: false,
+                nest: None,
             };
             let msg = NewHoboMessage(hobo);
             self.db_actor.send(msg)

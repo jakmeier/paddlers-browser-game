@@ -5,6 +5,10 @@ query HobosQuery($village_id: Int!) {
       id
       color
       idle
+      nest {
+        x
+        y
+      }
     }
   }
 }

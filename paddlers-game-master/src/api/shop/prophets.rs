@@ -38,6 +38,7 @@ impl DB {
             color: Some(UnitColor::Prophet),
             speed: 0.05,
             hurried: true,
+            nest: None,
         };
         self.insert_hobo(&prophet);
     }

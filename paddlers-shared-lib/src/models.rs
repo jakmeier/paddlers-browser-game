@@ -111,6 +111,7 @@ pub struct NewHobo {
     pub color: Option<UnitColor>,
     pub speed: f32,
     pub hurried: bool,
+    pub nest: Option<i64>,
 }
 
 #[cfg(feature = "sql_db")]

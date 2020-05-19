@@ -98,7 +98,7 @@ pub fn render_town_entities(
             area = area.shrink_to_center(r.in_game_transformation);
         }
         match r.kind {
-            RenderVariant::ImgWithImgBackground(i, _) => {
+            RenderVariant::Img(i) | RenderVariant::ImgWithImgBackground(i, _) => {
                 if let Some(animation) = animation_store.get(e) {
                     draw_animated_sprite(
                         sprites,

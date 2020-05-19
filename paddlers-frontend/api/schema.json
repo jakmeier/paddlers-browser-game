@@ -1604,6 +1604,18 @@
                   "ofType": null
                 }
               }
+            },
+            {
+              "args": [],
+              "deprecationReason": null,
+              "description": "Field Visibility: public",
+              "isDeprecated": false,
+              "name": "nest",
+              "type": {
+                "kind": "OBJECT",
+                "name": "GqlBuilding",
+                "ofType": null
+              }
             }
           ],
           "inputFields": null,

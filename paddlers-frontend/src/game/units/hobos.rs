@@ -1,8 +1,12 @@
 use crate::game::town::TownContext;
-use crate::game::{components::NetObj, Game};
-use crate::net::graphql::query_types::{HobosQueryResponse, HobosQueryUnitColor};
+use crate::game::{components::NetObj, movement::Position, Game};
+use crate::gui::{render::Renderable, sprites::*, utils::*, z::Z_UNITS};
+use crate::net::graphql::query_types::{
+    hobos_query::HobosQueryVillageHobosNest, HobosQueryResponse, HobosQueryUnitColor,
+};
 use crate::prelude::*;
 use paddlers_shared_lib::prelude::*;
+use quicksilver::geom::*;
 use specs::prelude::*;
 
 #[derive(Default, Debug, Component)]
@@ -26,13 +30,19 @@ pub fn insert_hobos(ctx: &mut TownContext, hobos: HobosQueryResponse) -> PadlRes
         .iter()
         .filter(|h| h.color == Some(HobosQueryUnitColor::PROPHET))
         .filter(|h| h.idle)
-        .map(|h| new_hobo(ctx.world_mut(), &h.id))
+        .map(|h| new_prophet(ctx.world_mut(), &h.id))
         .collect::<Result<Vec<_>, _>>()?;
-    // Ignore all other hobos (for now)
+    // Insert sitting hobos
+    hobos
+        .iter()
+        .filter(|h| h.idle)
+        .filter(|h| h.nest.is_some())
+        .map(|h| new_sitting_hobo(ctx.world_mut(), &h.id, h.nest.as_ref().unwrap()))
+        .collect::<Result<Vec<_>, _>>()?;
     Ok(())
 }
 
-fn new_hobo(world: &mut World, id: &str) -> PadlResult<Entity> {
+fn new_prophet(world: &mut World, id: &str) -> PadlResult<Entity> {
     let id = id
         .parse()
         .map_err(|_| PadlError::dev_err(PadlErrorCode::InvalidGraphQLData("HoboId")))?;
@@ -40,6 +50,29 @@ fn new_hobo(world: &mut World, id: &str) -> PadlResult<Entity> {
         .create_entity()
         .with(NetObj::hobo(id))
         .with(Hobo)
+        .build();
+    Ok(entity)
+}
+
+fn new_sitting_hobo(
+    world: &mut World,
+    id: &str,
+    nest: &HobosQueryVillageHobosNest,
+) -> PadlResult<Entity> {
+    let id = id
+        .parse()
+        .map_err(|_| PadlError::dev_err(PadlErrorCode::InvalidGraphQLData("HoboId")))?;
+    let ul = world.fetch::<ScreenResolution>().unit_length();
+    let pos = Vector::new(nest.x as f32 * ul, nest.y as f32 * ul);
+    let size = (ul, ul);
+    let rend = RenderVariant::Img(SpriteSet::Simple(SingleSprite::SittingYellowDuck));
+
+    let entity = world
+        .create_entity()
+        .with(NetObj::hobo(id))
+        .with(Hobo)
+        .with(Renderable::new(rend))
+        .with(Position::new(pos, size, Z_UNITS))
         .build();
     Ok(entity)
 }

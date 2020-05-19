@@ -81,6 +81,7 @@ impl DB {
                     speed: 0.25,
                     home: village.key().num(),
                     hurried: false,
+                    nest: None,
                 };
                 let msg = NewHoboMessage(hobo);
                 let future = addr

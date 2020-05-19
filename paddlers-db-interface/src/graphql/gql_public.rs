@@ -261,6 +261,13 @@ impl GqlHobo {
     pub fn idle(&self, ctx: &Context) -> bool {
         !ctx.db().hobo_is_attacking(self.0.key())
     }
+    /// Field Visibility: public
+    pub fn nest(&self, ctx: &Context) -> Option<GqlBuilding> {
+        self.0
+            .nest
+            .map(|b| ctx.db().building(BuildingKey(b)))
+            .map(GqlBuilding)
+    }
 }
 
 /**

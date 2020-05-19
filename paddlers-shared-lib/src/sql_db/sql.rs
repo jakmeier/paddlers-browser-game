@@ -187,6 +187,12 @@ pub trait GameDB {
             .collect()
     }
 
+    fn building(&self, building: BuildingKey) -> Building {
+        buildings::table
+            .filter(buildings::id.eq(building.num()))
+            .first::<Building>(self.dbconn())
+            .expect("Error loading data")
+    }
     fn buildings(&self, village: VillageKey) -> Vec<Building> {
         let results = buildings::table
             .filter(buildings::village_id.eq(village.num()))
