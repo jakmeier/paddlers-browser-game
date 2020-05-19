@@ -1,4 +1,7 @@
 //! Uses a LCG to generate a pseudo-random sequence for the streams on the map
+
+mod village_creation;
+
 use crate::db::DB;
 use paddlers_shared_lib::game_mechanics::map::*;
 use paddlers_shared_lib::prelude::*;
@@ -63,7 +66,7 @@ impl DB {
 
         self.insert_streams(&map.streams);
 
-        if let Err(e) = self.generate_anarchists(ANARCHISTS) {
+        if let Err(e) = self.generate_anarchists(ANARCHISTS, seed.wrapping_add(1)) {
             eprintln!("Failure on anarchists spawning: {}", e);
         }
         // #[cfg(debug_assertions)]

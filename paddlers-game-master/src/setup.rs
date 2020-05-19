@@ -5,7 +5,6 @@
 
 mod map_generation;
 mod new_player;
-mod village_creation;
 
 use crate::buildings::BuildingFactory;
 use crate::db::DB;
