@@ -51,6 +51,8 @@ impl BuildingType {
             BuildingType::SawMill => karma >= 100,
             BuildingType::Temple => story_state == StoryState::ServantAccepted,
             BuildingType::Tree => karma >= 1,
+            BuildingType::SingleNest => karma >= 500,
+            BuildingType::TripleNest => karma >= 3000,
         }
     }
     /// Buildings that may be available at the default shop, regardless of player restrictions
@@ -64,6 +66,8 @@ impl BuildingType {
             BuildingType::SawMill,
             BuildingType::Tree,
             BuildingType::Temple,
+            BuildingType::SingleNest,
+            BuildingType::TripleNest,
         ]
         .iter()
     }
@@ -78,6 +82,8 @@ impl BuildingType {
             BuildingType::SawMill => true,
             BuildingType::Temple => false,
             BuildingType::Tree => true,
+            BuildingType::SingleNest => false, // false for now, to avoid problems with associated hobos
+            BuildingType::TripleNest => false, // false for now, to avoid problems with associated hobos
         }
     }
 }

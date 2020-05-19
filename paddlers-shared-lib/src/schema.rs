@@ -75,6 +75,7 @@ table! {
         speed -> Float4,
         hp -> Int8,
         hurried -> Bool,
+        nest -> Nullable<Int8>,
     }
 }
 
@@ -200,6 +201,7 @@ joinable!(attacks_to_hobos -> attacks (attack_id));
 joinable!(attacks_to_hobos -> hobos (hobo_id));
 joinable!(buildings -> villages (village_id));
 joinable!(effects -> hobos (hobo_id));
+joinable!(hobos -> buildings (nest));
 joinable!(hobos -> villages (home));
 joinable!(resources -> villages (village_id));
 joinable!(rewards -> visit_reports (visit_report_id));

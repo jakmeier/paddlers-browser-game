@@ -143,6 +143,9 @@ pub enum SingleSprite {
     RogerLargeAstonished,
     Letters,
     DuckShapes,
+    SingleNest,
+    TripleNest,
+    SittingYellowDuck,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -214,6 +217,8 @@ impl WithSprite for BuildingType {
             BuildingType::PresentA => SpriteSet::Simple(SingleSprite::PresentA),
             BuildingType::PresentB => SpriteSet::Simple(SingleSprite::PresentB),
             BuildingType::Temple => SpriteSet::Simple(SingleSprite::Temple),
+            BuildingType::SingleNest => SpriteSet::Simple(SingleSprite::SingleNest),
+            BuildingType::TripleNest => SpriteSet::Simple(SingleSprite::TripleNest),
         }
     }
 }

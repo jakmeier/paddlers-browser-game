@@ -12,6 +12,8 @@ impl Display for BuildingType {
             BuildingType::PresentA => write!(f, "Red present"),
             BuildingType::PresentB => write!(f, "Orange present"),
             BuildingType::Temple => write!(f, "Temple"),
+            BuildingType::SingleNest => write!(f, "SingleNest"),
+            BuildingType::TripleNest => write!(f, "TripleNest"),
         }
     }
 }

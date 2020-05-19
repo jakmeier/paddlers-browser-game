@@ -99,6 +99,7 @@ pub struct Hobo {
     pub hp: i64,
     /// If in a hurry, hobos will not stop in a town they are visiting but swim through directly
     pub hurried: bool,
+    pub nest: Option<i64>,
 }
 
 #[cfg(feature = "sql_db")]
@@ -158,6 +159,8 @@ pub enum BuildingType {
     PresentA,
     PresentB,
     Temple,
+    SingleNest,
+    TripleNest,
 }
 
 #[cfg(feature = "sql_db")]

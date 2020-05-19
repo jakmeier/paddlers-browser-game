@@ -222,6 +222,18 @@
               "description": null,
               "isDeprecated": false,
               "name": "TEMPLE"
+            },
+            {
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
+              "name": "SINGLE_NEST"
+            },
+            {
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
+              "name": "TRIPLE_NEST"
             }
           ],
           "fields": null,
@@ -1005,7 +1017,7 @@
             {
               "args": [],
               "deprecationReason": null,
-              "description": "Field Visibility: user",
+              "description": "Field Visibility: public",
               "isDeprecated": false,
               "name": "buildings",
               "type": {

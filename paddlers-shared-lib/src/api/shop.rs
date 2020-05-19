@@ -18,12 +18,18 @@ impl Cost for BuildingType {
             BuildingType::RedFlowers => {
                 vec![(ResourceType::Feathers, 100), (ResourceType::Sticks, 20)]
             }
-            BuildingType::Tree => vec![(ResourceType::Sticks, 10)],
+            BuildingType::Tree => vec![(ResourceType::Feathers, 10)],
             BuildingType::BundlingStation => vec![(ResourceType::Feathers, 20)],
             BuildingType::SawMill => vec![(ResourceType::Feathers, 20), (ResourceType::Sticks, 20)],
             BuildingType::PresentA => vec![(ResourceType::Feathers, 100)],
             BuildingType::PresentB => vec![(ResourceType::Sticks, 50), (ResourceType::Logs, 50)],
             BuildingType::Temple => vec![],
+            BuildingType::SingleNest => {
+                vec![(ResourceType::Feathers, 20), (ResourceType::Sticks, 20)]
+            }
+            BuildingType::TripleNest => {
+                vec![(ResourceType::Feathers, 60), (ResourceType::Sticks, 60)]
+            }
         }
     }
 }
