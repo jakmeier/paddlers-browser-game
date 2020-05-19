@@ -167,9 +167,8 @@ impl GqlVillage {
             None
         })
     }
-    /// Field Visibility: user
+    /// Field Visibility: public
     fn hobos(&self, ctx: &Context) -> FieldResult<Vec<GqlHobo>> {
-        ctx.check_village_key(self.0.key())?;
         Ok(ctx
             .db()
             .village_hobos(self.0.key())

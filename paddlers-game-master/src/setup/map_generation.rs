@@ -1,5 +1,6 @@
 //! Uses a LCG to generate a pseudo-random sequence for the streams on the map
 
+mod anarchists;
 mod village_creation;
 
 use crate::db::DB;

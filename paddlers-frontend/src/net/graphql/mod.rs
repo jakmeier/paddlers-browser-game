@@ -104,6 +104,17 @@ impl GraphQlState {
             })
         })
     }
+    pub(super) fn foreign_hobos_query(
+        &self,
+        village: VillageKey,
+    ) -> impl Future<Output = PadlResult<NetMsg>> {
+        http_read_hobos(village)
+            .expect("Query building error")
+            .map(|village| {
+                let village = village?;
+                Ok(NetMsg::Hobos(village.hobos, VillageKey(village.id)))
+            })
+    }
     pub(super) fn worker_tasks_query(
         &self,
         unit_id: i64,

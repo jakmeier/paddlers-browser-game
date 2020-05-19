@@ -1,8 +1,8 @@
-use crate::buildings::BuildingFactory;
+//! For generating villages on the map
+
 use crate::db::DB;
 use crate::setup::map_generation::Lcg;
 use paddlers_shared_lib::game_mechanics::map::*;
-use paddlers_shared_lib::game_mechanics::town::*;
 use paddlers_shared_lib::prelude::*;
 
 impl DB {
@@ -32,7 +32,7 @@ impl DB {
     ) -> Result<Village, &'static str> {
         let s = self.stream(stream_id);
         let village = self.insert_village_on_stream(&s, None)?;
-        self.add_random_forest_to_village(village.key(), lcg);
+        self.generate_anarchist_town_content(village.key(), lcg)?;
         Ok(village)
     }
     fn insert_village_on_stream(
@@ -63,46 +63,6 @@ impl DB {
 
     fn map_position_empty(&self, x: f32, y: f32) -> bool {
         self.village_at(x, y).is_none()
-    }
-
-    fn add_random_forest_to_village(&self, village: VillageKey, lcg: &mut Lcg) {
-        // Two contiguous forests in the top corners
-        let mut left = lcg.next_in_range(0, 2 * TOWN_X as u64 / 3);
-        let mut right = lcg.next_in_range(TOWN_X as u64 / 3, TOWN_X as u64);
-        for y in 0..TOWN_LANE_Y {
-            left += lcg.next_in_range(0, 4);
-            left = left.saturating_sub(3);
-            right -= lcg.next_in_range(0, 4);
-            right += 3;
-            right = right.min(TOWN_X as u64);
-            right = right.max(left + 1);
-
-            for x in 0..left as usize {
-                self.insert_tree(village, x, y);
-            }
-            for x in right as usize..TOWN_X {
-                self.insert_tree(village, x, y);
-            }
-        }
-        // A few single trees
-        let n = lcg.next_in_range(0, 8);
-        for _ in 0..n {
-            let x = lcg.next_in_range(0, TOWN_X as u64);
-            let y = lcg.next_in_range(0, TOWN_Y as u64);
-            if y as usize == TOWN_LANE_Y {
-                continue;
-            }
-            if self
-                .find_building_by_coordinates(x as i32, y as i32, village)
-                .is_none()
-            {
-                self.insert_tree(village, x as usize, y as usize);
-            }
-        }
-    }
-    fn insert_tree(&self, village: VillageKey, x: usize, y: usize) {
-        let tree = BuildingFactory::new(BuildingType::Tree, (x, y), village);
-        self.insert_building(&tree);
     }
 
     #[cfg(debug_assertions)]

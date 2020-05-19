@@ -138,6 +138,7 @@ pub fn request_player_update() {
 pub fn request_foreign_town(vid: VillageKey) {
     unsafe {
         STATIC_NET_STATE.spawn(Ok(STATIC_NET_STATE.gql_state.foreign_buildings_query(vid)));
+        STATIC_NET_STATE.spawn(Ok(STATIC_NET_STATE.gql_state.foreign_hobos_query(vid)));
         // TODO: Other state
     }
 }
