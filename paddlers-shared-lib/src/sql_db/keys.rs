@@ -36,3 +36,9 @@ impl Attack {
         self.origin_village_id.map(VillageKey)
     }
 }
+
+impl Building {
+    pub fn village(&self) -> VillageKey {
+        VillageKey(self.village_id)
+    }
+}

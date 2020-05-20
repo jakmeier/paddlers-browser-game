@@ -21,8 +21,9 @@ use game_master::{
     attack_funnel::AttackFunnel, attack_spawn::AttackSpawner, economy_worker::EconomyWorker,
     town_worker::TownWorker, GameMaster,
 };
-use paddlers_shared_lib::api::reports::ReportCollect;
-use paddlers_shared_lib::api::story::StoryStateTransition;
+use paddlers_shared_lib::api::{
+    attacks::InvitationDescriptor, reports::ReportCollect, story::StoryStateTransition,
+};
 use paddlers_shared_lib::prelude::HoboKey;
 use paddlers_shared_lib::{
     api::{
@@ -122,6 +123,11 @@ fn main() {
                 web::resource("/attacks/create")
                     .data(web::Json::<AttackDescriptor>)
                     .route(web::post().to_async(api::create_attack)),
+            )
+            .service(
+                web::resource("/attacks/invite")
+                    .data(web::Json::<InvitationDescriptor>)
+                    .route(web::post().to_async(api::new_invitation)),
             )
             .service(
                 web::resource("/attacks/notifications/visitor_satisfied")

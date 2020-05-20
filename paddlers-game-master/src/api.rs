@@ -3,7 +3,7 @@ mod reports;
 mod shop;
 mod story;
 
-pub(crate) use attacks::visitor_satisfied_notification;
+pub(crate) use attacks::{visitor_satisfied_notification, new_invitation};
 pub(crate) use reports::collect_report_rewards;
 pub(crate) use story::story_transition;
 

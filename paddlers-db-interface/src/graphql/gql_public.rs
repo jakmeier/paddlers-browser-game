@@ -264,7 +264,7 @@ impl GqlHobo {
     pub fn nest(&self, ctx: &Context) -> Option<GqlBuilding> {
         self.0
             .nest
-            .map(|b| ctx.db().building(BuildingKey(b)))
+            .and_then(|b| ctx.db().building(BuildingKey(b)))
             .map(GqlBuilding)
     }
 }

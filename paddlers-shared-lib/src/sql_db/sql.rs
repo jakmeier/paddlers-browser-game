@@ -187,10 +187,11 @@ pub trait GameDB {
             .collect()
     }
 
-    fn building(&self, building: BuildingKey) -> Building {
+    fn building(&self, building: BuildingKey) -> Option<Building> {
         buildings::table
             .filter(buildings::id.eq(building.num()))
             .first::<Building>(self.dbconn())
+            .optional()
             .expect("Error loading data")
     }
     fn buildings(&self, village: VillageKey) -> Vec<Building> {
@@ -400,6 +401,14 @@ pub trait GameDB {
         ))
         .get_result(self.dbconn())
         .expect("Error in lookup")
+    }
+    fn idle_hobos_in_nest(&self, bid: BuildingKey) -> Vec<Hobo> {
+        hobos::table
+            .filter(hobos::nest.eq(Some(bid.num())))
+            .select(hobos::all_columns)
+            .limit(500)
+            .load::<Hobo>(self.dbconn())
+            .expect("Error loading data")
     }
     fn village_owned_by(&self, vid: VillageKey, uuid: uuid::Uuid) -> bool {
         diesel::select(diesel::dsl::exists(
