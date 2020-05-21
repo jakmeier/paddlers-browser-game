@@ -35,7 +35,7 @@ pub struct SlideButtonAction {
 pub type SlideIndex = usize;
 
 impl Scene {
-    pub fn slide_text_key(&self) -> &str {
+    pub fn slide_text_key(&self) -> &TextKey {
         &self.slides[self.active_slide].text_key
     }
     pub fn current_slide(&self) -> &Slide {
@@ -104,7 +104,7 @@ fn load_entry_scene(active_slide: SlideIndex) -> Scene {
 
     // 0
     slides.push(Slide {
-        text_key: "welcomescene-B10",
+        text_key: "welcomescene-B10".into(),
         buttons: vec![],
         sprite: SpriteIndex::Simple(SingleSprite::RogerLargeAstonished),
         back_button: false,
@@ -112,7 +112,7 @@ fn load_entry_scene(active_slide: SlideIndex) -> Scene {
     });
     // 1
     slides.push(Slide {
-        text_key: "welcomescene-B20",
+        text_key: "welcomescene-B20".into(),
         sprite: SpriteIndex::Simple(SingleSprite::RogerLarge),
         buttons: vec![],
         back_button: true,
@@ -120,7 +120,7 @@ fn load_entry_scene(active_slide: SlideIndex) -> Scene {
     });
     // 2
     slides.push(Slide {
-        text_key: "welcomescene-B30",
+        text_key: "welcomescene-B30".into(),
         sprite: SpriteIndex::Simple(SingleSprite::RogerLarge),
         buttons: vec![],
         back_button: true,
@@ -128,20 +128,20 @@ fn load_entry_scene(active_slide: SlideIndex) -> Scene {
     });
     // 3
     slides.push(Slide {
-        text_key: "welcomescene-B40",
+        text_key: "welcomescene-B40".into(),
         sprite: SpriteIndex::Simple(SingleSprite::RogerLargeSad),
         buttons: vec![],
         back_button: true,
         next_button: true,
     });
     let button = SlideButton {
-        text_key: "welcomescene-A60",
+        text_key: "welcomescene-A60".into(),
         action: SlideButtonAction::to_slide(5)
             .with_action(StoryAction::StoryProgress(StoryState::ServantAccepted)),
     };
     // 4
     slides.push(Slide {
-        text_key: "welcomescene-B50",
+        text_key: "welcomescene-B50".into(),
         sprite: SpriteIndex::Simple(SingleSprite::RogerLargeObedient),
         buttons: vec![button],
         back_button: true,
@@ -149,7 +149,7 @@ fn load_entry_scene(active_slide: SlideIndex) -> Scene {
     });
     // 5
     slides.push(Slide {
-        text_key: "welcomescene-B70",
+        text_key: "welcomescene-B70".into(),
         sprite: SpriteIndex::Simple(SingleSprite::RogerLargeCelebrating),
         buttons: vec![],
         back_button: false,
@@ -157,12 +157,12 @@ fn load_entry_scene(active_slide: SlideIndex) -> Scene {
     });
 
     let button = SlideButton {
-        text_key: "welcomescene-A90",
+        text_key: "welcomescene-A90".into(),
         action: SlideButtonAction::default().with_view_change(UiView::Town),
     };
     // 6
     slides.push(Slide {
-        text_key: "welcomescene-B80",
+        text_key: "welcomescene-B80".into(),
         sprite: SpriteIndex::Simple(SingleSprite::RogerLarge),
         buttons: vec![button],
         back_button: true,

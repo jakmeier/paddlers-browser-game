@@ -87,7 +87,7 @@ impl<'a, 'b> DialogueFrame<'a, 'b> {
         let scene = self.current_scene.as_ref().unwrap();
 
         // Write text into text bubble
-        let key = scene.slide_text_key();
+        let key = scene.slide_text_key().key();
         let text = locale.gettext(key);
         for s in text.split("\n") {
             self.text_lines.push(s.to_owned());
@@ -118,7 +118,7 @@ impl<'a, 'b> DialogueFrame<'a, 'b> {
     fn load_slide_buttons(&mut self, texts: &TextDb) {
         for b in self.current_scene.as_ref().unwrap().slide_buttons() {
             let button = UiElement::new(ClickOutput::SlideAction(b.action.clone()))
-                .with_text(texts.gettext(b.text_key).to_owned())
+                .with_text(texts.gettext(b.text_key.key()).to_owned())
                 .with_background_color(LIGHT_GREEN);
             self.buttons.add(button);
         }

@@ -10,6 +10,7 @@ use crate::prelude::*;
 use crate::view::Frame;
 use crate::view::TextNode;
 use paddlers_shared_lib::api::attacks::*;
+use paddlers_shared_lib::prelude::*;
 use panes::new_pane;
 use quicksilver::prelude::{Col, Rectangle, Transform, Window};
 use specs::prelude::*;

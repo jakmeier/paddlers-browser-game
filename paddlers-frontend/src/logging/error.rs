@@ -65,6 +65,7 @@ pub enum PadlErrorCode {
     NotReadyYet,
     PathBlocked,
     NoNetwork,
+    NestEmpty,
     // Dev only
     DevMsg(&'static str),
     MapOverflow(TileIndex),
@@ -112,6 +113,7 @@ impl fmt::Display for PadlErrorCode {
             PadlErrorCode::NotEnoughUnits => write!(f, "Require more units."),
             PadlErrorCode::PathBlocked => write!(f, "The path is blocked."),
             PadlErrorCode::NoNetwork => write!(f, "Connection to server dropped."),
+            PadlErrorCode::NestEmpty => write!(f, "Nobody around to invite."),
             // Dev
             PadlErrorCode::DevMsg(msg) => write!(f, "Dev Error Msg: {}", msg),
             PadlErrorCode::MapOverflow(i) => write!(f, "Index is outside the map: {:?}", i),

@@ -47,6 +47,7 @@ pub enum ClickOutput {
     Ability(AbilityType),
     Event(GameEvent),
     SlideAction(SlideButtonAction),
+    SendInvitation,
 }
 #[derive(Clone, Debug)]
 /// Represents a checkable condition. Used to check it later when the state is not available inside a system, for example.

@@ -2,6 +2,7 @@ use super::{Clickable, MouseState};
 use crate::game::{
     components::*,
     movement::*,
+    town::nests::Nest,
     town::{DefaultShop, Town},
     town_resources::TownResources,
     units::workers::*,
@@ -132,9 +133,11 @@ impl<'a> System<'a> for TownMenuLeftClickSystem {
         WriteExpect<'a, ErrorQueue>,
         Read<'a, LazyUpdate>,
         ReadStorage<'a, Position>,
+        ReadStorage<'a, NetObj>,
         WriteStorage<'a, EntityContainer>,
         WriteStorage<'a, UiMenu>,
         WriteStorage<'a, Worker>,
+        WriteStorage<'a, Nest>,
     );
 
     fn run(
@@ -148,9 +151,11 @@ impl<'a> System<'a> for TownMenuLeftClickSystem {
             mut errq,
             lazy,
             position,
+            netids,
             containers,
             mut ui_menus,
             workers,
+            nests,
         ): Self::SystemData,
     ) {
         let MouseState(mouse_pos, _button) = *mouse_state;
@@ -162,9 +167,11 @@ impl<'a> System<'a> for TownMenuLeftClickSystem {
                     mouse_pos,
                     ui_state,
                     position,
+                    netids,
                     workers,
                     containers,
                     ui_menu,
+                    nests,
                     lazy,
                     &*resources,
                     errq,

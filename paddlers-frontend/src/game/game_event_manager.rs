@@ -43,6 +43,7 @@ pub enum GameEvent {
     SendProphetAttack(VillageCoordinate),
     StoryActions(Vec<StoryAction>),
     SwitchToView(UiView),
+    DisplayConfirmation(TextKey),
 }
 
 impl GameState {
@@ -90,8 +91,7 @@ impl GameState {
                 self.game.send_prophet_attack((x, y))?;
                 // TODO: Only confirm if HTTP OK is returned
                 // (Probably do this after cleaning pu network and promise handling)
-                self.game
-                    .confirm_to_user(format!("Attacking village <{}:{}>", x, y))?;
+                self.game.confirm_to_user("attack-sent".into())?;
             }
             GameEvent::SwitchToView(view) => {
                 self.game.switch_view(view);
@@ -108,6 +108,9 @@ impl GameState {
             }
             GameEvent::LoadHomeVillage => {
                 self.game.town_context.reset_to_home();
+            }
+            GameEvent::DisplayConfirmation(t) => {
+                self.game.confirm_to_user(t)?;
             }
         }
         Ok(())

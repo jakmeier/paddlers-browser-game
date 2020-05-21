@@ -1,18 +1,14 @@
-use crate::game::fight::Aura;
-use crate::game::story::entity_trigger::EntityTrigger;
-use crate::game::units::attackers::Visitor;
-use crate::prelude::*;
-use crate::view::entry_view;
-use specs::prelude::*;
-
-use crate::game::town::DefaultShop;
 use crate::game::{
-    components::*, player_info::PlayerInfo, town::Town, town_resources::TownResources,
-    units::hobos::Hobo, units::workers::Worker, visits::attacks::Attack,
+    components::*, fight::Aura, player_info::PlayerInfo, story::entity_trigger::EntityTrigger,
+    town::nests::Nest, town::DefaultShop, town::Town, town_resources::TownResources,
+    units::attackers::Visitor, units::hobos::Hobo, units::workers::Worker, visits::attacks::Attack,
 };
 use crate::gui::input::drag::Drag;
 use crate::gui::ui_state::*;
 use crate::logging::{text_to_user::TextBoard, AsyncErr, ErrorQueue};
+use crate::prelude::*;
+use crate::view::entry_view;
+use specs::prelude::*;
 
 pub(super) fn insert_global_resources(
     world: &mut World,
@@ -82,6 +78,7 @@ pub fn register_town_components(world: &mut World) {
     world.register::<Level>();
     world.register::<Mana>();
     world.register::<Moving>();
+    world.register::<Nest>();
     world.register::<Range>();
     world.register::<StatusEffects>();
     world.register::<TargetPosition>();

@@ -5,9 +5,15 @@ use crate::game::{
     forestry::ForestComponent,
     input::Clickable,
     movement::Position,
-    town::{TileIndex, Town},
+    town::{nests::Nest, TileIndex, Town},
 };
-use crate::gui::{render::Renderable, sprites::*, utils::*, z::Z_BUILDINGS};
+use crate::gui::{
+    gui_components::{ClickOutput, UiBox, UiElement},
+    render::Renderable,
+    sprites::*,
+    utils::*,
+    z::Z_BUILDINGS,
+};
 use crate::prelude::*;
 use paddlers_shared_lib::prelude::*;
 use paddlers_shared_lib::{game_mechanics::attributes::Attributes, graphql_types::*};
@@ -91,6 +97,14 @@ impl Town {
             BuildingType::Tree => {
                 builder = builder.with(ForestComponent::new(created));
             }
+            BuildingType::SingleNest => {
+                builder = builder.with(Nest::new(1));
+                builder = builder.with(new_nest_menu());
+            }
+            BuildingType::TripleNest => {
+                builder = builder.with(Nest::new(3));
+                builder = builder.with(new_nest_menu());
+            }
             _ => {}
         }
 
@@ -108,6 +122,16 @@ fn building_ingame_scaling(b: BuildingType) -> f32 {
         BuildingType::RedFlowers => 0.45,
         _ => std::f32::NAN,
     }
+}
+
+fn new_nest_menu() -> UiMenu {
+    let mut menu = UiBox::new(1, 1, 1.0, 1.0);
+    menu.add(
+        UiElement::new(ClickOutput::SendInvitation)
+            .with_text("Invite".to_owned())
+            .with_background_color(LIGHT_BLUE),
+    );
+    UiMenu { ui: menu }
 }
 
 use crate::net::graphql::buildings_query;
@@ -147,7 +171,7 @@ impl buildings_query::BuildingsQueryVillageBuildings {
         let entities = town_context.town_world.entities();
         let lazy = town_context.town_world.read_resource::<LazyUpdate>();
         let mut town = town_context.town_mut();
-        town.insert_building(
+        let entity = town.insert_building(
             &entities,
             &lazy,
             coordinates,
@@ -156,6 +180,16 @@ impl buildings_query::BuildingsQueryVillageBuildings {
             self.attacks_per_cycle,
             maybe_range,
             created,
-        )
+        );
+        if let Ok(id) = self.id.parse() {
+            town_context
+                .world()
+                .write_storage::<NetObj>()
+                .insert(entity, NetObj::building(id))
+                .expect("insert");
+        } else {
+            println!("Couldn't parse Building ID, it will lack a network component")
+        }
+        entity
     }
 }

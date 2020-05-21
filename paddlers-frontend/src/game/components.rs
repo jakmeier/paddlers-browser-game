@@ -14,6 +14,7 @@ use crate::gui::{
 };
 use crate::prelude::*;
 use paddlers_shared_lib::api::shop::Price;
+use paddlers_shared_lib::prelude::*;
 use specs::prelude::*;
 
 /// Required to give NetObj values a context
@@ -21,6 +22,7 @@ use specs::prelude::*;
 enum NetObjType {
     Hobo,
     Worker,
+    Building,
 }
 
 #[derive(Component, Debug, Clone, Copy)]
@@ -44,6 +46,12 @@ impl NetObj {
             typ: NetObjType::Worker,
         }
     }
+    pub fn building(id: i64) -> Self {
+        NetObj {
+            id,
+            typ: NetObjType::Building,
+        }
+    }
     pub fn lookup_hobo(
         net_id: i64,
         net_ids: &ReadStorage<NetObj>,
@@ -57,6 +65,13 @@ impl NetObj {
         entities: &Entities,
     ) -> PadlResult<Entity> {
         Self::lookup_entity(net_id, NetObjType::Worker, net_ids, entities)
+    }
+    pub fn lookup_building(
+        net_id: i64,
+        net_ids: &ReadStorage<NetObj>,
+        entities: &Entities,
+    ) -> PadlResult<Entity> {
+        Self::lookup_entity(net_id, NetObjType::Building, net_ids, entities)
     }
     #[allow(dead_code)]
     pub fn is_hobo(&self) -> bool {
@@ -80,6 +95,12 @@ impl NetObj {
         })
         .dev()
     }
+    pub fn as_building(&self) -> Option<BuildingKey> {
+        match self.typ {
+            NetObjType::Building => Some(BuildingKey(self.id)),
+            _ => None,
+        }
+    }
 }
 
 #[derive(Component, Debug, Clone)]
@@ -91,7 +112,10 @@ pub struct UiMenu {
 
 #[derive(Component, Debug, Clone)]
 #[storage(HashMapStorage)]
-/// Entity that can contain other entities (E.g. House has units inside)
+/// Building entity that can contain worker entities while they are doing some work.
+/// (E.g. saw mill has units inside while the produce lumber)
+///
+/// Note that a nest does not fall into this category because the units inside are not worker units.
 pub struct EntityContainer {
     pub children: Vec<Entity>,
     pub capacity: usize,

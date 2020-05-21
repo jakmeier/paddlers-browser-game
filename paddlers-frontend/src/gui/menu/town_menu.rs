@@ -125,16 +125,15 @@ impl<'a, 'b> Frame for TownMenuFrame<'a, 'b> {
                     }
                 }
             }
-        } else {
-            let ms = MouseState(pos.into(), Some(MouseButton::Left));
-            state.town_world_mut().insert(ms);
-            self.left_click_dispatcher.dispatch(state.town_world());
-            // TODO: Only temporary experiment
-            let mut result_signals = state
-                .town_world()
-                .write_resource::<ExperimentalSignalChannel>();
-            signals.append(&mut result_signals);
         }
+        let ms = MouseState(pos.into(), Some(MouseButton::Left));
+        state.town_world_mut().insert(ms);
+        self.left_click_dispatcher.dispatch(state.town_world());
+        // TODO: [0.1.4] Only temporary experiment
+        let mut result_signals = state
+            .town_world()
+            .write_resource::<ExperimentalSignalChannel>();
+        signals.append(&mut result_signals);
         Ok(())
     }
     fn right_click(&mut self, state: &mut Self::State, pos: (i32, i32)) -> Result<(), Self::Error> {

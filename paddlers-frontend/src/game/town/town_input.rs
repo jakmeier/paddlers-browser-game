@@ -5,6 +5,7 @@ use super::task_factory::NewTaskDescriptor;
 use crate::game::{
     components::*,
     movement::*,
+    town::nests::Nest,
     town::{DefaultShop, Town},
     town_resources::TownResources,
     units::workers::*,
@@ -27,9 +28,11 @@ impl Town {
         mouse_pos: Vector,
         mut ui_state: WriteExpect<'a, UiState>,
         position: ReadStorage<'a, Position>,
+        netids: ReadStorage<'a, NetObj>,
         mut workers: WriteStorage<'a, Worker>,
         mut containers: WriteStorage<'a, EntityContainer>,
         ui_menu: &'a mut UiMenu,
+        mut nests: WriteStorage<'a, Nest>,
         lazy: Read<'a, LazyUpdate>,
         resources: &TownResources,
         mut errq: WriteExpect<'a, ErrorQueue>,
@@ -70,6 +73,13 @@ impl Town {
                     errq.push(PadlError::dev_err(PadlErrorCode::DevMsg(
                         "Unexpectedly clicked on an entity",
                     )))
+                }
+            }
+            Some((ClickOutput::SendInvitation, _)) => {
+                if let Some(nest) = nests.get_mut(menu_entity) {
+                    self.nest_invitation(nest, netids, menu_entity, &lazy, ep).unwrap_or_else(|e| errq.push(e));
+                } else {
+                    errq.push(PadlError::user_err(PadlErrorCode::NestEmpty));
                 }
             }
             Some((ClickOutput::Event(e), _)) => {

@@ -1,3 +1,4 @@
+pub mod nests;
 pub mod path_finding;
 pub mod task_factory;
 pub mod tiling;

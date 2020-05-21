@@ -1,3 +1,4 @@
+use crate::game::town::nests::Nest;
 use crate::game::town::TownContext;
 use crate::game::{components::NetObj, movement::Position, Game};
 use crate::gui::{render::Renderable, sprites::*, utils::*, z::Z_UNITS};
@@ -62,6 +63,10 @@ fn new_sitting_hobo(
     let id = id
         .parse()
         .map_err(|_| PadlError::dev_err(PadlErrorCode::InvalidGraphQLData("HoboId")))?;
+    let nest_id = nest
+        .id
+        .parse()
+        .map_err(|_| PadlError::dev_err(PadlErrorCode::InvalidGraphQLData("BuildingId")))?;
     let ul = world.fetch::<ScreenResolution>().unit_length();
     let pos = Vector::new(nest.x as f32 * ul, nest.y as f32 * ul);
     let size = (ul, ul);
@@ -74,5 +79,15 @@ fn new_sitting_hobo(
         .with(Renderable::new(rend))
         .with(Position::new(pos, size, Z_UNITS))
         .build();
+
+    let nest_entity = NetObj::lookup_building(nest_id, &world.read_storage(), &world.entities())?;
+    let mut nests = world.write_storage::<Nest>();
+    let nest =
+        nests
+            .get_mut(nest_entity)
+            .ok_or(PadlError::dev_err(PadlErrorCode::MissingComponent(
+                "NetObj",
+            )))?;
+    nest.add_hobo(entity);
     Ok(entity)
 }

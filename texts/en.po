@@ -1,3 +1,11 @@
+#  Confirmations to user
+msgid "attack-sent"
+msgstr "Attack sent"
+
+msgid "invitation-sent"
+msgstr "Invitation sent"
+
+#  Stories
 msgid "welcomescene-A0"
 msgstr ""
 "Hey there!\n"

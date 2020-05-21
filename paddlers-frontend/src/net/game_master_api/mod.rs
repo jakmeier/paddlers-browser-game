@@ -148,6 +148,17 @@ impl RestApiState {
         Ok(())
     }
 
+    pub fn http_invite(&mut self, msg: InvitationDescriptor) -> PadlResult<()> {
+        let request_string = &serde_json::to_string(&msg).unwrap();
+        let promise = ajax::send(
+            "POST",
+            &format!("{}/attacks/invite", game_master_url()?),
+            request_string,
+        );
+        self.push_promise(promise, None);
+        Ok(())
+    }
+
     pub fn http_notify_visitor_satisfied(&mut self, msg: HoboKey) -> PadlResult<()> {
         let request_string = &serde_json::to_string(&msg).unwrap();
         let promise = ajax::send(

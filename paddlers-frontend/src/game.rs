@@ -232,9 +232,9 @@ impl Game<'_, '_> {
             Some(res.unwrap())
         }
     }
-    pub fn confirm_to_user(&mut self, msg: String) -> PadlResult<()> {
+    pub fn confirm_to_user(&mut self, text_key: TextKey) -> PadlResult<()> {
         let mut tb = self.world.write_resource::<TextBoard>();
-        tb.display_confirmation(msg)
+        tb.display_confirmation(text_key, &self.locale)
     }
 }
 

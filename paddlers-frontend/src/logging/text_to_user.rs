@@ -31,8 +31,8 @@ impl TextBoard {
     pub fn display_debug_message(&mut self, msg: String) -> PadlResult<()> {
         self.display_message(msg, GREY, 8_000_000)
     }
-    pub fn display_confirmation(&mut self, msg: String) -> PadlResult<()> {
-        self.display_message(msg, BLUE, 3_000_000)
+    pub fn display_confirmation(&mut self, text_key: TextKey, locale: &TextDb) -> PadlResult<()> {
+        self.display_message(locale.gettext(text_key.key()).to_owned(), BLUE, 3_000_000)
     }
     fn display_message(&mut self, msg: String, col: Color, time_us: i64) -> PadlResult<()> {
         let show_until = utc_now() + Timestamp::from_us(time_us);
