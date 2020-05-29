@@ -54,9 +54,6 @@ impl AttackSpawner {
             attack_funnel_actor,
         }
     }
-    fn db(&self) -> DB {
-        (&self.dbpool).into()
-    }
 
     fn spawn_anarchists(&self, village: VillageKey, level: HoboLevel) {
         // Send a random number of weak and hurried hobos + 1 stronger which is nor hurried
@@ -95,21 +92,21 @@ impl AttackSpawner {
 
         let attack_funnel = self.attack_funnel_actor.clone();
         let pool = self.dbpool.clone();
-        Arbiter::spawn(
-            join_all(futures)
-                .map_err(|e| eprintln!("Attack spawn failed: {:?}", e))
-                .map(move |hobos| {
-                    let hobos = hobos.into_iter().map(|h| h.0).collect();
-                    let db: DB = (&pool).into();
 
-                    let pa = PlannedAttack {
-                        origin_village: None,
-                        destination_village: db.village(village).unwrap(),
-                        hobos: hobos,
-                    };
-                    attack_funnel.try_send(pa).expect("Spawning attack failed");
-                }),
-        );
+        let planned_attack = join_all(futures)
+            .and_then(move |hobos| {
+                let hobos = hobos.into_iter().map(|h| h.0).collect();
+                let db: DB = (&pool).into();
+
+                let pa = PlannedAttack {
+                    origin_village: None,
+                    destination_village: db.village(village).unwrap(),
+                    hobos: hobos,
+                };
+                attack_funnel.send(pa)
+            })
+            .map_err(|e| eprintln!("Attack spawn failed: {:?}", e));
+        Arbiter::spawn(planned_attack);
     }
 
     fn gen_color<R>(rng: &mut R) -> UnitColor
@@ -120,7 +117,7 @@ impl AttackSpawner {
             0..85 => UnitColor::Yellow,
             85..99 => UnitColor::Camo,
             99 => UnitColor::White,
-            _ => panic!("RNG bug?"),
+            _ => unreachable!(),
         }
     }
 }

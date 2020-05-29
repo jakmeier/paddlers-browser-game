@@ -12,8 +12,7 @@ use actix::prelude::*;
 use chrono::NaiveDateTime;
 use paddlers_shared_lib::game_mechanics::hobos::HoboLevel;
 use paddlers_shared_lib::game_mechanics::town::TOWN_X;
-use paddlers_shared_lib::prelude::Player;
-use paddlers_shared_lib::prelude::VillageKey;
+use paddlers_shared_lib::prelude::*;
 use paddlers_shared_lib::sql::GameDB;
 use paddlers_shared_lib::sql_db::keys::SqlKey;
 use paddlers_shared_lib::story::story_state::StoryState;
@@ -24,6 +23,12 @@ pub struct GameMaster {
     last_attack: NaiveDateTime,
     dbpool: Pool,
     attacker_addr: Addr<AttackSpawner>,
+    current_batch: Option<VillageBatch>,
+}
+/// Keeps partial progress when checking if an attack to villages is required
+struct VillageBatch {
+    villages: Vec<Village>,
+    seed: usize,
 }
 impl GameMaster {
     pub fn new(dbpool: Pool, attacker_addr: &Addr<AttackSpawner>) -> Self {
@@ -31,6 +36,7 @@ impl GameMaster {
             last_attack: NaiveDateTime::from_timestamp(0, 0),
             dbpool: dbpool,
             attacker_addr: attacker_addr.clone(),
+            current_batch: None,
         }
     }
 }
@@ -55,31 +61,51 @@ impl GameMaster {
         let db: DB = (&self.dbpool).into();
         check_attacks(&db);
 
-        let now = chrono::Utc::now().naive_utc();
-        if now - self.last_attack >= chrono::Duration::seconds(40) {
-            self.last_attack = now;
-            let mut rng = rand::thread_rng();
-            let random_number = rng.next_u64() as usize;
-            for village in db.all_player_villages() {
+        if self.current_batch.is_none() {
+            let now = chrono::Utc::now().naive_utc();
+            if now - self.last_attack >= chrono::Duration::seconds(40) {
+                self.last_attack = now;
+                self.load_new_batch(&db);
+            }
+        }
+
+        self.continue_batch(&db);
+
+        ctx.run_later(Duration::from_secs(1), Self::game_cycle);
+    }
+    fn load_new_batch(&mut self, db: &DB) {
+        let mut rng = rand::thread_rng();
+        self.current_batch = Some(VillageBatch {
+            villages: db.all_player_villages(),
+            seed: rng.next_u64() as usize,
+        });
+    }
+    // Continues working on batch until the attack mailbox is full
+    fn continue_batch(&mut self, db: &DB) {
+        if let Some(batch) = self.current_batch.as_mut() {
+            while let Some(village) = batch.villages.pop() {
                 let vid = village.key();
                 let ongoing_attacks = db.attacks_count(vid, None);
-
-                if should_send_attack(ongoing_attacks, random_number, vid) {
+                if should_send_attack(ongoing_attacks, batch.seed, vid) {
                     if let Some(player_info) = db.player_by_village(vid) {
                         if let Some(anarchist_level) = repetitive_attack_strength(&player_info) {
-                            self.attacker_addr
-                                .try_send(SendAnarchistAttack {
-                                    village: vid,
-                                    level: anarchist_level,
-                                })
-                                .expect("send failed");
+                            match self.attacker_addr.try_send(SendAnarchistAttack {
+                                village: vid,
+                                level: anarchist_level,
+                            }) {
+                                Err(SendError::Closed(_msg)) => panic!("Attack funnel closed"),
+                                Err(SendError::Full(_msg)) => {
+                                    batch.villages.push(village);
+                                    return;
+                                }
+                                Ok(()) => { /* NOP */ }
+                            }
                         }
                     }
                 }
             }
+            self.current_batch = None;
         }
-
-        ctx.run_later(Duration::from_secs(1), Self::game_cycle);
     }
 }
 

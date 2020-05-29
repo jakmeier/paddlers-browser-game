@@ -16,8 +16,7 @@ pub(crate) fn visitor_satisfied_notification(
     let event = Event::CheckVisitorHp { hobo_id: body.0 };
     addr.town_worker
         .try_send(TownWorkerEventMsg(event, chrono::Utc::now()))
-        .expect("Sending event failed");
-    HttpResponse::Ok()
+        .map_err(|e| eprintln!("Send failed: {:?}", e))
 }
 
 pub(crate) fn new_invitation(
@@ -43,8 +42,7 @@ pub(crate) fn new_invitation(
         };
         addr.attack_funnel
             .try_send(atk)
-            .expect("Spawning attack failed");
-        Ok(())
+            .map_err(|e| format!("Spawning attack failed: {:?}", e))
     })
     .then(
         |result: Result<(), BlockingError<std::string::String>>| match result {

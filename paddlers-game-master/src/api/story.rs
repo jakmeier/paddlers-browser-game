@@ -87,17 +87,15 @@ impl DB {
                 let future = addr
                     .db_actor
                     .send(msg)
-                    .map_err(|e| eprintln!("Attack spawn failed: {:?}", e))
-                    .map(move |hobo| {
+                    .and_then(move |hobo| {
                         let pa = PlannedAttack {
                             origin_village: None,
                             destination_village: village,
                             hobos: vec![hobo.0],
                         };
-                        addr.attack_funnel
-                            .try_send(pa)
-                            .expect("Spawning attack failed");
-                    });
+                        addr.attack_funnel.send(pa)
+                    })
+                    .map_err(|e| eprintln!("Attack spawn failed: {:?}", e));
                 Arbiter::spawn(future);
             }
             // | StoryState::VisitorArrived

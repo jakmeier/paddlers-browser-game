@@ -51,6 +51,7 @@ impl Handler<PlannedAttack> for AttackFunnel {
         let db = self.db();
         let vid = msg.destination_village.key();
 
+        // Checks and attack creation must be sequential
         // TODO (Correctness): Somehow efficiently check that hobos are not attacking already
         let unit_count = msg.hobos.len();
         let unhurried = msg
@@ -82,9 +83,9 @@ impl Handler<PlannedAttack> for AttackFunnel {
 
         // Put new attack in DB
         let pa = ScheduledAttack { attack, hobos };
-        self.db_actor
-            .try_send(DeferredDbStatement::NewAttack(pa))
-            .expect("Sending attack failed");
+        self.db_actor.do_send(DeferredDbStatement::NewAttack(pa));
+        // Everything until here must be sequential
+        // FIXME: the deferred DB statement is not sequential and it would be possible that two attacks receive the same time slot!
 
         // Validate the resting queue the attack arrives, unless there is no unhurried hobo
         if unhurried.len() > 0 {
@@ -92,12 +93,10 @@ impl Handler<PlannedAttack> for AttackFunnel {
                 village_id: msg.destination_village.key(),
             };
             let time = arrival;
-            self.town_worker
-                .try_send(TownWorkerEventMsg(
-                    delayed_event,
-                    Utc.from_utc_datetime(&time),
-                ))
-                .expect("Sending event failed");
+            self.town_worker.do_send(TownWorkerEventMsg(
+                delayed_event,
+                Utc.from_utc_datetime(&time),
+            ));
         }
         // For all unhurried hobos, the hp should be checked when they reach the resting place
         for hobo in unhurried {
@@ -107,12 +106,10 @@ impl Handler<PlannedAttack> for AttackFunnel {
             let swim_time: chrono::Duration =
                 AttackingHobo::s_time_until_resting(hobo.speed).into();
             let event_time = arrival + swim_time;
-            self.town_worker
-                .try_send(TownWorkerEventMsg(
-                    delayed_event,
-                    Utc.from_utc_datetime(&event_time),
-                ))
-                .expect("Sending event failed");
+            self.town_worker.do_send(TownWorkerEventMsg(
+                delayed_event,
+                Utc.from_utc_datetime(&event_time),
+            ));
         }
     }
 }
