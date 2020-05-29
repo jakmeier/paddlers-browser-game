@@ -1,6 +1,8 @@
+use crate::game::story::entity_trigger::EntityTrigger;
 use crate::game::{
     fight::{Health, Range},
     movement::Position,
+    town::town_render::draw_shiny_border,
     town::Town,
     Game,
 };
@@ -90,6 +92,7 @@ pub fn render_town_entities(
     let pos_store = world.read_storage::<Position>();
     let rend_store = world.read_storage::<Renderable>();
     let animation_store = world.read_storage::<AnimationState>();
+    let triggers = world.read_storage::<EntityTrigger>();
     let entities = world.entities();
     let tick = world.read_resource::<ClockTick>();
     for (e, pos, r) in (&entities, &pos_store, &rend_store).join() {
@@ -122,6 +125,9 @@ pub fn render_town_entities(
                 }
             }
             _ => panic!("Not implemented"),
+        }
+        if triggers.get(e).is_some() {
+            draw_shiny_border(window, pos.area, tick.0);
         }
     }
     Ok(())

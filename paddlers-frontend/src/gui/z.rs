@@ -8,6 +8,7 @@ pub const Z_TILE_SHADOW: i32 = 50;
 pub const Z_BUILDINGS: i32 = 100;
 pub const Z_VISITOR: i32 = 110;
 pub const Z_UNITS: i32 = 120;
+pub const Z_UNIT_UI_HINT: i32 = 150;
 
 // UI [200,400]
 pub const Z_MENU_BOX: i32 = 220;

@@ -4,7 +4,7 @@ use quicksilver::prelude::*;
 use specs::prelude::*;
 
 #[derive(Clone)]
-/// UI state that foes beyond frames
+/// UI state that goes beyond frames
 pub struct UiState {
     pub selected_entity: Option<Entity>,
     pub hovered_entity: Option<Entity>,

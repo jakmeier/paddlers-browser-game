@@ -12,6 +12,7 @@ use scene::*;
 pub enum StoryAction {
     OpenScene(SceneIndex, SlideIndex),
     StoryProgress(StoryState),
+    TownSelectEntity(Option<specs::Entity>),
 }
 
 impl Game<'_, '_> {

@@ -15,6 +15,7 @@ use crate::game::{
 };
 use crate::gui::input::UiView;
 use crate::gui::ui_state::Now;
+use crate::gui::ui_state::UiState;
 use crate::init::quicksilver_integration::{GameState, Signal};
 use crate::net::game_master_api::RestApiState;
 use crate::net::request_foreign_town;
@@ -132,6 +133,10 @@ impl GameState {
                 RestApiState::get().http_update_story_state(t)?;
                 self.viewer
                     .handle_signal(&mut self.game, Signal::NewStoryState(new_state))?;
+            }
+            StoryAction::TownSelectEntity(e) => {
+                let world = self.game.town_context.world();
+                world.write_resource::<UiState>().selected_entity = e;
             }
         }
         Ok(())

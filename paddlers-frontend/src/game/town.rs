@@ -15,10 +15,7 @@ pub(crate) use temple_shop::*;
 pub(crate) use town_context::*;
 pub(crate) use town_frame::*;
 
-use crate::gui::{
-    sprites::*,
-    z::{Z_TEXTURE, Z_TILE_SHADOW, Z_VISITOR},
-};
+use crate::gui::{sprites::*, z::*};
 use crate::prelude::*;
 pub use paddlers_shared_lib::game_mechanics::town::TileIndex;
 use paddlers_shared_lib::game_mechanics::town::TileState as TileStateEx;

@@ -1,6 +1,7 @@
 use super::*;
 use quicksilver::graphics::{Drawable, Mesh};
 use quicksilver::prelude::*;
+use std::f32::consts::PI;
 
 impl Town {
     pub fn render_background(
@@ -114,5 +115,62 @@ impl Town {
         let size = (ul, ul);
         let area = Rectangle::new(pos, size);
         window.draw_ex(&area, Col(shadow_col), Transform::IDENTITY, Z_TILE_SHADOW);
+    }
+}
+
+/// Draws a simple animation around the border of a specified area
+pub fn draw_shiny_border(window: &mut Window, area: Rectangle, tick: u32) {
+    let animation_length = 200;
+    let side_length = animation_length / 4;
+    let side_progress = (tick % side_length) as f32 / side_length as f32;
+    // Use non-linear scale to create smooth acceleration effect
+    let side_progress = (side_progress * PI).cos() / 2.0 + 0.5;
+
+    match (tick / side_length) % 2 {
+        0 => draw_dot(window, relative_top(area, side_progress)),
+        1 => draw_dot(window, relative_right(area, side_progress)),
+        _ => unreachable!(),
+    }
+
+    match (tick / side_length) % 2 {
+        0 => draw_dot(window, relative_bottom(area, side_progress)),
+        1 => draw_dot(window, relative_left(area, side_progress)),
+        _ => unreachable!(),
+    }
+}
+
+fn draw_dot(window: &mut Window, p: Vector) {
+    let dot = Circle::new(p, 3.0);
+    let dot_col = Color {
+        r: 1.0,
+        g: 1.0,
+        b: 1.0,
+        a: 0.8,
+    };
+    window.draw_ex(&dot, dot_col, Transform::IDENTITY, Z_UNIT_UI_HINT);
+}
+
+const fn relative_top(area: Rectangle, r: f32) -> Vector {
+    Vector {
+        x: area.pos.x + area.size.x * r,
+        y: area.pos.y,
+    }
+}
+const fn relative_right(area: Rectangle, r: f32) -> Vector {
+    Vector {
+        x: area.pos.x + area.size.x,
+        y: area.pos.y + area.size.y * r,
+    }
+}
+const fn relative_bottom(area: Rectangle, r: f32) -> Vector {
+    Vector {
+        x: area.pos.x + area.size.x * (1.0 - r),
+        y: area.pos.y + area.size.y,
+    }
+}
+const fn relative_left(area: Rectangle, r: f32) -> Vector {
+    Vector {
+        x: area.pos.x,
+        y: area.pos.y + area.size.y * (1.0 - r),
     }
 }

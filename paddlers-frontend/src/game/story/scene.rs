@@ -158,7 +158,9 @@ fn load_entry_scene(active_slide: SlideIndex) -> Scene {
 
     let button = SlideButton {
         text_key: "welcomescene-A90".into(),
-        action: SlideButtonAction::default().with_view_change(UiView::Town),
+        action: SlideButtonAction::default()
+            .with_view_change(UiView::Town)
+            .with_action(StoryAction::TownSelectEntity(None)),
     };
     // 6
     slides.push(Slide {
