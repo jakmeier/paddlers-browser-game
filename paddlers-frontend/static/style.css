@@ -103,7 +103,7 @@ div.dialogue {
 
 /* MID */
 
-@media screen and (max-width: 1679px) {
+@media screen and (max-width: 1439px) {
     #game-root {
         font-size: 20px;
     }
@@ -111,7 +111,7 @@ div.dialogue {
 
 /* LOW */
 
-@media screen and (max-width: 1119px) {
+@media screen and (max-width: 959px) {
     #game-root {
         font-size: 13px;
     }

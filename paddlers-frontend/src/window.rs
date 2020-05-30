@@ -45,7 +45,7 @@ pub fn estimate_screen_size() -> ScreenResolution {
     ScreenResolution::iter()
         .filter(|res| {
             let (w, h) = res.pixels();
-            w * 0.875 < screen_w && 0.875 * h < screen_h
+            w * 0.75 < screen_w && 0.75 * h < screen_h
         })
         .last()
         .unwrap_or(ScreenResolution::Low)
