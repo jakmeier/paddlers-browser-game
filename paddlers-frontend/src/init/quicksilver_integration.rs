@@ -60,6 +60,7 @@ pub enum Signal {
     BuildingBuilt(BuildingType),   // Signal
     Scene(SceneIndex, SlideIndex), // Signal(?)
     NewStoryState(StoryState),     // Notification
+    NewReportCount(usize),         // Notification
 }
 impl FrameSignal<PadlEvent> for Signal {
     // Improvement: This should be synced with a specification document (to be designed)
@@ -68,6 +69,7 @@ impl FrameSignal<PadlEvent> for Signal {
             Self::BuildingBuilt(BuildingType::Temple) => Some(PadlEvent::Signal(
                 Signal::NewStoryState(StoryState::TempleBuilt),
             )),
+            Self::NewReportCount(n) => Some(PadlEvent::Signal(Self::NewReportCount(*n))),
             _ => None,
         }
     }

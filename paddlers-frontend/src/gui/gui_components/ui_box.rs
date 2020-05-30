@@ -2,12 +2,14 @@ use super::*;
 use crate::gui::{sprites::*, utils::*, z::*};
 use crate::prelude::*;
 use quicksilver::prelude::*;
+use std::f32::consts::FRAC_1_SQRT_2;
 
 #[derive(Clone, Debug)]
 /// A UI element is an individual area for the player to interacts with.
 /// It can be clicked (if a condition is met), hovered, and it may have an overlay showing a "cooldown" effect for abilities.
 /// At the moment, UiElements do just what they need to do right now but probably they should be more general in the future.
 /// For example, it could also be an enum and differentiate between variants with/without overlay.
+/// Or maybe, UI elements could even have their own ECS-like (sub-)structure so that components that can be added flexibly
 pub struct UiElement {
     display: RenderVariant,
     pub overlay: Option<(Timestamp, Timestamp)>,
@@ -19,6 +21,7 @@ pub struct UiElement {
 pub struct UiBox {
     area: Rectangle,
     elements: Vec<UiElement>,
+    notification_indicator: Option<Vec<usize>>,
     columns: usize,
     rows: usize,
     padding: f32,
@@ -41,6 +44,7 @@ impl InteractiveTableArea for UiBox {
     ) -> PadlResult<()> {
         self.area = *area;
         let grid = area.grid(self.columns, self.rows);
+        let mut notifications = self.notification_indicator.as_ref().map(|vec| vec.iter());
 
         for (el, draw_area) in self.elements.iter().zip(grid) {
             let img = match &el.display {
@@ -135,6 +139,30 @@ impl InteractiveTableArea for UiBox {
             if el.overlay.is_some() {
                 el.draw_overlay(window, &draw_area.padded(self.margin), now);
             }
+            if let Some(indicator) = notifications.as_mut().and_then(|iter| iter.next()) {
+                if *indicator > 0 {
+                    let x = draw_area.pos.x + draw_area.size.x * 3.0 / 4.0;
+                    let y = draw_area.pos.y + draw_area.size.y / 4.0;
+                    let center = (x, y);
+                    let radius = draw_area.size.x / 4.0;
+                    let notification_area = Circle::new(center, radius);
+                    window.draw_ex(
+                        &notification_area,
+                        Col(WHITE),
+                        Transform::IDENTITY,
+                        Z_MENU_BOX_BUTTONS + 1,
+                    );
+                    let d = radius * FRAC_1_SQRT_2;
+                    let text_area = Rectangle::new_sized((d, d)).with_center(center);
+                    tp.text_pool.allocate().write(
+                        window,
+                        &text_area,
+                        Z_MENU_TEXT,
+                        FitStrategy::Center,
+                        &indicator.to_string(),
+                    )?;
+                }
+            }
         }
 
         Ok(())
@@ -159,11 +187,13 @@ impl UiBox {
             rows: rows,
             padding: padding,
             margin: margin,
+            notification_indicator: None,
         }
     }
-    /// Delete all UI elements without changing other properties
+    /// Delete all UI elements without changing layout properties
     pub fn clear(&mut self) {
         self.elements.clear();
+        self.notification_indicator = None;
     }
 
     pub fn add(&mut self, el: UiElement) {
@@ -171,6 +201,9 @@ impl UiBox {
         if self.columns * self.rows < self.elements.len() {
             println!("Warning: Not all elements of the UI Area will be visible")
         }
+    }
+    pub fn update_notifications(&mut self, notif: Option<Vec<usize>>) {
+        self.notification_indicator = notif;
     }
     fn element_index_under_mouse(&self, mouse: impl Into<Vector>) -> Option<usize> {
         let dx = self.area.width() / self.columns as f32;

@@ -1,15 +1,16 @@
 use crate::gui::{gui_components::*, input::UiView, sprites::*, ui_state::Now, utils::*};
-use crate::prelude::*;
-use specs::prelude::*;
-
 use crate::init::quicksilver_integration::Signal;
+use crate::net::NetMsg;
+use crate::prelude::*;
 use crate::view::*;
 use core::marker::PhantomData;
 use quicksilver::prelude::Window;
+use specs::prelude::*;
 
 pub(crate) struct MenuBackgroundFrame<'a, 'b> {
     ui: UiBox,
     tp: TableTextProvider,
+    reports_to_collect: usize,
     _phantom: PhantomData<(&'a (), &'b ())>,
 }
 
@@ -50,10 +51,15 @@ impl<'a, 'b> MenuBackgroundFrame<'a, 'b> {
             ui: ui_box,
             tp,
             _phantom: Default::default(),
+            reports_to_collect: 0,
         }
     }
     fn button_render(normal: SingleSprite, hover: SingleSprite) -> RenderVariant {
         RenderVariant::ImgWithHoverAlternative(SpriteSet::Simple(normal), SpriteSet::Simple(hover))
+    }
+    fn update_notifications(&mut self) {
+        self.ui
+            .update_notifications(Some(vec![0, 0, self.reports_to_collect, 0]));
     }
 }
 
@@ -65,11 +71,14 @@ impl<'a, 'b> Frame for MenuBackgroundFrame<'a, 'b> {
     type Signal = Signal;
 
     fn draw(&mut self, state: &mut Self::State, window: &mut Window) -> Result<(), Self::Error> {
+        self.tp.reset();
         state.draw_menu_background(window)?;
         let button_area = state.button_area();
         let (sprites, now) = (&mut state.sprites, state.world.read_resource::<Now>().0);
         self.ui
-            .draw(window, sprites, &mut self.tp, now, &button_area)
+            .draw(window, sprites, &mut self.tp, now, &button_area)?;
+        self.tp.finish_draw();
+        Ok(())
     }
     fn left_click(
         &mut self,
@@ -86,6 +95,21 @@ impl<'a, 'b> Frame for MenuBackgroundFrame<'a, 'b> {
                 .event_pool
                 .send(event)
                 .expect("Event pool send failed");
+        }
+        Ok(())
+    }
+    fn event(&mut self, _state: &mut Self::State, event: &Self::Event) -> Result<(), Self::Error> {
+        match event {
+            PadlEvent::Network(NetMsg::Reports(data)) => {
+                let new_reports = data.village.reports.len();
+                self.reports_to_collect += new_reports;
+                self.update_notifications();
+            }
+            PadlEvent::Signal(Signal::NewReportCount(n)) => {
+                self.reports_to_collect = *n;
+                self.update_notifications();
+            }
+            _ => {}
         }
         Ok(())
     }

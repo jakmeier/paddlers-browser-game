@@ -105,6 +105,7 @@ impl<'a, 'b> ReportFrame<'a, 'b> {
             }
             crate::net::request_resource_update();
             // remove event listener?
+            // TODO: Update notifications (now done for every left click)
         });
     }
     fn new_res_node(&mut self, n: i64, s: SingleSprite, sprites: &Sprites) -> Element {
@@ -127,6 +128,9 @@ impl<'a, 'b> ReportFrame<'a, 'b> {
             4 => "A lovely place you have there.",
             _ => unreachable!(),
         }
+    }
+    fn number_or_reports(&self) -> usize {
+        self.table.child_nodes().len() as usize - 1 // -1 for title
     }
 }
 
@@ -179,6 +183,16 @@ impl<'a, 'b> Frame for ReportFrame<'a, 'b> {
     }
     fn leave(&mut self, _state: &mut Self::State) -> Result<(), Self::Error> {
         self.pane.hide()?;
+        Ok(())
+    }
+    fn left_click(
+        &mut self,
+        _state: &mut Self::State,
+        _pos: (i32, i32),
+        signals: &mut AbstractExperimentalSignalChannel<Self::Signal>,
+    ) -> Result<(), Self::Error> {
+        // This is sort of a hack to work around the fact that event handlers currently can't send signals
+        signals.push_back(Signal::NewReportCount(self.number_or_reports()));
         Ok(())
     }
 }
