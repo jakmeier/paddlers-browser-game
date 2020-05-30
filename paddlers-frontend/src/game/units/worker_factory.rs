@@ -48,9 +48,13 @@ pub fn with_hero<B: Builder>(builder: B) -> B {
     ))
 }
 
-pub fn with_abilities<B: Builder>(builder: B, abilities: AbilitySet) -> B {
+pub fn with_abilities<B: Builder>(
+    builder: B,
+    abilities: AbilitySet,
+    resolution: ScreenResolution,
+) -> B {
     builder.with(UiMenu {
-        ui: abilities.construct_ui_box(),
+        ui: abilities.construct_ui_box(resolution),
     })
 }
 
@@ -90,11 +94,7 @@ pub fn create_worker_entities(
 ) -> Vec<PadlResult<Entity>> {
     response
         .iter()
-        .map(|w| {
-            let area = resolution.tile_area((w.x as usize, w.y as usize));
-            std::mem::drop(resolution);
-            w.create_entity(world, now, area)
-        })
+        .map(|w| w.create_entity(world, now, resolution))
         .collect()
 }
 
@@ -104,8 +104,9 @@ impl VillageUnitsQueryVillageWorkers {
         &self,
         world: &mut World,
         now: Timestamp,
-        tile_area: Rectangle,
+        resolution: ScreenResolution,
     ) -> PadlResult<Entity> {
+        let tile_area = resolution.tile_area((self.x as usize, self.y as usize));
         let speed = unit_speed_to_worker_tiles_per_second(self.speed as f32) * tile_area.width();
         let netid = self.id.parse().unwrap();
 
@@ -141,7 +142,7 @@ impl VillageUnitsQueryVillageWorkers {
             _ => panic!("Unexpected Unit Type"),
         }
         let abilities = AbilitySet::from_gql(&self.abilities)?;
-        builder = with_abilities(builder, abilities);
+        builder = with_abilities(builder, abilities, resolution);
         Ok(builder.build())
     }
 }
