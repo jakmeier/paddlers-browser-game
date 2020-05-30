@@ -43,9 +43,9 @@ impl TestData {
                             .expect("inserting test hobos")
                     }
                 }
-                let mut town = game.world.fetch_mut();
-                let entities = game.world.entities();
-                let lazy = game.world.fetch();
+                let mut town = game.town_world().fetch_mut();
+                let entities = game.town_world().entities();
+                let lazy = game.town_world().fetch();
                 match s {
                     Test::Vanilla => unreachable!(),
                     Test::Empty => { /* NOP */ }
@@ -55,7 +55,7 @@ impl TestData {
                 }
             }
         }
-        game.world.maintain();
+        game.town_world_mut().maintain();
 
         println!("Starting {:?} test", setting);
         let now = utc_now();
