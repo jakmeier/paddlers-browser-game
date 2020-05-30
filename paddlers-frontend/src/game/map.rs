@@ -258,7 +258,7 @@ impl GlobalMapSharedState {
         clickable: ReadStorage<'a, Clickable>,
     ) {
         let r = self.scaling;
-        let map_coordinates = Vector::new(mouse_pos.x / r, mouse_pos.y / r);
+        let map_coordinates = Vector::new(mouse_pos.x / r - self.x_offset, mouse_pos.y / r);
 
         ui_state.selected_entity =
             map_position_lookup(map_coordinates, entities, position, clickable);
