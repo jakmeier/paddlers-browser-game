@@ -39,6 +39,7 @@ pub(crate) fn new_invitation(
             origin_village,
             destination_village,
             hobos,
+            no_delay: false,
         };
         addr.attack_funnel
             .try_send(atk)

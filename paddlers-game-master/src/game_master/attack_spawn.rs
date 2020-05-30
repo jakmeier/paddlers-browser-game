@@ -56,7 +56,7 @@ impl AttackSpawner {
     }
 
     fn spawn_anarchists(&self, village: VillageKey, level: HoboLevel) {
-        // Send a random number of weak and hurried hobos + 1 stronger which is nor hurried
+        // Send a random number of weak and hurried hobos + 1 stronger which will rest until satisfied or replaced
         let mut rng = rand::thread_rng();
         let n = rng.gen_range(2, 4);
 
@@ -67,7 +67,7 @@ impl AttackSpawner {
                 let hobo = NewHobo {
                     color: Some(Self::gen_color(&mut rng)),
                     hp: rng.gen_range(min_hp, max_hp),
-                    speed: 0.0625,
+                    speed: 0.05,
                     home: village.num(), // TODO: anarchists home
                     hurried: true,
                     nest: None,
@@ -102,6 +102,7 @@ impl AttackSpawner {
                     origin_village: None,
                     destination_village: db.village(village).unwrap(),
                     hobos: hobos,
+                    no_delay: false,
                 };
                 attack_funnel.send(pa)
             })

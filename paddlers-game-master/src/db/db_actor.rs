@@ -1,8 +1,10 @@
 mod messages;
+use diesel::QueryResult;
 pub use messages::*;
 
 use crate::db::*;
 use actix::prelude::*;
+use paddlers_shared_lib::story::story_state::StoryState;
 
 /// This actor executes DB requests which can be done concurrent to
 /// the request processing or game-master logic.
@@ -57,8 +59,12 @@ impl Handler<CollectReportRewardsMessage> for DbActor {
             }
         }
         if let Some(player) = db.player_by_village(village) {
-            if let Err(e) = db.add_karma(player.key(), report.karma) {
-                eprintln!("Karma reward collection failed: {}", e);
+            match db
+                .add_karma(player.key(), report.karma)
+                .and_then(|player| self.update_player_karma_progress(&player, report.karma))
+            {
+                Err(e) => eprintln!("Karma reward collection failed: {}", e),
+                Ok(()) => {}
             }
         }
         db.delete_visit_report(&report);
@@ -71,6 +77,17 @@ impl DbActor {
     }
     fn db(&self) -> DB {
         (&self.dbpool).into()
+    }
+    fn update_player_karma_progress(&self, player: &Player, new_karma: i64) -> QueryResult<()> {
+        // Note: This is not the ideal place nor the ideal way of handling this.
+        // Consider improving this in [0.1.5]
+        // First karma gained
+        if player.karma - new_karma == 0 {
+            self.db()
+                .set_story_state(player.key(), StoryState::FirstVisitorWelcomed)?;
+        }
+
+        Ok(())
     }
 }
 

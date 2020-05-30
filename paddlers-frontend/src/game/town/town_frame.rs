@@ -77,7 +77,7 @@ impl<'a, 'b> Frame for TownFrame<'a, 'b> {
         &mut self,
         state: &mut Self::State,
         pos: (i32, i32),
-        _signals: &mut ExperimentalSignalChannel,
+        signals: &mut ExperimentalSignalChannel,
     ) -> Result<(), Self::Error> {
         let town_world = state.town_world();
         let ui_state = town_world.fetch_mut::<ViewState>();
@@ -93,6 +93,11 @@ impl<'a, 'b> Frame for TownFrame<'a, 'b> {
         let ms = MouseState(pos.into(), Some(MouseButton::Left));
         state.town_world_mut().insert(ms);
         self.left_click_dispatcher.dispatch(state.town_world());
+        // TODO: [0.1.4] Only temporary experiment
+        let mut result_signals = state
+            .town_world()
+            .write_resource::<ExperimentalSignalChannel>();
+        signals.append(&mut result_signals);
         Ok(())
     }
     fn right_click(&mut self, state: &mut Self::State, pos: (i32, i32)) -> Result<(), Self::Error> {

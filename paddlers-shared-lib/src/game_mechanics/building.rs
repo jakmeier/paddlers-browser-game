@@ -44,15 +44,15 @@ impl BuildingType {
     pub fn player_can_build(&self, karma: i64, story_state: StoryState) -> bool {
         match self {
             BuildingType::BlueFlowers => karma >= 1,
-            BuildingType::BundlingStation => karma >= 1,
-            BuildingType::PresentA => karma >= 200,
-            BuildingType::PresentB => karma >= 2000,
-            BuildingType::RedFlowers => karma >= 1000,
-            BuildingType::SawMill => karma >= 100,
+            BuildingType::BundlingStation => karma >= 20,
+            BuildingType::PresentA => karma >= 250,
+            BuildingType::PresentB => karma >= 750,
+            BuildingType::RedFlowers => karma >= 450,
+            BuildingType::SawMill => karma >= 150,
             BuildingType::Temple => story_state == StoryState::ServantAccepted,
             BuildingType::Tree => karma >= 1,
-            BuildingType::SingleNest => karma >= 500,
-            BuildingType::TripleNest => karma >= 3000,
+            BuildingType::SingleNest => false,
+            BuildingType::TripleNest => false,
         }
     }
     /// Buildings that may be available at the default shop, regardless of player restrictions

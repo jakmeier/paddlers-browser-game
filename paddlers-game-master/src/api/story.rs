@@ -92,6 +92,7 @@ impl DB {
                             origin_village: None,
                             destination_village: village,
                             hobos: vec![hobo.0],
+                            no_delay: true,
                         };
                         addr.attack_funnel.send(pa)
                     })

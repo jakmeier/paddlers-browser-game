@@ -6,6 +6,7 @@ msgid "invitation-sent"
 msgstr "Invitation sent"
 
 #  Stories
+## Welcome scene
 msgid "welcomescene-A0"
 msgstr ""
 "Hey there!\n"
@@ -56,3 +57,34 @@ msgstr "What should I do now?"
 
 msgid "welcomescene-A90"
 msgstr "Build me a temple"
+
+## Temple built scene
+msgid "templebuilt-A0"
+msgstr ""
+"See there!\n"
+"A visitor comes to see\n"
+"your temple."
+
+msgid "templebuilt-A10"
+msgstr ""
+"Look at that sad\n"
+"Paddler.\n"
+"Why is it so depressed\n"
+"on such a sunny day?"
+
+msgid "templebuilt-A20"
+msgstr ""
+"Let me go and give\n"
+"it warm welcome."
+
+msgid "templebuilt-H30"
+msgstr ""
+"Hint:\n"
+"Select your follower\n"
+"and click on the\n"
+"welcome ability.\n"
+"Then click on the\n"
+"visting Paddler."
+
+msgid "templebuilt-B30"
+msgstr "Back to town"

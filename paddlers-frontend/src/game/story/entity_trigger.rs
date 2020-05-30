@@ -23,8 +23,12 @@ impl Game<'_, '_> {
                     actions: vec![StoryAction::OpenScene(SceneIndex::Entrance, 0)],
                 })?;
             }
-            StoryState::TempleBuilt
-            | StoryState::VisitorArrived
+            StoryState::TempleBuilt => {
+                self.add_trigger_to_hero(EntityTrigger {
+                    actions: vec![StoryAction::OpenScene(SceneIndex::TempleBuilt, 0)],
+                })?;
+            }
+            StoryState::VisitorArrived
             | StoryState::FirstVisitorWelcomed
             | StoryState::FlowerPlanted
             | StoryState::MoreHappyVisitors

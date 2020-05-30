@@ -8,8 +8,8 @@ impl HoboLevel {
     }
     pub fn anarchist(player_karma: i64) -> Self {
         match player_karma {
-            0..=19 => HoboLevel(0),
-            20..=99 => HoboLevel(1),
+            0..=9 => HoboLevel(0),
+            10..=99 => HoboLevel(1),
             100..=899 => HoboLevel(1 + player_karma as usize / 100),
             _ => HoboLevel(10),
         }

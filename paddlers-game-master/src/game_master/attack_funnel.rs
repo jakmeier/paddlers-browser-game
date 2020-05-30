@@ -17,6 +17,8 @@ use paddlers_shared_lib::game_mechanics::{map::map_distance, town::defence::IAtt
 use paddlers_shared_lib::prelude::*;
 use std::ops::Add;
 
+const MIN_DELAY_BETWEEN_ATTACKS: i64 = 20;
+
 pub struct AttackFunnel {
     dbpool: Pool,
     db_actor: Addr<DbActor>,
@@ -39,6 +41,7 @@ pub struct PlannedAttack {
     pub origin_village: Option<Village>,
     pub destination_village: Village,
     pub hobos: Vec<Hobo>,
+    pub no_delay: bool,
 }
 impl Message for PlannedAttack {
     type Result = ();
@@ -62,17 +65,19 @@ impl Handler<PlannedAttack> for AttackFunnel {
             .collect::<Vec<_>>();
         let hobos = msg.hobos.into_iter().map(|h| h.key()).collect();
 
-        let min_secs = 15;
-        let travel_time = if let Some(v0) = msg.origin_village {
+        let travel_time;
+        if msg.no_delay {
+            travel_time = 0;
+        } else if let Some(v0) = msg.origin_village {
             let v1 = msg.destination_village;
             let distance = map_distance((v0.x, v0.y), (v1.x, v1.y));
             let seconds = 20.0 * distance;
-            chrono::Duration::seconds(min_secs + seconds as i64)
+            travel_time = MIN_DELAY_BETWEEN_ATTACKS.max(seconds as i64);
         } else {
-            chrono::Duration::seconds(min_secs)
-        };
+            travel_time = MIN_DELAY_BETWEEN_ATTACKS;
+        }
         let now = chrono::Utc::now().naive_utc();
-        let earliest_arrival = now.add(travel_time);
+        let earliest_arrival = now.add(chrono::Duration::seconds(travel_time));
         let arrival = Self::next_timeslot(&db, vid, unit_count, earliest_arrival);
         let attack = NewAttack {
             departure: now,

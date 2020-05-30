@@ -3,7 +3,7 @@ mod reports;
 mod shop;
 mod story;
 
-pub(crate) use attacks::{visitor_satisfied_notification, new_invitation};
+pub(crate) use attacks::{new_invitation, visitor_satisfied_notification};
 pub(crate) use reports::collect_report_rewards;
 pub(crate) use story::story_transition;
 
@@ -224,6 +224,7 @@ pub(crate) fn create_attack(
                 origin_village: Some(origin_village),
                 destination_village,
                 hobos,
+                no_delay: false,
             },
         )
         .and_then(move |pa| attack_funnel.try_send(pa).map_err(internal_server_error))
