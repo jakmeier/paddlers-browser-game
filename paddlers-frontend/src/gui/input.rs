@@ -61,6 +61,7 @@ impl crate::game::Game<'_, '_> {
         match event {
             Event::MouseMoved(pos) => {
                 pointer_manager.move_pointer(&mut self.world, &pos);
+                self.prepare_town_resources();
                 pointer_manager.move_pointer(self.town_world_mut(), &pos);
             }
             Event::MouseButton(button, state) => {
