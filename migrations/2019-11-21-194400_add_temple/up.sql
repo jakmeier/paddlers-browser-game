@@ -1,8 +1,4 @@
-INSERT INTO pg_enum (enumtypid, enumlabel, enumsortorder)
-    SELECT 'building_type'::regtype::oid, 'temple', 
-    ( SELECT MAX(enumsortorder) + 1 FROM pg_enum WHERE enumtypid = 'building_type'::regtype );
-INSERT INTO pg_enum (enumtypid, enumlabel, enumsortorder)
-    SELECT 'unit_color'::regtype::oid, 'prophet', 
-    ( SELECT MAX(enumsortorder) + 1 FROM pg_enum WHERE enumtypid = 'unit_color'::regtype );
+ALTER TYPE building_type ADD VALUE 'temple';
+ALTER TYPE unit_color ADD VALUE 'prophet';
 ALTER TABLE villages
 ADD COLUMN faith SMALLINT NOT NULL DEFAULT 100;
