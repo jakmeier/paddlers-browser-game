@@ -52,7 +52,8 @@ impl DB {
                 self.insert_temple(village.key());
             }
             for i in 0..ADDITIONAL_PLAYERS {
-                let player = self.new_player(format!("Generated_Tester_{}", i), uuid::Uuid::new_v4())?;
+                let player =
+                    self.new_player(format!("Generated_Tester_{}", i), uuid::Uuid::new_v4())?;
                 self.set_story_state(player.key(), StoryState::MoreHappyVisitors)?;
             }
         }

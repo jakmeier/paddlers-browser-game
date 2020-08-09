@@ -1,7 +1,6 @@
 use super::{
     ajax, ajax::AjaxError, authentication::read_jwt_preferred_username, url::*, NetUpdateRequest,
 };
-use crate::logging::AsyncErr;
 use crate::prelude::*;
 use futures_util::future::FutureExt;
 use paddlers_shared_lib::api::reports::ReportCollect;
@@ -11,7 +10,7 @@ use paddlers_shared_lib::api::{
 };
 use specs::prelude::*;
 use std::collections::VecDeque;
-use std::sync::{atomic::AtomicBool, mpsc::Sender, Mutex};
+use std::sync::atomic::AtomicBool;
 use stdweb::PromiseFuture;
 
 static SENT_PLAYER_CREATION: AtomicBool = AtomicBool::new(false);
@@ -21,14 +20,12 @@ pub struct RestApiState {
         stdweb::PromiseFuture<std::string::String, AjaxError>,
         Option<NetUpdateRequest>,
     )>,
-    err_chan: Mutex<Sender<PadlError>>,
 }
 
 impl RestApiState {
-    pub fn new(err_chan: Sender<PadlError>) -> Self {
+    pub fn new() -> Self {
         RestApiState {
             queue: VecDeque::new(),
-            err_chan: Mutex::new(err_chan),
         }
     }
     /// Get the global instance
@@ -202,25 +199,17 @@ impl RestApiState {
     ) {
         match maybe_promise {
             Ok(promise) => self.queue.push_back((promise, afterwards)),
-            Err(e) => self
-                .err_chan
-                .lock()
-                .expect("Lock on err mpsc")
-                .send(e)
-                .expect("Sending error over mpsc failed"),
+            Err(e) => nuts::publish(e),
         }
     }
-    pub fn poll_queue(&mut self, error: &AsyncErr) {
+    pub fn poll_queue(&mut self) {
         while let Some((promise, afterwards)) = self.queue.pop_front() {
-            let error_chan = error.clone_sender();
             stdweb::spawn_local(promise.map(move |r| {
                 if r.is_err() {
                     let err: PadlResult<()> =
                         PadlErrorCode::RestAPI(format!("Rest API Error: {:?}", r.unwrap_err()))
                             .dev();
-                    error_chan
-                        .send(err.unwrap_err())
-                        .expect("sending over mpsc");
+                    nuts::publish(err.unwrap_err());
                 } else {
                     if let Some(req) = afterwards {
                         match req {
@@ -239,9 +228,9 @@ impl RestApiState {
 
 pub struct RestApiSystem;
 impl<'a> System<'a> for RestApiSystem {
-    type SystemData = ReadExpect<'a, AsyncErr>;
+    type SystemData = ();
 
-    fn run(&mut self, error: Self::SystemData) {
-        RestApiState::get().poll_queue(&*error);
+    fn run(&mut self, _: Self::SystemData) {
+        RestApiState::get().poll_queue();
     }
 }

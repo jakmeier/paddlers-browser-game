@@ -5,14 +5,13 @@ use crate::game::{
     components::*, units::worker_factory::create_worker_entities, units::workers::Worker,
 };
 use crate::init::loading::LoadingState;
-use crate::init::quicksilver_integration::{GameState, Signal};
+use crate::init::quicksilver_integration::Signal;
 use crate::net::graphql::query_types::WorkerResponse;
 use crate::net::graphql::query_types::{
     AttacksResponse, BuildingsResponse, HobosQueryResponse, VolatileVillageInfoResponse,
 };
 use crate::net::NetMsg;
 use crate::prelude::*;
-use crate::view::ExperimentalSignalChannel;
 use paddlers_shared_lib::prelude::*;
 use std::convert::TryInto;
 use std::sync::mpsc::TryRecvError;
@@ -78,9 +77,9 @@ impl LoadingState {
     }
 }
 
-impl GameState {
+impl Game<'static, 'static> {
     pub fn update_net(&mut self) -> PadlResult<()> {
-        match self.game.net.try_recv() {
+        match self.net.try_recv() {
             Ok(msg) => {
                 // println!("Received Network data!");
                 match msg {
@@ -88,21 +87,18 @@ impl GameState {
                         println!("Network Error: {}", e);
                     }
                     NetMsg::Attacks(response) => {
-                        self.game.load_attacking_hobos(response)?;
-                        self.game.check_resting_queue()?;
+                        self.load_attacking_hobos(response)?;
+                        self.check_resting_queue()?;
                     }
                     NetMsg::Buildings(response) => {
-                        self.game.load_buildings_from_net_response(response)?;
+                        self.load_buildings_from_net_response(response)?;
                     }
                     NetMsg::Hobos(hobos, vid) => {
-                        let ctx = self.game.maybe_town_context_mut(vid, "villages")?;
+                        let ctx = self.maybe_town_context_mut(vid, "villages")?;
                         load_hobos_from_net_response(ctx, hobos)?;
                     }
                     NetMsg::Leaderboard(offset, list) => {
-                        self.viewer.global_event(
-                            &mut self.game,
-                            &PadlEvent::Network(NetMsg::Leaderboard(offset, list)),
-                        )?;
+                        crate::share(PadlEvent::Network(NetMsg::Leaderboard(offset, list)));
                     }
                     NetMsg::Map(response, min, max) => {
                         if let Some(data) = response.data {
@@ -123,31 +119,28 @@ impl GameState {
                                 .into_iter()
                                 .map(VillageMetaInfo::from)
                                 .collect();
-                            let (map, world) = (self.game.map.as_mut(), &mut self.game.world);
+                            let (map, world) = (self.map.as_mut(), &mut self.world);
                             map.map(|map| map.add_segment(world, streams, villages, min, max));
                         } else {
                             println!("No map data available");
                         }
                     }
                     NetMsg::Player(player_info) => {
-                        self.game.load_player_info(player_info)?;
+                        self.load_player_info(player_info)?;
                     }
                     NetMsg::VillageInfo(response) => {
-                        self.game.load_village_info(response)?;
-                        self.viewer
-                            .event(&mut self.game, &PadlEvent::Signal(Signal::ResourcesUpdated))?;
+                        self.load_village_info(response)?;
+                        crate::share(PadlEvent::Signal(Signal::ResourcesUpdated));
                     }
                     NetMsg::Workers(response, vid) => {
-                        let ctx = self.game.maybe_town_context_mut(vid, "workers")?;
+                        let ctx = self.maybe_town_context_mut(vid, "workers")?;
                         flush_workers(ctx.world())?;
                         ctx.world_mut().maintain();
                         load_workers_from_net_response(ctx, response);
                     }
                     NetMsg::UpdateWorkerTasks(unit) => {
-                        let entity = self
-                            .game
-                            .worker_entity_by_net_id(unit.id.parse().unwrap())?;
-                        let world = self.game.town_world_mut();
+                        let entity = self.worker_entity_by_net_id(unit.id.parse().unwrap())?;
+                        let world = self.town_world_mut();
                         let workers = &mut world.write_storage::<Worker>();
                         let worker = workers.get_mut(entity).unwrap();
                         worker.tasks.clear();
@@ -171,10 +164,7 @@ impl GameState {
                         }
                     }
                     NetMsg::Reports(data) => {
-                        self.viewer.global_event(
-                            &mut self.game,
-                            &PadlEvent::Network(NetMsg::Reports(data)),
-                        )?;
+                        crate::share(PadlEvent::Network(NetMsg::Reports(data)));
                     }
                 }
             }
@@ -226,8 +216,7 @@ impl<'a, 'b> Game<'a, 'b> {
         self.world.insert(player_info.clone());
         self.town_world_mut().insert(DefaultShop::new(&player_info));
         self.town_world_mut().insert(player_info);
-        let mut signals = self.world.write_resource::<ExperimentalSignalChannel>();
-        signals.push_back(Signal::PlayerInfoUpdated);
+        nuts::publish(Signal::PlayerInfoUpdated);
         Ok(())
     }
     fn maybe_town_context_mut(
@@ -247,10 +236,9 @@ pub fn load_workers_from_net_response(ctx: &mut TownContext, response: WorkerRes
     let now = world.read_resource::<Now>().0;
     let resolution = *world.read_resource::<ScreenResolution>();
     let results = create_worker_entities(&response, world, now, resolution);
-    let mut q = world.write_resource::<ErrorQueue>();
     for res in results.into_iter() {
         if let Err(e) = res {
-            q.push(e);
+            nuts::publish(e);
         }
     }
 }

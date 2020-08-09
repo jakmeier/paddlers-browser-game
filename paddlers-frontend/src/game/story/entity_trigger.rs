@@ -2,7 +2,6 @@ use crate::game::story::scene::SceneIndex;
 use crate::game::story::StoryAction;
 use crate::game::units::workers::Worker;
 use crate::gui::ui_state::UiState;
-use crate::logging::ErrorQueue;
 use crate::prelude::*;
 use paddlers_shared_lib::story::story_state::StoryState;
 use specs::prelude::*;
@@ -50,31 +49,24 @@ impl Game<'_, '_> {
 }
 
 /// Triggers event on entity selection
-pub struct EntityTriggerSystem {
-    event_pool: EventPool,
-}
+pub struct EntityTriggerSystem;
 impl EntityTriggerSystem {
-    pub fn new(event_pool: EventPool) -> Self {
-        EntityTriggerSystem { event_pool }
+    pub fn new() -> Self {
+        EntityTriggerSystem
     }
     fn trigger(&mut self, trigger: EntityTrigger) -> PadlResult<()> {
-        self.event_pool
-            .send(GameEvent::StoryActions(trigger.actions))?;
+        crate::game_event(GameEvent::StoryActions(trigger.actions));
         Ok(())
     }
 }
 impl<'a> System<'a> for EntityTriggerSystem {
-    type SystemData = (
-        WriteStorage<'a, EntityTrigger>,
-        WriteExpect<'a, ErrorQueue>,
-        ReadExpect<'a, UiState>,
-    );
-    fn run(&mut self, (mut triggers, mut errors, ui): Self::SystemData) {
+    type SystemData = (WriteStorage<'a, EntityTrigger>, ReadExpect<'a, UiState>);
+    fn run(&mut self, (mut triggers, ui): Self::SystemData) {
         if let Some(e) = ui.selected_entity {
             if let Some(trigger) = triggers.remove(e) {
                 let err = self.trigger(trigger);
                 if let Err(e) = err {
-                    errors.push(e);
+                    nuts::publish(e);
                 }
             }
         }

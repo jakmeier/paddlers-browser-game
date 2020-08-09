@@ -9,16 +9,13 @@ use crate::game::{
 };
 use crate::gui::gui_components::{ClickOutput, InteractiveTableArea};
 use crate::gui::ui_state::UiState;
-use crate::logging::ErrorQueue;
 use crate::prelude::*;
 use specs::prelude::*;
 
-pub struct TownLeftClickSystem {
-    _event_pool: EventPool,
-}
+pub struct TownLeftClickSystem;
 impl TownLeftClickSystem {
-    pub fn new(_event_pool: EventPool) -> Self {
-        TownLeftClickSystem { _event_pool }
+    pub fn new() -> Self {
+        TownLeftClickSystem
     }
 }
 
@@ -29,7 +26,6 @@ impl<'a> System<'a> for TownLeftClickSystem {
         WriteExpect<'a, UiState>,
         WriteExpect<'a, TownResources>,
         WriteExpect<'a, Town>,
-        WriteExpect<'a, ErrorQueue>,
         Read<'a, LazyUpdate>,
         ReadStorage<'a, Position>,
         ReadStorage<'a, Clickable>,
@@ -38,8 +34,6 @@ impl<'a> System<'a> for TownLeftClickSystem {
         ReadStorage<'a, Mana>,
         WriteStorage<'a, EntityContainer>,
         WriteStorage<'a, Worker>,
-        // TODO: Only temporary experiment
-        WriteExpect<'a, crate::view::ExperimentalSignalChannel>,
     );
 
     fn run(
@@ -50,7 +44,6 @@ impl<'a> System<'a> for TownLeftClickSystem {
             mut ui_state,
             mut resources,
             mut town,
-            mut errq,
             lazy,
             position,
             clickable,
@@ -59,7 +52,6 @@ impl<'a> System<'a> for TownLeftClickSystem {
             mana,
             mut containers,
             mut workers,
-            mut signals,
         ): Self::SystemData,
     ) {
         let active_entity = ui_state.selected_entity;
@@ -74,8 +66,6 @@ impl<'a> System<'a> for TownLeftClickSystem {
             &net_ids,
             &lazy,
             &mut resources,
-            &mut errq,
-            &mut signals,
         );
         if let Some(job) = maybe_job {
             let active_entity = active_entity.expect("Ability requires unit");
@@ -97,7 +87,7 @@ impl<'a> System<'a> for TownLeftClickSystem {
             // TODO: Take movement of visitor into account
             let destination = (*town).closest_walkable_tile_in_range(start, target_tile, range);
             if destination.is_none() {
-                errq.push(PadlError::user_err(PadlErrorCode::PathBlocked));
+                nuts::publish(PadlError::user_err(PadlErrorCode::PathBlocked));
                 return;
             }
             worker.new_order(
@@ -106,7 +96,6 @@ impl<'a> System<'a> for TownLeftClickSystem {
                 job,
                 destination.unwrap(),
                 &*town,
-                &mut *errq,
                 &mut containers,
                 &mana,
             );
@@ -114,12 +103,10 @@ impl<'a> System<'a> for TownLeftClickSystem {
     }
 }
 
-pub struct TownMenuLeftClickSystem {
-    event_pool: EventPool,
-}
+pub struct TownMenuLeftClickSystem;
 impl TownMenuLeftClickSystem {
-    pub fn new(event_pool: EventPool) -> Self {
-        TownMenuLeftClickSystem { event_pool }
+    pub fn new() -> Self {
+        TownMenuLeftClickSystem
     }
 }
 
@@ -130,7 +117,6 @@ impl<'a> System<'a> for TownMenuLeftClickSystem {
         ReadExpect<'a, DefaultShop>,
         WriteExpect<'a, TownResources>,
         WriteExpect<'a, Town>,
-        WriteExpect<'a, ErrorQueue>,
         Read<'a, LazyUpdate>,
         ReadStorage<'a, Position>,
         ReadStorage<'a, NetObj>,
@@ -148,7 +134,6 @@ impl<'a> System<'a> for TownMenuLeftClickSystem {
             shop,
             resources,
             mut town,
-            mut errq,
             lazy,
             position,
             netids,
@@ -174,23 +159,19 @@ impl<'a> System<'a> for TownMenuLeftClickSystem {
                     nests,
                     lazy,
                     &*resources,
-                    errq,
-                    &self.event_pool,
                 );
             }
         } else {
             Town::click_default_shop(mouse_pos, ui_state, shop, resources)
-                .unwrap_or_else(|e| errq.push(e));
+                .unwrap_or_else(|e| nuts::publish(e));
         }
     }
 }
 
-pub struct MapLeftClickSystem {
-    event_pool: EventPool,
-}
+pub struct MapLeftClickSystem;
 impl MapLeftClickSystem {
-    pub fn new(event_pool: EventPool) -> Self {
-        MapLeftClickSystem { event_pool }
+    pub fn new() -> Self {
+        MapLeftClickSystem
     }
 }
 
@@ -198,27 +179,22 @@ impl<'a> System<'a> for MapLeftClickSystem {
     type SystemData = (
         Read<'a, MouseState>,
         WriteExpect<'a, UiState>,
-        WriteExpect<'a, ErrorQueue>,
         WriteStorage<'a, UiMenu>,
     );
 
-    fn run(&mut self, (mouse_state, ui_state, mut errq, mut ui_menus): Self::SystemData) {
+    fn run(&mut self, (mouse_state, ui_state, mut ui_menus): Self::SystemData) {
         let MouseState(mouse_pos, _button) = *mouse_state;
         if let Some(entity) = (*ui_state).selected_entity {
             if let Some(ui_menu) = ui_menus.get_mut(entity) {
                 let click_output = ui_menu.ui.click(mouse_pos).unwrap_or_else(|e| {
-                    errq.push(e);
+                    nuts::publish(e);
                     None
                 });
                 match click_output {
                     Some((ClickOutput::Event(e), _)) => {
-                        self.event_pool.send(e).unwrap_or_else(|_| {
-                            errq.push(PadlError::dev_err(PadlErrorCode::DevMsg(
-                                "MPSC send failure",
-                            )))
-                        });
+                        nuts::publish(e);
                     }
-                    Some(_) => errq.push(PadlError::dev_err(PadlErrorCode::DevMsg(
+                    Some(_) => nuts::publish(PadlError::dev_err(PadlErrorCode::DevMsg(
                         "Unexpectedly clicked something",
                     ))),
                     None => {}

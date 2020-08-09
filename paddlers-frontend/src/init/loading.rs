@@ -1,8 +1,11 @@
 mod progress_manager;
+use crate::game::game_event_manager::load_game_event_manager;
+use crate::gui::input::UiView;
 use crate::init::quicksilver_integration::{PadlEvent, Signal};
 use crate::net::graphql::query_types::{
     AttacksResponse, BuildingsResponse, HobosQueryResponse, VolatileVillageInfoResponse,
 };
+use crate::view::new_frame::UpdateWorld;
 use progress_manager::*;
 
 use crate::game::player_info::PlayerInfo;
@@ -13,24 +16,20 @@ use crate::gui::sprites::{
     Sprites,
 };
 use crate::gui::utils::*;
-use crate::init::quicksilver_integration::GameState;
 use crate::init::quicksilver_integration::QuicksilverState;
-use crate::logging::{error::PadlError, text_to_user::TextBoard, AsyncErr, ErrorQueue};
 use crate::net::graphql::query_types::WorkerResponse;
 use crate::net::NetMsg;
+use crate::prelude::*;
 use crate::prelude::{PadlResult, ScreenResolution, TextDb};
+use crate::view::new_frame::{Domain, WorldEvent};
 use crate::view::FloatingText;
 use quicksilver::prelude::*;
-use std::sync::mpsc::{channel, Receiver};
+use std::sync::mpsc::Receiver;
 
 /// State which must always be present to enable basic tasks
 /// like networking and error handling.
 pub struct BaseState {
-    pub err_recv: Receiver<PadlError>,
-    pub async_err: AsyncErr,
     pub net_chan: Receiver<NetMsg>,
-    pub errq: ErrorQueue,
-    pub tb: TextBoard,
 }
 
 /// State that is used while loading all data over the network
@@ -61,15 +60,7 @@ impl LoadingState {
         let locale = start_loading_locale();
         crate::net::request_client_state();
         let preload_float = FloatingText::try_default().expect("FloatingText");
-        let (err_send, err_recv) = channel();
-        let async_err = AsyncErr::new(err_send);
-        let base = BaseState {
-            err_recv,
-            async_err,
-            net_chan,
-            errq: ErrorQueue::new_endpoint(),
-            tb: TextBoard::default(),
-        };
+        let base = BaseState { net_chan };
 
         let game_data = GameLoadingData::default();
         // For leaderboard network event
@@ -155,10 +146,10 @@ impl LoadingState {
     }
     pub fn queue_error(&mut self, res: PadlResult<()>) {
         if let Err(e) = res {
-            self.base.errq.push(e);
+            nuts::publish(e);
         }
     }
-    fn finalize(self) -> GameState {
+    fn finalize(self) {
         let (images, catalog, resolution, game_data, base) = {
             (
                 self.images
@@ -174,29 +165,62 @@ impl LoadingState {
         let sprites = Sprites::new(images);
         match Game::load_game(sprites, catalog, resolution, game_data, base) {
             Err(e) => {
-                let mut tb = TextBoard::default();
-                #[allow(unused_must_use)]
-                {
-                    tb.display_error_message(":(\nLoading game failed".to_owned()); // TODO: multi-lang errors
-                    tb.draw(&Rectangle::new_sized(resolution.main_area()));
-                }
+                TextBoard::display_error_message(":(\nLoading game failed".to_owned()).nuts_check(); // TODO: multi-lang errors
                 panic!("Fatal Error: Could not load game {:?}", e);
             }
             Ok(mut game) => {
-                let pm = crate::gui::input::pointer::PointerManager::init(&mut game.world);
-                let ep = game.event_pool.clone();
-                let mut viewer = super::frame_loading::load_viewer(&mut game, ep);
+                let pointer_manager =
+                    crate::gui::input::pointer::PointerManager::init(&mut game.world);
+                nuts::store_to_domain(Domain::Main, game);
+                let view = UiView::Town;
+                let viewer = super::frame_loading::load_viewer(view, resolution);
                 for evt in self.viewer_data {
-                    let e = viewer.global_event(&mut game, &evt);
-                    game.check(e);
+                    crate::share(evt);
                 }
-                let e = viewer.event(&mut game, &PadlEvent::Signal(Signal::ResourcesUpdated));
-                game.check(e);
-                GameState {
-                    game,
-                    viewer,
-                    pointer_manager: pm,
-                }
+                crate::share_foreground(PadlEvent::Signal(Signal::ResourcesUpdated));
+
+                let viewer_activity = nuts::new_domained_activity(viewer, Domain::Main, true);
+                viewer_activity.subscribe_domained(
+                    |_viewer, _domain, signal: &crate::init::quicksilver_integration::Signal| {
+                        use crate::view::FrameSignal;
+                        if let Some(evt) = signal.evaluate_signal() {
+                            crate::share(evt);
+                        }
+                    },
+                );
+                viewer_activity.subscribe_domained(|viewer, domain, _: &UpdateWorld| {
+                    let game: &mut Game<'static, 'static> =
+                        domain.try_get_mut().expect("Forgot to insert Game?");
+                    // FIXME; really need to be set every frame?
+                    let view: UiView = *game.world.fetch();
+                    viewer.set_view(view);
+                });
+
+                let pointer_manager_activity =
+                    nuts::new_domained_activity(pointer_manager, Domain::Main, true);
+                pointer_manager_activity.subscribe_domained(
+                    |pointer_manager, domain, _: &UpdateWorld| {
+                        let game: &mut Game<'static, 'static> =
+                            domain.try_get_mut().expect("Forgot to insert Game?");
+                        pointer_manager.run(game);
+                    },
+                );
+                pointer_manager_activity.subscribe_domained_mut(
+                    |pointer_manager, domain, msg: &mut WorldEvent| {
+                        let game: &mut Game<'static, 'static> =
+                            domain.try_get_mut().expect("Forgot to insert Game?");
+                        let event = msg.event();
+                        let window = msg.window();
+                        let res = game.handle_quicksilver_event(&event, window, pointer_manager);
+                        if let Err(e) = res {
+                            nuts::publish(e);
+                        }
+                    },
+                );
+                // For debugging (Consider removing)
+                pointer_manager_activity
+                    .on_leave(|_| panic!("Pointer manager should not be deactived"));
+                load_game_event_manager();
             }
         }
     }
@@ -219,7 +243,9 @@ impl QuicksilverState {
         let moved_state = std::mem::replace(self, QuicksilverState::Empty);
         match moved_state {
             Self::Loading(state) => {
-                *self = QuicksilverState::Ready(state.finalize());
+                Game::register_in_nuts();
+                state.finalize();
+                *self = QuicksilverState::Ready;
             }
             _ => unreachable!(),
         }

@@ -14,7 +14,6 @@ use crate::gui::gui_components::{ClickOutput, Condition, InteractiveTableArea};
 use crate::gui::input::{Clickable, Grabbable};
 use crate::gui::ui_state::*;
 use crate::init::quicksilver_integration::Signal;
-use crate::logging::ErrorQueue;
 use crate::net::game_master_api::RestApiState;
 use crate::net::state::current_village;
 use crate::prelude::*;
@@ -35,17 +34,15 @@ impl Town {
         mut nests: WriteStorage<'a, Nest>,
         lazy: Read<'a, LazyUpdate>,
         resources: &TownResources,
-        mut errq: WriteExpect<'a, ErrorQueue>,
-        ep: &EventPool,
     ) {
         let click_output = ui_menu.ui.click(mouse_pos).unwrap_or_else(|e| {
-            errq.push(e);
+            nuts::publish(e);
             None
         });
         if let Some((_, Some(condition))) = &click_output {
             let err = check_condition(condition, resources);
             if let Err(e) = err {
-                errq.push(e);
+                nuts::publish(e);
                 return;
             }
         }
@@ -68,31 +65,28 @@ impl Town {
                         container_area.size(),
                         &lazy,
                     )
-                    .unwrap_or_else(|e| errq.push(e));
+                    .unwrap_or_else(nuts::publish);
                 } else {
-                    errq.push(PadlError::dev_err(PadlErrorCode::DevMsg(
+                    nuts::publish(PadlError::dev_err(PadlErrorCode::DevMsg(
                         "Unexpectedly clicked on an entity",
                     )))
                 }
             }
             Some((ClickOutput::SendInvitation, _)) => {
                 if let Some(nest) = nests.get_mut(menu_entity) {
-                    self.nest_invitation(nest, netids, menu_entity, &lazy, ep).unwrap_or_else(|e| errq.push(e));
+                    self.nest_invitation(nest, netids, menu_entity, &lazy)
+                        .unwrap_or_else(nuts::publish);
                 } else {
-                    errq.push(PadlError::user_err(PadlErrorCode::NestEmpty));
+                    nuts::publish(PadlError::user_err(PadlErrorCode::NestEmpty));
                 }
             }
             Some((ClickOutput::Event(e), _)) => {
                 // These events COULD be handled here since we have access to most of the game state here
                 // However, if an Evnet is modeled as a GameEvent, then the logic to handle it belongs
                 // into the game event manger and not here.
-                ep.send(e).unwrap_or_else(|_| {
-                    errq.push(PadlError::dev_err(PadlErrorCode::DevMsg(
-                        "MPSC send failure",
-                    )))
-                });
+                nuts::publish(e);
             }
-            Some(_) => errq.push(PadlError::dev_err(PadlErrorCode::DevMsg(
+            Some(_) => nuts::publish(PadlError::dev_err(PadlErrorCode::DevMsg(
                 "Unexpectedly clicked something",
             ))),
             None => {}
@@ -129,9 +123,6 @@ impl Town {
         net_ids: &ReadStorage<'a, NetObj>,
         lazy: &Read<'a, LazyUpdate>,
         resources: &mut WriteExpect<'a, TownResources>,
-        errq: &mut WriteExpect<'a, ErrorQueue>,
-        // TODO: Only temporary experiment
-        signals: &mut WriteExpect<'a, crate::view::ExperimentalSignalChannel>,
     ) -> Option<NewTaskDescriptor> {
         let maybe_top_hit = Self::clickable_lookup(entities, mouse_pos, position, clickable);
         if let Some(grabbed) = ui_state.take_grabbed_item() {
@@ -140,11 +131,11 @@ impl Town {
                     if let Some(pos) = self.get_buildable_tile(mouse_pos) {
                         RestApiState::get()
                             .http_place_building(pos, bt, current_village())
-                            .unwrap_or_else(|e| errq.push(e));
+                            .unwrap_or_else(nuts::publish);
                         resources.spend(&bt.price());
                         self.insert_new_building(&entities, &lazy, pos, bt);
                         let signal = Signal::BuildingBuilt(bt);
-                        signals.push_back(signal);
+                        nuts::publish(signal);
                     } else {
                         ui_state.set_grabbed_item(grabbed);
                     }

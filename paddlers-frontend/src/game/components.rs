@@ -152,7 +152,7 @@ impl EntityContainer {
         ui.ui.add(UiElement::new(e).with_render_variant(style));
     }
     pub fn remove_entity<'a>(&mut self, e: Entity) {
-        self.children.remove_item(&e);
+        self.children.retain(|b| &e != b);
     }
     pub fn count(&self) -> usize {
         self.children.len()

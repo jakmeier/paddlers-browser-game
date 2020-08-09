@@ -6,9 +6,8 @@ use crate::gui::{
     menu::*,
     ui_state::UiState,
 };
-use crate::init::quicksilver_integration::Signal;
 use crate::prelude::*;
-use crate::view::{ExperimentalSignalChannel, Frame};
+use crate::view::Frame;
 use quicksilver::prelude::{MouseButton, Shape, Window};
 use specs::prelude::*;
 
@@ -18,11 +17,10 @@ pub(crate) struct MapMenuFrame<'a, 'b> {
     _hover_component: ResourcesComponent,
 }
 impl MapMenuFrame<'_, '_> {
-    pub fn new<'a, 'b>(game: &mut Game<'a, 'b>, ep: EventPool) -> PadlResult<Self> {
-        let mut left_click_dispatcher = DispatcherBuilder::new()
-            .with(MapLeftClickSystem::new(ep), "", &[])
+    pub fn new() -> PadlResult<Self> {
+        let left_click_dispatcher = DispatcherBuilder::new()
+            .with(MapLeftClickSystem::new(), "", &[])
             .build();
-        left_click_dispatcher.setup(&mut game.world);
 
         Ok(MapMenuFrame {
             text_provider: TableTextProvider::new(),
@@ -36,7 +34,7 @@ impl<'a, 'b> Frame for MapMenuFrame<'a, 'b> {
     type State = Game<'a, 'b>;
     type Graphics = Window;
     type Event = PadlEvent;
-    type Signal = Signal;
+
     fn draw(
         &mut self,
         state: &mut Self::State,
@@ -63,12 +61,7 @@ impl<'a, 'b> Frame for MapMenuFrame<'a, 'b> {
         self.text_provider.finish_draw();
         Ok(())
     }
-    fn left_click(
-        &mut self,
-        state: &mut Self::State,
-        pos: (i32, i32),
-        _signals: &mut ExperimentalSignalChannel,
-    ) -> Result<(), Self::Error> {
+    fn left_click(&mut self, state: &mut Self::State, pos: (i32, i32)) -> Result<(), Self::Error> {
         // This can be removed once the frame positions are checked properly before right_click is called
         let ui_state = state.world.fetch::<ViewState>();
         let mouse_pos: Vector = pos.into();

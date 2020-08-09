@@ -68,7 +68,6 @@ impl<'a, 'b> Frame for MenuBackgroundFrame<'a, 'b> {
     type State = Game<'a, 'b>;
     type Graphics = Window;
     type Event = PadlEvent;
-    type Signal = Signal;
 
     fn draw(&mut self, state: &mut Self::State, window: &mut Window) -> Result<(), Self::Error> {
         self.tp.reset();
@@ -80,21 +79,13 @@ impl<'a, 'b> Frame for MenuBackgroundFrame<'a, 'b> {
         self.tp.finish_draw();
         Ok(())
     }
-    fn left_click(
-        &mut self,
-        state: &mut Self::State,
-        pos: (i32, i32),
-        _signals: &mut ExperimentalSignalChannel,
-    ) -> Result<(), Self::Error> {
+    fn left_click(&mut self, state: &mut Self::State, pos: (i32, i32)) -> Result<(), Self::Error> {
         let result = match self.ui.click(pos.into())? {
             Some((ClickOutput::Event(event), _)) => Ok(Some(event)),
             _ => Ok(None),
         };
         if let Some(event) = state.check(result).flatten() {
-            state
-                .event_pool
-                .send(event)
-                .expect("Event pool send failed");
+            nuts::publish(event);
         }
         Ok(())
     }

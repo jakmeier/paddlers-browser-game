@@ -5,7 +5,6 @@ use crate::game::{
 };
 use crate::gui::render::Renderable;
 use crate::gui::z::*;
-use crate::logging::ErrorQueue;
 use crate::net::game_master_api::RestApiState;
 use crate::prelude::*;
 use paddlers_shared_lib::api::tasks::*;
@@ -55,7 +54,6 @@ impl Worker {
         job: NewTaskDescriptor,
         destination: TileIndex,
         town: &Town,
-        errq: &mut ErrorQueue,
         containers: &mut WriteStorage<'a, EntityContainer>,
         mana: &ReadStorage<'a, Mana>,
     ) {
@@ -65,10 +63,10 @@ impl Worker {
             Ok(msg) => {
                 RestApiState::get()
                     .http_overwrite_tasks(msg)
-                    .unwrap_or_else(|e| errq.push(e));
+                    .unwrap_or_else(|e| nuts::publish(e));
             }
             Err(e) => {
-                errq.push(e);
+                nuts::publish(e);
             }
         }
     }

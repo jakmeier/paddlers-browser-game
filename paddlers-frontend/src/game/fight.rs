@@ -1,9 +1,5 @@
 // use quicksilver::prelude::*;
-use crate::game::{
-    game_event_manager::{EventPool, GameEvent},
-    movement::Position,
-    town::Town,
-};
+use crate::game::{game_event_manager::GameEvent, movement::Position, town::Town};
 use crate::prelude::ScreenResolution;
 use specs::prelude::*;
 use specs::storage::BTreeStorage;
@@ -64,11 +60,10 @@ impl Health {
             aura_effects: vec![],
         }
     }
-    pub fn make_happy(&mut self, amount: i64, id: Entity, ep: &EventPool) {
+    pub fn make_happy(&mut self, amount: i64, id: Entity) {
         let new_hp = 0.max(self.hp - amount);
         if new_hp == 0 && self.hp != 0 {
-            ep.send(GameEvent::HoboSatisfied(id))
-                .expect("sending event");
+            crate::game_event(GameEvent::HoboSatisfied(id));
         }
         self.hp = new_hp;
     }
@@ -77,14 +72,10 @@ impl Health {
 #[derive(Clone)]
 pub struct FightSystem {
     counter: usize,
-    event_pool: EventPool,
 }
 impl FightSystem {
-    pub fn new(event_pool: EventPool) -> Self {
-        FightSystem {
-            counter: 0,
-            event_pool,
-        }
+    pub fn new() -> Self {
+        FightSystem { counter: 0 }
     }
 }
 
@@ -122,7 +113,7 @@ impl<'a> System<'a> for FightSystem {
                         // log m
                         Ok(_) => { /* Aura already active*/ }
                         Err(i) => {
-                            (*h).make_happy(a.effect, hid, &self.event_pool);
+                            (*h).make_happy(a.effect, hid);
                             (*h).aura_effects.insert(i, aid.id()); // [Theoretically O(m) but not considered above]
                         }
                     }

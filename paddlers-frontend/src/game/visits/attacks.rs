@@ -2,8 +2,6 @@
 
 use crate::gui::utils::colors::LIGHT_BLUE;
 use crate::gui::z::*;
-use crate::init::quicksilver_integration::Signal;
-use crate::logging::ErrorQueue;
 use crate::net::game_master_api::RestApiState;
 use crate::net::state::current_village;
 use crate::prelude::*;
@@ -138,11 +136,10 @@ impl<'a, 'b> Frame for VisitorFrame<'a, 'b> {
     type State = Game<'a, 'b>;
     type Graphics = Window;
     type Event = PadlEvent;
-    type Signal = Signal;
+
     fn update(&mut self, state: &mut Self::State) -> Result<(), Self::Error> {
         self.update_dispatcher.dispatch(&mut state.world);
         let mut attack = state.world.write_storage::<Attack>();
-        let mut errq = state.world.write_resource::<ErrorQueue>();
         for a in (&mut attack).join() {
             if a.dom_node.is_none() {
                 let html = a.to_html();
@@ -152,12 +149,12 @@ impl<'a, 'b> Frame for VisitorFrame<'a, 'b> {
                             let text_node = TextNode::new(arrival_node, a.arrival());
                             a.dom_node = Some(text_node);
                         } else {
-                            errq.push(PadlError::dev_err(PadlErrorCode::InvalidDom(
+                            nuts::publish(PadlError::dev_err(PadlErrorCode::InvalidDom(
                                 "Child lookup failed",
                             )));
                         }
                     }
-                    Err(e) => errq.push(e),
+                    Err(e) => nuts::publish(e),
                 }
             }
         }
@@ -202,9 +199,9 @@ impl UpdateAttackViewSystem {
 }
 
 impl<'a> System<'a> for UpdateAttackViewSystem {
-    type SystemData = (WriteStorage<'a, Attack>, WriteExpect<'a, ErrorQueue>);
+    type SystemData = (WriteStorage<'a, Attack>,);
 
-    fn run(&mut self, (mut attack, mut errq): Self::SystemData) {
+    fn run(&mut self, (mut attack,): Self::SystemData) {
         let now = utc_now();
         if (now - self.last_update).micros() < 1_000_000 {
             return;
@@ -212,7 +209,7 @@ impl<'a> System<'a> for UpdateAttackViewSystem {
         self.last_update = now;
         for a in (&mut attack).join() {
             if a.dom_node.is_some() {
-                a.update_dom().unwrap_or_else(|e| errq.push(e));
+                a.update_dom().unwrap_or_else(nuts::publish);
             }
         }
     }

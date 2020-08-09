@@ -1,4 +1,3 @@
-use crate::game::game_event_manager::EventPool;
 use crate::game::{
     abilities::use_welcome_ability,
     components::*,
@@ -11,17 +10,14 @@ use crate::gui::animation::*;
 use crate::gui::gui_components::ClickOutput;
 use crate::gui::render::Renderable;
 use crate::gui::utils::*;
-use crate::logging::ErrorQueue;
 use crate::prelude::*;
 use quicksilver::geom::about_equal;
 use specs::prelude::*;
 
-pub struct WorkerSystem {
-    event_pool: EventPool,
-}
+pub struct WorkerSystem;
 impl WorkerSystem {
-    pub fn new(event_pool: EventPool) -> Self {
-        WorkerSystem { event_pool }
+    pub fn new() -> Self {
+        WorkerSystem
     }
 }
 
@@ -40,7 +36,6 @@ impl<'a> System<'a> for WorkerSystem {
         WriteStorage<'a, Level>,
         ReadStorage<'a, Renderable>,
         WriteExpect<'a, Town>,
-        WriteExpect<'a, ErrorQueue>,
         ReadExpect<'a, Now>,
     );
 
@@ -60,7 +55,6 @@ impl<'a> System<'a> for WorkerSystem {
             mut levels,
             rend,
             mut town,
-            mut errq,
             now,
         ): Self::SystemData,
     ) {
@@ -109,10 +103,9 @@ impl<'a> System<'a> for WorkerSystem {
                             &mut health,
                             &mut status_effects,
                             &mut mana,
-                            &self.event_pool,
                         );
                         if let Err(e) = err {
-                            errq.push(e);
+                            nuts::publish(e);
                         } else {
                             let ui = ui_menus.get_mut(e).expect("Ui menu vanished");
                             update_cooldown(&mut *ui, AbilityType::Welcome, now.0);
@@ -123,7 +116,7 @@ impl<'a> System<'a> for WorkerSystem {
                         let worker_exp = levels.get_mut(e);
                         let e = collect_reward(&mut town, task.position, &entities, worker_exp);
                         if let Err(e) = e {
-                            errq.push(e)
+                            nuts::publish(e);
                         }
                     }
                     _ => debug_assert!(false, "Unexpected task"),

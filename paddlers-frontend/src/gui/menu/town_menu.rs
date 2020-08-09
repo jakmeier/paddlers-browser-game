@@ -11,7 +11,7 @@ use crate::gui::{
 use crate::init::quicksilver_integration::Signal;
 use crate::prelude::*;
 use crate::resolution::ScreenResolution;
-use crate::view::{ExperimentalSignalChannel, Frame};
+use crate::view::Frame;
 use quicksilver::prelude::{MouseButton, Rectangle, Shape, Window};
 use specs::prelude::*;
 
@@ -29,7 +29,7 @@ impl<'a, 'b> Frame for TownMenuFrame<'a, 'b> {
     type State = Game<'a, 'b>;
     type Graphics = Window;
     type Event = PadlEvent;
-    type Signal = Signal;
+
     fn draw(
         &mut self,
         state: &mut Self::State,
@@ -93,12 +93,7 @@ impl<'a, 'b> Frame for TownMenuFrame<'a, 'b> {
         self.hover_component.hide()?;
         Ok(())
     }
-    fn left_click(
-        &mut self,
-        state: &mut Self::State,
-        pos: (i32, i32),
-        signals: &mut ExperimentalSignalChannel,
-    ) -> Result<(), Self::Error> {
+    fn left_click(&mut self, state: &mut Self::State, pos: (i32, i32)) -> Result<(), Self::Error> {
         let town_world = state.town_world();
 
         // This can be removed once the frame positions are checked properly before right_click is called
@@ -115,7 +110,7 @@ impl<'a, 'b> Frame for TownMenuFrame<'a, 'b> {
             if let Some((click_output, _condition)) = self.foreign_town_menu.click(mouse_pos)? {
                 match click_output {
                     ClickOutput::Event(evt) => {
-                        state.event_pool.send(evt)?;
+                        nuts::publish(evt);
                     }
                     _ => {
                         return PadlErrorCode::DevMsg(
@@ -129,11 +124,6 @@ impl<'a, 'b> Frame for TownMenuFrame<'a, 'b> {
         let ms = MouseState(pos.into(), Some(MouseButton::Left));
         state.town_world_mut().insert(ms);
         self.left_click_dispatcher.dispatch(state.town_world());
-        // TODO: [0.1.4] Only temporary experiment
-        let mut result_signals = state
-            .town_world()
-            .write_resource::<ExperimentalSignalChannel>();
-        signals.append(&mut result_signals);
         Ok(())
     }
     fn right_click(&mut self, state: &mut Self::State, pos: (i32, i32)) -> Result<(), Self::Error> {
@@ -173,9 +163,9 @@ impl<'a, 'b> Frame for TownMenuFrame<'a, 'b> {
     }
 }
 impl TownMenuFrame<'_, '_> {
-    pub fn new<'a, 'b>(ep: EventPool) -> PadlResult<Self> {
+    pub fn new<'a, 'b>() -> PadlResult<Self> {
         let left_click_dispatcher = DispatcherBuilder::new()
-            .with(TownMenuLeftClickSystem::new(ep), "", &[])
+            .with(TownMenuLeftClickSystem::new(), "", &[])
             .build();
 
         let mut foreign_town_menu = UiBox::new(1, 1, 1.0, 1.0);

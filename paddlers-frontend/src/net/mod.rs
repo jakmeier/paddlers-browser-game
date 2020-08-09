@@ -62,10 +62,10 @@ static mut STATIC_NET_STATE: NetState = NetState {
 };
 
 /// Initializes state necessary for networking
-pub fn init_net(chan: Sender<NetMsg>, err_chan: Sender<PadlError>) {
+pub fn init_net(chan: Sender<NetMsg>) {
     unsafe {
         STATIC_NET_STATE.chan = Some(Mutex::new(chan));
-        STATIC_NET_STATE.rest = Some(Arc::new(Mutex::new(RestApiState::new(err_chan))));
+        STATIC_NET_STATE.rest = Some(Arc::new(Mutex::new(RestApiState::new())));
     }
 }
 /// Sets up continuous networking with the help of JS setTimeout

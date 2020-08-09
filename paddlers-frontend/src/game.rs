@@ -26,7 +26,7 @@ use crate::game::{components::*, player_info::PlayerInfo, town::TownContextManag
 use crate::gui::{input, sprites::*, ui_state::*};
 use crate::init::loading::BaseState;
 use crate::init::loading::GameLoadingData;
-use crate::logging::{statistics::Statistician, text_to_user::TextBoard, ErrorQueue};
+use crate::logging::statistics::Statistician;
 use crate::net::{
     game_master_api::{RestApiState, RestApiSystem},
     NetMsg,
@@ -38,7 +38,7 @@ use movement::*;
 use quicksilver::prelude::*;
 use shred::{Fetch, FetchMut};
 use specs::prelude::*;
-use std::sync::mpsc::{channel, Receiver};
+use std::sync::mpsc::Receiver;
 use town::{DefaultShop, Town};
 
 pub(crate) struct Game<'a, 'b> {
@@ -49,9 +49,6 @@ pub(crate) struct Game<'a, 'b> {
     pub net: Receiver<NetMsg>,
     pub time_zero: Timestamp,
     pub total_updates: u64,
-    pub async_err_receiver: Receiver<PadlError>,
-    pub game_event_receiver: Receiver<GameEvent>,
-    pub event_pool: EventPool,
     pub stats: Statistician,
     // TODO: [0.1.4] These would better fit into frame state, however,
     // there is currently no good solution to share it between main-frame and menu-frame
@@ -72,12 +69,9 @@ impl Game<'_, '_> {
         game_data: GameLoadingData,
         base: BaseState,
     ) -> PadlResult<Self> {
-        let (game_evt_send, game_evt_recv) = channel();
         let player_info = game_data.player_info.ok_or("Player Info not loaded")?;
-        let town_context =
-            TownContextManager::new(resolution, player_info.clone(), base.async_err.clone());
-        let mut world =
-            crate::init::init_world(base.async_err, resolution, player_info, base.errq, base.tb);
+        let town_context = TownContextManager::new(resolution, player_info.clone());
+        let mut world = crate::init::init_world(resolution, player_info);
         let mut dispatcher = DispatcherBuilder::new()
             .with(RestApiSystem, "rest", &[])
             .build();
@@ -95,9 +89,6 @@ impl Game<'_, '_> {
             net: base.net_chan,
             time_zero: now,
             total_updates: 0,
-            async_err_receiver: base.err_recv,
-            game_event_receiver: game_evt_recv,
-            event_pool: game_evt_send,
             stats: Statistician::new(now),
             map: None,
             town_context,
@@ -225,16 +216,14 @@ impl Game<'_, '_> {
     /// Transforms a PadlResult to an Option, handing errors to the error queue
     pub fn check<R>(&self, res: PadlResult<R>) -> Option<R> {
         if let Err(e) = res {
-            let mut q = self.world.write_resource::<ErrorQueue>();
-            q.push(e);
+            nuts::publish(e);
             None
         } else {
             Some(res.unwrap())
         }
     }
     pub fn confirm_to_user(&mut self, text_key: TextKey) -> PadlResult<()> {
-        let mut tb = self.world.write_resource::<TextBoard>();
-        tb.display_confirmation(text_key, &self.locale)
+        TextBoard::display_confirmation(text_key, &self.locale)
     }
 }
 

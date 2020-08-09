@@ -1,7 +1,6 @@
 use crate::gui::{
     gui_components::*, input::UiView, shapes::PadlShapeIndex, sprites::*, ui_state::Now, utils::*,
 };
-use crate::init::quicksilver_integration::Signal;
 use crate::prelude::*;
 use crate::view::*;
 use core::marker::PhantomData;
@@ -43,7 +42,7 @@ impl<'a, 'b> Frame for VisitorMenuFrame<'a, 'b> {
     type State = Game<'a, 'b>;
     type Graphics = Window;
     type Event = PadlEvent;
-    type Signal = Signal;
+
     fn draw(
         &mut self,
         state: &mut Self::State,
@@ -57,21 +56,13 @@ impl<'a, 'b> Frame for VisitorMenuFrame<'a, 'b> {
         self.text_provider.finish_draw();
         Ok(())
     }
-    fn left_click(
-        &mut self,
-        state: &mut Self::State,
-        pos: (i32, i32),
-        _signals: &mut ExperimentalSignalChannel,
-    ) -> Result<(), Self::Error> {
+    fn left_click(&mut self, state: &mut Self::State, pos: (i32, i32)) -> Result<(), Self::Error> {
         let result = match self.ui.click(pos.into())? {
             Some((ClickOutput::Event(event), _)) => Ok(Some(event)),
             _ => Ok(None),
         };
         if let Some(event) = state.check(result).flatten() {
-            state
-                .event_pool
-                .send(event)
-                .expect("Event pool send failed");
+            nuts::publish(event);
         }
         Ok(())
     }

@@ -1,16 +1,14 @@
 use crate::game::{
-    components::*, fight::*, forestry::ForestrySystem, movement::MoveSystem,
-    story::entity_trigger::EntityTriggerSystem, town::Town, units::worker_system::WorkerSystem,
-    units::workers::Worker, Game,
+    components::*, fight::*, forestry::ForestrySystem, mana::extend_transformed,
+    movement::MoveSystem, story::entity_trigger::EntityTriggerSystem, town::Town,
+    units::worker_system::WorkerSystem, units::workers::Worker, Game,
 };
 use crate::gui::{
     input::{left_click::TownLeftClickSystem, MouseState},
     ui_state::*,
 };
 use crate::init::quicksilver_integration::Signal;
-use crate::logging::ErrorQueue;
 use crate::prelude::*;
-use crate::view::ExperimentalSignalChannel;
 use crate::view::Frame;
 use quicksilver::graphics::Mesh;
 use quicksilver::prelude::{MouseButton, Shape, Vector, Window};
@@ -29,7 +27,7 @@ impl<'a, 'b> Frame for TownFrame<'a, 'b> {
     type State = Game<'a, 'b>;
     type Graphics = Window;
     type Event = PadlEvent;
-    type Signal = Signal;
+
     fn update(&mut self, state: &mut Self::State) -> Result<(), Self::Error> {
         state.prepare_town_resources();
         let world = state.town_world_mut();
@@ -55,9 +53,12 @@ impl<'a, 'b> Frame for TownFrame<'a, 'b> {
                 self.background_cache = Some(Mesh::new());
                 town.render_background(self.background_cache.as_mut().unwrap(), asset, ul)?;
             }
-            window
-                .mesh()
-                .extend(self.background_cache.as_ref().unwrap());
+            self.background_cache.as_ref().unwrap().vertices.len();
+            extend_transformed(
+                window.mesh(),
+                self.background_cache.as_ref().unwrap(),
+                Default::default(),
+            );
             town.render(window, asset, tick, ul)?;
         }
         state.draw_town_main(window)?;
@@ -73,12 +74,7 @@ impl<'a, 'b> Frame for TownFrame<'a, 'b> {
         }
         Ok(())
     }
-    fn left_click(
-        &mut self,
-        state: &mut Self::State,
-        pos: (i32, i32),
-        signals: &mut ExperimentalSignalChannel,
-    ) -> Result<(), Self::Error> {
+    fn left_click(&mut self, state: &mut Self::State, pos: (i32, i32)) -> Result<(), Self::Error> {
         let town_world = state.town_world();
         let ui_state = town_world.fetch_mut::<ViewState>();
 
@@ -93,11 +89,6 @@ impl<'a, 'b> Frame for TownFrame<'a, 'b> {
         let ms = MouseState(pos.into(), Some(MouseButton::Left));
         state.town_world_mut().insert(ms);
         self.left_click_dispatcher.dispatch(state.town_world());
-        // TODO: [0.1.4] Only temporary experiment
-        let mut result_signals = state
-            .town_world()
-            .write_resource::<ExperimentalSignalChannel>();
-        signals.append(&mut result_signals);
         Ok(())
     }
     fn right_click(&mut self, state: &mut Self::State, pos: (i32, i32)) -> Result<(), Self::Error> {
@@ -119,7 +110,6 @@ impl<'a, 'b> Frame for TownFrame<'a, 'b> {
 
         let entities = town_world.entities();
         let town = town_world.fetch::<Town>();
-        let mut errq = town_world.fetch_mut::<ErrorQueue>();
         let mut worker = town_world.write_component::<Worker>();
         let mut containers = town_world.write_component::<EntityContainer>();
         let position = town_world.read_component::<Position>();
@@ -146,7 +136,6 @@ impl<'a, 'b> Frame for TownFrame<'a, 'b> {
                         new_job,
                         destination,
                         &*town,
-                        &mut *errq,
                         &mut containers,
                         &mana,
                     );
@@ -159,17 +148,17 @@ impl<'a, 'b> Frame for TownFrame<'a, 'b> {
 }
 
 impl<'a, 'b> TownFrame<'a, 'b> {
-    pub fn new(ep: EventPool) -> Self {
+    pub fn new() -> Self {
         let left_click_dispatcher = DispatcherBuilder::new()
-            .with(TownLeftClickSystem::new(ep.clone()), "", &[])
+            .with(TownLeftClickSystem::new(), "", &[])
             .build();
 
         let town_dispatcher = DispatcherBuilder::new()
-            .with(WorkerSystem::new(ep.clone()), "work", &[])
+            .with(WorkerSystem::new(), "work", &[])
             .with(MoveSystem, "move", &["work"])
-            .with(FightSystem::new(ep.clone()), "fight", &["move"])
+            .with(FightSystem::new(), "fight", &["move"])
             .with(ForestrySystem, "forest", &[])
-            .with(EntityTriggerSystem::new(ep), "ets", &[])
+            .with(EntityTriggerSystem::new(), "ets", &[])
             .build();
 
         TownFrame {
@@ -189,8 +178,6 @@ impl<'a, 'b> Game<'a, 'b> {
         self.copy_res::<ScreenResolution>();
         self.copy_res::<ViewState>();
         self.copy_res::<UiView>();
-        // self.copy_res::<AsyncErr>();
-        // self.copy_res::<UiState>();
     }
     fn copy_res<T: Clone + 'static>(&mut self) {
         let res: T = self.world.read_resource::<T>().deref().clone();

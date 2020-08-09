@@ -10,7 +10,6 @@ use crate::gui::ui_state::ClockTick;
 use crate::gui::{
     animation::AnimationState, input::Grabbable, sprites::*, ui_state::*, utils::*, z::*,
 };
-use crate::logging::text_to_user::TextBoard;
 use crate::prelude::*;
 use quicksilver::graphics::Color;
 use quicksilver::input::MouseCursor;
@@ -40,14 +39,6 @@ impl Renderable {
 }
 
 impl Game<'_, '_> {
-    /// Global overlay that is always drawn, despite of current view
-    pub fn draw_main(&mut self, window: &mut Window) -> PadlResult<()> {
-        self.render_text_messages(window)?;
-
-        #[cfg(feature = "dev_view")]
-        self.draw_dev_view(window);
-        Ok(())
-    }
     pub fn draw_town_main(&mut self, window: &mut Window) -> PadlResult<()> {
         let world = self.town_context.world();
         let ui_state = world.read_resource::<UiState>();
@@ -68,18 +59,6 @@ impl Game<'_, '_> {
 
         render_town_entities(world, window, sprites)?;
 
-        Ok(())
-    }
-
-    pub fn render_text_messages(&mut self, window: &mut Window) -> PadlResult<()> {
-        let screen = window.project() * window.screen_size();
-        let w = 300.0;
-        let h = screen.y;
-        let x = (screen.x - w) / 2.0;
-        let y = 0.0;
-        let area = Rectangle::new((x, y), (w, h));
-        let mut tb = self.world.write_resource::<TextBoard>();
-        tb.draw(&area)?;
         Ok(())
     }
 }

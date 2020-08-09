@@ -2,7 +2,7 @@
 //! Triggers the corresponding mouse-click systems when necessary.
 use super::{drag::*, HoverSystem, MouseState};
 use crate::prelude::*;
-use crate::Framer;
+use crate::view::new_frame::{LeftClick, RightClick};
 use quicksilver::prelude::*;
 use specs::prelude::*;
 
@@ -50,19 +50,14 @@ impl PointerManager<'_, '_> {
         }
     }
 
-    pub(crate) fn run(
-        &mut self,
-        game: &mut crate::game::Game<'static, 'static>,
-        frame_manager: &mut Framer,
-    ) {
-        if let Some((pos, button)) = self.buffered_click {
-            let click = (pos.x as i32, pos.y as i32);
-            let err = match button {
-                PointerButton::Primary => frame_manager.left_click(game, click),
-                PointerButton::Secondary => frame_manager.right_click(game, click),
-            };
-            game.check(err);
-            Self::update(&mut game.world, &pos, Some(button));
+    pub(crate) fn run(&mut self, game: &mut crate::game::Game<'static, 'static>) {
+        if let Some((fpos, button)) = self.buffered_click {
+            let pos = (fpos.x as i32, fpos.y as i32);
+            match button {
+                PointerButton::Primary => nuts::publish(LeftClick { pos }),
+                PointerButton::Secondary => nuts::publish(RightClick { pos }),
+            }
+            Self::update(&mut game.world, &fpos, Some(button));
         }
         self.buffered_click = None;
 

@@ -25,10 +25,9 @@ impl Game<'_, '_> {
     pub fn load_story_state(&mut self) -> PadlResult<()> {
         let story_state = self.story_state();
         if let Some((scene, slide)) = select_dialogue_scene(story_state) {
-            self.event_pool
-                .send(GameEvent::StoryActions(vec![StoryAction::OpenScene(
-                    scene, slide,
-                )]))?;
+            crate::game_event(GameEvent::StoryActions(vec![StoryAction::OpenScene(
+                scene, slide,
+            )]));
         }
         self.load_story_triggers(&story_state)?;
         Ok(())

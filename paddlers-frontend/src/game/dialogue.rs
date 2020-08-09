@@ -9,7 +9,7 @@ use crate::gui::{
 };
 use crate::init::quicksilver_integration::Signal;
 use crate::prelude::*;
-use crate::view::{ExperimentalSignalChannel, Frame};
+use crate::view::Frame;
 use quicksilver::graphics::{Mesh, ShapeRenderer};
 use quicksilver::lyon::{math::point, path::Path, tessellation::*};
 use quicksilver::prelude::Window as QuicksilverWindow;
@@ -135,7 +135,6 @@ impl<'a, 'b> DialogueFrame<'a, 'b> {
             table.push(TableRow::Text(s.to_owned()));
         }
         table.push(TableRow::InteractiveArea(&mut self.buttons));
-
         draw_table(
             window,
             sprites,
@@ -193,7 +192,6 @@ impl<'a, 'b> Frame for DialogueFrame<'a, 'b> {
     type State = Game<'a, 'b>;
     type Graphics = QuicksilverWindow;
     type Event = PadlEvent;
-    type Signal = Signal;
     fn event(&mut self, state: &mut Self::State, e: &Self::Event) -> Result<(), Self::Error> {
         match e {
             PadlEvent::Signal(Signal::Scene(scene, slide)) => {
@@ -225,12 +223,7 @@ impl<'a, 'b> Frame for DialogueFrame<'a, 'b> {
         self.text_provider.finish_draw();
         Ok(())
     }
-    fn left_click(
-        &mut self,
-        state: &mut Self::State,
-        pos: (i32, i32),
-        _signals: &mut ExperimentalSignalChannel,
-    ) -> Result<(), Self::Error> {
+    fn left_click(&mut self, state: &mut Self::State, pos: (i32, i32)) -> Result<(), Self::Error> {
         if let Some(output) = self.buttons.click(pos.into())? {
             match output {
                 (ClickOutput::SlideAction(a), None) => {
@@ -238,10 +231,12 @@ impl<'a, 'b> Frame for DialogueFrame<'a, 'b> {
                         self.load_slide(i, &state.locale)?;
                     }
                     if let Some(v) = a.next_view {
-                        state.event_pool.send(GameEvent::SwitchToView(v))?;
+                        let evt = GameEvent::SwitchToView(v);
+                        nuts::publish(evt);
                     }
                     if a.actions.len() > 0 {
-                        state.event_pool.send(GameEvent::StoryActions(a.actions))?;
+                        let evt = GameEvent::StoryActions(a.actions);
+                        nuts::publish(evt);
                     }
                 }
                 _ => PadlErrorCode::DevMsg("Unimplemented ClickOutput in dialogue.rs").dev()?,

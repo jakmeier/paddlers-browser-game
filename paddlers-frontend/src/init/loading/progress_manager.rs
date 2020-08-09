@@ -1,4 +1,4 @@
-use std::any::TypeId;
+use core::any::TypeId;
 use std::collections::HashMap;
 
 /// Helper object to manage resources that must be loaded

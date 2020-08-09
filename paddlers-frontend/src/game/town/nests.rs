@@ -40,7 +40,6 @@ impl Town {
         netids: ReadStorage<'a, NetObj>,
         e: Entity,
         lazy: &LazyUpdate,
-        ep: &EventPool,
     ) -> PadlResult<()> {
         nest.clear_hobos(lazy)?;
         let netid = netids
@@ -53,7 +52,7 @@ impl Town {
             to: current_village(),
         };
         RestApiState::get().http_invite(msg)?;
-        ep.send(GameEvent::DisplayConfirmation("invitation-sent".into()))?;
+        crate::game_event(GameEvent::DisplayConfirmation("invitation-sent".into()));
         Ok(())
     }
 }

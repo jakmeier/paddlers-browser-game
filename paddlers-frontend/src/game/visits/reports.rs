@@ -1,7 +1,6 @@
 use crate::gui::sprites::*;
 use crate::gui::utils::colors::LIGHT_BLUE;
 use crate::gui::z::*;
-use crate::init::quicksilver_integration::Signal;
 use crate::net::game_master_api::RestApiState;
 use crate::net::NetMsg;
 use crate::prelude::*;
@@ -139,7 +138,7 @@ impl<'a, 'b> Frame for ReportFrame<'a, 'b> {
     type State = Game<'a, 'b>;
     type Graphics = Window;
     type Event = PadlEvent;
-    type Signal = Signal;
+
     fn event(&mut self, state: &mut Self::State, event: &Self::Event) -> Result<(), Self::Error> {
         match event {
             PadlEvent::Network(NetMsg::Reports(data)) => {
@@ -183,16 +182,6 @@ impl<'a, 'b> Frame for ReportFrame<'a, 'b> {
     }
     fn leave(&mut self, _state: &mut Self::State) -> Result<(), Self::Error> {
         self.pane.hide()?;
-        Ok(())
-    }
-    fn left_click(
-        &mut self,
-        _state: &mut Self::State,
-        _pos: (i32, i32),
-        signals: &mut AbstractExperimentalSignalChannel<Self::Signal>,
-    ) -> Result<(), Self::Error> {
-        // This is sort of a hack to work around the fact that event handlers currently can't send signals
-        signals.push_back(Signal::NewReportCount(self.number_or_reports()));
         Ok(())
     }
 }

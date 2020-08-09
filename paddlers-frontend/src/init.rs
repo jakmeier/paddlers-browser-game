@@ -17,26 +17,19 @@ pub mod specs_registration;
 use crate::game::player_info::PlayerInfo;
 use crate::init::loading::LoadingState;
 use crate::init::quicksilver_integration::QuicksilverState;
-use crate::logging::{text_to_user::TextBoard, AsyncErr, ErrorQueue};
 use crate::prelude::*;
 use quicksilver::prelude::*;
 use specs::prelude::*;
 use specs_registration::{insert_global_resources, register_global_components};
 
-pub(super) fn init_world(
-    async_err: AsyncErr,
-    resolution: ScreenResolution,
-    player_info: PlayerInfo,
-    errq: ErrorQueue,
-    tb: TextBoard,
-) -> World {
+pub(super) fn init_world(resolution: ScreenResolution, player_info: PlayerInfo) -> World {
     let mut world = World::new();
 
     // Components
     register_global_components(&mut world);
 
     // Resources
-    insert_global_resources(&mut world, async_err, resolution, player_info, errq, tb);
+    insert_global_resources(&mut world, resolution, player_info);
     world
 }
 pub(crate) fn run(state: LoadingState) {

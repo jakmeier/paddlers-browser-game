@@ -1,6 +1,5 @@
 use crate::game::{player_info::PlayerInfo, town::Town};
 use crate::init::specs_registration::*;
-use crate::logging::AsyncErr;
 use crate::prelude::*;
 use paddlers_shared_lib::prelude::*;
 use specs::prelude::*;
@@ -22,10 +21,10 @@ pub struct TownContext {
 
 impl TownContextManager {
     /// Create the TownContextManager and load the home town into it
-    pub fn new(resolution: ScreenResolution, player_info: PlayerInfo, async_err: AsyncErr) -> Self {
+    pub fn new(resolution: ScreenResolution, player_info: PlayerInfo) -> Self {
         let vid = crate::net::state::current_village();
         Self {
-            home_town: TownContext::new(resolution, player_info, async_err, vid),
+            home_town: TownContext::new(resolution, player_info, vid),
             foreign_town: None,
         }
     }
@@ -34,8 +33,7 @@ impl TownContextManager {
         let home_data = self.home_town.world();
         let resolution = *home_data.fetch::<ScreenResolution>();
         let player_info = *home_data.fetch::<PlayerInfo>();
-        let async_err = (*home_data.fetch::<AsyncErr>()).clone();
-        self.foreign_town = Some(TownContext::new(resolution, player_info, async_err, v));
+        self.foreign_town = Some(TownContext::new(resolution, player_info, v));
     }
     /// Remove all loaded foreign towns from the view and display home again
     pub fn reset_to_home(&mut self) {
@@ -88,17 +86,12 @@ impl TownContextManager {
 }
 
 impl TownContext {
-    fn new(
-        resolution: ScreenResolution,
-        player_info: PlayerInfo,
-        async_err: AsyncErr,
-        vid: VillageKey,
-    ) -> Self {
+    fn new(resolution: ScreenResolution, player_info: PlayerInfo, vid: VillageKey) -> Self {
         let mut world = World::new();
         register_town_components(&mut world);
 
         let town = Town::new(resolution);
-        insert_town_resources(&mut world, player_info, async_err, town);
+        insert_town_resources(&mut world, player_info, town);
 
         Self {
             town_world: world,

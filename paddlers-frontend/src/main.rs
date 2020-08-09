@@ -20,6 +20,8 @@ pub(crate) mod resolution;
 mod view;
 pub(crate) mod window;
 
+pub(crate) use view::new_frame::{game_event, share, share_foreground};
+
 #[cfg(target_arch = "wasm32")]
 use init::wasm_setup::setup_wasm;
 
@@ -37,26 +39,17 @@ pub fn main() {
     panes::init_ex(Some("game-root"), (0, 0), Some((w as u32, h as u32)))
         .expect("Panes initialization failed");
 
+    // Setup logging
+    crate::logging::text_to_user::TextBoard::init();
+    crate::logging::init_error_handling();
+
     // Set up loading state with interfaces to networking
     let (net_sender, net_receiver) = channel();
     let state = init::loading::LoadingState::new(resolution, net_receiver);
-    let err_send = state.base.async_err.clone_sender();
 
     // Initialize networking
-    net::init_net(net_sender, err_send);
+    net::init_net(net_sender);
     init::run(state);
 }
 
 pub use paddlers_shared_lib::shared_types::Timestamp;
-
-use crate::prelude::PadlEvent;
-use quicksilver::prelude::Window;
-use view::FrameManager;
-pub(crate) type Framer = FrameManager<
-    gui::input::UiView,
-    game::Game<'static, 'static>,
-    Window,
-    PadlEvent,
-    prelude::PadlError,
-    init::quicksilver_integration::Signal,
->;

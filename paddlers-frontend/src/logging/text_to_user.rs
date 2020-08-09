@@ -3,7 +3,7 @@ use crate::gui::{
     utils::{BLUE, GREY},
 };
 use crate::prelude::*;
-use crate::view::FloatingText;
+use crate::view::{new_frame::DrawWorld, FloatingText};
 use quicksilver::prelude::*;
 
 const ERROR_COLOR: Color = Color {
@@ -24,23 +24,43 @@ pub struct TextBoard {
 }
 
 impl TextBoard {
-    pub fn display_error_message(&mut self, msg: String) -> PadlResult<()> {
-        self.display_message(msg, ERROR_COLOR, 3_000_000)
+    pub fn init() {
+        let tb = TextBoard::default();
+        let tb_id = nuts::new_activity(tb, true);
+        tb_id.subscribe_owned(|tb, msg: TextMessage| {
+            tb.messages.push(msg);
+        });
+        tb_id.subscribe_mut(|tb, msg: &mut DrawWorld| {
+            tb.render_text_messages(msg.window()).nuts_check()
+        });
+    }
+    pub fn display_error_message(msg: String) -> PadlResult<()> {
+        Self::display_message(msg, ERROR_COLOR, 3_000_000)
     }
     #[allow(dead_code)]
-    pub fn display_debug_message(&mut self, msg: String) -> PadlResult<()> {
-        self.display_message(msg, GREY, 8_000_000)
+    pub fn display_debug_message(msg: String) -> PadlResult<()> {
+        Self::display_message(msg, GREY, 8_000_000)
     }
-    pub fn display_confirmation(&mut self, text_key: TextKey, locale: &TextDb) -> PadlResult<()> {
-        self.display_message(locale.gettext(text_key.key()).to_owned(), BLUE, 3_000_000)
+    pub fn display_confirmation(text_key: TextKey, locale: &TextDb) -> PadlResult<()> {
+        Self::display_message(locale.gettext(text_key.key()).to_owned(), BLUE, 3_000_000)
     }
-    fn display_message(&mut self, msg: String, col: Color, time_us: i64) -> PadlResult<()> {
+    fn display_message(msg: String, col: Color, time_us: i64) -> PadlResult<()> {
         let show_until = utc_now() + Timestamp::from_us(time_us);
         let float = Self::new_float(msg, col)?;
-        self.messages.push(TextMessage { float, show_until });
+        nuts::publish(TextMessage { float, show_until });
         Ok(())
     }
-    pub fn draw(&mut self, max_area: &Rectangle) -> PadlResult<()> {
+    fn render_text_messages(&mut self, window: &mut Window) -> PadlResult<()> {
+        let screen = window.project() * window.screen_size();
+        let w = 300.0;
+        let h = screen.y;
+        let x = (screen.x - w) / 2.0;
+        let y = 0.0;
+        let area = Rectangle::new((x, y), (w, h));
+        self.draw(&area)?;
+        Ok(())
+    }
+    fn draw(&mut self, max_area: &Rectangle) -> PadlResult<()> {
         self.remove_old_messages();
         let mut area = max_area.clone();
         for msg in self.messages.iter_mut() {

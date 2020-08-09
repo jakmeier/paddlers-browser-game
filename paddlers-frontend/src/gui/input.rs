@@ -47,17 +47,12 @@ pub enum Grabbable {
 }
 
 impl crate::game::Game<'_, '_> {
-    pub fn handle_event(
+    pub fn handle_quicksilver_event(
         &mut self,
         event: &Event,
         window: &mut Window,
         pointer_manager: &mut PointerManager,
     ) -> Result<()> {
-        // println!("Event: {:?}", event);
-        // {
-        //     let mut t = self.world.write_resource::<TextBoard>();
-        //     t.display_debug_message(format!("{:?}", event));
-        // }
         match event {
             Event::MouseMoved(pos) => {
                 pointer_manager.move_pointer(&mut self.world, &pos);
