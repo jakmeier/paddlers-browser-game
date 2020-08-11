@@ -3,7 +3,8 @@ use crate::gui::{
     utils::{BLUE, GREY},
 };
 use crate::prelude::*;
-use crate::view::{new_frame::DrawWorld, FloatingText};
+use crate::view::FloatingText;
+use paddle::DrawWorld;
 use quicksilver::prelude::*;
 
 const ERROR_COLOR: Color = Color {

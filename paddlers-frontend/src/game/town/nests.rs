@@ -52,7 +52,9 @@ impl Town {
             to: current_village(),
         };
         RestApiState::get().http_invite(msg)?;
-        crate::game_event(GameEvent::DisplayConfirmation("invitation-sent".into()));
+        crate::game::game_event_manager::game_event(GameEvent::DisplayConfirmation(
+            "invitation-sent".into(),
+        ));
         Ok(())
     }
 }

@@ -4,7 +4,6 @@ use crate::gui::z::*;
 use crate::net::game_master_api::RestApiState;
 use crate::net::NetMsg;
 use crate::prelude::*;
-use crate::view::*;
 use core::marker::PhantomData;
 use paddlers_shared_lib::api::reports::ReportCollect;
 use paddlers_shared_lib::prelude::VisitReportKey;
@@ -131,17 +130,13 @@ impl<'a, 'b> ReportFrame<'a, 'b> {
     fn number_or_reports(&self) -> usize {
         self.table.child_nodes().len() as usize - 1 // -1 for title
     }
-}
-
-impl<'a, 'b> Frame for ReportFrame<'a, 'b> {
-    type Error = PadlError;
-    type State = Game<'a, 'b>;
-    type Graphics = Window;
-    type Event = PadlEvent;
-
-    fn event(&mut self, state: &mut Self::State, event: &Self::Event) -> Result<(), Self::Error> {
-        match event {
-            PadlEvent::Network(NetMsg::Reports(data)) => {
+    pub fn network_message(
+        &mut self,
+        state: &mut Game<'static, 'static>,
+        msg: &NetMsg,
+    ) -> Result<(), PadlError> {
+        match msg {
+            NetMsg::Reports(data) => {
                 for r in &data.village.reports {
                     self.add_report(
                         Report {
@@ -159,6 +154,12 @@ impl<'a, 'b> Frame for ReportFrame<'a, 'b> {
         }
         Ok(())
     }
+}
+
+impl<'a, 'b> Frame for ReportFrame<'a, 'b> {
+    type Error = PadlError;
+    type State = Game<'a, 'b>;
+    type Graphics = Window;
     fn draw(
         &mut self,
         state: &mut Self::State,

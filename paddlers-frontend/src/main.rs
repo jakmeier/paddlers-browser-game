@@ -20,8 +20,6 @@ pub(crate) mod resolution;
 mod view;
 pub(crate) mod window;
 
-pub(crate) use view::new_frame::{game_event, share, share_foreground};
-
 #[cfg(target_arch = "wasm32")]
 use init::wasm_setup::setup_wasm;
 

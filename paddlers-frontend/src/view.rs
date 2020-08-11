@@ -1,10 +1,8 @@
 mod floating_text;
-mod frame;
 mod text_node;
 pub mod text_pool;
 use crate::game::story::select_dialogue_scene;
 pub use floating_text::*;
-pub use frame::*;
 use paddlers_shared_lib::story::story_state::StoryState;
 pub use text_node::*;
 

@@ -7,9 +7,9 @@ use crate::gui::{
     decoration::draw_leaf_border, gui_components::*, shapes::PadlShapeIndex, sprites::*,
     ui_state::Now, utils::colors::LIGHT_BLUE, utils::*, z::*,
 };
-use crate::init::quicksilver_integration::Signal;
 use crate::prelude::*;
-use crate::view::Frame;
+use paddle::Frame;
+use paddlers_shared_lib::story::story_state::StoryState;
 use quicksilver::graphics::{Mesh, ShapeRenderer};
 use quicksilver::lyon::{math::point, path::Path, tessellation::*};
 use quicksilver::prelude::Window as QuicksilverWindow;
@@ -187,24 +187,43 @@ impl<'a, 'b> DialogueFrame<'a, 'b> {
     }
 }
 
+pub struct LoadNewDialogueScene {
+    scene: SceneIndex,
+    slide: SlideIndex,
+}
+impl LoadNewDialogueScene {
+    pub fn new(scene: SceneIndex, slide: SlideIndex) -> Self {
+        Self { scene, slide }
+    }
+}
+pub struct NewStoryState {
+    pub new_story_state: StoryState,
+}
+
+impl<'a, 'b> DialogueFrame<'a, 'b> {
+    pub fn receive_load_scene(
+        &mut self,
+        state: &mut Game<'a, 'b>,
+        msg: &LoadNewDialogueScene,
+    ) -> Result<(), PadlError> {
+        self.load_scene(msg.scene.load_scene(msg.slide), &state.locale);
+
+        Ok(())
+    }
+    pub fn receive_new_story_state(
+        &mut self,
+        state: &mut Game<'a, 'b>,
+        msg: &NewStoryState,
+    ) -> Result<(), PadlError> {
+        state.set_story_state(msg.new_story_state);
+        state.load_story_state()?;
+        Ok(())
+    }
+}
 impl<'a, 'b> Frame for DialogueFrame<'a, 'b> {
     type Error = PadlError;
     type State = Game<'a, 'b>;
     type Graphics = QuicksilverWindow;
-    type Event = PadlEvent;
-    fn event(&mut self, state: &mut Self::State, e: &Self::Event) -> Result<(), Self::Error> {
-        match e {
-            PadlEvent::Signal(Signal::Scene(scene, slide)) => {
-                self.load_scene(scene.load_scene(*slide), &state.locale);
-            }
-            PadlEvent::Signal(Signal::NewStoryState(s)) => {
-                state.set_story_state(*s);
-                state.load_story_state()?;
-            }
-            _ => {}
-        }
-        Ok(())
-    }
     fn draw(
         &mut self,
         state: &mut Self::State,

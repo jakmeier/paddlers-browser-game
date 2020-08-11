@@ -1,12 +1,11 @@
 use crate::prelude::*;
 use specs::WorldExt;
 use stdweb::web::*;
-// use stdweb::unstable::TryInto;
 use crate::game::Game;
 use crate::gui::utils::colors::DARK_BLUE;
 use crate::gui::z::*;
 use crate::net::NetMsg;
-use crate::view::Frame;
+use paddle::Frame;
 use quicksilver::prelude::Window as QuicksilverWindow;
 use quicksilver::prelude::{Col, Rectangle, Transform};
 use std::marker::PhantomData;
@@ -80,17 +79,14 @@ impl LeaderboardFrame<'_, '_> {
 
         Ok(())
     }
-}
 
-impl<'a, 'b> Frame for LeaderboardFrame<'a, 'b> {
-    type Error = PadlError;
-    type State = Game<'a, 'b>;
-    type Graphics = QuicksilverWindow;
-    type Event = PadlEvent;
-
-    fn event(&mut self, _state: &mut Self::State, e: &Self::Event) -> Result<(), Self::Error> {
-        match e {
-            PadlEvent::Network(NetMsg::Leaderboard(offset, list)) => {
+    pub fn network_message(
+        &mut self,
+        _state: &mut Game<'static, 'static>,
+        msg: &NetMsg,
+    ) -> Result<(), PadlError> {
+        match msg {
+            NetMsg::Leaderboard(offset, list) => {
                 self.clear()?;
                 for (i, (name, karma)) in list.into_iter().enumerate() {
                     self.insert_row(offset + i, &name, *karma)?;
@@ -100,6 +96,13 @@ impl<'a, 'b> Frame for LeaderboardFrame<'a, 'b> {
         }
         Ok(())
     }
+}
+
+impl<'a, 'b> Frame for LeaderboardFrame<'a, 'b> {
+    type Error = PadlError;
+    type State = Game<'a, 'b>;
+    type Graphics = QuicksilverWindow;
+
     fn draw(
         &mut self,
         state: &mut Self::State,

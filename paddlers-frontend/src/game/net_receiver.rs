@@ -56,10 +56,9 @@ impl LoadingState {
                     self.game_data.village_info = Some(response);
                 }
                 NetMsg::Leaderboard(offset, list) => {
-                    self.viewer_data
-                        .push(PadlEvent::Network(NetMsg::Leaderboard(offset, list)));
+                    self.viewer_data.push(NetMsg::Leaderboard(offset, list));
                     self.progress
-                        .report_progress::<PadlEvent>(self.viewer_data.len());
+                        .report_progress::<NetMsg>(self.viewer_data.len());
                 }
                 other => {
                     println!(
@@ -98,7 +97,7 @@ impl Game<'static, 'static> {
                         load_hobos_from_net_response(ctx, hobos)?;
                     }
                     NetMsg::Leaderboard(offset, list) => {
-                        crate::share(PadlEvent::Network(NetMsg::Leaderboard(offset, list)));
+                        paddle::share(NetMsg::Leaderboard(offset, list));
                     }
                     NetMsg::Map(response, min, max) => {
                         if let Some(data) = response.data {
@@ -130,7 +129,7 @@ impl Game<'static, 'static> {
                     }
                     NetMsg::VillageInfo(response) => {
                         self.load_village_info(response)?;
-                        crate::share(PadlEvent::Signal(Signal::ResourcesUpdated));
+                        paddle::share(Signal::ResourcesUpdated);
                     }
                     NetMsg::Workers(response, vid) => {
                         let ctx = self.maybe_town_context_mut(vid, "workers")?;
@@ -164,7 +163,7 @@ impl Game<'static, 'static> {
                         }
                     }
                     NetMsg::Reports(data) => {
-                        crate::share(PadlEvent::Network(NetMsg::Reports(data)));
+                        paddle::share(NetMsg::Reports(data));
                     }
                 }
             }

@@ -11,7 +11,7 @@ use crate::gui::{
 use crate::init::quicksilver_integration::Signal;
 use crate::prelude::*;
 use crate::resolution::ScreenResolution;
-use crate::view::Frame;
+use paddle::Frame;
 use quicksilver::prelude::{MouseButton, Rectangle, Shape, Window};
 use specs::prelude::*;
 
@@ -28,7 +28,6 @@ impl<'a, 'b> Frame for TownMenuFrame<'a, 'b> {
     type Error = PadlError;
     type State = Game<'a, 'b>;
     type Graphics = Window;
-    type Event = PadlEvent;
 
     fn draw(
         &mut self,
@@ -141,26 +140,6 @@ impl<'a, 'b> Frame for TownMenuFrame<'a, 'b> {
         ui_state.take_grabbed_item();
         Ok(())
     }
-    fn event(&mut self, state: &mut Self::State, e: &Self::Event) -> Result<(), Self::Error> {
-        match e {
-            PadlEvent::Signal(Signal::ResourcesUpdated) => {
-                self.bank_component.draw(
-                    &self.resources_area,
-                    &state
-                        .town_world()
-                        .fetch::<TownResources>()
-                        .non_zero_resources(),
-                )?;
-            }
-            PadlEvent::Signal(Signal::NewStoryState(s)) => {
-                // FIXME: redundant with the same call also in dialogue
-                state.set_story_state(*s);
-                DefaultShop::reload(state.town_world_mut());
-            }
-            _ => {}
-        }
-        Ok(())
-    }
 }
 impl TownMenuFrame<'_, '_> {
     pub fn new<'a, 'b>() -> PadlResult<Self> {
@@ -206,6 +185,36 @@ impl TownMenuFrame<'_, '_> {
             now,
             TableVerticalAlignment::Top,
         )?;
+        Ok(())
+    }
+
+    pub fn new_story_state(
+        &mut self,
+        state: &mut Game<'static, 'static>,
+        msg: &crate::game::dialogue::NewStoryState,
+    ) -> Result<(), PadlError> {
+        // FIXME: redundant with the same call also in dialogue
+        state.set_story_state(msg.new_story_state);
+        DefaultShop::reload(state.town_world_mut());
+        Ok(())
+    }
+    pub fn signal(
+        &mut self,
+        state: &mut Game<'static, 'static>,
+        e: &Signal,
+    ) -> Result<(), PadlError> {
+        match e {
+            Signal::ResourcesUpdated => {
+                self.bank_component.draw(
+                    &self.resources_area,
+                    &state
+                        .town_world()
+                        .fetch::<TownResources>()
+                        .non_zero_resources(),
+                )?;
+            }
+            _ => {}
+        }
         Ok(())
     }
 }

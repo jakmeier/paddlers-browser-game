@@ -1,11 +1,11 @@
 mod progress_manager;
 use crate::game::game_event_manager::load_game_event_manager;
 use crate::gui::input::UiView;
-use crate::init::quicksilver_integration::{PadlEvent, Signal};
+use crate::init::quicksilver_integration::Signal;
 use crate::net::graphql::query_types::{
     AttacksResponse, BuildingsResponse, HobosQueryResponse, VolatileVillageInfoResponse,
 };
-use crate::view::new_frame::UpdateWorld;
+use paddle::UpdateWorld;
 use progress_manager::*;
 
 use crate::game::player_info::PlayerInfo;
@@ -21,8 +21,8 @@ use crate::net::graphql::query_types::WorkerResponse;
 use crate::net::NetMsg;
 use crate::prelude::*;
 use crate::prelude::{PadlResult, ScreenResolution, TextDb};
-use crate::view::new_frame::{Domain, WorldEvent};
 use crate::view::FloatingText;
+use paddle::{Domain, WorldEvent};
 use quicksilver::prelude::*;
 use std::sync::mpsc::Receiver;
 
@@ -36,7 +36,7 @@ pub struct BaseState {
 pub(crate) struct LoadingState {
     pub progress: ProgressManager,
     pub game_data: GameLoadingData,
-    pub viewer_data: Vec<PadlEvent>,
+    pub viewer_data: Vec<NetMsg>,
     pub base: BaseState,
     pub resolution: ScreenResolution,
     images: Vec<Asset<Image>>,
@@ -66,7 +66,7 @@ impl LoadingState {
         // For leaderboard network event
         let viewer_data = vec![];
         let progress = ProgressManager::new()
-            .with::<PadlEvent>(1, "Downloading news in Paddland")
+            .with::<NetMsg>(1, "Downloading news in Paddland")
             .with_loadable(&game_data.player_info, "Downloading player data")
             .with_loadable(&game_data.worker_response, "Downloading working Paddlers")
             .with_loadable(&game_data.buildings_response, "Downloading buildings")
@@ -175,19 +175,11 @@ impl LoadingState {
                 let view = UiView::Town;
                 let viewer = super::frame_loading::load_viewer(view, resolution);
                 for evt in self.viewer_data {
-                    crate::share(evt);
+                    paddle::share(evt);
                 }
-                crate::share_foreground(PadlEvent::Signal(Signal::ResourcesUpdated));
+                paddle::share_foreground(Signal::ResourcesUpdated);
 
                 let viewer_activity = nuts::new_domained_activity(viewer, Domain::Main, true);
-                viewer_activity.subscribe_domained(
-                    |_viewer, _domain, signal: &crate::init::quicksilver_integration::Signal| {
-                        use crate::view::FrameSignal;
-                        if let Some(evt) = signal.evaluate_signal() {
-                            crate::share(evt);
-                        }
-                    },
-                );
                 viewer_activity.subscribe_domained(|viewer, domain, _: &UpdateWorld| {
                     let game: &mut Game<'static, 'static> =
                         domain.try_get_mut().expect("Forgot to insert Game?");

@@ -7,7 +7,7 @@ use crate::game::visits::{
 };
 use crate::gui::menu::{MapMenuFrame, MenuBackgroundFrame, TownMenuFrame};
 use crate::prelude::*;
-use crate::view::new_frame::ViewManager;
+use paddle::ViewManager;
 use quicksilver::prelude::*;
 
 pub(crate) fn load_viewer(view: UiView, resolution: ScreenResolution) -> ViewManager<UiView> {
@@ -16,25 +16,28 @@ pub(crate) fn load_viewer(view: UiView, resolution: ScreenResolution) -> ViewMan
     /* Town */
 
     let menu = TownFrame::new();
-    viewer.add_frame(
+    let town_handler = viewer.add_frame(
         menu,
         &[UiView::Town],
         (0, 0), // TODO
         (0, 0), // TODO
     );
+    town_handler.listen(TownFrame::signal);
 
     let menu = TownMenuFrame::new().expect("Town menu loading");
-    viewer.add_frame(
+    let town_menu_handle = viewer.add_frame(
         menu,
         &[UiView::Town],
         (0, 0), // TODO
         (0, 0), // TODO
     );
+    town_menu_handle.listen(TownMenuFrame::new_story_state);
+    town_menu_handle.listen(TownMenuFrame::signal);
 
     /* Menu background and buttons */
     // Somehow, the town rendering gets messed up if TownFrame is added after this frame...
     let menu = MenuBackgroundFrame::new();
-    viewer.add_frame(
+    let menu_bg_handler = viewer.add_frame(
         menu,
         &[
             UiView::Town,
@@ -46,6 +49,8 @@ pub(crate) fn load_viewer(view: UiView, resolution: ScreenResolution) -> ViewMan
         (0, 0), // TODO
         (0, 0), // TODO
     );
+    menu_bg_handler.listen(MenuBackgroundFrame::network_message);
+    menu_bg_handler.listen(MenuBackgroundFrame::signal);
 
     /* Map */
 
@@ -89,22 +94,24 @@ pub(crate) fn load_viewer(view: UiView, resolution: ScreenResolution) -> ViewMan
 
     let rect = Rectangle::new((0.0, 0.0), (w, h));
     let frame = ReportFrame::new(rect, resolution).expect("Report frame loading");
-    viewer.add_frame(
+    let report_handler = viewer.add_frame(
         frame,
         &[UiView::Visitors(VisitorViewTab::Letters)],
         (0, 0), // TODO
         (0, 0), // TODO
     );
+    report_handler.listen(ReportFrame::network_message);
 
     /* Leaderboard */
 
     let menu = LeaderboardFrame::new(&rect).expect("Leaderboard loading");
-    viewer.add_frame(
+    let leaderboard_handler = viewer.add_frame(
         menu,
         &[UiView::Leaderboard],
         (0, 0), // TODO
         (0, 0), // TODO
     );
+    leaderboard_handler.listen(LeaderboardFrame::network_message);
 
     /* Dialogue box */
 
@@ -112,6 +119,9 @@ pub(crate) fn load_viewer(view: UiView, resolution: ScreenResolution) -> ViewMan
     let w = w + w1;
     let rect = Rectangle::new((0.0, 0.0), (w, h));
     let dialogue = DialogueFrame::new(&rect).expect("Dialogue loading");
-    viewer.add_frame(dialogue, &[UiView::Dialogue], (0, 0), (w as i32, h as i32));
+    let dialogue_handle =
+        viewer.add_frame(dialogue, &[UiView::Dialogue], (0, 0), (w as i32, h as i32));
+    dialogue_handle.listen(DialogueFrame::receive_load_scene);
+    dialogue_handle.listen(DialogueFrame::receive_new_story_state);
     viewer
 }

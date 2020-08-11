@@ -2,7 +2,7 @@
 //! Triggers the corresponding mouse-click systems when necessary.
 use super::{drag::*, HoverSystem, MouseState};
 use crate::prelude::*;
-use crate::view::new_frame::{LeftClick, RightClick};
+use paddle::{LeftClick, RightClick};
 use quicksilver::prelude::*;
 use specs::prelude::*;
 

@@ -2,7 +2,6 @@ use crate::gui::{gui_components::*, input::UiView, sprites::*, ui_state::Now, ut
 use crate::init::quicksilver_integration::Signal;
 use crate::net::NetMsg;
 use crate::prelude::*;
-use crate::view::*;
 use core::marker::PhantomData;
 use quicksilver::prelude::Window;
 use specs::prelude::*;
@@ -61,13 +60,41 @@ impl<'a, 'b> MenuBackgroundFrame<'a, 'b> {
         self.ui
             .update_notifications(Some(vec![0, 0, self.reports_to_collect, 0]));
     }
+    pub fn network_message(
+        &mut self,
+        _state: &mut Game<'static, 'static>,
+        msg: &NetMsg,
+    ) -> Result<(), PadlError> {
+        match msg {
+            NetMsg::Reports(data) => {
+                let new_reports = data.village.reports.len();
+                self.reports_to_collect += new_reports;
+                self.update_notifications();
+            }
+            _ => {}
+        }
+        Ok(())
+    }
+    pub fn signal(
+        &mut self,
+        _state: &mut Game<'static, 'static>,
+        msg: &Signal,
+    ) -> Result<(), PadlError> {
+        match msg {
+            Signal::NewReportCount(n) => {
+                self.reports_to_collect = *n;
+                self.update_notifications();
+            }
+            _ => {}
+        }
+        Ok(())
+    }
 }
 
 impl<'a, 'b> Frame for MenuBackgroundFrame<'a, 'b> {
     type Error = PadlError;
     type State = Game<'a, 'b>;
     type Graphics = Window;
-    type Event = PadlEvent;
 
     fn draw(&mut self, state: &mut Self::State, window: &mut Window) -> Result<(), Self::Error> {
         self.tp.reset();
@@ -86,21 +113,6 @@ impl<'a, 'b> Frame for MenuBackgroundFrame<'a, 'b> {
         };
         if let Some(event) = state.check(result).flatten() {
             nuts::publish(event);
-        }
-        Ok(())
-    }
-    fn event(&mut self, _state: &mut Self::State, event: &Self::Event) -> Result<(), Self::Error> {
-        match event {
-            PadlEvent::Network(NetMsg::Reports(data)) => {
-                let new_reports = data.village.reports.len();
-                self.reports_to_collect += new_reports;
-                self.update_notifications();
-            }
-            PadlEvent::Signal(Signal::NewReportCount(n)) => {
-                self.reports_to_collect = *n;
-                self.update_notifications();
-            }
-            _ => {}
         }
         Ok(())
     }

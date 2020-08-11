@@ -9,7 +9,7 @@ use crate::gui::{
 };
 use crate::init::quicksilver_integration::Signal;
 use crate::prelude::*;
-use crate::view::Frame;
+use paddle::Frame;
 use quicksilver::graphics::Mesh;
 use quicksilver::prelude::{MouseButton, Shape, Vector, Window};
 use specs::prelude::*;
@@ -26,7 +26,6 @@ impl<'a, 'b> Frame for TownFrame<'a, 'b> {
     type Error = PadlError;
     type State = Game<'a, 'b>;
     type Graphics = Window;
-    type Event = PadlEvent;
 
     fn update(&mut self, state: &mut Self::State) -> Result<(), Self::Error> {
         state.prepare_town_resources();
@@ -65,15 +64,6 @@ impl<'a, 'b> Frame for TownFrame<'a, 'b> {
         Ok(())
     }
 
-    fn event(&mut self, state: &mut Self::State, e: &Self::Event) -> Result<(), Self::Error> {
-        match e {
-            PadlEvent::Signal(Signal::PlayerInfoUpdated) => {
-                state.update_temple()?;
-            }
-            _ => {}
-        }
-        Ok(())
-    }
     fn left_click(&mut self, state: &mut Self::State, pos: (i32, i32)) -> Result<(), Self::Error> {
         let town_world = state.town_world();
         let ui_state = town_world.fetch_mut::<ViewState>();
@@ -166,6 +156,19 @@ impl<'a, 'b> TownFrame<'a, 'b> {
             background_cache: None,
             town_dispatcher,
         }
+    }
+    pub fn signal(
+        &mut self,
+        state: &mut Game<'static, 'static>,
+        msg: &Signal,
+    ) -> Result<(), PadlError> {
+        match msg {
+            Signal::PlayerInfoUpdated => {
+                state.update_temple()?;
+            }
+            _ => {}
+        }
+        Ok(())
     }
 }
 impl<'a, 'b> Game<'a, 'b> {

@@ -21,6 +21,7 @@ COPY ./paddlers-frontend/api ./paddlers-frontend/api
 COPY ./paddlers-frontend/src ./paddlers-frontend/src
 COPY ./paddlers-frontend/Cargo.toml ./paddlers-frontend/
 COPY ./nuts ./nuts
+COPY ./paddle ./paddle
 COPY ./Cargo.lock ./paddlers-frontend/
 # Build project
 RUN cd paddlers-frontend; cargo web deploy --target=wasm32-unknown-unknown --release --features=dev_view

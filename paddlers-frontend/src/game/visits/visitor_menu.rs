@@ -2,7 +2,6 @@ use crate::gui::{
     gui_components::*, input::UiView, shapes::PadlShapeIndex, sprites::*, ui_state::Now, utils::*,
 };
 use crate::prelude::*;
-use crate::view::*;
 use core::marker::PhantomData;
 use quicksilver::prelude::Window;
 use specs::WorldExt;
@@ -41,7 +40,6 @@ impl<'a, 'b> Frame for VisitorMenuFrame<'a, 'b> {
     type Error = PadlError;
     type State = Game<'a, 'b>;
     type Graphics = Window;
-    type Event = PadlEvent;
 
     fn draw(
         &mut self,

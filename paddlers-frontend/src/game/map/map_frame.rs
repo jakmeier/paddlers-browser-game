@@ -2,7 +2,7 @@ use super::*;
 use crate::game::Game;
 use crate::prelude::*;
 use crate::quicksilver::geom::Shape;
-use crate::view::Frame;
+use paddle::Frame;
 use quicksilver::prelude::Window;
 use std::marker::PhantomData;
 
@@ -22,7 +22,6 @@ impl<'a, 'b> Frame for MapFrame<'a, 'b> {
     type Error = PadlError;
     type State = Game<'a, 'b>;
     type Graphics = Window;
-    type Event = PadlEvent;
 
     fn draw(
         &mut self,

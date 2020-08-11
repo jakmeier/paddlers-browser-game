@@ -55,7 +55,7 @@ impl EntityTriggerSystem {
         EntityTriggerSystem
     }
     fn trigger(&mut self, trigger: EntityTrigger) -> PadlResult<()> {
-        crate::game_event(GameEvent::StoryActions(trigger.actions));
+        crate::game::game_event_manager::game_event(GameEvent::StoryActions(trigger.actions));
         Ok(())
     }
 }

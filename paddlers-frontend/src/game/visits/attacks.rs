@@ -5,8 +5,8 @@ use crate::gui::z::*;
 use crate::net::game_master_api::RestApiState;
 use crate::net::state::current_village;
 use crate::prelude::*;
-use crate::view::Frame;
 use crate::view::TextNode;
+use paddle::Frame;
 use paddlers_shared_lib::api::attacks::*;
 use paddlers_shared_lib::prelude::*;
 use panes::new_pane;
@@ -135,7 +135,6 @@ impl<'a, 'b> Frame for VisitorFrame<'a, 'b> {
     type Error = PadlError;
     type State = Game<'a, 'b>;
     type Graphics = Window;
-    type Event = PadlEvent;
 
     fn update(&mut self, state: &mut Self::State) -> Result<(), Self::Error> {
         self.update_dispatcher.dispatch(&mut state.world);

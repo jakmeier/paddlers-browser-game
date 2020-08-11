@@ -7,7 +7,7 @@ use crate::gui::{
     ui_state::UiState,
 };
 use crate::prelude::*;
-use crate::view::Frame;
+use paddle::Frame;
 use quicksilver::prelude::{MouseButton, Shape, Window};
 use specs::prelude::*;
 
@@ -33,7 +33,6 @@ impl<'a, 'b> Frame for MapMenuFrame<'a, 'b> {
     type Error = PadlError;
     type State = Game<'a, 'b>;
     type Graphics = Window;
-    type Event = PadlEvent;
 
     fn draw(
         &mut self,

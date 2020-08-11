@@ -7,11 +7,10 @@ use crate::game::{
 use crate::gui::input::UiView;
 use crate::gui::ui_state::Now;
 use crate::gui::ui_state::UiState;
-use crate::init::quicksilver_integration::Signal;
 use crate::net::game_master_api::RestApiState;
 use crate::net::request_foreign_town;
 use crate::prelude::*;
-use crate::view::new_frame::Domain;
+use paddle::Domain;
 use paddlers_shared_lib::api::story::StoryStateTransition;
 use paddlers_shared_lib::prelude::*;
 use specs::prelude::*;
@@ -20,6 +19,11 @@ pub struct EventManager;
 
 /// Coordinates of a village in world map
 pub type VillageCoordinate = (i32, i32);
+
+/// Send a GameEvent to the game event manager (replaces endpoints that were copied everywhere before)
+pub fn game_event(ev: GameEvent) {
+    paddle::nuts::publish(ev);
+}
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum GameEvent {
@@ -108,16 +112,18 @@ impl Game<'static, 'static> {
     fn try_handle_story_action(&mut self, action: StoryAction) -> PadlResult<()> {
         match action {
             StoryAction::OpenScene(scene, slide) => {
-                crate::share(PadlEvent::Signal(Signal::Scene(scene, slide)));
+                paddle::share(crate::game::dialogue::LoadNewDialogueScene::new(
+                    scene, slide,
+                ));
                 self.switch_view(UiView::Dialogue);
             }
-            StoryAction::StoryProgress(new_state) => {
+            StoryAction::StoryProgress(new_story_state) => {
                 let t = StoryStateTransition {
                     before: self.story_state(),
-                    after: new_state,
+                    after: new_story_state,
                 };
                 RestApiState::get().http_update_story_state(t)?;
-                crate::share(PadlEvent::Signal(Signal::NewStoryState(new_state)));
+                paddle::share(crate::game::dialogue::NewStoryState { new_story_state });
             }
             StoryAction::TownSelectEntity(e) => {
                 let world = self.town_context.world();

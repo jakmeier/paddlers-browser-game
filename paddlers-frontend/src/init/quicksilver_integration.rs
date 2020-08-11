@@ -7,18 +7,13 @@
 //!
 //! All this is glued together by implementing quicksilver's State
 
-use crate::game::story::scene::SlideIndex;
 use crate::init::loading::LoadingState;
 use crate::net::game_master_api::RestApiState;
 use crate::prelude::*;
-use crate::view::new_frame::*;
-use crate::view::FrameSignal;
-use paddlers_shared_lib::story::story_state::StoryState;
+use paddle::*;
 
-use crate::game::story::scene::SceneIndex;
 use crate::game::*;
 use crate::gui::ui_state::*;
-use crate::net::NetMsg;
 use crate::specs::WorldExt;
 use quicksilver::prelude::*;
 
@@ -33,45 +28,15 @@ pub(crate) enum QuicksilverState {
     // During fully initialized game (Game is stored in nuts)
     Ready,
 }
-/// These are events that come in to the framer.
-/// Right now, they are passed on directly to the views, which can then decide to act upon it or not.
-/// Moving forward, the goal is to implement this as publish-subscriber system and split it up.
-///     Network:        Subscribe to specific messages (maybe enforce single subscriber per message)
-///     Quicksilver:    These are user inputs, which can be handled with already existing listeners (e.g. left_click)
-///     Signal:         Should only be inputs, nothing to forward to views directly
-///     Notification:   Subscribe to certain notifications with a handler, specification defines how signals are mapped to commands
-#[derive(Debug)]
-pub(crate) enum PadlEvent {
-    // Quicksilver(Event), // Should this be used instead of WorldEvent?
-    Network(NetMsg),
-    Signal(Signal),
-}
 #[derive(Clone, Debug)]
 /// Signals are a way to broadcast events for event listeners across views.
 pub enum Signal {
-    ResourcesUpdated,              // Notification
-    PlayerInfoUpdated,             // Notification
-    BuildingBuilt(BuildingType),   // Signal
-    Scene(SceneIndex, SlideIndex), // Signal(?)
-    NewStoryState(StoryState),     // Notification
-    NewReportCount(usize),         // Notification
+    ResourcesUpdated,            // Notification
+    PlayerInfoUpdated,           // Notification
+    BuildingBuilt(BuildingType), // Signal
+    NewReportCount(usize),       // Notification
 }
-/// Has no state, is not shared.
-/// Only used to glue quicksilver to nuts.
-/// The game state itself is stored in the domain, following a less object-oriented programming style.
-struct GameActivty;
-impl FrameSignal<PadlEvent> for Signal {
-    // Improvement: This should be synced with a specification document (to be designed)
-    fn evaluate_signal(&self) -> Option<PadlEvent> {
-        match self {
-            Self::BuildingBuilt(BuildingType::Temple) => Some(PadlEvent::Signal(
-                Signal::NewStoryState(StoryState::TempleBuilt),
-            )),
-            Self::NewReportCount(n) => Some(PadlEvent::Signal(Self::NewReportCount(*n))),
-            _ => None,
-        }
-    }
-}
+
 impl QuicksilverState {
     pub fn load(state: LoadingState) -> Self {
         Self::Loading(state)
@@ -120,9 +85,10 @@ impl State for QuicksilverState {
         Ok(())
     }
 }
+struct GameActivity;
 impl Game<'static, 'static> {
     pub fn register_in_nuts() {
-        let aid = nuts::new_domained_activity(GameActivty, Domain::Main, true);
+        let aid = nuts::new_domained_activity(GameActivity, Domain::Main, true);
         aid.subscribe_domained_mut(|_, domain, msg: &mut UpdateWorld| {
             let game: &mut Game = domain.try_get_mut().expect("Game missing");
             let window = msg.window();

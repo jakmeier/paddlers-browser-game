@@ -63,7 +63,7 @@ impl Health {
     pub fn make_happy(&mut self, amount: i64, id: Entity) {
         let new_hp = 0.max(self.hp - amount);
         if new_hp == 0 && self.hp != 0 {
-            crate::game_event(GameEvent::HoboSatisfied(id));
+            crate::game::game_event_manager::game_event(GameEvent::HoboSatisfied(id));
         }
         self.hp = new_hp;
     }
