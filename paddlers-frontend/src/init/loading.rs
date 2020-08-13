@@ -21,8 +21,7 @@ use crate::net::graphql::query_types::WorkerResponse;
 use crate::net::NetMsg;
 use crate::prelude::*;
 use crate::prelude::{PadlResult, ScreenResolution, TextDb};
-use crate::view::FloatingText;
-use paddle::{Domain, WorldEvent};
+use paddle::{Domain, WorldEvent, FloatingText};
 use quicksilver::prelude::*;
 use std::sync::mpsc::Receiver;
 

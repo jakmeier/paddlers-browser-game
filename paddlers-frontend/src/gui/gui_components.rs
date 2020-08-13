@@ -9,6 +9,7 @@ pub use resources_component::*;
 use crate::game::game_event_manager::GameEvent;
 use crate::gui::{sprites::*, utils::*, z::*};
 use crate::prelude::*;
+use paddle::{FitStrategy, NutsCheck};
 use paddlers_shared_lib::api::shop::Price;
 use paddlers_shared_lib::prelude::AbilityType;
 use quicksilver::prelude::*;
@@ -41,6 +42,7 @@ pub trait InteractiveTableArea {
 
 #[derive(Clone, Debug, PartialEq)]
 /// Elements than can be produces by a click in a interactive area
+/// TODO: It might be a good idea to replace all of this with nuts publication
 pub enum ClickOutput {
     Entity(specs::Entity),
     BuildingType(BuildingType),
@@ -136,7 +138,8 @@ pub fn draw_table(
                 text_area.size.y = font_h;
                 floats
                     .allocate()
-                    .write(window, &text_area, z, FitStrategy::Center, text)?;
+                    .write(window, &text_area, z, FitStrategy::Center, text)
+                    .nuts_check();
                 line.pos.y += row_height;
             }
             TableRow::TextWithImage(text, img) => {
@@ -149,7 +152,8 @@ pub fn draw_table(
                 text_area.pos.y += row_height - font_h; // something is fishy here, should be /2.0 but right now looks better without
                 floats
                     .allocate()
-                    .write(window, &text_area, z, FitStrategy::Center, text)?;
+                    .write(window, &text_area, z, FitStrategy::Center, text)
+                    .nuts_check();
                 draw_static_image(sprites, window, &symbol, *img, z, FitStrategy::Center)?;
                 line.pos.y += row_height;
             }
@@ -172,24 +176,18 @@ pub fn draw_table(
                     window.draw_ex(&label_area, Col(*bkgcol), Transform::IDENTITY, z);
                     let mut label_text_area = label_area.shrink_to_center(0.9);
                     label_text_area.pos.y += label_text_area.size.y * 0.1;
-                    white_floats.allocate().write(
-                        window,
-                        &label_text_area,
-                        z,
-                        FitStrategy::Center,
-                        label,
-                    )?;
+                    white_floats
+                        .allocate()
+                        .write(window, &label_text_area, z, FitStrategy::Center, label)
+                        .nuts_check();
                 }
                 let text = format!("{}/{}", i, n);
                 let mut text_area = area.shrink_to_center(0.9);
                 text_area.pos.y += text_area.size.y * 0.1;
-                white_floats.allocate().write(
-                    window,
-                    &text_area,
-                    z + 1,
-                    FitStrategy::Center,
-                    &text,
-                )?;
+                white_floats
+                    .allocate()
+                    .write(window, &text_area, z + 1, FitStrategy::Center, &text)
+                    .nuts_check();
 
                 window.draw_ex(&area, Col(*col), Transform::IDENTITY, Z_MENU_BOX + 1);
                 let mut bar = area.padded(3.0);

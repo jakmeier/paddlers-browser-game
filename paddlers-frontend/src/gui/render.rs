@@ -11,6 +11,7 @@ use crate::gui::{
     animation::AnimationState, input::Grabbable, sprites::*, ui_state::*, utils::*, z::*,
 };
 use crate::prelude::*;
+use paddle::FitStrategy;
 use quicksilver::graphics::Color;
 use quicksilver::input::MouseCursor;
 use quicksilver::prelude::*;

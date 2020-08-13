@@ -1,4 +1,5 @@
 use super::*;
+use paddle::NutsCheck;
 use quicksilver::prelude::*;
 
 pub fn draw_progress_bar(
@@ -13,13 +14,15 @@ pub fn draw_progress_bar(
 
     let z = 1;
 
-    float.write(
-        window,
-        &text_area.padded(10.0),
-        z,
-        FitStrategy::Center,
-        text,
-    )?;
+    float
+        .write(
+            window,
+            &text_area.padded(10.0),
+            z,
+            FitStrategy::Center,
+            text,
+        )
+        .nuts_check();
 
     window.draw(&bar_area, Col(Color::WHITE));
     let mut bar = bar_area.padded(3.0);

@@ -1,6 +1,7 @@
 use super::*;
 use crate::gui::{sprites::*, utils::*, z::*};
 use crate::prelude::*;
+use paddle::{FitStrategy, NutsCheck};
 use quicksilver::prelude::*;
 use std::f32::consts::FRAC_1_SQRT_2;
 
@@ -105,7 +106,7 @@ impl InteractiveTableArea for UiBox {
                         Z_MENU_TEXT,
                         FitStrategy::Center,
                         &t,
-                    )?;
+                    ).nuts_check();
                     None
                 }
                 RenderVariant::TextWithColBackground(t, col) => {
@@ -121,7 +122,7 @@ impl InteractiveTableArea for UiBox {
                         Z_MENU_TEXT,
                         FitStrategy::Center,
                         &t,
-                    )?;
+                    ).nuts_check();
                     None
                 }
                 RenderVariant::Hide => None,
@@ -154,13 +155,16 @@ impl InteractiveTableArea for UiBox {
                     );
                     let d = radius * FRAC_1_SQRT_2;
                     let text_area = Rectangle::new_sized((d, d)).with_center(center);
-                    tp.text_pool.allocate().write(
-                        window,
-                        &text_area,
-                        Z_MENU_TEXT,
-                        FitStrategy::Center,
-                        &indicator.to_string(),
-                    )?;
+                    tp.text_pool
+                        .allocate()
+                        .write(
+                            window,
+                            &text_area,
+                            Z_MENU_TEXT,
+                            FitStrategy::Center,
+                            &indicator.to_string(),
+                        )
+                        .nuts_check();
                 }
             }
         }

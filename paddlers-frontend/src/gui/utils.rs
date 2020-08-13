@@ -15,7 +15,8 @@ pub use progress_bar::*;
 use crate::gui::animation::AnimationState;
 use crate::gui::sprites::*;
 use crate::prelude::*;
-use crate::view::FloatingText;
+use paddle::FitStrategy;
+use paddle::FloatingText;
 use quicksilver::graphics::Mesh;
 use quicksilver::prelude::*;
 
@@ -32,12 +33,6 @@ pub enum RenderVariant {
     TextWithColBackground(String, Color),
     Shape(PadlShapeIndex),
     Hide,
-}
-
-#[derive(Copy, Clone, Debug)]
-pub enum FitStrategy {
-    TopLeft,
-    Center,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -129,22 +124,6 @@ pub fn draw_shape(
     );
     let t = Transform::translate(place.pos) * Transform::scale(factor);
     extend_transformed(window.mesh(), &shape.mesh, t);
-}
-
-impl FloatingText {
-    pub fn write(
-        &mut self,
-        _window: &Window,
-        max_area: &Rectangle,
-        _z: i32,                 // TODO
-        _fit_strat: FitStrategy, // TODO
-        text: &str,
-    ) -> PadlResult<()> {
-        self.update_text(text);
-        self.update_position(max_area)?;
-        self.draw();
-        Ok(())
-    }
 }
 
 pub fn horizontal_flip() -> Transform {

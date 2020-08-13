@@ -50,15 +50,3 @@ impl ErrorQueue {
         }
     }
 }
-
-pub trait NutsCheck {
-    fn nuts_check(self);
-}
-
-impl NutsCheck for PadlResult<()> {
-    fn nuts_check(self) {
-        if let Err(e) = self {
-            nuts::publish(e)
-        }
-    }
-}

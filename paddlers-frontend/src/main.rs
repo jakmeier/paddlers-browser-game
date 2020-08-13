@@ -38,7 +38,7 @@ pub fn main() {
         .expect("Panes initialization failed");
 
     // Setup logging
-    crate::logging::text_to_user::TextBoard::init();
+    paddle::TextBoard::init();
     crate::logging::init_error_handling();
 
     // Set up loading state with interfaces to networking

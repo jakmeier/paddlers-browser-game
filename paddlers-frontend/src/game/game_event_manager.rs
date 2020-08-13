@@ -10,7 +10,7 @@ use crate::gui::ui_state::UiState;
 use crate::net::game_master_api::RestApiState;
 use crate::net::request_foreign_town;
 use crate::prelude::*;
-use paddle::Domain;
+use paddle::{Domain, NutsCheck};
 use paddlers_shared_lib::api::story::StoryStateTransition;
 use paddlers_shared_lib::prelude::*;
 use specs::prelude::*;

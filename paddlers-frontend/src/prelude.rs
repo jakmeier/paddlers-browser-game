@@ -9,10 +9,9 @@ pub(crate) use crate::logging::error::{PadlError, PadlErrorCode, PadlResult};
 pub(crate) use crate::logging::text_to_user::TextBoard;
 pub(crate) use crate::logging::NutsCheck;
 pub(crate) use crate::resolution::ScreenResolution;
-pub(crate) use crate::view::text_pool::TextPool;
 pub(crate) use crate::Timestamp;
 
-pub(crate) use paddle::Frame;
+pub(crate) use paddle::{Frame, TextPool};
 
 pub(crate) use paddlers_shared_lib::models::{
     AbilityType, BuildingType, ResourceType, TaskType, UnitColor,
