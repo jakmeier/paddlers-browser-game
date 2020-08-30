@@ -470,6 +470,7 @@ pub trait GameDB {
             .filter(visit_reports::village_id.eq(v.num()))
             .filter(visit_reports::id.ge(min_id.unwrap_or(0)))
             .order_by(visit_reports::reported.desc())
+            .limit(50)
             .load::<VisitReport>(self.dbconn())
             .expect("Error loading visit reports");
         results
