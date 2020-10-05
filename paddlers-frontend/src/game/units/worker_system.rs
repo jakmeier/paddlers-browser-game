@@ -11,6 +11,7 @@ use crate::gui::gui_components::ClickOutput;
 use crate::gui::render::Renderable;
 use crate::gui::utils::*;
 use crate::prelude::*;
+use chrono::NaiveDateTime;
 use quicksilver::geom::about_equal;
 use specs::prelude::*;
 
@@ -126,7 +127,7 @@ impl<'a> System<'a> for WorkerSystem {
     }
 }
 
-fn update_cooldown(ui: &mut UiMenu, ability: AbilityType, now: Timestamp) {
+fn update_cooldown(ui: &mut UiMenu, ability: AbilityType, now: NaiveDateTime) {
     let click = ClickOutput::Ability(ability);
     if let Some(el) = ui.ui.find_by_on_click(click) {
         el.overlay = Some((now, now + ability.cooldown()));

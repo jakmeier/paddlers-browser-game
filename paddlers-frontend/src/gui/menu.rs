@@ -5,6 +5,7 @@ mod town_menu;
 use crate::gui::sprites::Sprites;
 pub(crate) use map_menu::MapMenuFrame;
 pub(crate) use menu_background::MenuBackgroundFrame;
+use paddle::*;
 pub(crate) use town_menu::TownMenuFrame;
 
 use crate::game::{

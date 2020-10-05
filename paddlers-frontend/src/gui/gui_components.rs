@@ -2,6 +2,7 @@
 
 mod ui_box;
 use crate::game::story::scene::SlideButtonAction;
+use chrono::NaiveDateTime;
 pub use ui_box::*;
 mod resources_component;
 pub use resources_component::*;
@@ -9,6 +10,7 @@ pub use resources_component::*;
 use crate::game::game_event_manager::GameEvent;
 use crate::gui::{sprites::*, utils::*, z::*};
 use crate::prelude::*;
+use paddle::*;
 use paddle::{FitStrategy, NutsCheck};
 use paddlers_shared_lib::api::shop::Price;
 use paddlers_shared_lib::prelude::AbilityType;
@@ -31,7 +33,7 @@ pub trait InteractiveTableArea {
         window: &mut Window,
         sprites: &mut Sprites,
         tp: &mut TableTextProvider,
-        now: Timestamp,
+        now: NaiveDateTime,
         area: &Rectangle,
     ) -> PadlResult<()>;
     /// Check if the mouse hits somthing on the area
@@ -112,7 +114,7 @@ pub fn draw_table(
     text_provider: &mut TableTextProvider,
     max_row_height: f32,
     z: i32,
-    now: Timestamp,
+    now: NaiveDateTime,
     alignment: TableVerticalAlignment,
 ) -> PadlResult<()> {
     let total_rows = row_count(table);

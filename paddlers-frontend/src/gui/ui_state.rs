@@ -1,5 +1,5 @@
 use crate::gui::input::*;
-use crate::prelude::*;
+use chrono::NaiveDateTime;
 use quicksilver::prelude::*;
 use specs::prelude::*;
 
@@ -24,9 +24,15 @@ pub struct ViewState {
 #[derive(Default, Copy, Clone)]
 /// Global animation ticker
 pub struct ClockTick(pub u32);
-#[derive(Default, Copy, Clone)]
+#[derive(Copy, Clone)]
 /// Real-time timestamp of frame rendering
-pub struct Now(pub Timestamp);
+pub struct Now(pub NaiveDateTime);
+
+impl Default for Now {
+    fn default() -> Self {
+        Self(NaiveDateTime::from_timestamp(0, 0))
+    }
+}
 
 impl UiState {
     pub fn new() -> Self {

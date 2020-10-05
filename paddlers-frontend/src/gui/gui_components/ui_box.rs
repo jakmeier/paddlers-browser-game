@@ -1,6 +1,9 @@
 use super::*;
 use crate::gui::{sprites::*, utils::*, z::*};
 use crate::prelude::*;
+use chrono::NaiveDateTime;
+use paddle::utc_now;
+use paddle::*;
 use paddle::{FitStrategy, NutsCheck};
 use quicksilver::prelude::*;
 use std::f32::consts::FRAC_1_SQRT_2;
@@ -13,7 +16,7 @@ use std::f32::consts::FRAC_1_SQRT_2;
 /// Or maybe, UI elements could even have their own ECS-like (sub-)structure so that components that can be added flexibly
 pub struct UiElement {
     display: RenderVariant,
-    pub overlay: Option<(Timestamp, Timestamp)>,
+    pub overlay: Option<(NaiveDateTime, NaiveDateTime)>,
     condition: Option<Condition>,
     on_click: Option<ClickOutput>,
 }
@@ -40,7 +43,7 @@ impl InteractiveTableArea for UiBox {
         window: &mut Window,
         sprites: &mut Sprites,
         tp: &mut TableTextProvider,
-        now: Timestamp,
+        now: NaiveDateTime,
         area: &Rectangle,
     ) -> PadlResult<()> {
         self.area = *area;
@@ -100,13 +103,10 @@ impl InteractiveTableArea for UiBox {
                     None
                 }
                 RenderVariant::Text(t) => {
-                    tp.text_pool.allocate().write(
-                        window,
-                        &draw_area,
-                        Z_MENU_TEXT,
-                        FitStrategy::Center,
-                        &t,
-                    ).nuts_check();
+                    tp.text_pool
+                        .allocate()
+                        .write(window, &draw_area, Z_MENU_TEXT, FitStrategy::Center, &t)
+                        .nuts_check();
                     None
                 }
                 RenderVariant::TextWithColBackground(t, col) => {
@@ -116,13 +116,10 @@ impl InteractiveTableArea for UiBox {
                         Transform::IDENTITY,
                         Z_MENU_BOX_BUTTONS - 1,
                     );
-                    tp.text_pool.allocate().write(
-                        window,
-                        &draw_area,
-                        Z_MENU_TEXT,
-                        FitStrategy::Center,
-                        &t,
-                    ).nuts_check();
+                    tp.text_pool
+                        .allocate()
+                        .write(window, &draw_area, Z_MENU_TEXT, FitStrategy::Center, &t)
+                        .nuts_check();
                     None
                 }
                 RenderVariant::Hide => None,
@@ -252,10 +249,11 @@ impl UiBox {
 }
 
 impl UiElement {
-    fn draw_overlay(&self, window: &mut Window, area: &Rectangle, now: Timestamp) {
+    fn draw_overlay(&self, window: &mut Window, area: &Rectangle, now: NaiveDateTime) {
         if let Some((start, end)) = self.overlay {
             if now > start && now < end {
-                let progress = (now - start).micros() as f32 / (end - start).micros() as f32;
+                let progress = (now - start).num_microseconds().unwrap() as f32
+                    / (end - start).num_microseconds().unwrap() as f32;
                 let center = area.center();
                 let border = [
                     Vector::new(center.x, area.y()),
@@ -326,7 +324,7 @@ impl UiElement {
         self.display = RenderVariant::Text(t);
         self
     }
-    pub fn with_cooldown(mut self, start: Timestamp, end: Timestamp) -> Self {
+    pub fn with_cooldown(mut self, start: NaiveDateTime, end: NaiveDateTime) -> Self {
         self.overlay = Some((start, end));
         self
     }

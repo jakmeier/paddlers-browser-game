@@ -8,7 +8,9 @@ use crate::gui::{
     ui_state::Now, utils::colors::LIGHT_BLUE, utils::*, z::*,
 };
 use crate::prelude::*;
+use chrono::NaiveDateTime;
 use paddle::Frame;
+use paddle::*;
 use paddlers_shared_lib::story::story_state::StoryState;
 use quicksilver::graphics::{Mesh, ShapeRenderer};
 use quicksilver::lyon::{math::point, path::Path, tessellation::*};
@@ -127,7 +129,7 @@ impl<'a, 'b> DialogueFrame<'a, 'b> {
     pub fn draw_active_area(
         &mut self,
         sprites: &mut Sprites,
-        now: Timestamp,
+        now: NaiveDateTime,
         window: &mut QuicksilverWindow,
     ) -> PadlResult<()> {
         let mut table = Vec::new();

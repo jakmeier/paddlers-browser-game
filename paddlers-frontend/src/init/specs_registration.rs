@@ -7,6 +7,7 @@ use crate::gui::input::drag::Drag;
 use crate::gui::ui_state::*;
 use crate::prelude::*;
 use crate::view::entry_view;
+use paddle::utc_now;
 use specs::prelude::*;
 
 pub(super) fn insert_global_resources(

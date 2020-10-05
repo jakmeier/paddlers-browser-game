@@ -1,3 +1,5 @@
+use paddle::ErrorMessage;
+
 use crate::game::town::{TileIndex, TileType};
 use crate::net::ajax::AjaxError;
 use crate::prelude::*;
@@ -83,6 +85,7 @@ pub enum PadlErrorCode {
     StdWebConversion(stdweb::private::ConversionError),
     StdWebSecurityError(stdweb::web::error::SecurityError),
     InvalidDom(&'static str),
+    PaddleError(String),
     QuicksilverError(String),
     PanesError(String),
     JsonParseError(serde_json::error::Error),
@@ -151,6 +154,7 @@ impl fmt::Display for PadlErrorCode {
                 cause
             ),
             PadlErrorCode::InvalidDom(cause) => write!(f, "DOM error: {}", cause),
+            PadlErrorCode::PaddleError(cause) => write!(f, "Paddle error: {}", cause),
             PadlErrorCode::QuicksilverError(cause) => write!(f, "Quicksilver error: {}", cause),
             PadlErrorCode::PanesError(cause) => write!(f, "Panes error: {}", cause),
             PadlErrorCode::JsonParseError(cause) => {
@@ -220,6 +224,11 @@ impl From<AjaxError> for PadlError {
         } else {
             PadlError::dev_err(PadlErrorCode::BrowserError(ajax.description))
         }
+    }
+}
+impl From<ErrorMessage> for PadlError {
+    fn from(error: ErrorMessage) -> Self {
+        PadlError::dev_err(PadlErrorCode::PaddleError(error.text.to_string()))
     }
 }
 impl From<quicksilver::Error> for PadlError {

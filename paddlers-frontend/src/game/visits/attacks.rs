@@ -5,9 +5,9 @@ use crate::gui::z::*;
 use crate::net::game_master_api::RestApiState;
 use crate::net::state::current_village;
 use crate::prelude::*;
-use paddle::{Frame, TextNode};
+use chrono::NaiveDateTime;
+use paddle::{utc_now, Frame, TextNode};
 use paddlers_shared_lib::api::attacks::*;
-use paddlers_shared_lib::prelude::*;
 use panes::new_pane;
 use quicksilver::prelude::{Col, Rectangle, Transform, Window};
 use specs::prelude::*;
@@ -17,7 +17,7 @@ use stdweb::web::{HtmlElement, IElement, INode, Node};
 #[derive(Component, Debug)]
 #[storage(HashMapStorage)]
 pub struct Attack {
-    pub arrival: Timestamp,
+    pub arrival: NaiveDateTime,
     size: u32,
     description: String,
     dom_node: Option<TextNode>,
@@ -42,7 +42,7 @@ impl Game<'_, '_> {
 }
 
 impl Attack {
-    pub fn new(arrival: Timestamp, description: String, size: u32) -> Self {
+    pub fn new(arrival: NaiveDateTime, description: String, size: u32) -> Self {
         Attack {
             arrival,
             dom_node: None,
@@ -51,7 +51,7 @@ impl Attack {
         }
     }
     fn arrival(&self) -> String {
-        let t = (self.arrival - utc_now()).seconds();
+        let t = (self.arrival - utc_now()).num_seconds();
         if t > 0 {
             t.to_string() + "s"
         } else {
@@ -186,7 +186,7 @@ impl<'a, 'b> Frame for VisitorFrame<'a, 'b> {
 }
 
 pub struct UpdateAttackViewSystem {
-    last_update: Timestamp,
+    last_update: NaiveDateTime,
 }
 impl UpdateAttackViewSystem {
     pub fn new() -> Self {
@@ -201,7 +201,7 @@ impl<'a> System<'a> for UpdateAttackViewSystem {
 
     fn run(&mut self, (mut attack,): Self::SystemData) {
         let now = utc_now();
-        if (now - self.last_update).micros() < 1_000_000 {
+        if (now - self.last_update).num_microseconds().unwrap() < 1_000_000 {
             return;
         }
         self.last_update = now;

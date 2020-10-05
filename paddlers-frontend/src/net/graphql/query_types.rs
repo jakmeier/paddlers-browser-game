@@ -1,5 +1,6 @@
 use crate::game::components::NetObj;
 use crate::prelude::*;
+use chrono::NaiveDateTime;
 use graphql_client::{GraphQLQuery, Response};
 use paddlers_shared_lib::graphql_types;
 use paddlers_shared_lib::models::*;
@@ -8,8 +9,8 @@ use specs::prelude::*;
 pub use serde::Deserialize;
 type GqlTimestamp = String;
 
-pub fn parse_timestamp(s: &String) -> Timestamp {
-    timestamp(s).into()
+pub fn parse_timestamp(s: &String) -> NaiveDateTime {
+    timestamp(s).to_chrono()
 }
 fn timestamp(s: &String) -> graphql_types::GqlTimestamp {
     graphql_types::GqlTimestamp::from_string(s).unwrap()
@@ -90,7 +91,7 @@ impl VillageUnitsTask {
         Ok(WorkerTask {
             task_type: (&self.task_type).into(),
             position: (self.x as usize, self.y as usize),
-            start_time: timestamp(&self.start_time).into(),
+            start_time: timestamp(&self.start_time).to_chrono(),
             target,
         })
     }
@@ -131,7 +132,7 @@ impl WorkerTaskEx {
         Ok(WorkerTask {
             task_type: (&self.task_type).into(),
             position: (self.x as usize, self.y as usize),
-            start_time: timestamp(&self.start_time).into(),
+            start_time: timestamp(&self.start_time).to_chrono(),
             target,
         })
     }

@@ -7,6 +7,7 @@ use crate::game::{
 };
 use crate::gui::{animation::*, render::Renderable, sprites::*, utils::*, z::Z_UNITS};
 use crate::prelude::*;
+use chrono::NaiveDateTime;
 use paddlers_shared_lib::game_mechanics::worker::*;
 use quicksilver::geom::Rectangle;
 use specs::prelude::*;
@@ -15,7 +16,7 @@ pub fn with_unit_base<B: Builder>(
     builder: B,
     speed: f32,
     tile_area: Rectangle,
-    birth: Timestamp,
+    birth: NaiveDateTime,
     netid: i64,
     mana: Option<i64>,
     lvl: i32,
@@ -89,7 +90,7 @@ use crate::net::graphql::WorkerResponse;
 pub fn create_worker_entities(
     response: &WorkerResponse,
     world: &mut World,
-    now: Timestamp,
+    now: NaiveDateTime,
     resolution: ScreenResolution,
 ) -> Vec<PadlResult<Entity>> {
     response
@@ -103,7 +104,7 @@ impl VillageUnitsQueryVillageWorkers {
     fn create_entity(
         &self,
         world: &mut World,
-        now: Timestamp,
+        now: NaiveDateTime,
         resolution: ScreenResolution,
     ) -> PadlResult<Entity> {
         let tile_area = resolution.tile_area((self.x as usize, self.y as usize));

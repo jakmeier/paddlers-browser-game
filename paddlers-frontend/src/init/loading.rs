@@ -5,7 +5,7 @@ use crate::init::quicksilver_integration::Signal;
 use crate::net::graphql::query_types::{
     AttacksResponse, BuildingsResponse, HobosQueryResponse, VolatileVillageInfoResponse,
 };
-use paddle::UpdateWorld;
+use paddle::{NutsCheck, TextBoard, UpdateWorld};
 use progress_manager::*;
 
 use crate::game::player_info::PlayerInfo;
@@ -19,9 +19,8 @@ use crate::gui::utils::*;
 use crate::init::quicksilver_integration::QuicksilverState;
 use crate::net::graphql::query_types::WorkerResponse;
 use crate::net::NetMsg;
-use crate::prelude::*;
 use crate::prelude::{PadlResult, ScreenResolution, TextDb};
-use paddle::{Domain, WorldEvent, FloatingText};
+use paddle::{Domain, FloatingText, WorldEvent};
 use quicksilver::prelude::*;
 use std::sync::mpsc::Receiver;
 
@@ -170,7 +169,7 @@ impl LoadingState {
             Ok(mut game) => {
                 let pointer_manager =
                     crate::gui::input::pointer::PointerManager::init(&mut game.world);
-                nuts::store_to_domain(Domain::Main, game);
+                nuts::store_to_domain(&Domain::Main, game);
                 let view = UiView::Town;
                 let viewer = super::frame_loading::load_viewer(view, resolution);
                 for evt in self.viewer_data {
@@ -178,7 +177,7 @@ impl LoadingState {
                 }
                 paddle::share_foreground(Signal::ResourcesUpdated);
 
-                let viewer_activity = nuts::new_domained_activity(viewer, Domain::Main, true);
+                let viewer_activity = nuts::new_domained_activity(viewer, &Domain::Main);
                 viewer_activity.subscribe_domained(|viewer, domain, _: &UpdateWorld| {
                     let game: &mut Game<'static, 'static> =
                         domain.try_get_mut().expect("Forgot to insert Game?");
@@ -188,7 +187,7 @@ impl LoadingState {
                 });
 
                 let pointer_manager_activity =
-                    nuts::new_domained_activity(pointer_manager, Domain::Main, true);
+                    nuts::new_domained_activity(pointer_manager, &Domain::Main);
                 pointer_manager_activity.subscribe_domained(
                     |pointer_manager, domain, _: &UpdateWorld| {
                         let game: &mut Game<'static, 'static> =

@@ -1,5 +1,6 @@
 mod visitor_maintenance;
 
+use chrono::NaiveDateTime;
 pub use visitor_maintenance::*;
 
 use crate::game::town::town_defence::AttackingHobo;
@@ -23,13 +24,13 @@ use specs::prelude::*;
 const ATTACKER_SIZE_FACTOR_X: f32 = 0.6;
 const ATTACKER_SIZE_FACTOR_Y: f32 = 0.4;
 
-#[derive(Default, Debug, Component)]
+#[derive(Debug, Component)]
 #[storage(HashMapStorage)]
 /// A visitor is an attacking hobo
 pub struct Visitor {
     pub hurried: bool,
     pub speed: f32,
-    pub arrival: Timestamp,
+    pub arrival: NaiveDateTime,
     pub rank_offset: usize,
 }
 
@@ -38,7 +39,7 @@ pub fn insert_duck(
     world: &mut World,
     pos: impl Into<Vector>,
     color: UnitColor,
-    birth_time: Timestamp,
+    birth_time: NaiveDateTime,
     speed: impl Into<Vector>,
     hp: i64,
     ul: f32,
@@ -74,7 +75,7 @@ pub fn build_new_duck_entity<'a>(
     builder: specs::EntityBuilder<'a>,
     pos: impl Into<Vector>,
     color: UnitColor,
-    arrival: Timestamp,
+    arrival: NaiveDateTime,
     speed: f32,
     hp: Health,
     ul: f32,
@@ -114,7 +115,9 @@ impl AttacksQueryVillageAttacks {
         game: &mut Game<'a, 'b>,
     ) -> PadlResult<Vec<Entity>> {
         let ul = game.world.fetch::<ScreenResolution>().unit_length();
-        let birth_time = GqlTimestamp::from_string(&self.arrival).unwrap().into();
+        let birth_time = GqlTimestamp::from_string(&self.arrival)
+            .unwrap()
+            .to_chrono();
         let now = game.world.fetch::<Now>().0;
 
         let description = self
@@ -129,7 +132,7 @@ impl AttacksQueryVillageAttacks {
         let mut out = vec![];
         for (i, unit) in self.units.into_iter().enumerate() {
             let unit_rep = AttackingHobo { unit, attack: &atk };
-            let effects = game.touched_auras(&unit_rep, now);
+            let effects = game.touched_auras(&unit_rep, now.into());
             let builder = unit_rep.create_entity(
                 game.town_context.home_world_mut().create_entity(),
                 now,
@@ -150,8 +153,8 @@ impl<'a> AttackingHobo<'a> {
     fn create_entity(
         &self,
         mut builder: specs::EntityBuilder<'a>,
-        now: Timestamp,
-        birth: Timestamp,
+        now: NaiveDateTime,
+        birth: NaiveDateTime,
         pos_rank: usize,
         ul: f32,
         auras: Vec<(<Game<'_, '_> as IDefendingTown>::AuraId, i32)>,
@@ -171,7 +174,7 @@ impl<'a> AttackingHobo<'a> {
             .as_ref()
             .map(|c| c.into())
             .unwrap_or(UnitColor::Yellow);
-        let time_until_resting = self.time_until_resting();
+        let time_until_resting = self.time_until_resting().as_duration();
 
         // Simulate all interactions with buildings for the visitor which happened in the past
         let dmg = <Game<'_, '_> as IDefendingTown>::damage(&auras) + self.effects_strength();
@@ -181,7 +184,7 @@ impl<'a> AttackingHobo<'a> {
 
         // Adapt position for units that have been resting and were then released
         if let Some(released) = &self.unit.info.released {
-            let released = GqlTimestamp::from_string(released).unwrap().into();
+            let released = GqlTimestamp::from_string(released).unwrap().to_chrono();
             if released > birth + time_until_resting {
                 pos.x = TOWN_RESTING_X as f32 * ul;
                 t0 = released;

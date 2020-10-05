@@ -6,6 +6,7 @@ use paddlers_shared_lib::game_mechanics::town::*;
 use paddlers_shared_lib::prelude::*;
 use specs::prelude::*;
 use specs::world::EntitiesRes;
+use crate::game::utc_now;
 
 pub(crate) fn insert_buildings(town: &mut Town, entities: &EntitiesRes, lazy: &LazyUpdate) {
     town.insert_new_building(entities, lazy, (0, 0), BuildingType::BlueFlowers);

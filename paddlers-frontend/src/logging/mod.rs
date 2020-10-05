@@ -1,9 +1,8 @@
 pub mod error;
 pub mod statistics;
-pub mod text_to_user;
 use error::*;
+use paddle::*;
 use std::collections::VecDeque;
-use text_to_user::*;
 
 struct ErrorQueue {
     queue: VecDeque<PadlError>,
@@ -12,7 +11,7 @@ struct ErrorQueue {
 /// Set up an error queue activity running in the background that displays any published PadlError objects.
 pub fn init_error_handling() {
     let errq = ErrorQueue::new();
-    let errq_id = nuts::new_activity(errq, true);
+    let errq_id = nuts::new_activity(errq);
     errq_id.subscribe(|q, err: &PadlError| {
         q.route_err(err);
         q.run();
@@ -46,7 +45,7 @@ impl ErrorQueue {
             ErrorChannel::UserFacing => TextBoard::display_error_message(format!("{}", e)),
         };
         if let Err(err) = err {
-            println!("Failed to display error. Reason of failure: {}", err);
+            println!("Failed to display error. Reason of failure: {:?}", err);
         }
     }
 }

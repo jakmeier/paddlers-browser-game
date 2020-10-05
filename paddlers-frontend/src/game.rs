@@ -32,9 +32,11 @@ use crate::net::{
     NetMsg,
 };
 use crate::prelude::*;
+use chrono::NaiveDateTime;
 use game_event_manager::GameEvent;
 use map::{GlobalMap, GlobalMapPrivateState};
 use movement::*;
+use paddle::{utc_now, TextBoard};
 use quicksilver::prelude::*;
 use shred::{Fetch, FetchMut};
 use specs::prelude::*;
@@ -47,7 +49,7 @@ pub(crate) struct Game<'a, 'b> {
     pub sprites: Sprites,
     pub locale: TextDb,
     pub net: Receiver<NetMsg>,
-    pub time_zero: Timestamp,
+    pub time_zero: NaiveDateTime,
     pub total_updates: u64,
     pub stats: Statistician,
     // TODO: [0.1.4] These would better fit into frame state, however,
@@ -187,7 +189,7 @@ impl Game<'_, '_> {
         self.world.read_resource()
     }
     pub fn update_time_reference(&mut self) {
-        if self.time_zero.micros() != 0 {
+        if self.time_zero != NaiveDateTime::from_timestamp(0, 0) {
             let t = utc_now();
             self.world.insert(Now(t));
         }
@@ -223,7 +225,18 @@ impl Game<'_, '_> {
         }
     }
     pub fn confirm_to_user(&mut self, text_key: TextKey) -> PadlResult<()> {
-        TextBoard::display_confirmation(text_key, &self.locale)
+        const BLUE: Color = Color {
+            r: 0.000,
+            g: 0.059,
+            b: 0.631,
+            a: 1.0,
+        };
+        TextBoard::display_custom_message(
+            self.locale.gettext(text_key.key()).to_owned(),
+            BLUE,
+            3_000,
+        )?;
+        Ok(())
     }
 }
 

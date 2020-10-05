@@ -23,7 +23,7 @@ impl<'a> IAttackingHobo for AttackingHobo<'a> {
         self.unit.hobo.hurried
     }
     fn arrival(&self) -> Timestamp {
-        self.attack.arrival
+        self.attack.arrival.into()
     }
     fn released(&self) -> Option<Timestamp> {
         self.unit
@@ -56,7 +56,7 @@ impl<'a, 'b> IDefendingTown for Game<'a, 'b> {
         let buildings = world.read_component::<Building>();
         let entities = world.entities();
         for (aura, e, b) in (&auras, &entities, &buildings).join() {
-            if time < b.built {
+            if time < b.built.into() {
                 continue;
             }
             for tile in &aura.affected_tiles {

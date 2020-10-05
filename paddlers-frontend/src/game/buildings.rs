@@ -14,7 +14,8 @@ use crate::gui::{
     utils::*,
     z::Z_BUILDINGS,
 };
-use crate::prelude::*;
+use chrono::NaiveDateTime;
+use paddle::utc_now;
 use paddlers_shared_lib::prelude::*;
 use paddlers_shared_lib::{game_mechanics::attributes::Attributes, graphql_types::*};
 use specs::prelude::*;
@@ -23,7 +24,7 @@ use specs::world::EntitiesRes;
 #[derive(Debug, Component)]
 #[storage(HashMapStorage)]
 pub struct Building {
-    pub built: Timestamp,
+    pub built: NaiveDateTime,
     pub bt: BuildingType,
 }
 
@@ -56,7 +57,7 @@ impl Town {
         ap: Option<i64>,
         attacks_per_cycle: Option<i64>,
         range: Option<f32>,
-        created: crate::Timestamp,
+        created: NaiveDateTime,
     ) -> Entity {
         let area = self.resolution.tile_area(tile_index);
         let mut builder = lazy
@@ -166,7 +167,9 @@ impl buildings_query::BuildingsQueryVillageBuildings {
             buildings_query::BuildingType::TRIPLE_NEST => BuildingType::TripleNest,
             buildings_query::BuildingType::Other(_) => panic!("Unexpected BuildingType"),
         };
-        let created = GqlTimestamp::from_string(&self.creation).unwrap().into();
+        let created = GqlTimestamp::from_string(&self.creation)
+            .unwrap()
+            .to_chrono();
 
         let entities = town_context.town_world.entities();
         let lazy = town_context.town_world.read_resource::<LazyUpdate>();

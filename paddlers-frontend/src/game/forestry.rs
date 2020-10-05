@@ -2,14 +2,15 @@ use crate::game::town::Town;
 use crate::gui::render::Renderable;
 use crate::gui::sprites::*;
 use crate::gui::utils::RenderVariant;
-use crate::prelude::*;
+use chrono::NaiveDateTime;
+use paddle::utc_now;
 use paddlers_shared_lib::game_mechanics::forestry::tree_size;
 use specs::prelude::*;
 
 #[derive(Component, Debug, Clone)]
 #[storage(HashMapStorage)]
 pub struct ForestComponent {
-    pub planted: Timestamp,
+    pub planted: NaiveDateTime,
     pub score: usize,
 }
 
@@ -28,8 +29,8 @@ impl<'a> System<'a> for ForestrySystem {
         let mut total = 0;
         for (tree, r) in (&mut forest, &mut rend).join() {
             let before = tree.score;
-            let t = chrono::Duration::microseconds((now - tree.planted).micros());
-            tree.score = tree_size(t);
+            let t = now - tree.planted;
+            tree.score = tree_size(t.into());
             if tree.score != before {
                 if let RenderVariant::ImgWithImgBackground(ref mut img, _bkg) = r.kind {
                     *img = tree_sprite(tree.score);
@@ -42,7 +43,7 @@ impl<'a> System<'a> for ForestrySystem {
 }
 
 impl ForestComponent {
-    pub fn new(planted: Timestamp) -> Self {
+    pub fn new(planted: NaiveDateTime) -> Self {
         ForestComponent {
             score: 0, // Updated by Forestsystem before use
             planted: planted,

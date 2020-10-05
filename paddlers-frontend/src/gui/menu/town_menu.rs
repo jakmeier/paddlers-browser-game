@@ -11,7 +11,9 @@ use crate::gui::{
 use crate::init::quicksilver_integration::Signal;
 use crate::prelude::*;
 use crate::resolution::ScreenResolution;
+use chrono::NaiveDateTime;
 use paddle::Frame;
+use paddle::*;
 use quicksilver::prelude::{MouseButton, Rectangle, Shape, Window};
 use specs::prelude::*;
 
@@ -169,7 +171,7 @@ impl TownMenuFrame<'_, '_> {
         sprites: &mut Sprites,
         window: &mut Window,
         area: &Rectangle,
-        now: Timestamp,
+        now: NaiveDateTime,
     ) -> PadlResult<()> {
         let mut table = vec![];
         table.push(TableRow::InteractiveArea(&mut self.foreign_town_menu));

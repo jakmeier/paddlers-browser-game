@@ -8,10 +8,12 @@ use crate::game::{
 };
 use crate::gui::ui_state::ClockTick;
 use crate::gui::{
-    animation::AnimationState, input::Grabbable, sprites::*, ui_state::*, utils::*, z::*,
+    animation::AnimationState, input::Grabbable, sprites::*, ui_state::*, utils::colors::*,
+    utils::*, z::*,
 };
 use crate::prelude::*;
 use paddle::FitStrategy;
+use paddle::*;
 use quicksilver::graphics::Color;
 use quicksilver::input::MouseCursor;
 use quicksilver::prelude::*;

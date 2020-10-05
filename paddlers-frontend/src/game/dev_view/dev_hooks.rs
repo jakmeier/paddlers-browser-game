@@ -1,5 +1,6 @@
 use crate::game::*;
 use crate::prelude::ScreenResolution;
+use paddle::JmrRectangle;
 use stdweb::unstable::TryInto;
 
 impl Game<'_, '_> {
@@ -26,7 +27,7 @@ impl Game<'_, '_> {
         if let Some(test) = self.active_test.as_mut() {
             test.record_end_of_frame();
             if let Some(result) = test.result() {
-                let date = utc_now().seconds();
+                let date = utc_now().timestamp();
                 #[cfg(feature = "mobile_debug")]
                 let device = "phone";
                 #[cfg(not(feature = "mobile_debug"))]

@@ -1,5 +1,6 @@
 use crate::game::map::map_segment::MapSegment;
 use crate::gui::{utils::*, z::*};
+use paddle::{FitStrategy, JmrRectangle};
 use quicksilver::graphics::{Drawable, Mesh, ShapeRenderer};
 use quicksilver::lyon::{math::point, path::Path, tessellation::*};
 use quicksilver::prelude::*;

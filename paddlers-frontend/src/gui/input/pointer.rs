@@ -1,7 +1,8 @@
 //! Processes and routes mouse-like input.
 //! Triggers the corresponding mouse-click systems when necessary.
 use super::{drag::*, HoverSystem, MouseState};
-use crate::prelude::*;
+use chrono::{Duration, NaiveDateTime};
+use paddle::*;
 use paddle::{LeftClick, RightClick};
 use quicksilver::prelude::*;
 use specs::prelude::*;
@@ -15,7 +16,7 @@ pub struct PointerManager<'a, 'b> {
     drag_dispatcher: Dispatcher<'a, 'b>,
     buffered_click: Option<(Vector, PointerButton)>,
     dragging: bool,
-    pointer_down: Option<(Vector, Timestamp)>,
+    pointer_down: Option<(Vector, NaiveDateTime)>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -83,7 +84,7 @@ impl PointerManager<'_, '_> {
 
     pub fn button_event(
         &mut self,
-        now: Timestamp,
+        now: NaiveDateTime,
         pos: &Vector,
         button: MouseButton,
         state: ButtonState,
@@ -98,7 +99,7 @@ impl PointerManager<'_, '_> {
             (ButtonState::Released, MouseButton::Left) => {
                 if let Some((start_pos, start_t)) = self.pointer_down {
                     if !self.dragging && start_pos.distance_2(pos) < MIN_DRAG_DISTANCE_2 {
-                        let key = if now - start_t < Timestamp::from_us(LONG_CLICK_DELAY) {
+                        let key = if now - start_t < Duration::microseconds(LONG_CLICK_DELAY) {
                             PointerButton::Primary
                         } else {
                             PointerButton::Secondary

@@ -5,18 +5,13 @@
 pub mod colors;
 use crate::gui::shapes::PadlShapeIndex;
 pub use colors::*;
-mod grid;
-pub use grid::*;
-mod jmr_geometry;
-pub use jmr_geometry::*;
 mod progress_bar;
 pub use progress_bar::*;
 
 use crate::gui::animation::AnimationState;
 use crate::gui::sprites::*;
 use crate::prelude::*;
-use paddle::FitStrategy;
-use paddle::FloatingText;
+use paddle::{FitStrategy, JmrRectangle};
 use quicksilver::graphics::Mesh;
 use quicksilver::prelude::*;
 

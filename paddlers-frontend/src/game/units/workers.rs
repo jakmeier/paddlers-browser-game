@@ -7,6 +7,7 @@ use crate::gui::render::Renderable;
 use crate::gui::z::*;
 use crate::net::game_master_api::RestApiState;
 use crate::prelude::*;
+use chrono::NaiveDateTime;
 use paddlers_shared_lib::api::tasks::*;
 use paddlers_shared_lib::prelude::WorkerKey;
 use quicksilver::geom::*;
@@ -26,7 +27,7 @@ pub struct Worker {
 pub struct WorkerTask {
     pub task_type: TaskType,
     pub position: TileIndex,
-    pub start_time: Timestamp,
+    pub start_time: NaiveDateTime,
     pub target: Option<Entity>,
 }
 
@@ -117,7 +118,7 @@ impl Worker {
         })
     }
 
-    pub fn poll(&mut self, t: Timestamp) -> Option<WorkerTask> {
+    pub fn poll(&mut self, t: NaiveDateTime) -> Option<WorkerTask> {
         if let Some(next_task) = self.tasks.front() {
             if next_task.start_time < t {
                 return self.tasks.pop_front();

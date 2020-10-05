@@ -6,6 +6,7 @@ use crate::gui::{
 };
 use crate::net::graphql::query_types::parse_timestamp;
 use crate::prelude::*;
+use chrono::NaiveDateTime;
 use paddlers_shared_lib::prelude::*;
 pub use welcome::*;
 
@@ -17,7 +18,7 @@ pub const MAX_ABILITIES: usize = 4;
 /// Represent the abilities a single unit instance has.
 pub struct AbilitySet {
     abilities: [Option<AbilityType>; MAX_ABILITIES],
-    last_used: [Option<Timestamp>; MAX_ABILITIES],
+    last_used: [Option<NaiveDateTime>; MAX_ABILITIES],
 }
 
 use crate::net::graphql::village_units_query::VillageUnitsQueryVillageWorkersAbilities;
@@ -29,11 +30,11 @@ impl AbilitySet {
             return PadlErrorCode::InvalidGraphQLData("Too many abilities").dev();
         }
         let mut abilities: [Option<AbilityType>; MAX_ABILITIES] = [None; MAX_ABILITIES];
-        let mut last_used: [Option<Timestamp>; MAX_ABILITIES] = [None; MAX_ABILITIES];
+        let mut last_used: [Option<NaiveDateTime>; MAX_ABILITIES] = [None; MAX_ABILITIES];
         let mut i = 0;
         for gqla in gql_abilities {
             abilities[i] = Some((&gqla.ability_type).into());
-            last_used[i] = gqla.last_used.as_ref().map(parse_timestamp);
+            last_used[i] = gqla.last_used.as_ref().map(parse_timestamp).into();
             i += 1;
         }
         Ok(AbilitySet {

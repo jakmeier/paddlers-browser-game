@@ -10,6 +10,7 @@
 use crate::init::loading::LoadingState;
 use crate::net::game_master_api::RestApiState;
 use crate::prelude::*;
+use paddle::utc_now;
 use paddle::*;
 
 use crate::game::*;
@@ -69,7 +70,6 @@ impl State for QuicksilverState {
                 }
             }
             Self::Ready => {
-                window.clear(Color::WHITE)?;
                 nuts::publish(DrawWorld::new(window));
             }
             Self::Empty => {}
@@ -88,7 +88,7 @@ impl State for QuicksilverState {
 struct GameActivity;
 impl Game<'static, 'static> {
     pub fn register_in_nuts() {
-        let aid = nuts::new_domained_activity(GameActivity, Domain::Main, true);
+        let aid = nuts::new_domained_activity(GameActivity, &Domain::Main);
         aid.subscribe_domained_mut(|_, domain, msg: &mut UpdateWorld| {
             let game: &mut Game = domain.try_get_mut().expect("Game missing");
             let window = msg.window();
@@ -121,8 +121,8 @@ impl Game<'static, 'static> {
         {
             let now = self.world.read_resource::<Now>().0;
             let mut tick = self.world.write_resource::<ClockTick>();
-            let us_draw_rate = 1_000_000 / 60;
-            *tick = ClockTick((now.micros() / us_draw_rate) as u32);
+            let ms_draw_rate = 1_000 / 60;
+            *tick = ClockTick((now.timestamp_millis() / ms_draw_rate) as u32);
         }
 
         let res = self.update_net();

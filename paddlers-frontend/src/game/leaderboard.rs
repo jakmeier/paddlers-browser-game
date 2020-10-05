@@ -1,14 +1,14 @@
-use crate::prelude::*;
-use specs::WorldExt;
-use stdweb::web::*;
 use crate::game::Game;
 use crate::gui::utils::colors::DARK_BLUE;
 use crate::gui::z::*;
 use crate::net::NetMsg;
+use crate::prelude::*;
 use paddle::Frame;
 use quicksilver::prelude::Window as QuicksilverWindow;
 use quicksilver::prelude::{Col, Rectangle, Transform};
+use specs::WorldExt;
 use std::marker::PhantomData;
+use stdweb::web::*;
 
 pub(crate) struct LeaderboardFrame<'a, 'b> {
     pane: panes::PaneHandle,

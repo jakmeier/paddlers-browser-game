@@ -41,6 +41,9 @@ impl Timestamp {
     pub fn seconds_float(&self) -> f32 {
         self.0 as f32 / 1000_000.0
     }
+    pub fn as_duration(&self) -> chrono::Duration {
+        chrono::Duration::microseconds(self.0)
+    }
 }
 
 impl std::ops::Add for Timestamp {

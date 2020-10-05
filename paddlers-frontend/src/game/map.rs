@@ -9,6 +9,7 @@ use crate::net::authentication::read_jwt_preferred_username;
 use map_position::*;
 use map_segment::MapSegment;
 use map_tesselation::*;
+use paddle::FitStrategy;
 use quicksilver::graphics::Mesh;
 use quicksilver::prelude::{Col, Rectangle, Transform, Vector, Window};
 use specs::prelude::*;

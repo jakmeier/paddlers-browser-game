@@ -1,5 +1,5 @@
 use crate::game::Now;
-use crate::Timestamp;
+use chrono::NaiveDateTime;
 use quicksilver::geom::{about_equal, Rectangle, Vector};
 use specs::prelude::*;
 use specs::storage::BTreeStorage;
@@ -15,7 +15,7 @@ pub struct Position {
 #[derive(Component, Debug)]
 #[storage(BTreeStorage)]
 pub struct Moving {
-    pub start_ts: Timestamp,
+    pub start_ts: NaiveDateTime,
     pub start_pos: Vector,
     // Speed: f32 in pixels per second
     pub momentum: Vector,
@@ -69,7 +69,7 @@ impl Position {
 
 impl Moving {
     pub fn new(
-        t0: Timestamp,
+        t0: NaiveDateTime,
         start_pos: impl Into<Vector>,
         vel: impl Into<Vector>,
         max_speed: f32,
@@ -83,10 +83,11 @@ impl Moving {
             max_speed: max_speed,
         }
     }
-    pub fn position(&self, t: Timestamp) -> Vector {
-        self.start_pos + self.momentum * (t - self.start_ts).micros() as f32 / 1_000_000
+    pub fn position(&self, t: NaiveDateTime) -> Vector {
+        self.start_pos
+            + self.momentum * (t - self.start_ts).num_microseconds().unwrap() as f32 / 1_000_000
     }
-    pub fn stand_still(&mut self, timestamp: Timestamp) {
+    pub fn stand_still(&mut self, timestamp: NaiveDateTime) {
         self.start_pos = self.position(timestamp);
         self.start_ts = timestamp;
         self.momentum = (0.0, 0.0).into();
