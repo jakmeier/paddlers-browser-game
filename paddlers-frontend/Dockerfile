@@ -34,3 +34,5 @@ COPY ./paddlers-frontend/static/js/keycloak/player.demo.json /usr/share/nginx/ht
 COPY ./paddlers-frontend/nginx/mime.types ./paddlers-frontend/nginx/nginx.conf /etc/nginx/
 COPY ./paddlers-frontend/nginx/demo.conf /etc/nginx/conf.d/paddlers_ssl.conf
 COPY ./paddlers-frontend/nginx/demo_no_ssl.conf /etc/nginx/conf.d/paddlers.conf
+# Link other hosted sites, currently they need to be uploaded manually, though
+COPY ./paddlers-frontend/nginx/demo_no_ssl.conf /etc/nginx/conf.d/paddlers.conf

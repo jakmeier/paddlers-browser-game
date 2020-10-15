@@ -29,8 +29,16 @@ pub trait PadlINode {
     fn remove_all_children(&self);
 }
 
-use stdweb::web::INode;
-impl<T: INode> PadlINode for T {
+impl PadlINode for web_sys::Node {
+    fn remove_all_children(&self) {
+        while let Some(child) = self.first_child() {
+            self.remove_child(&child).expect("not found");
+        }
+    }
+}
+
+use crate::stdweb::web::INode;
+impl PadlINode for stdweb::web::Node {
     fn remove_all_children(&self) {
         while let Some(child) = self.first_child() {
             self.remove_child(&child).expect("not found");

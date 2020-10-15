@@ -3,22 +3,23 @@ use crate::gui::utils::colors::DARK_BLUE;
 use crate::gui::z::*;
 use crate::net::NetMsg;
 use crate::prelude::*;
+use div::DivError;
 use paddle::Frame;
 use quicksilver::prelude::Window as QuicksilverWindow;
 use quicksilver::prelude::{Col, Rectangle, Transform};
 use specs::WorldExt;
 use std::marker::PhantomData;
-use stdweb::web::*;
+use web_sys::{Node};
 
 pub(crate) struct LeaderboardFrame<'a, 'b> {
-    pane: panes::PaneHandle,
+    pane: div::PaneHandle,
     table: Node,
     phantom: PhantomData<(&'a (), &'b ())>,
 }
 
 impl LeaderboardFrame<'_, '_> {
     pub fn new(area: &Rectangle) -> PadlResult<Self> {
-        let pane = panes::new_styled_pane(
+        let pane = div::new_styled_pane(
             area.x() as u32,
             area.y() as u32,
             area.width() as u32,
@@ -29,28 +30,6 @@ impl LeaderboardFrame<'_, '_> {
         )?;
         let node = pane.first_inner_node()?;
 
-        // TODO Debug why this didn't work:
-
-        // js! {
-        //     console.log(@{node.as_ref()})
-        // }
-
-        // let el : HtmlElement = node.clone().try_into().map_err(
-        //     |_| PadlError::dev_err(PadlErrorCode::InvalidDom("Not html"))
-        // )?;
-
-        // el.append_html(
-        //     &format!(r#"<h3>{}</h3>
-        //     <h3>{}</h3>
-        //     <h3>{}</h3>
-        //     "#,
-        //     "#", "Name", "Karma")
-        // ).expect("append html");
-
-        // insert_h3(&node, "#");
-        // insert_h3(&node, "Name");
-        // insert_h3(&node, "Karma");
-
         pane.hide()?;
 
         Ok(LeaderboardFrame {
@@ -60,21 +39,23 @@ impl LeaderboardFrame<'_, '_> {
         })
     }
     pub fn clear(&self) -> PadlResult<()> {
-        self.table.remove_all_children();
+        while let Some(child) = self.table.last_child() {
+            self.table.remove_child(&child);
+        }
         Ok(())
     }
 
     pub fn insert_row(&self, rank: usize, name: &str, karma: i64) -> PadlResult<()> {
-        let node = document().create_element("div").unwrap();
-        node.set_text_content(&rank.to_string());
+        let node = doc()?.create_element("div").unwrap();
+        node.set_text_content(Some(&rank.to_string()));
         self.table.append_child(&node);
 
-        let node = document().create_element("div").unwrap();
-        node.set_text_content(name);
+        let node = doc()?.create_element("div").unwrap();
+        node.set_text_content(Some(&name));
         self.table.append_child(&node);
 
-        let node = document().create_element("div").unwrap();
-        node.set_text_content(&karma.to_string());
+        let node = doc()?.create_element("div").unwrap();
+        node.set_text_content(Some(&karma.to_string()));
         self.table.append_child(&node);
 
         Ok(())
@@ -136,3 +117,9 @@ impl<'a, 'b> Frame for LeaderboardFrame<'a, 'b> {
 //     node.append_child(&inner);
 //     std::mem::drop(inner);
 // }
+
+// TODO: replace with pub oic div version after update
+pub(crate) fn doc() -> Result<web_sys::Document, DivError> {
+    let window = web_sys::window().ok_or(DivError::MissingWindow)?;
+    window.document().ok_or(DivError::MissingDocument)
+}

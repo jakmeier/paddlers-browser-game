@@ -1,18 +1,18 @@
-use crate::gui::sprites::*;
 use crate::gui::utils::colors::LIGHT_BLUE;
 use crate::gui::z::*;
 use crate::net::game_master_api::RestApiState;
 use crate::net::NetMsg;
 use crate::prelude::*;
+use crate::{game::leaderboard::doc, gui::sprites::*};
 use core::marker::PhantomData;
 use paddlers_shared_lib::api::reports::ReportCollect;
 use paddlers_shared_lib::prelude::VisitReportKey;
 use quicksilver::prelude::{Col, Rectangle, Transform, Window};
 use specs::prelude::*;
-use stdweb::web::*;
+use web_sys::{Element, HtmlElement, Node};
 
 pub(crate) struct ReportFrame<'a, 'b> {
-    pane: panes::PaneHandle,
+    pane: div::PaneHandle,
     table: Node,
     _phantom: PhantomData<(&'a (), &'b ())>,
 }
@@ -28,7 +28,7 @@ struct Report {
 impl<'a, 'b> ReportFrame<'a, 'b> {
     pub fn new(area: Rectangle, resolution: ScreenResolution) -> PadlResult<Self> {
         let right_padding = resolution.leaves_border_w() * 0.75;
-        let pane = panes::new_pane(
+        let pane = div::new_pane(
             area.x() as u32,
             area.y() as u32,
             (area.width() - right_padding) as u32,
@@ -38,8 +38,8 @@ impl<'a, 'b> ReportFrame<'a, 'b> {
         pane.hide()?;
         let node = pane.first_inner_node()?;
 
-        let title = document().create_element("h2").unwrap();
-        title.set_text_content("Mailbox");
+        let title = doc()?.create_element("h2").unwrap();
+        title.set_text_content(Some("Mailbox"));
         node.append_child(&title);
 
         Ok(ReportFrame {
@@ -49,11 +49,11 @@ impl<'a, 'b> ReportFrame<'a, 'b> {
         })
     }
     fn add_report(&mut self, report: Report, sprites: &Sprites) {
-        let letter_node = document().create_element("div").unwrap();
+        let letter_node = doc().unwrap().create_element("div").unwrap();
         letter_node.set_attribute("class", "letter").unwrap();
 
-        let text_node = document().create_element("p").unwrap();
-        text_node.set_text_content(self.letter_text(&report));
+        let text_node = doc().unwrap().create_element("p").unwrap();
+        text_node.set_text_content(Some(&self.letter_text(&report)));
         letter_node.append_child(&text_node);
 
         if report.karma > 0 {
@@ -81,9 +81,9 @@ impl<'a, 'b> ReportFrame<'a, 'b> {
             letter_node.append_child(&self.new_res_node(report.logs, SingleSprite::Logs, sprites));
         }
 
-        let button_node = document().create_element("div").unwrap();
+        let button_node = doc().unwrap().create_element("div").unwrap();
         button_node.set_attribute("class", "letter-button").unwrap();
-        button_node.set_text_content("Collect");
+        button_node.set_text_content(Some(&"Collect"));
         self.add_listener(&button_node, report, letter_node.clone());
 
         letter_node.append_child(&button_node);
@@ -93,28 +93,32 @@ impl<'a, 'b> ReportFrame<'a, 'b> {
     fn add_listener(&self, button_node: &Element, report: Report, parent: Element) {
         let table_ref = self.table.clone();
 
-        let _handle = button_node.add_event_listener::<event::ClickEvent, _>(move |_| {
-            let _node = table_ref.remove_child(&parent).expect("Letter not found");
-            let msg = ReportCollect {
-                reports: vec![report.id],
-            };
-            if let Err(e) = RestApiState::get().http_collect_reward(msg) {
-                println!("Failed to send API call {}", e);
-            }
-            crate::net::request_resource_update();
-            // remove event listener?
-            // TODO: Update notifications (now done for every left click)
-        });
+        // TODO XXX TODO
+        // TODO XXX TODO
+        // TODO XXX TODO
+
+        // let _handle = button_node.add_event_listener::<event::ClickEvent, _>(move |_| {
+        //     let _node = table_ref.remove_child(&parent).expect("Letter not found");
+        //     let msg = ReportCollect {
+        //         reports: vec![report.id],
+        //     };
+        //     if let Err(e) = RestApiState::get().http_collect_reward(msg) {
+        //         println!("Failed to send API call {}", e);
+        //     }
+        //     crate::net::request_resource_update();
+        //     // remove event listener?
+        //     // TODO: Update notifications (now done for every left click)
+        // });
     }
     fn new_res_node(&mut self, n: i64, s: SingleSprite, sprites: &Sprites) -> Element {
-        let node = document().create_element("div").unwrap();
+        let node = doc().unwrap().create_element("div").unwrap();
         node.set_attribute("class", "letter-res").unwrap();
-        let num_node = document().create_element("div").unwrap();
-        num_node.set_text_content(&n.to_string());
+        let num_node = doc().unwrap().create_element("div").unwrap();
+        num_node.set_text_content(Some(&n.to_string()));
         let img = sprites.new_image_node(SpriteIndex::Simple(s));
 
         node.append_child(&num_node);
-        node.append_child(&img);
+        node.append_child(&Node::from(img));
         node
     }
     fn letter_text(&self, report: &Report) -> &'static str {
@@ -128,7 +132,7 @@ impl<'a, 'b> ReportFrame<'a, 'b> {
         }
     }
     fn number_or_reports(&self) -> usize {
-        self.table.child_nodes().len() as usize - 1 // -1 for title
+        self.table.child_nodes().length() as usize - 1 // -1 for title
     }
     pub fn network_message(
         &mut self,

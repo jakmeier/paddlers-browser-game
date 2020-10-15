@@ -78,7 +78,7 @@ pub fn activate_net() {
         }
     }
 }
-#[js_export]
+#[wasm_bindgen]
 /// Sets up continuous networking with the help of JS setTimeout
 /// Must be called from JS once the user is logged in
 pub fn start_network_thread() {

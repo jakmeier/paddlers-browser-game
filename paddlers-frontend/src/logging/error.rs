@@ -87,7 +87,7 @@ pub enum PadlErrorCode {
     InvalidDom(&'static str),
     PaddleError(String),
     QuicksilverError(String),
-    PanesError(String),
+    DivError(String),
     JsonParseError(serde_json::error::Error),
     UrlParseError(String),
     NoDataFromBrowser(&'static str),
@@ -156,7 +156,7 @@ impl fmt::Display for PadlErrorCode {
             PadlErrorCode::InvalidDom(cause) => write!(f, "DOM error: {}", cause),
             PadlErrorCode::PaddleError(cause) => write!(f, "Paddle error: {}", cause),
             PadlErrorCode::QuicksilverError(cause) => write!(f, "Quicksilver error: {}", cause),
-            PadlErrorCode::PanesError(cause) => write!(f, "Panes error: {}", cause),
+            PadlErrorCode::DivError(cause) => write!(f, "Panes error: {}", cause),
             PadlErrorCode::JsonParseError(cause) => {
                 write!(f, "Error while parsing JSON data: {}", cause)
             }
@@ -236,9 +236,9 @@ impl From<quicksilver::Error> for PadlError {
         PadlError::dev_err(PadlErrorCode::QuicksilverError(error.to_string()))
     }
 }
-impl From<panes::PanesError> for PadlError {
-    fn from(error: panes::PanesError) -> Self {
-        PadlError::dev_err(PadlErrorCode::PanesError(error.to_string()))
+impl From<div::DivError> for PadlError {
+    fn from(error: div::DivError) -> Self {
+        PadlError::dev_err(PadlErrorCode::DivError(error.to_string()))
     }
 }
 impl From<SendError<GameEvent>> for PadlError {

@@ -39,6 +39,9 @@ impl<'a> System<'a> for DragSystem {
                 (UiView::Dialogue, false) => {
                     // NOP
                 }
+                (UiView::TownHelp, false) => {
+                    // NOP
+                }
             }
         }
     }

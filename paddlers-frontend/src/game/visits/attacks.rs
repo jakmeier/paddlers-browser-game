@@ -8,11 +8,11 @@ use crate::prelude::*;
 use chrono::NaiveDateTime;
 use paddle::{utc_now, Frame, TextNode};
 use paddlers_shared_lib::api::attacks::*;
-use panes::new_pane;
+use div::new_pane;
 use quicksilver::prelude::{Col, Rectangle, Transform, Window};
 use specs::prelude::*;
-use stdweb::unstable::TryInto;
-use stdweb::web::{HtmlElement, IElement, INode, Node};
+use web_sys::{HtmlElement, Node};
+use wasm_bindgen::JsCast;
 
 #[derive(Component, Debug)]
 #[storage(HashMapStorage)]
@@ -86,7 +86,7 @@ impl Attack {
 pub(crate) struct VisitorFrame<'a, 'b> {
     incoming_attacks_table: HtmlElement,
     update_dispatcher: Dispatcher<'a, 'b>,
-    pane: panes::PaneHandle,
+    pane: div::PaneHandle,
 }
 
 impl<'a, 'b> VisitorFrame<'a, 'b> {
@@ -100,8 +100,7 @@ impl<'a, 'b> VisitorFrame<'a, 'b> {
         )
         .expect("Pane not set up properly");
         let table = pane
-            .first_inner_node()?
-            .try_into()
+            .first_inner_node()
             .map_err(|_| PadlError::dev_err(PadlErrorCode::InvalidDom("No table in pane")))?;
 
         let update_dispatcher = DispatcherBuilder::new()
@@ -109,7 +108,7 @@ impl<'a, 'b> VisitorFrame<'a, 'b> {
             .build();
 
         let mut attack = VisitorFrame {
-            incoming_attacks_table: table,
+            incoming_attacks_table: table.dyn_into().unwrap(),
             update_dispatcher,
             pane,
         };
@@ -120,7 +119,7 @@ impl<'a, 'b> VisitorFrame<'a, 'b> {
     }
     pub fn add_row(&mut self, html: &str) -> PadlResult<Node> {
         self.incoming_attacks_table
-            .append_html(&html)
+            .append_with_str_1(&html)
             .map_err(|_e| PadlError::dev_err(PadlErrorCode::InvalidDom("Inserting HTML failed")))?;
         self.incoming_attacks_table
             .last_child()
@@ -144,7 +143,7 @@ impl<'a, 'b> Frame for VisitorFrame<'a, 'b> {
                 match self.add_row(&html) {
                     Ok(node) => {
                         if let Some(arrival_node) = node.last_child() {
-                            let text_node = TextNode::new(arrival_node, a.arrival());
+                            let text_node = TextNode::new(arrival_node.dyn_into().unwrap(), a.arrival());
                             a.dom_node = Some(text_node);
                         } else {
                             nuts::publish(PadlError::dev_err(PadlErrorCode::InvalidDom(

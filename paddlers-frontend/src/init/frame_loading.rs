@@ -1,10 +1,10 @@
-use crate::game::dialogue::DialogueFrame;
 use crate::game::leaderboard::LeaderboardFrame;
 use crate::game::map::MapFrame;
 use crate::game::town::TownFrame;
 use crate::game::visits::{
     attacks::VisitorFrame, reports::ReportFrame, visitor_menu::VisitorMenuFrame,
 };
+use crate::game::{dialogue::DialogueFrame, town::town_summary::TownSummaryFrame};
 use crate::gui::menu::{MapMenuFrame, MenuBackgroundFrame, TownMenuFrame};
 use crate::prelude::*;
 use paddle::ViewManager;
@@ -18,7 +18,7 @@ pub(crate) fn load_viewer(view: UiView, resolution: ScreenResolution) -> ViewMan
     let menu = TownFrame::new();
     let town_handler = viewer.add_frame(
         menu,
-        &[UiView::Town],
+        &[UiView::Town, UiView::TownHelp],
         (0, 0), // TODO
         (0, 0), // TODO
     );
@@ -27,7 +27,7 @@ pub(crate) fn load_viewer(view: UiView, resolution: ScreenResolution) -> ViewMan
     let menu = TownMenuFrame::new().expect("Town menu loading");
     let town_menu_handle = viewer.add_frame(
         menu,
-        &[UiView::Town],
+        &[UiView::Town, UiView::TownHelp],
         (0, 0), // TODO
         (0, 0), // TODO
     );
@@ -45,6 +45,7 @@ pub(crate) fn load_viewer(view: UiView, resolution: ScreenResolution) -> ViewMan
             UiView::Map,
             UiView::Visitors(VisitorViewTab::IncomingAttacks),
             UiView::Visitors(VisitorViewTab::Letters),
+            UiView::TownHelp,
         ],
         (0, 0), // TODO
         (0, 0), // TODO
@@ -112,6 +113,9 @@ pub(crate) fn load_viewer(view: UiView, resolution: ScreenResolution) -> ViewMan
         (0, 0), // TODO
     );
     leaderboard_handler.listen(LeaderboardFrame::network_message);
+
+    let summary = TownSummaryFrame::new(&rect).expect("Town summary loading");
+    viewer.add_frame(summary, &[UiView::TownHelp], (0, 0), (0, 0));
 
     /* Dialogue box */
 

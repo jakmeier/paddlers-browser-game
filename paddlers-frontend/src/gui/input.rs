@@ -28,6 +28,7 @@ pub enum UiView {
     Leaderboard,
     Map,
     Town,
+    TownHelp,
     Dialogue,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -125,6 +126,9 @@ impl crate::game::Game<'_, '_> {
             }
             Event::Key(key, state) if *key == Key::Tab && *state == ButtonState::Pressed => {
                 self.toggle_view();
+            }
+            Event::Key(key, state) if *key == Key::H && *state == ButtonState::Pressed => {
+                self.toggle_help_view();
             }
             _evt => {
                 // println!("Event: {:#?}", _evt)
