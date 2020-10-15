@@ -884,6 +884,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "212d0f5754cb6769937f4501cc0e67f4f4483c8d2c3e1e922ee9edbe4ab4c7c0"
 
 [[package]]
+name = "div"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cdbefef0281442815458db559026ef42ed0189da0a653f10fe881e89153faadc"
+dependencies = [
+ "wasm-bindgen",
+ "web-sys",
+]
+
+[[package]]
 name = "doc-comment"
 version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2126,28 +2136,10 @@ name = "paddle"
 version = "0.1.0"
 dependencies = [
  "chrono",
+ "div",
  "js-sys",
  "lyon",
  "nuts",
- "panes",
- "rand 0.7.3",
- "serde",
- "stdweb",
- "wasm-bindgen",
- "wasm-bindgen-futures",
- "web-sys",
-]
-
-[[package]]
-name = "paddle"
-version = "0.1.0"
-source = "git+https://github.com/jakmeier/paddle?rev=6def67181931b557f8b88178b60cef912aecf68e#6def67181931b557f8b88178b60cef912aecf68e"
-dependencies = [
- "chrono",
- "js-sys",
- "lyon",
- "nuts",
- "panes",
  "rand 0.7.3",
  "serde",
  "stdweb",
@@ -2180,6 +2172,7 @@ name = "paddlers-frontend"
 version = "0.1.3"
 dependencies = [
  "chrono",
+ "div",
  "futures-preview",
  "futures-util-preview",
  "gettext",
@@ -2187,9 +2180,8 @@ dependencies = [
  "js-sys",
  "lyon",
  "nuts",
- "paddle 0.1.0 (git+https://github.com/jakmeier/paddle?rev=6def67181931b557f8b88178b60cef912aecf68e)",
+ "paddle",
  "paddlers-shared-lib",
- "panes",
  "pathfinding",
  "serde",
  "serde_json",
@@ -2244,15 +2236,6 @@ dependencies = [
  "strum",
  "strum_macros",
  "uuid 0.8.1",
-]
-
-[[package]]
-name = "panes"
-version = "0.1.2"
-source = "git+https://github.com/jakmeier/panes?rev=39de99f30400ac5b961eaa14516154f50a992b62#39de99f30400ac5b961eaa14516154f50a992b62"
-dependencies = [
- "lazy_static",
- "stdweb",
 ]
 
 [[package]]

@@ -1,0 +1,10 @@
+#!/usr/bin/env node
+const svelte = require('svelte/compiler');
+
+const file = process.argv[1];
+const filename =  process.argv[3];
+const sveltePath = "/usr/local/lib/node_modules/svelte";
+const customElement = true;
+const tag = "test-component";
+const result = svelte.compile(file, {filename, sveltePath, customElement, tag});
+process.stdout.write(result.js.code,);

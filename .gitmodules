@@ -1,0 +1,6 @@
+[submodule "paddle"]
+	path = paddle
+	url = https://github.com/jakmeier/paddle
+[submodule "nuts"]
+	path = nuts
+	url = https://github.com/jakmeier/nuts

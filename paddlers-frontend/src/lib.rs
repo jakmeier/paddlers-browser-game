@@ -24,7 +24,9 @@ pub(crate) mod window;
 use init::{loading::LoadingState, wasm_setup::setup_wasm};
 
 use std::sync::mpsc::channel;
+use wasm_bindgen::prelude::wasm_bindgen;
 
+#[wasm_bindgen(start)]
 pub fn main() {
     #[cfg(target_arch = "wasm32")]
     setup_wasm();
@@ -34,7 +36,7 @@ pub fn main() {
     // Initialize panes, enabling HTML access
     let resolution = crate::window::estimate_screen_size();
     let (w, h) = resolution.pixels();
-    panes::init_ex(Some("game-root"), (0, 0), Some((w as u32, h as u32)))
+    div::init_ex(Some("game-root"), (0, 0), Some((w as u32, h as u32)))
         .expect("Panes initialization failed");
 
     // Setup logging

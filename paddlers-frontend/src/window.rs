@@ -32,9 +32,9 @@ pub fn adapt_window_size(window: &mut Window) -> PadlResult<()> {
 
     // Update panes
     let Vector { x, y } = window.screen_offset();
-    panes::reposition(x as u32, y as u32)?;
+    div::reposition(x as u32, y as u32)?;
     let Vector { x, y } = window.screen_size();
-    panes::resize(x as u32, y as u32)?;
+    div::resize(x as u32, y as u32)?;
     Ok(())
 }
 

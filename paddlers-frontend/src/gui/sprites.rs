@@ -6,6 +6,7 @@ use crate::gui::utils::*;
 use animation::AnimatedObject;
 use paddle::quicksilver_compat::graphics::Image;
 use paddle::quicksilver_compat::*;
+use paddle::quicksilver_compat::*;
 use stdweb::web::html_element::ImageElement;
 
 /// Manager of all sprites.
@@ -189,8 +190,8 @@ impl Sprites {
     pub fn shape_index(&self, index: PadlShapeIndex) -> &PadlShape {
         &self.shapes[index as usize]
     }
-    pub fn new_image_node(&self, img: SpriteIndex) -> ImageElement {
-        let node = ImageElement::new();
+    pub fn new_image_node(&self, img: SpriteIndex) -> HtmlImageElement {
+        let node = HtmlImageElement::new().unwrap();
         let i = match img {
             SpriteIndex::Simple(x) => x.index_in_vector(),
             _ => unimplemented!(),
@@ -243,6 +244,7 @@ pub fn tree_sprite(score: usize) -> SpriteSet {
 }
 
 use paddlers_shared_lib::prelude::AbilityType;
+use web_sys::HtmlImageElement;
 impl WithSprite for AbilityType {
     fn sprite(&self) -> SpriteSet {
         match self {

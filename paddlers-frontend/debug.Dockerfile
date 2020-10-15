@@ -6,7 +6,7 @@ COPY ./Cargo.lock ./paddlers-frontend/
 COPY ./paddlers-shared-lib/src ./paddlers-shared-lib/src
 COPY ./paddlers-frontend/src ./paddlers-frontend/src
 COPY ./paddlers-frontend/api ./paddlers-frontend/api
-COPY ./nuts ./nuts
+# COPY ./nuts ./nuts
 COPY ./paddle ./paddle
 RUN cd paddlers-frontend; cargo web deploy --target=wasm32-unknown-unknown --release --features=dev_view
 

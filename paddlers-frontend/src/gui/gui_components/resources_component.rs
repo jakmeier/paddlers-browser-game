@@ -3,16 +3,17 @@ use crate::gui::sprites::{SpriteSet, WithSprite};
 use crate::prelude::*;
 use paddle::quicksilver_compat::Rectangle;
 use stdweb::web::html_element::ImageElement;
-use stdweb::web::*;
+use web_sys::{Element, HtmlElement, HtmlImageElement};
+use crate::game::leaderboard::doc;
 
 pub struct ResourcesComponent {
-    pane: panes::PaneHandle,
+    pane: div::PaneHandle,
     parent: HtmlElement,
 }
 
 impl ResourcesComponent {
     pub fn new() -> PadlResult<Self> {
-        let pane = panes::new_styled_pane(0, 0, 0, 0, "", &["pdl-res-comp"], &[("", "")])?;
+        let pane = div::new_styled_pane(0, 0, 0, 0, "", &["pdl-res-comp"], &[("", "")])?;
         let parent = pane.parent_element()?;
         Ok(ResourcesComponent { pane, parent })
     }
@@ -49,9 +50,9 @@ impl ResourcesComponent {
         Ok(())
     }
     fn new_resource_element(res: ResourceType, n: i64) -> Element {
-        let node = document().create_element("span").unwrap();
-        let number = document().create_text_node(&n.to_string());
-        let img = ImageElement::new();
+        let node = doc().unwrap().create_element("span").unwrap();
+        let number = doc().unwrap().create_text_node(&n.to_string());
+        let img = HtmlImageElement::new().unwrap();
 
         let i = match res.sprite() {
             SpriteSet::Simple(x) => x.index_in_vector(),

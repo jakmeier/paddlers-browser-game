@@ -16,12 +16,21 @@ impl Game<'_, '_> {
         let view = *self.world.fetch::<UiView>();
         let next = match view {
             UiView::Map => UiView::Town,
-            UiView::Town => UiView::Visitors(VisitorViewTab::Letters),
+            UiView::Town | UiView::TownHelp => UiView::Visitors(VisitorViewTab::Letters),
             UiView::Visitors(_) => UiView::Leaderboard,
             UiView::Leaderboard => UiView::Map,
             UiView::Dialogue => return,
         };
 
+        self.switch_view(next);
+    }
+    pub fn toggle_help_view(&mut self) {
+        let view = *self.world.fetch::<UiView>();
+        let next = match view {
+            UiView::Town => UiView::TownHelp,
+            UiView::TownHelp => UiView::Town,
+            _ => view,
+        };
         self.switch_view(next);
     }
 }

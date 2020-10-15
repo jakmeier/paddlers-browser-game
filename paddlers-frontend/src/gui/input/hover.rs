@@ -33,6 +33,7 @@ impl<'a> System<'a> for HoverSystem {
             UiView::Visitors(_) => {}
             UiView::Leaderboard => {}
             UiView::Dialogue => {}
+            UiView::TownHelp => {}
         }
     }
 }

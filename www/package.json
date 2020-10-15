@@ -1,0 +1,33 @@
+{
+    "name": "paddlers-browser-game",
+    "version": "0.1.4",
+    "description": "Entry point to the paddlers browser game frontend",
+    "main": "paddlers.js",
+    "scripts": {
+        "build": "webpack --config webpack.debug.js",
+        "start": "webpack-dev-server --open --config webpack.dev.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/jakmeier/paddlers-browser-game.git"
+    },
+    "keywords": [
+        "webassembly",
+        "wasm",
+        "game",
+        "rust"
+    ],
+    "author": "Jakob Meier <inbox@jakobmeier.ch>",
+    "license": "(MIT OR Apache-2.0)",
+    "bugs": {
+        "url": "https://github.com/jakmeier/paddlers-browser-game/issues"
+    },
+    "homepage": "https://www.paddlers.ch",
+    "devDependencies": {
+        "hello-wasm-pack": "^0.1.0",
+        "webpack": "^5.0.0",
+        "webpack-cli": "^3.1.0",
+        "webpack-dev-server": "^3.1.5",
+        "copy-webpack-plugin": "^5.0.0"
+    }
+}
