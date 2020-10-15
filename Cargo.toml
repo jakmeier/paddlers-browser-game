@@ -5,6 +5,7 @@ members = [
     "paddlers-shared-lib",
     "paddlers-game-master",
     "paddlers-frontend",
+    "paddle",
     "integration-tests",
 ]
 

@@ -893,15 +893,6 @@ version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
-name = "div"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "wasm-bindgen 0.2.68 (registry+https://github.com/rust-lang/crates.io-index)",
- "web-sys 0.3.45 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
 name = "dlib"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1718,14 +1709,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "js-sys"
-version = "0.3.45"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "wasm-bindgen 0.2.68 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
 name = "jsonwebtoken"
 version = "5.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2287,10 +2270,6 @@ dependencies = [
 [[package]]
 name = "nuts"
 version = "0.1.1"
-
-[[package]]
-name = "nuts"
-version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
@@ -2335,13 +2314,24 @@ dependencies = [
 [[package]]
 name = "paddle"
 version = "0.1.0"
+source = "git+https://github.com/jakmeier/paddle?rev=d6901dfc081729af772dba0d53979427b90f0656#d6901dfc081729af772dba0d53979427b90f0656"
 dependencies = [
  "chrono 0.4.19 (registry+https://github.com/rust-lang/crates.io-index)",
- "div 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "js-sys 0.3.45 (registry+https://github.com/rust-lang/crates.io-index)",
  "nuts 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "panes 0.1.2 (git+https://github.com/jakmeier/panes?rev=39de99f30400ac5b961eaa14516154f50a992b62)",
  "quicksilver 0.3.18 (git+https://github.com/jakmeier/quicksilver?rev=224d88a60b4000f209b12856885dafa18a88339a)",
- "web-sys 0.3.45 (registry+https://github.com/rust-lang/crates.io-index)",
+ "stdweb 0.4.20 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "paddle"
+version = "0.1.0"
+dependencies = [
+ "chrono 0.4.19 (registry+https://github.com/rust-lang/crates.io-index)",
+ "nuts 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "panes 0.1.2 (git+https://github.com/jakmeier/panes?rev=39de99f30400ac5b961eaa14516154f50a992b62)",
+ "quicksilver 0.3.18 (git+https://github.com/jakmeier/quicksilver?rev=224d88a60b4000f209b12856885dafa18a88339a)",
+ "stdweb 0.4.20 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -2372,8 +2362,8 @@ dependencies = [
  "futures-util-preview 0.3.0-alpha.19 (registry+https://github.com/rust-lang/crates.io-index)",
  "gettext 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "graphql_client 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "nuts 0.1.1",
- "paddle 0.1.0",
+ "nuts 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "paddle 0.1.0 (git+https://github.com/jakmeier/paddle?rev=d6901dfc081729af772dba0d53979427b90f0656)",
  "paddlers-shared-lib 0.1.3",
  "panes 0.1.2 (git+https://github.com/jakmeier/panes?rev=39de99f30400ac5b961eaa14516154f50a992b62)",
  "pathfinding 2.0.4 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -4042,15 +4032,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "web-sys"
-version = "0.3.45"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "js-sys 0.3.45 (registry+https://github.com/rust-lang/crates.io-index)",
- "wasm-bindgen 0.2.68 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
 name = "webgl_generator"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4298,7 +4279,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum diff 0.1.12 (registry+https://github.com/rust-lang/crates.io-index)" = "0e25ea47919b1560c4e3b7fe0aaab9becf5b84a10325ddf7db0f0ba5e1026499"
 "checksum digest 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)" = "f3d0c8c8752312f9713efd397ff63acb9f85585afbf179282e720e7704954dd5"
 "checksum discard 1.0.4 (registry+https://github.com/rust-lang/crates.io-index)" = "212d0f5754cb6769937f4501cc0e67f4f4483c8d2c3e1e922ee9edbe4ab4c7c0"
-"checksum div 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "cdbefef0281442815458db559026ef42ed0189da0a653f10fe881e89153faadc"
 "checksum dlib 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)" = "77e51249a9d823a4cb79e3eca6dcd756153e8ed0157b6c04775d04bf1b13b76a"
 "checksum doc-comment 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)" = "fea41bba32d969b513997752735605054bc0dfa92b4c56bf1189f2e174be7a10"
 "checksum docopt 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "7f525a586d310c87df72ebcd98009e57f1cc030c8c268305287a476beb653969"
@@ -4390,7 +4370,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum itertools 0.8.2 (registry+https://github.com/rust-lang/crates.io-index)" = "f56a2d0bc861f9165be4eb3442afd3c236d8a98afd426f65d92324ae1091a484"
 "checksum itoa 0.4.5 (registry+https://github.com/rust-lang/crates.io-index)" = "b8b7a7c0c47db5545ed3fef7468ee7bb5b74691498139e4b3f6a20685dc6dd8e"
 "checksum jpeg-decoder 0.1.19 (registry+https://github.com/rust-lang/crates.io-index)" = "5b47b4c4e017b01abdc5bcc126d2d1002e5a75bbe3ce73f9f4f311a916363704"
-"checksum js-sys 0.3.45 (registry+https://github.com/rust-lang/crates.io-index)" = "ca059e81d9486668f12d455a4ea6daa600bd408134cd17e3d3fb5a32d1f016f8"
 "checksum jsonwebtoken 5.0.1 (registry+https://github.com/rust-lang/crates.io-index)" = "8d438ea707d465c230305963b67f8357a1d56fcfad9434797d7cb1c46c2e41df"
 "checksum juniper 0.14.2 (registry+https://github.com/rust-lang/crates.io-index)" = "f662ba51e2fbc3d6dd1ca66be70b44963606a34473156abddcb0351fc6caa668"
 "checksum juniper_codegen 0.14.2 (registry+https://github.com/rust-lang/crates.io-index)" = "d40af234d8e971a9d7dda93ffbcc8a44a93f17e69e3067f72ce7a6894c41d51b"
@@ -4462,6 +4441,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum ordered-float 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)" = "18869315e81473c951eb56ad5558bbc56978562d3ecfb87abb7a1e944cea4518"
 "checksum ordermap 0.3.5 (registry+https://github.com/rust-lang/crates.io-index)" = "a86ed3f5f244b372d6b1a00b72ef7f8876d0bc6a78a4c9985c53614041512063"
 "checksum osmesa-sys 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "88cfece6e95d2e717e0872a7f53a8684712ad13822a7979bc760b9c77ec0013b"
+"checksum paddle 0.1.0 (git+https://github.com/jakmeier/paddle?rev=d6901dfc081729af772dba0d53979427b90f0656)" = "<none>"
 "checksum panes 0.1.2 (git+https://github.com/jakmeier/panes?rev=39de99f30400ac5b961eaa14516154f50a992b62)" = "<none>"
 "checksum parking_lot 0.10.2 (registry+https://github.com/rust-lang/crates.io-index)" = "d3a704eb390aafdc107b0e392f56a82b668e3a71366993b5340f5833fd62505e"
 "checksum parking_lot 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)" = "fa7767817701cce701d5585b9c4db3cdd02086398322c1d7e8bf5094a96a2ce7"
@@ -4641,7 +4621,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum wayland-protocols 0.21.13 (registry+https://github.com/rust-lang/crates.io-index)" = "4afde2ea2a428eee6d7d2c8584fdbe8b82eee8b6c353e129a434cd6e07f42145"
 "checksum wayland-scanner 0.21.13 (registry+https://github.com/rust-lang/crates.io-index)" = "bf3828c568714507315ee425a9529edc4a4aa9901409e373e9e0027e7622b79e"
 "checksum wayland-sys 0.21.13 (registry+https://github.com/rust-lang/crates.io-index)" = "520ab0fd578017a0ee2206623ba9ef4afe5e8f23ca7b42f6acfba2f4e66b1628"
-"checksum web-sys 0.3.45 (registry+https://github.com/rust-lang/crates.io-index)" = "4bf6ef87ad7ae8008e15a355ce696bed26012b7caa21605188cfd8214ab51e2d"
 "checksum webgl_generator 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "4d749d56274af7e25dfe9f7ed92d4f1e7452b2de3ea6208529f31048032b5895"
 "checksum webgl_stdweb 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "04ce7301ae86629fd8d450c2c558a8faf3774d5500db4675bebbf97c5fbd2e30"
 "checksum webidl 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)" = "d0f807f7488d680893f7188aa09d7672a3a0a8461975a098a2edf0a52e3fee29"
