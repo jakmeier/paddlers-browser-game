@@ -188,7 +188,7 @@ impl<'a> GlobalMap<'a> {
                     );
                     window.draw_ex(
                         &area,
-                        Col(quicksilver::prelude::Color::WHITE),
+                        Col(WHITE),
                         Transform::rotate(45),
                         1000,
                     );
