@@ -1,7 +1,7 @@
 use crate::gui::sprites::paths::SPRITE_PATHS;
 use crate::gui::sprites::{SpriteSet, WithSprite};
 use crate::prelude::*;
-use quicksilver::geom::Rectangle;
+use paddle::quicksilver_compat::Rectangle;
 use stdweb::web::html_element::ImageElement;
 use stdweb::web::*;
 

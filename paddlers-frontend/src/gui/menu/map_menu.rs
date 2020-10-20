@@ -7,8 +7,8 @@ use crate::gui::{
     ui_state::UiState,
 };
 use crate::prelude::*;
+use paddle::quicksilver_compat::{MouseButton, Shape};
 use paddle::Frame;
-use quicksilver::prelude::{MouseButton, Shape, Window};
 use specs::prelude::*;
 
 pub(crate) struct MapMenuFrame<'a, 'b> {
@@ -55,6 +55,7 @@ impl<'a, 'b> Frame for MapMenuFrame<'a, 'b> {
                 e,
                 &table_area,
                 &mut self.text_provider,
+                state.mouse.pos(),
             )?;
         }
         self.text_provider.finish_draw();

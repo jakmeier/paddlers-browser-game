@@ -1,5 +1,5 @@
 use super::utils::*;
-use quicksilver::geom::Rectangle;
+use paddle::quicksilver_compat::Rectangle;
 
 #[test]
 fn shrink_rectangle_to_center() {

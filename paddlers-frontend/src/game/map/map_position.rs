@@ -1,5 +1,5 @@
 use crate::gui::input::Clickable;
-use quicksilver::prelude::*;
+use paddle::quicksilver_compat::*;
 use specs::prelude::*;
 use specs::storage::BTreeStorage;
 

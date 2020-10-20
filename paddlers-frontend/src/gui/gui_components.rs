@@ -10,11 +10,11 @@ pub use resources_component::*;
 use crate::game::game_event_manager::GameEvent;
 use crate::gui::{sprites::*, utils::*, z::*};
 use crate::prelude::*;
+use paddle::quicksilver_compat::*;
 use paddle::*;
 use paddle::{FitStrategy, NutsCheck};
 use paddlers_shared_lib::api::shop::Price;
 use paddlers_shared_lib::prelude::AbilityType;
-use quicksilver::prelude::*;
 
 pub enum TableRow<'a> {
     Text(String),
@@ -35,6 +35,7 @@ pub trait InteractiveTableArea {
         tp: &mut TableTextProvider,
         now: NaiveDateTime,
         area: &Rectangle,
+        mouse_pos: Vector,
     ) -> PadlResult<()>;
     /// Check if the mouse hits somthing on the area
     fn click(&self, mouse: Vector) -> PadlResult<Option<(ClickOutput, Option<Condition>)>>;
@@ -116,6 +117,7 @@ pub fn draw_table(
     z: i32,
     now: NaiveDateTime,
     alignment: TableVerticalAlignment,
+    mouse_pos: Vector,
 ) -> PadlResult<()> {
     let total_rows = row_count(table);
     let row_height = max_row_height.min(max_area.height() / total_rows as f32);
@@ -162,7 +164,7 @@ pub fn draw_table(
             TableRow::InteractiveArea(ia) => {
                 let mut area = line.clone();
                 area.size.y = area.size.y * ia.rows() as f32;
-                ia.draw(window, sprites, text_provider, now, &area)?;
+                ia.draw(window, sprites, text_provider, now, &area, mouse_pos)?;
                 line.pos.y += area.size.y;
             }
             TableRow::ProgressBar(bkgcol, col, i, n, label) => {

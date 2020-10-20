@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use quicksilver::prelude::{Vector, Window};
+use paddle::{quicksilver_compat::Vector, Window};
 use stdweb::traits::*;
 use stdweb::unstable::TryFrom;
 use stdweb::web::html_element::CanvasElement;

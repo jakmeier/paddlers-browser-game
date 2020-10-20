@@ -2,9 +2,9 @@ use crate::game::player_info::PlayerInfo;
 use crate::gui::{gui_components::*, utils::*};
 use crate::gui::{input::Grabbable, sprites::WithSprite};
 use crate::prelude::*;
+use paddle::quicksilver_compat::*;
 use paddlers_shared_lib::api::shop::*;
 use paddlers_shared_lib::prelude::*;
-use quicksilver::prelude::*;
 
 #[derive(Clone)]
 pub struct DefaultShop {

@@ -1,6 +1,6 @@
 use super::{TileIndex, TileState, Town};
 use crate::resolution::ScreenResolution;
-use quicksilver::prelude::*;
+use paddle::quicksilver_compat::*;
 
 impl ScreenResolution {
     pub fn tile(&self, pos: impl Into<Vector>) -> (usize, usize) {

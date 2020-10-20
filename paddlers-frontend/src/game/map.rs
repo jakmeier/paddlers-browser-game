@@ -9,9 +9,9 @@ use crate::net::authentication::read_jwt_preferred_username;
 use map_position::*;
 use map_segment::MapSegment;
 use map_tesselation::*;
+use paddle::quicksilver_compat::{Col, Mesh, Rectangle, Transform, Vector};
 use paddle::FitStrategy;
-use quicksilver::graphics::Mesh;
-use quicksilver::prelude::{Col, Rectangle, Transform, Vector, Window};
+use paddle::Window;
 use specs::prelude::*;
 
 pub(crate) use map_frame::MapFrame;
@@ -70,20 +70,13 @@ impl<'a> GlobalMap<'a> {
         (map, shared)
     }
 
-    pub fn render(
-        &mut self,
-        window: &mut Window,
-        sprites: &mut Sprites,
-        area: &Rectangle,
-    ) -> quicksilver::Result<()> {
+    pub fn render(&mut self, window: &mut Window, sprites: &mut Sprites, area: &Rectangle) {
         window.draw_ex(area, Col(GREEN), Transform::IDENTITY, Z_TEXTURE);
 
         self.apply_scaling(area.size());
         self.draw_grid(window);
         self.draw_water(window, area);
-        self.draw_villages(window, sprites)?;
-
-        Ok(())
+        self.draw_villages(window, sprites);
     }
     const LOAD_AHEAD: i32 = 10;
     const LOAD_STEP: i32 = 10;
@@ -131,11 +124,7 @@ impl<'a> GlobalMap<'a> {
             }
         }
     }
-    fn draw_villages(
-        &mut self,
-        window: &mut Window,
-        sprites: &mut Sprites,
-    ) -> quicksilver::Result<()> {
+    fn draw_villages(&mut self, window: &mut Window, sprites: &mut Sprites) {
         #[cfg(feature = "dev_view")]
         self.visualize_control_points(window);
 
@@ -158,9 +147,8 @@ impl<'a> GlobalMap<'a> {
                 Z_BUILDINGS,
                 FitStrategy::Center,
                 self.view_transform(),
-            )?;
+            );
         }
-        Ok(())
     }
 
     fn display_shape() -> (i32, i32) {

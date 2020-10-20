@@ -2,7 +2,7 @@
 
 // #[cfg(feature="dev_view")]
 pub mod palette;
-use quicksilver::prelude::*;
+use paddle::quicksilver_compat::*;
 
 pub fn color_string(col: &Color) -> String {
     format!(

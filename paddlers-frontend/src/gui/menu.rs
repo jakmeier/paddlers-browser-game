@@ -28,7 +28,8 @@ use crate::gui::{
 };
 use crate::prelude::*;
 use crate::resolution::ScreenResolution;
-use quicksilver::prelude::{Col, Rectangle, Transform, Vector, Window};
+use paddle::quicksilver_compat::{Col, Rectangle, Transform, Vector};
+use paddle::Window;
 use specs::prelude::*;
 
 impl ScreenResolution {
@@ -189,7 +190,7 @@ impl Game<'_, '_> {
         ));
         table.push(total_aura_details(self.town().ambience()));
         let shop = &mut self.town_context.world().write_resource::<DefaultShop>();
-        Self::draw_shop_prices(window, &mut area, &mut shop.ui, res_comp)?;
+        Self::draw_shop_prices(window, &mut area, &mut shop.ui, res_comp, self.mouse.pos())?;
 
         table.push(TableRow::InteractiveArea(&mut shop.ui));
 
@@ -203,6 +204,7 @@ impl Game<'_, '_> {
             Z_MENU_TEXT,
             self.town_context.world().read_resource::<Now>().0,
             TableVerticalAlignment::Top,
+            self.mouse.pos(),
         )
     }
     fn draw_shop_prices(
@@ -210,11 +212,12 @@ impl Game<'_, '_> {
         area: &mut Rectangle,
         ui: &mut UiBox,
         res_comp: &mut ResourcesComponent,
+        mouse_pos: Vector,
     ) -> PadlResult<()> {
         let price_tag_h = 50.0;
         let (shop_area, price_tag_area) = area.cut_horizontal(area.height() - price_tag_h);
         *area = shop_area;
-        ui.draw_hover_info(window, res_comp, &price_tag_area)?;
+        ui.draw_hover_info(window, res_comp, &price_tag_area, mouse_pos)?;
         Ok(())
     }
 }
@@ -272,6 +275,7 @@ pub fn draw_map_entity_details_table(
     e: Entity,
     area: &Rectangle,
     text_provider: &mut TableTextProvider,
+    mouse_pos: Vector,
 ) -> PadlResult<()> {
     let mut table = vec![];
     {
@@ -297,6 +301,7 @@ pub fn draw_map_entity_details_table(
         Z_MENU_TEXT,
         world.read_resource::<Now>().0,
         TableVerticalAlignment::Top,
+        mouse_pos,
     )?;
     Ok(())
 }
@@ -308,6 +313,7 @@ pub fn draw_town_entity_details_table(
     area: &Rectangle,
     text_provider: &mut TableTextProvider,
     res_comp: &mut ResourcesComponent,
+    mouse_pos: Vector,
 ) -> PadlResult<()> {
     let mut area = *area;
     let mut table = vec![];
@@ -363,7 +369,7 @@ pub fn draw_town_entity_details_table(
     }
 
     if let Some(ui) = ui_menu.get_mut(e) {
-        Game::draw_shop_prices(window, &mut area, &mut ui.ui, res_comp)?;
+        Game::draw_shop_prices(window, &mut area, &mut ui.ui, res_comp, mouse_pos)?;
         table.push(TableRow::InteractiveArea(&mut ui.ui));
     }
 
@@ -377,6 +383,7 @@ pub fn draw_town_entity_details_table(
         Z_MENU_TEXT,
         world.read_resource::<Now>().0,
         TableVerticalAlignment::Top,
+        mouse_pos,
     )?;
     Ok(())
 }

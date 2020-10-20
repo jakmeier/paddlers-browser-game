@@ -1,12 +1,12 @@
 use crate::game::town::Town;
 use crate::game::units::attackers::insert_duck;
+use crate::game::utc_now;
 use crate::net::graphql::query_types::HoboEffect;
 use crate::prelude::*;
 use paddlers_shared_lib::game_mechanics::town::*;
 use paddlers_shared_lib::prelude::*;
 use specs::prelude::*;
 use specs::world::EntitiesRes;
-use crate::game::utc_now;
 
 pub(crate) fn insert_buildings(town: &mut Town, entities: &EntitiesRes, lazy: &LazyUpdate) {
     town.insert_new_building(entities, lazy, (0, 0), BuildingType::BlueFlowers);

@@ -12,11 +12,10 @@ use crate::gui::{
     utils::*, z::*,
 };
 use crate::prelude::*;
+use paddle::quicksilver_compat::graphics::Color;
+use paddle::quicksilver_compat::*;
 use paddle::FitStrategy;
 use paddle::*;
-use quicksilver::graphics::Color;
-use quicksilver::input::MouseCursor;
-use quicksilver::prelude::*;
 use specs::prelude::*;
 
 #[derive(Component, Debug)]
@@ -53,12 +52,13 @@ impl Game<'_, '_> {
         if let Some(entity) = hovered_entity {
             render_hovering(world, window, sprites, entity)?;
         }
-        if let Some(grabbed) = grabbed_item {
-            render_grabbed_item(world, window, sprites, &grabbed)?;
-            window.set_cursor(MouseCursor::None);
-        } else {
-            window.set_cursor(MouseCursor::Default);
-        }
+        // TODO XXX TODO
+        // if let Some(grabbed) = grabbed_item {
+        //     render_grabbed_item(world, window, sprites, &grabbed)?;
+        //     window.set_cursor(MouseCursor::None);
+        // } else {
+        //     window.set_cursor(MouseCursor::Default);
+        // }
 
         render_town_entities(world, window, sprites)?;
 
@@ -147,8 +147,8 @@ pub fn render_grabbed_item(
     window: &mut Window,
     sprites: &mut Sprites,
     item: &Grabbable,
+    mouse: Vector,
 ) -> PadlResult<()> {
-    let mouse = window.mouse().pos();
     let ul = world.fetch::<ScreenResolution>().unit_length();
     let center = mouse - (ul / 2.0, ul / 2.0).into();
     let max_area = Rectangle::new(center, (ul, ul));

@@ -16,9 +16,8 @@ pub mod specs_registration;
 
 use crate::game::player_info::PlayerInfo;
 use crate::init::loading::LoadingState;
-use crate::init::quicksilver_integration::QuicksilverState;
 use crate::prelude::*;
-use quicksilver::prelude::*;
+use paddle::quicksilver_compat::*;
 use specs::prelude::*;
 use specs_registration::{insert_global_resources, register_global_components};
 
@@ -31,17 +30,4 @@ pub(super) fn init_world(resolution: ScreenResolution, player_info: PlayerInfo) 
     // Resources
     insert_global_resources(&mut world, resolution, player_info);
     world
-}
-pub(crate) fn run(state: LoadingState) {
-    let (w, h) = state.resolution.pixels();
-
-    // Load quicksilver canvas and loop
-    let mut settings = Settings::default();
-    settings.root_id = Some("game-root");
-    quicksilver::lifecycle::run_with::<QuicksilverState, _>(
-        "Paddlers",
-        Vector::new(w, h),
-        settings,
-        || Ok(QuicksilverState::load(state)),
-    );
 }

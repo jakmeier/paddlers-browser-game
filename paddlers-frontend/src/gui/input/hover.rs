@@ -1,7 +1,7 @@
 use super::{MouseState, UiView};
 use crate::game::movement::*;
 use crate::gui::ui_state::UiState;
-use quicksilver::geom::Shape;
+use paddle::quicksilver_compat::Shape;
 use specs::prelude::*;
 
 pub struct HoverSystem;

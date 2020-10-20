@@ -8,9 +8,9 @@ use crate::gui::z::*;
 use crate::net::game_master_api::RestApiState;
 use crate::prelude::*;
 use chrono::NaiveDateTime;
+use paddle::quicksilver_compat::*;
 use paddlers_shared_lib::api::tasks::*;
 use paddlers_shared_lib::prelude::WorkerKey;
-use quicksilver::geom::*;
 use specs::prelude::*;
 use std::collections::VecDeque;
 

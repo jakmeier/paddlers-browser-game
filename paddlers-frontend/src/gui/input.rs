@@ -5,11 +5,11 @@ use crate::gui::ui_state::Now;
 use crate::net::game_master_api::RestApiState;
 use crate::net::state::current_village;
 use crate::prelude::*;
-use paddlers_shared_lib::prelude::*;
-use quicksilver::geom::Vector;
 /// This module keeps the logic to read input and, in most cases,
 /// redirect it to suitable modules to handle the input
-use quicksilver::prelude::*;
+use paddle::quicksilver_compat::*;
+use paddle::{quicksilver_compat::Vector, Window};
+use paddlers_shared_lib::prelude::*;
 use specs::prelude::*;
 
 pub mod drag;
@@ -52,7 +52,7 @@ impl crate::game::Game<'_, '_> {
         event: &Event,
         window: &mut Window,
         pointer_manager: &mut PointerManager,
-    ) -> Result<()> {
+    ) -> PadlResult<()> {
         match event {
             Event::MouseMoved(pos) => {
                 pointer_manager.move_pointer(&mut self.world, &pos);
@@ -61,7 +61,7 @@ impl crate::game::Game<'_, '_> {
             }
             Event::MouseButton(button, state) => {
                 let now = self.world.read_resource::<Now>().0;
-                let pos = &window.mouse().pos();
+                let pos = &self.mouse.pos();
                 pointer_manager.button_event(now, pos, *button, *state);
             }
             Event::Key(key, state) if *key == Key::Escape && *state == ButtonState::Pressed => {

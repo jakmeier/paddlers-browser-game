@@ -10,11 +10,9 @@ categories = ["wasm", "game"]
 [dependencies]
 paddlers-shared-lib = { path = "../paddlers-shared-lib", features = ["enum_utils", "game_mechanics", "web"] }
 panes = { git = "https://github.com/jakmeier/panes", rev = "39de99f30400ac5b961eaa14516154f50a992b62" }
-nuts =  "0.1.1" #{ path = "../nuts" } # rev = "edfdc66c251407361cc3b2e5bb9c875fb87768c0"
-paddle = { git = "https://github.com/jakmeier/paddle", rev = "d6901dfc081729af772dba0d53979427b90f0656" }
-# quicksilver = { version = "0.3", default-features = false, features = ["fonts", "complex_shapes"] }
-quicksilver = { git = "https://github.com/jakmeier/quicksilver", default-features = false, features = ["complex_shapes"], rev = "224d88a60b4000f209b12856885dafa18a88339a" }
-# quicksilver = { path="../quicksilver", default-features = false, features = ["complex_shapes"] }
+# nuts =  "0.1.1" #{ path = "../nuts" } # rev = "edfdc66c251407361cc3b2e5bb9c875fb87768c0"
+nuts = { git = "https://github.com/jakmeier/nuts", rev = "158e3fefa8139b2f1f33cb6c4a460c8ec1efa6c7" }
+paddle = { git = "https://github.com/jakmeier/paddle", rev = "6def67181931b557f8b88178b60cef912aecf68e" }
 stdweb = {version = "0.4.20", features = ["experimental_features_which_may_break_on_minor_version_bumps"] }
 specs = { version = "0.16.1", default-features = false } # parallel not supported in wasm
 shred = { version = "0.10.2", default-features = false }
@@ -29,10 +27,17 @@ pathfinding = "2.0.4"
 url = "2.1.1"
 statistical = { version = "1.0", optional = true }
 gettext = "0.4"
+lyon = { version = "0.13", features = ["extra"] }
+wasm-bindgen-futures = "0.4.18"
+js-sys = "0.3.45"
+wasm-bindgen = "0.2.68"
 
 futures-preview = "0.3.0-alpha.18"
 futures-util-preview = "0.3.0-alpha.18"
 
+[dependencies.web-sys]
+version = "0.3"
+features = []
 
 [features]
 mobile_debug = []

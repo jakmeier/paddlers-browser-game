@@ -3,7 +3,7 @@ use crate::gui::{
 };
 use crate::prelude::*;
 use core::marker::PhantomData;
-use quicksilver::prelude::Window;
+use paddle::Window;
 use specs::WorldExt;
 
 pub(crate) struct VisitorMenuFrame<'a, 'b> {
@@ -49,8 +49,14 @@ impl<'a, 'b> Frame for VisitorMenuFrame<'a, 'b> {
         self.text_provider.reset();
         let inner_area = state.inner_menu_area();
         let (sprites, now) = (&mut state.sprites, state.world.read_resource::<Now>().0);
-        self.ui
-            .draw(window, sprites, &mut self.text_provider, now, &inner_area)?;
+        self.ui.draw(
+            window,
+            sprites,
+            &mut self.text_provider,
+            now,
+            &inner_area,
+            state.mouse.pos(),
+        )?;
         self.text_provider.finish_draw();
         Ok(())
     }

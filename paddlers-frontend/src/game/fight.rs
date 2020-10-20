@@ -1,4 +1,4 @@
-// use quicksilver::prelude::*;
+// use paddle::quicksilver_compat::*;
 use crate::game::{game_event_manager::GameEvent, movement::Position, town::Town};
 use crate::prelude::ScreenResolution;
 use specs::prelude::*;

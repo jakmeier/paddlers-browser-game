@@ -1,6 +1,6 @@
 use crate::gui::input::*;
 use chrono::NaiveDateTime;
-use quicksilver::prelude::*;
+use paddle::quicksilver_compat::*;
 use specs::prelude::*;
 
 #[derive(Clone)]

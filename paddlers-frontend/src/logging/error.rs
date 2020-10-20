@@ -1,4 +1,5 @@
-use paddle::ErrorMessage;
+use js_sys::Object;
+use paddle::{ErrorMessage, JsError};
 
 use crate::game::town::{TileIndex, TileType};
 use crate::net::ajax::AjaxError;
@@ -231,11 +232,6 @@ impl From<ErrorMessage> for PadlError {
         PadlError::dev_err(PadlErrorCode::PaddleError(error.text.to_string()))
     }
 }
-impl From<quicksilver::Error> for PadlError {
-    fn from(error: quicksilver::Error) -> Self {
-        PadlError::dev_err(PadlErrorCode::QuicksilverError(error.to_string()))
-    }
-}
 impl From<panes::PanesError> for PadlError {
     fn from(error: panes::PanesError) -> Self {
         PadlError::dev_err(PadlErrorCode::PanesError(error.to_string()))
@@ -254,6 +250,14 @@ impl From<specs::error::Error> for PadlError {
 impl From<&'static str> for PadlError {
     fn from(msg: &'static str) -> Self {
         PadlError::dev_err(PadlErrorCode::DevMsg(msg))
+    }
+}
+
+impl From<JsError> for PadlError {
+    fn from(err: JsError) -> Self {
+        let obj: Object = err.0.into();
+        let msg = obj.to_string().as_string().unwrap();
+        PadlError::dev_err(PadlErrorCode::BrowserError(msg))
     }
 }
 

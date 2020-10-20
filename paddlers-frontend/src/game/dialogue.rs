@@ -9,13 +9,13 @@ use crate::gui::{
 };
 use crate::prelude::*;
 use chrono::NaiveDateTime;
+use lyon::{math::point, path::Path, tessellation::*};
+use paddle::quicksilver_compat::graphics::{Mesh, ShapeRenderer};
+use paddle::quicksilver_compat::{Col, Rectangle, Transform};
 use paddle::Frame;
+use paddle::Window as QuicksilverWindow;
 use paddle::*;
 use paddlers_shared_lib::story::story_state::StoryState;
-use quicksilver::graphics::{Mesh, ShapeRenderer};
-use quicksilver::lyon::{math::point, path::Path, tessellation::*};
-use quicksilver::prelude::Window as QuicksilverWindow;
-use quicksilver::prelude::{Col, Rectangle, Transform};
 use specs::WorldExt;
 use std::marker::PhantomData;
 
@@ -131,6 +131,7 @@ impl<'a, 'b> DialogueFrame<'a, 'b> {
         sprites: &mut Sprites,
         now: NaiveDateTime,
         window: &mut QuicksilverWindow,
+        mouse_pos: Vector,
     ) -> PadlResult<()> {
         let mut table = Vec::new();
         for s in &self.text_lines {
@@ -147,6 +148,7 @@ impl<'a, 'b> DialogueFrame<'a, 'b> {
             Z_MENU_TEXT,
             now,
             TableVerticalAlignment::Center,
+            mouse_pos,
         )?;
         Ok(())
     }
@@ -240,6 +242,7 @@ impl<'a, 'b> Frame for DialogueFrame<'a, 'b> {
             &mut state.sprites,
             state.world.read_resource::<Now>().0,
             window,
+            state.mouse.pos(),
         )?;
         self.text_provider.finish_draw();
         Ok(())

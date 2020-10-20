@@ -2,10 +2,10 @@ use super::*;
 use crate::gui::{sprites::*, utils::*, z::*};
 use crate::prelude::*;
 use chrono::NaiveDateTime;
-use paddle::utc_now;
+use paddle::quicksilver_compat::*;
 use paddle::*;
+use paddle::{quicksilver_compat::geom::Triangle, utc_now};
 use paddle::{FitStrategy, NutsCheck};
-use quicksilver::prelude::*;
 use std::f32::consts::FRAC_1_SQRT_2;
 
 #[derive(Clone, Debug)]
@@ -45,6 +45,7 @@ impl InteractiveTableArea for UiBox {
         tp: &mut TableTextProvider,
         now: NaiveDateTime,
         area: &Rectangle,
+        mouse_pos: Vector,
     ) -> PadlResult<()> {
         self.area = *area;
         let grid = area.grid(self.columns, self.rows);
@@ -74,14 +75,14 @@ impl InteractiveTableArea for UiBox {
                     Some(img)
                 }
                 RenderVariant::ImgWithHoverAlternative(img, hov) => {
-                    if window.mouse().pos().overlaps_rectangle(&draw_area) {
+                    if mouse_pos.overlaps_rectangle(&draw_area) {
                         Some(hov)
                     } else {
                         Some(img)
                     }
                 }
                 RenderVariant::ImgWithHoverShape(img, hov) => {
-                    if window.mouse().pos().overlaps_rectangle(&draw_area) {
+                    if mouse_pos.overlaps_rectangle(&draw_area) {
                         draw_shape(
                             sprites,
                             window,
@@ -235,8 +236,9 @@ impl UiBox {
         window: &Window,
         res_comp: &mut ResourcesComponent,
         area: &Rectangle,
+        mouse_pos: Vector,
     ) -> PadlResult<()> {
-        let mouse = window.mouse().pos();
+        let mouse = mouse_pos;
         if let Some(el) = self.find_element_under_mouse(mouse) {
             if let Some(Condition::HasResources(cost)) = &el.condition {
                 res_comp.draw(area, &cost.0)?;

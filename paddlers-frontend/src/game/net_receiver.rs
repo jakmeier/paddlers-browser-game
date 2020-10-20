@@ -12,6 +12,7 @@ use crate::net::graphql::query_types::{
 };
 use crate::net::NetMsg;
 use crate::prelude::*;
+use paddle::LoadScheduler;
 use paddlers_shared_lib::prelude::*;
 use std::convert::TryInto;
 use std::sync::mpsc::TryRecvError;
@@ -20,7 +21,7 @@ use super::*;
 use specs::prelude::*;
 
 impl LoadingState {
-    pub fn update_net(&mut self) -> PadlResult<()> {
+    pub fn update_net(&mut self, progress: &mut LoadScheduler) -> PadlResult<()> {
         match self.base.net_chan.try_recv() {
             Ok(msg) => match msg {
                 NetMsg::Error(e) => match e.err {
@@ -32,33 +33,25 @@ impl LoadingState {
                     }
                 },
                 NetMsg::Workers(response, _vid) => {
-                    self.progress.report_progress_for(&response, 1);
-                    self.game_data.worker_response = Some(response);
+                    progress.add_progress(response);
                 }
                 NetMsg::Player(player_info) => {
-                    self.progress.report_progress_for(&player_info, 1);
-                    self.game_data.player_info = Some(player_info);
+                    progress.add_progress(player_info);
                 }
                 NetMsg::Buildings(response) => {
-                    self.progress.report_progress_for(&response, 1);
-                    self.game_data.buildings_response = Some(response);
+                    progress.add_progress(response);
                 }
                 NetMsg::Hobos(hobos, _vid) => {
-                    self.progress.report_progress_for(&hobos, 1);
-                    self.game_data.hobos_response = Some(hobos);
+                    progress.add_progress(hobos);
                 }
                 NetMsg::Attacks(response) => {
-                    self.progress.report_progress_for(&response, 1);
-                    self.game_data.attacking_hobos = Some(response);
+                    progress.add_progress(response);
                 }
                 NetMsg::VillageInfo(response) => {
-                    self.progress.report_progress_for(&response, 1);
-                    self.game_data.village_info = Some(response);
+                    progress.add_progress(response);
                 }
                 NetMsg::Leaderboard(offset, list) => {
-                    self.viewer_data.push(NetMsg::Leaderboard(offset, list));
-                    self.progress
-                        .report_progress::<NetMsg>(self.viewer_data.len());
+                    progress.add_progress::<NetMsg>(NetMsg::Leaderboard(offset, list));
                 }
                 other => {
                     println!(

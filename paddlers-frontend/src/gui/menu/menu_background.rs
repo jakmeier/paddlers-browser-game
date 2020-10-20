@@ -3,7 +3,7 @@ use crate::init::quicksilver_integration::Signal;
 use crate::net::NetMsg;
 use crate::prelude::*;
 use core::marker::PhantomData;
-use quicksilver::prelude::Window;
+use paddle::Window;
 use specs::prelude::*;
 
 pub(crate) struct MenuBackgroundFrame<'a, 'b> {
@@ -101,8 +101,14 @@ impl<'a, 'b> Frame for MenuBackgroundFrame<'a, 'b> {
         state.draw_menu_background(window)?;
         let button_area = state.button_area();
         let (sprites, now) = (&mut state.sprites, state.world.read_resource::<Now>().0);
-        self.ui
-            .draw(window, sprites, &mut self.tp, now, &button_area)?;
+        self.ui.draw(
+            window,
+            sprites,
+            &mut self.tp,
+            now,
+            &button_area,
+            state.mouse.pos(),
+        )?;
         self.tp.finish_draw();
         Ok(())
     }

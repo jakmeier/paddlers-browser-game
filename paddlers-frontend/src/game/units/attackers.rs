@@ -16,9 +16,9 @@ use crate::gui::ui_state::Now;
 use crate::gui::{render::Renderable, sprites::*, utils::*, z::Z_VISITOR};
 use crate::net::graphql::query_types::HoboEffect;
 use crate::prelude::*;
+use paddle::quicksilver_compat::Vector;
 use paddlers_shared_lib::game_mechanics::town::*;
 use paddlers_shared_lib::graphql_types::*;
-use quicksilver::geom::Vector;
 use specs::prelude::*;
 
 const ATTACKER_SIZE_FACTOR_X: f32 = 0.6;

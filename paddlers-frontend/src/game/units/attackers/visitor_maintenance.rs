@@ -4,8 +4,8 @@ use crate::game::units::attackers::Visitor;
 use crate::gui::ui_state::Now;
 use crate::gui::{render::Renderable, sprites::*, utils::*};
 use crate::prelude::*;
+use paddle::quicksilver_compat::Vector;
 use paddlers_shared_lib::game_mechanics::town::*;
-use quicksilver::geom::Vector;
 use specs::prelude::*;
 
 pub fn change_duck_sprite_to_happy(r: &mut Renderable) {

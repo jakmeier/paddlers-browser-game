@@ -2,9 +2,9 @@
 //! Triggers the corresponding mouse-click systems when necessary.
 use super::{drag::*, HoverSystem, MouseState};
 use chrono::{Duration, NaiveDateTime};
+use paddle::quicksilver_compat::*;
 use paddle::*;
 use paddle::{LeftClick, RightClick};
-use quicksilver::prelude::*;
 use specs::prelude::*;
 
 // Tolerance thresholds

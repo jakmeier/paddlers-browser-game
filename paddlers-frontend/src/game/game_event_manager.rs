@@ -38,7 +38,7 @@ pub enum GameEvent {
 }
 
 pub fn load_game_event_manager() {
-    let event_manager_activity = nuts::new_domained_activity(EventManager, &Domain::Main);
+    let event_manager_activity = nuts::new_domained_activity(EventManager, &Domain::Frame);
     event_manager_activity.subscribe_domained(|_, domain, event: &GameEvent| {
         let game: &mut Game<'static, 'static> =
             domain.try_get_mut().expect("Forgot to insert game?");

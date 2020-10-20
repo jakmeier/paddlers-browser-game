@@ -16,19 +16,19 @@ use paddle::*;
 use crate::game::*;
 use crate::gui::ui_state::*;
 use crate::specs::WorldExt;
-use quicksilver::prelude::*;
+use paddle::quicksilver_compat::*;
 
 use std::sync::Once;
 static INIT: Once = Once::new();
 
-pub(crate) enum QuicksilverState {
-    /// Used for easy data swapping
-    Empty,
-    // While downloading resources
-    Loading(LoadingState),
-    // During fully initialized game (Game is stored in nuts)
-    Ready,
-}
+// pub(crate) enum QuicksilverState {
+//     /// Used for easy data swapping
+//     Empty,
+//     // While downloading resources
+//     Loading(LoadingState),
+//     // During fully initialized game (Game is stored in nuts)
+//     Ready,
+// }
 #[derive(Clone, Debug)]
 /// Signals are a way to broadcast events for event listeners across views.
 pub enum Signal {
@@ -38,57 +38,55 @@ pub enum Signal {
     NewReportCount(usize),       // Notification
 }
 
-impl QuicksilverState {
-    pub fn load(state: LoadingState) -> Self {
-        Self::Loading(state)
-    }
-}
-impl State for QuicksilverState {
-    fn new() -> Result<Self> {
-        unreachable!()
-    }
-    fn update(&mut self, window: &mut Window) -> Result<()> {
-        match self {
-            Self::Loading(state) => {
-                let err = state.update_net();
-                state.queue_error(err);
-                self.try_finalize();
-            }
-            Self::Ready => nuts::publish(UpdateWorld::new(window)),
+// impl QuicksilverState {
+//     pub fn load(state: LoadingState) -> Self {
+//         Self::Loading(state)
+//     }
+// }
+// TODO TODO TODO
+// impl State for QuicksilverState {
+//     fn update(&mut self, window: &mut Window) -> Result<()> {
+//         match self {
+//             Self::Loading(state) => {
+//                 let err = state.update_net();
+//                 state.queue_error(err);
+//                 self.try_finalize();
+//             }
+//             Self::Ready => nuts::publish(UpdateWorld::new(window)),
 
-            Self::Empty => {
-                println!("Fatal error: No state");
-            }
-        }
-        Ok(())
-    }
-    fn draw(&mut self, window: &mut Window) -> Result<()> {
-        match self {
-            Self::Loading(state) => {
-                if let Err(e) = state.draw_loading(window) {
-                    nuts::publish(e);
-                }
-            }
-            Self::Ready => {
-                nuts::publish(DrawWorld::new(window));
-            }
-            Self::Empty => {}
-        }
-        Ok(())
-    }
-    fn event(&mut self, event: &Event, window: &mut Window) -> Result<()> {
-        match self {
-            Self::Empty => {}
-            Self::Loading(_state) => {}
-            Self::Ready => nuts::publish(WorldEvent::new(window, event)),
-        }
-        Ok(())
-    }
-}
+//             Self::Empty => {
+//                 println!("Fatal error: No state");
+//             }
+//         }
+//         Ok(())
+//     }
+//     fn draw(&mut self, window: &mut Window) -> Result<()> {
+//         match self {
+//             Self::Loading(state) => {
+//                 if let Err(e) = state.draw_loading(window) {
+//                     nuts::publish(e);
+//                 }
+//             }
+//             Self::Ready => {
+//                 nuts::publish(DrawWorld::new(window));
+//             }
+//             Self::Empty => {}
+//         }
+//         Ok(())
+//     }
+//     fn event(&mut self, event: &Event, window: &mut Window) -> Result<()> {
+//         match self {
+//             Self::Empty => {}
+//             Self::Loading(_state) => {}
+//             Self::Ready => nuts::publish(WorldEvent::new(window, event)),
+//         }
+//         Ok(())
+//     }
+// }
 struct GameActivity;
 impl Game<'static, 'static> {
     pub fn register_in_nuts() {
-        let aid = nuts::new_domained_activity(GameActivity, &Domain::Main);
+        let aid = nuts::new_domained_activity(GameActivity, &Domain::Frame);
         aid.subscribe_domained_mut(|_, domain, msg: &mut UpdateWorld| {
             let game: &mut Game = domain.try_get_mut().expect("Game missing");
             let window = msg.window();
@@ -106,7 +104,7 @@ impl Game<'static, 'static> {
             }
         });
     }
-    fn update(&mut self, window: &mut Window) -> Result<()> {
+    fn update(&mut self, window: &mut Window) -> PadlResult<()> {
         #[cfg(feature = "dev_view")]
         self.start_update();
 
@@ -115,7 +113,6 @@ impl Game<'static, 'static> {
         });
 
         self.total_updates += 1;
-        window.set_max_updates(1); // 1 update per frame is enough
         self.update_time_reference();
 
         {
@@ -134,7 +131,7 @@ impl Game<'static, 'static> {
         Ok(())
     }
 
-    fn draw(&mut self, window: &mut Window) -> Result<()> {
+    fn draw(&mut self, window: &mut Window) -> PadlResult<()> {
         #[cfg(feature = "dev_view")]
         self.start_draw();
 

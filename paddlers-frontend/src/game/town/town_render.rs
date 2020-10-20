@@ -1,6 +1,9 @@
 use super::*;
-use quicksilver::graphics::{Drawable, Mesh};
-use quicksilver::prelude::*;
+use paddle::quicksilver_compat::*;
+use paddle::{
+    quicksilver_compat::graphics::{Drawable, Mesh},
+    Window,
+};
 use std::f32::consts::PI;
 
 impl Town {
@@ -9,7 +12,7 @@ impl Town {
         mesh: &mut Mesh,
         sprites: &mut Sprites,
         unit_length: f32,
-    ) -> Result<()> {
+    ) -> PadlResult<()> {
         let d = unit_length;
 
         for (x, col) in self.map.0.iter().enumerate() {
@@ -35,7 +38,7 @@ impl Town {
         sprites: &mut Sprites,
         tick: u32,
         unit_length: f32,
-    ) -> Result<()> {
+    ) -> PadlResult<()> {
         let d = unit_length;
 
         for (x, col) in self.map.0.iter().enumerate() {

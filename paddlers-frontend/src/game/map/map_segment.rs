@@ -1,7 +1,6 @@
 pub use super::village_meta::VillageMetaInfo;
+use paddle::quicksilver_compat::*;
 use paddlers_shared_lib::game_mechanics::map::MAP_STREAM_AREA_W;
-use quicksilver::graphics::Mesh;
-use quicksilver::prelude::*;
 
 /// Holds data for a segment of the global map
 /// and keeps a rendered copy of the rivers cached

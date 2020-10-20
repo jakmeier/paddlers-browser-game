@@ -11,9 +11,8 @@ pub use progress_bar::*;
 use crate::gui::animation::AnimationState;
 use crate::gui::sprites::*;
 use crate::prelude::*;
-use paddle::{FitStrategy, JmrRectangle};
-use quicksilver::graphics::Mesh;
-use quicksilver::prelude::*;
+use paddle::quicksilver_compat::*;
+use paddle::{FitStrategy, JmrRectangle, Window};
 
 // Improvement: Would be nice to have Copy here (maybe with string interning)
 #[derive(Debug, Clone)]
@@ -48,7 +47,7 @@ pub fn draw_animated_sprite(
     fit_strat: FitStrategy,
     animation_state: &AnimationState,
     frame: u32,
-) -> Result<()> {
+) -> PadlResult<()> {
     let (image, transform) = i.animated(&animation_state.direction, frame);
     draw_image(asset, window, max_area, image, z, fit_strat, transform)
 }
@@ -59,7 +58,7 @@ pub fn draw_static_image(
     i: SpriteIndex,
     z: i32,
     fit_strat: FitStrategy,
-) -> Result<()> {
+) -> PadlResult<()> {
     draw_image(
         asset,
         window,
@@ -78,7 +77,7 @@ pub fn draw_image(
     z: i32,
     fit_strat: FitStrategy,
     transform: Transform,
-) -> Result<()> {
+) -> PadlResult<()> {
     let img = sprites.index(i);
     let mut area = *max_area;
     let img_slope = img.area().height() / img.area().width();

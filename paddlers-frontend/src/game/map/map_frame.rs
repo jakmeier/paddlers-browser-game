@@ -1,9 +1,9 @@
 use super::*;
 use crate::game::Game;
 use crate::prelude::*;
-use crate::quicksilver::geom::Shape;
+use paddle::quicksilver_compat::geom::Shape;
 use paddle::Frame;
-use quicksilver::prelude::Window;
+use paddle::Window;
 use std::marker::PhantomData;
 
 pub(crate) struct MapFrame<'a, 'b> {
@@ -43,7 +43,7 @@ impl<'a, 'b> Frame for MapFrame<'a, 'b> {
                 state.world.write_resource(),
             ),
         );
-        map.render(window, sprites, &area)?;
+        map.render(window, sprites, &area);
         Ok(())
     }
     fn left_click(&mut self, state: &mut Self::State, pos: (i32, i32)) -> Result<(), Self::Error> {

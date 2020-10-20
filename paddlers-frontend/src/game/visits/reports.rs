@@ -5,9 +5,10 @@ use crate::net::game_master_api::RestApiState;
 use crate::net::NetMsg;
 use crate::prelude::*;
 use core::marker::PhantomData;
+use paddle::quicksilver_compat::{Col, Rectangle, Transform};
+use paddle::Window;
 use paddlers_shared_lib::api::reports::ReportCollect;
 use paddlers_shared_lib::prelude::VisitReportKey;
-use quicksilver::prelude::{Col, Rectangle, Transform, Window};
 use specs::prelude::*;
 use stdweb::web::*;
 

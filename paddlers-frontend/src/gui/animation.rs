@@ -1,5 +1,5 @@
 use crate::gui::utils::*;
-use quicksilver::geom::*;
+use paddle::quicksilver_compat::*;
 use specs::prelude::*;
 use specs::storage::BTreeStorage;
 

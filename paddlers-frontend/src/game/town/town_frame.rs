@@ -9,9 +9,9 @@ use crate::gui::{
 };
 use crate::init::quicksilver_integration::Signal;
 use crate::prelude::*;
-use paddle::Frame;
-use quicksilver::graphics::Mesh;
-use quicksilver::prelude::{MouseButton, Shape, Vector, Window};
+use paddle::quicksilver_compat::graphics::Mesh;
+use paddle::quicksilver_compat::{MouseButton, Shape, Vector};
+use paddle::{Frame, Window};
 use specs::prelude::*;
 use std::ops::Deref;
 

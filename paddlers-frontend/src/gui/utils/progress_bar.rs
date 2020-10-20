@@ -1,7 +1,7 @@
 use super::*;
+use paddle::quicksilver_compat::*;
 use paddle::NutsCheck;
 use paddle::*;
-use quicksilver::prelude::*;
 
 pub fn draw_progress_bar(
     window: &mut Window,

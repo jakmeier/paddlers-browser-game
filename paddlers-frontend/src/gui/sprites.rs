@@ -3,26 +3,25 @@ pub mod paths;
 
 use crate::gui::shapes::*;
 use crate::gui::utils::*;
-use crate::init::loading::start_loading_animations;
 use animation::AnimatedObject;
-use quicksilver::graphics::Image;
-use quicksilver::prelude::*;
+use paddle::quicksilver_compat::graphics::Image;
+use paddle::quicksilver_compat::*;
 use stdweb::web::html_element::ImageElement;
 
 /// Manager of all sprites.
 /// Cannot easily be in a component because Image is thread local.
 pub struct Sprites {
     img: Vec<Image>,
-    animations: Vec<(Asset<AnimatedObject>, Image)>,
+    // animations: Vec<(Asset<AnimatedObject>, Image)>,
     shapes: Vec<PadlShape>,
 }
 
 impl Sprites {
     pub fn new(images: Vec<Image>) -> Self {
-        let future_animations = start_loading_animations(&images);
+        // let future_animations = start_loading_animations(&images);
         Sprites {
             img: images,
-            animations: future_animations,
+            // animations: future_animations,
             shapes: load_shapes(),
         }
     }
@@ -170,19 +169,20 @@ impl Sprites {
                 self.img[i].clone()
             }
             SpriteIndex::Animated(j, d, a) => {
-                let i = j.index_in_vector();
-                let animations = &mut self.animations;
+                todo!()
+                // let i = j.index_in_vector();
+                // let animations = &mut self.animations;
 
-                // TODO: Find better way to read return value from Asset execution
-                let mut result = animations[i].1.clone();
-                animations[i]
-                    .0
-                    .execute(|v| {
-                        result = v.sprite(d, a);
-                        Ok(())
-                    })
-                    .unwrap();
-                result
+                // // TODO: Find better way to read return value from Asset execution
+                // let mut result = animations[i].1.clone();
+                // animations[i]
+                //     .0
+                //     .execute(|v| {
+                //         result = v.sprite(d, a);
+                //         Ok(())
+                //     })
+                //     .unwrap();
+                // result
             }
         }
     }

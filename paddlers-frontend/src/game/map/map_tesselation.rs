@@ -1,9 +1,9 @@
 use crate::game::map::map_segment::MapSegment;
 use crate::gui::{utils::*, z::*};
+use ::lyon::{math::point, path::Path, tessellation::*};
+use paddle::quicksilver_compat::graphics::{Drawable, Mesh, ShapeRenderer};
+use paddle::quicksilver_compat::*;
 use paddle::{FitStrategy, JmrRectangle};
-use quicksilver::graphics::{Drawable, Mesh, ShapeRenderer};
-use quicksilver::lyon::{math::point, path::Path, tessellation::*};
-use quicksilver::prelude::*;
 
 impl MapSegment {
     pub fn tesselate_rivers(&mut self) {

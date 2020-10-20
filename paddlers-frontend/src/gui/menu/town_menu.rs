@@ -12,9 +12,9 @@ use crate::init::quicksilver_integration::Signal;
 use crate::prelude::*;
 use crate::resolution::ScreenResolution;
 use chrono::NaiveDateTime;
+use paddle::quicksilver_compat::{MouseButton, Rectangle, Shape};
 use paddle::Frame;
 use paddle::*;
-use quicksilver::prelude::{MouseButton, Rectangle, Shape, Window};
 use specs::prelude::*;
 
 pub(crate) struct TownMenuFrame<'a, 'b> {
@@ -50,7 +50,13 @@ impl<'a, 'b> Frame for TownMenuFrame<'a, 'b> {
             let extras_h = area.height() / 3.0;
             let (extras_area, remainder) = area.cut_horizontal(extras_h);
             area = remainder;
-            self.render_foreign_town_extras(&mut state.sprites, window, &extras_area, now)?;
+            self.render_foreign_town_extras(
+                &mut state.sprites,
+                window,
+                &extras_area,
+                now,
+                state.mouse.pos(),
+            )?;
         } else {
             let (resources_area, remainder) = area.cut_horizontal(resources_height);
             area = remainder;
@@ -75,6 +81,7 @@ impl<'a, 'b> Frame for TownMenuFrame<'a, 'b> {
                 &table_area,
                 &mut self.text_provider,
                 &mut self.hover_component,
+                state.mouse.pos(),
             )?;
         } else if !foreign {
             state.render_default_shop(
@@ -172,6 +179,7 @@ impl TownMenuFrame<'_, '_> {
         window: &mut Window,
         area: &Rectangle,
         now: NaiveDateTime,
+        mouse_pos: Vector,
     ) -> PadlResult<()> {
         let mut table = vec![];
         table.push(TableRow::InteractiveArea(&mut self.foreign_town_menu));
@@ -186,6 +194,7 @@ impl TownMenuFrame<'_, '_> {
             Z_MENU_TEXT,
             now,
             TableVerticalAlignment::Top,
+            mouse_pos,
         )?;
         Ok(())
     }

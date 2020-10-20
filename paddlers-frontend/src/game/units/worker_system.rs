@@ -12,7 +12,7 @@ use crate::gui::render::Renderable;
 use crate::gui::utils::*;
 use crate::prelude::*;
 use chrono::NaiveDateTime;
-use quicksilver::geom::about_equal;
+use paddle::quicksilver_compat::about_equal;
 use specs::prelude::*;
 
 pub struct WorkerSystem;

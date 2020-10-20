@@ -7,6 +7,7 @@ pub(crate) use crate::init::wasm_setup::PadlINode;
 pub(crate) use crate::logging::error::{PadlError, PadlErrorCode, PadlResult};
 pub(crate) use crate::resolution::ScreenResolution;
 
+pub(crate) use paddle::quicksilver_compat::{Circle, Rectangle, Transform, Vector};
 pub(crate) use paddle::{Frame, TextPool};
 
 pub(crate) use paddlers_shared_lib::models::{

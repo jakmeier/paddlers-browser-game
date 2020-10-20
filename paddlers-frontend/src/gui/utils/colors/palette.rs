@@ -1,5 +1,5 @@
 use crate::gui::utils::*;
-use quicksilver::prelude::*;
+use paddle::quicksilver_compat::*;
 pub fn draw_color_palette(window: &mut Window, area: Rectangle) {
     let (green, blue) = area.cut_horizontal(area.height() / 2.0);
     draw_three_colors(window, green, LIGHT_GREEN, GREEN, DARK_GREEN);

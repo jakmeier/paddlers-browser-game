@@ -6,8 +6,8 @@ use crate::net::graphql::query_types::{
     hobos_query::HobosQueryVillageHobosNest, HobosQueryResponse, HobosQueryUnitColor,
 };
 use crate::prelude::*;
+use paddle::quicksilver_compat::*;
 use paddlers_shared_lib::prelude::*;
-use quicksilver::geom::*;
 use specs::prelude::*;
 
 #[derive(Default, Debug, Component)]

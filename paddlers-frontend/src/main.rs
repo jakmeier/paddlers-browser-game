@@ -1,6 +1,6 @@
 #![recursion_limit = "512"]
 #![feature(is_sorted, associated_type_bounds, vec_remove_item, const_fn)]
-extern crate quicksilver;
+// extern crate quicksilver;
 #[macro_use]
 extern crate stdweb;
 extern crate specs;
@@ -21,7 +21,7 @@ mod view;
 pub(crate) mod window;
 
 #[cfg(target_arch = "wasm32")]
-use init::wasm_setup::setup_wasm;
+use init::{loading::LoadingState, wasm_setup::setup_wasm};
 
 use std::sync::mpsc::channel;
 
@@ -43,11 +43,11 @@ pub fn main() {
 
     // Set up loading state with interfaces to networking
     let (net_sender, net_receiver) = channel();
-    let state = init::loading::LoadingState::new(resolution, net_receiver);
+    let state = init::loading::LoadingState::new(resolution, "game-root", net_receiver);
 
     // Initialize networking
     net::init_net(net_sender);
-    init::run(state);
+    state.run();
 }
 
 pub use paddlers_shared_lib::shared_types::Timestamp;

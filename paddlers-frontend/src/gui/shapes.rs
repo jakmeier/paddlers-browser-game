@@ -1,9 +1,10 @@
 //! Pre-rendered shapes that can be drawn like sprites
 
 use crate::gui::{utils::*, z::*};
-use quicksilver::graphics::{Mesh, ShapeRenderer};
-use quicksilver::lyon::{math::point, path::Path, tessellation::*};
-use quicksilver::prelude::Rectangle;
+use lyon::lyon_tessellation::{FillOptions, StrokeTessellator};
+use lyon::{math::point, path::Path, tessellation::*};
+use paddle::quicksilver_compat::graphics::{Mesh, ShapeRenderer};
+use paddle::quicksilver_compat::Rectangle;
 
 /// A single mesh of triangles ready to be drawn
 pub struct PadlShape {

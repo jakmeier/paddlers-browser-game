@@ -1,4 +1,4 @@
-use quicksilver::prelude::*;
+use paddle::quicksilver_compat::*;
 use specs::prelude::*;
 
 use super::task_factory::NewTaskDescriptor;

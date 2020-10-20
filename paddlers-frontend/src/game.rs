@@ -36,8 +36,8 @@ use chrono::NaiveDateTime;
 use game_event_manager::GameEvent;
 use map::{GlobalMap, GlobalMapPrivateState};
 use movement::*;
-use paddle::{utc_now, TextBoard};
-use quicksilver::prelude::*;
+use paddle::quicksilver_compat::*;
+use paddle::{utc_now, TextBoard, Window};
 use shred::{Fetch, FetchMut};
 use specs::prelude::*;
 use std::sync::mpsc::Receiver;
@@ -52,6 +52,7 @@ pub(crate) struct Game<'a, 'b> {
     pub time_zero: NaiveDateTime,
     pub total_updates: u64,
     pub stats: Statistician,
+    pub mouse: Mouse,
     // TODO: [0.1.4] These would better fit into frame state, however,
     // there is currently no good solution to share it between main-frame and menu-frame
     pub map: Option<GlobalMapPrivateState>,
@@ -71,7 +72,7 @@ impl Game<'_, '_> {
         game_data: GameLoadingData,
         base: BaseState,
     ) -> PadlResult<Self> {
-        let player_info = game_data.player_info.ok_or("Player Info not loaded")?;
+        let player_info = game_data.player_info;
         let town_context = TownContextManager::new(resolution, player_info.clone());
         let mut world = crate::init::init_world(resolution, player_info);
         let mut dispatcher = DispatcherBuilder::new()
@@ -94,31 +95,28 @@ impl Game<'_, '_> {
             stats: Statistician::new(now),
             map: None,
             town_context,
+            mouse: Mouse::init(),
             #[cfg(feature = "dev_view")]
             palette: false,
             #[cfg(feature = "dev_view")]
             active_test: None,
         };
         game.prepare_town_resources();
-        game.load_village_info(game_data.village_info.ok_or("No village info")?)?;
-        game.load_buildings_from_net_response(
-            game_data
-                .buildings_response
-                .ok_or("No buildings response")?,
-        )?;
+        game.load_village_info(game_data.village_info)?;
+        game.load_buildings_from_net_response(game_data.buildings_response)?;
         // Make sure buildings are loaded properly before inserting any types of units
         game.world.maintain();
         game.town_world_mut().maintain();
         load_workers_from_net_response(
             game.town_context.active_context_mut(),
-            game_data.worker_response.ok_or("No worker response")?,
+            game_data.worker_response,
         );
         load_hobos_from_net_response(
             game.town_context.active_context_mut(),
-            game_data.hobos_response.ok_or("No hobos response")?,
+            game_data.hobos_response,
         )?;
-        game.load_attacking_hobos(game_data.attacking_hobos.ok_or("No attacks response")?)?;
-        game.load_player_info(game_data.player_info.ok_or("No player info loaded")?)?;
+        game.load_attacking_hobos(game_data.attacking_hobos)?;
+        game.load_player_info(game_data.player_info)?;
         // Make sure all units are loaded properly before story triggers are added
         game.world.maintain();
         game.town_world_mut().maintain();
@@ -136,7 +134,7 @@ impl Game<'_, '_> {
         self.check(err);
     }
 
-    pub fn main_update_loop(&mut self, window: &mut Window) -> Result<()> {
+    pub fn main_update_loop(&mut self, window: &mut Window) -> PadlResult<()> {
         {
             self.map_mut().update();
         }

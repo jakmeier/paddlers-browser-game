@@ -1,6 +1,6 @@
 use crate::game::Now;
 use chrono::NaiveDateTime;
-use quicksilver::geom::{about_equal, Rectangle, Vector};
+use paddle::quicksilver_compat::{about_equal, Rectangle, Vector};
 use specs::prelude::*;
 use specs::storage::BTreeStorage;
 

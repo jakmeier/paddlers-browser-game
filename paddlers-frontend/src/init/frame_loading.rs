@@ -7,8 +7,8 @@ use crate::game::visits::{
 };
 use crate::gui::menu::{MapMenuFrame, MenuBackgroundFrame, TownMenuFrame};
 use crate::prelude::*;
+use paddle::quicksilver_compat::*;
 use paddle::ViewManager;
-use quicksilver::prelude::*;
 
 pub(crate) fn load_viewer(view: UiView, resolution: ScreenResolution) -> ViewManager<UiView> {
     let mut viewer = ViewManager::new(view);
