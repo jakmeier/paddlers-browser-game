@@ -1,4 +1,5 @@
 **/target
 **/*.rs.bk
 **/*.md
+**/node_modules
 .vscode

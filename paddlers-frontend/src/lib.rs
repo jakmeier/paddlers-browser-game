@@ -20,20 +20,19 @@ pub(crate) mod resolution;
 mod view;
 pub(crate) mod window;
 
-#[cfg(target_arch = "wasm32")]
 use init::{loading::LoadingState, wasm_setup::setup_wasm};
 
 use std::sync::mpsc::channel;
 use wasm_bindgen::prelude::wasm_bindgen;
 
-#[wasm_bindgen(start)]
+#[wasm_bindgen]
 pub fn main() {
-    #[cfg(target_arch = "wasm32")]
     setup_wasm();
     let version = env!("CARGO_PKG_VERSION");
     println!("Paddlers {}", version);
 
     // Initialize panes, enabling HTML access
+    println!("Estimating screen size");
     let resolution = crate::window::estimate_screen_size();
     let (w, h) = resolution.pixels();
     div::init_ex(Some("game-root"), (0, 0), Some((w as u32, h as u32)))

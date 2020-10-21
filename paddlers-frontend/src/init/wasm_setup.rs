@@ -1,27 +1,21 @@
 #[allow(unused_macros)]
-#[cfg(target_arch = "wasm32")]
 macro_rules! println {
-    ($($tt:tt)*) => {{
-        let msg = format!($($tt)*);
-        js! { console.log(@{ msg }) }
-    }}
+    ( $( $t:tt )* ) => {
+        web_sys::console::log_1(&format!( $( $t )* ).into());
+    }
 }
 #[allow(unused_macros)]
-#[cfg(target_arch = "wasm32")]
 macro_rules! error {
-    ($($tt:tt)*) => {{
-        let msg = format!($($tt)*);
-        js! { console.error(@{ msg }) }
-    }}
+    ( $( $t:tt )* ) => {
+        web_sys::console::error_1(&format!( $( $t )* ).into());
+    }
 }
 
-#[cfg(target_arch = "wasm32")]
 pub fn setup_wasm() {
+    stdweb::initialize();
     std::panic::set_hook(Box::new(|panic_info| {
         error!("PANIC: {}\n", &panic_info);
     }));
-    stdweb::initialize();
-    // stdweb::event_loop();
 }
 
 /// Extension trait for stdweb::web::INode

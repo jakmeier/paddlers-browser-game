@@ -10,7 +10,8 @@ COPY ./nuts ./nuts
 COPY ./paddle ./paddle
 COPY ./Cargo.lock ./paddlers-frontend/
 # Build
-RUN cd paddlers-frontend; cargo web deploy --target=wasm32-unknown-unknown --release
+RUN cd paddlers-frontend; wasm-pack build
+RUN cd www; npm run release
 
 # A lightweight image to host application
 FROM nginx:alpine as WebServer
@@ -28,7 +29,7 @@ mkdir -p /etc/nginx/ssl/letsencrypt/demo.paddlers.ch/; \
 cd /etc/nginx/ssl/letsencrypt/demo.paddlers.ch/;
 
 # Install Paddlers app
-COPY --from=WasmBuilder ./paddlers-frontend/target/deploy/paddlers-frontend.* /usr/share/nginx/html/
+COPY --from=WasmBuilder ./www/dist/* /usr/share/nginx/html/
 COPY ./paddlers-frontend/static /usr/share/nginx/html
 COPY ./paddlers-frontend/static/js/keycloak/player.demo.json /usr/share/nginx/html/js/keycloak/player.json
 COPY ./paddlers-frontend/nginx/mime.types ./paddlers-frontend/nginx/nginx.conf /etc/nginx/

@@ -6,13 +6,15 @@ COPY ./Cargo.lock ./paddlers-frontend/
 COPY ./paddlers-shared-lib/src ./paddlers-shared-lib/src
 COPY ./paddlers-frontend/src ./paddlers-frontend/src
 COPY ./paddlers-frontend/api ./paddlers-frontend/api
-# COPY ./nuts ./nuts
+COPY ./nuts ./nuts
 COPY ./paddle ./paddle
-RUN cd paddlers-frontend; cargo web deploy --target=wasm32-unknown-unknown --release --features=dev_view
+COPY ./www ./www
+RUN cd paddlers-frontend; wasm-pack build
+RUN cd www; npm run build
 
 # A lightweight image to host application
 FROM nginx:latest as WebServer
-COPY --from=WasmBuilder ./paddlers-frontend/target/deploy/paddlers-frontend.* /usr/share/nginx/html/
+COPY --from=WasmBuilder ./www/dist/* /usr/share/nginx/html/
 COPY ./paddlers-frontend/static /usr/share/nginx/html
 COPY ./paddlers-frontend/static/js/keycloak/player.local.json /usr/share/nginx/html/js/keycloak/player.json
 COPY ./paddlers-frontend/nginx/mime.types ./paddlers-frontend/nginx/nginx.conf /etc/nginx/

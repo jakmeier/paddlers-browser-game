@@ -4,7 +4,8 @@
     "description": "Entry point to the paddlers browser game frontend",
     "main": "paddlers.js",
     "scripts": {
-        "build": "webpack --config webpack.debug.js",
+        "build": "webpack --config webpack.dev.js",
+        "release": "webpack --config webpack.prod.js",
         "start": "webpack-dev-server --open --config webpack.dev.js"
     },
     "repository": {
@@ -24,10 +25,11 @@
     },
     "homepage": "https://www.paddlers.ch",
     "devDependencies": {
+        "copy-webpack-plugin": "^5.0.0",
         "hello-wasm-pack": "^0.1.0",
         "webpack": "^5.0.0",
         "webpack-cli": "^3.1.0",
         "webpack-dev-server": "^3.1.5",
-        "copy-webpack-plugin": "^5.0.0"
+        "webpack-merge": "^5.2.0"
     }
 }
