@@ -4,7 +4,7 @@ use paddlers_shared_lib::story::story_state::StoryState;
 use crate::gui::ui_state::UiState;
 use crate::prelude::*;
 
-impl Game<'_, '_> {
+impl Game {
     pub fn switch_view(&mut self, view: UiView) {
         {
             let ui: &mut UiState = &mut *self.world.fetch_mut();

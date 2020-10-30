@@ -1,6 +1,6 @@
 mod http_calls;
 pub mod query_types;
-use super::NetMsg;
+use super::{NetMsg, NewAttackId, NewReportId};
 use http_calls::*;
 pub use query_types::*;
 
@@ -14,28 +14,30 @@ use paddlers_shared_lib::prelude::VillageKey;
 use std::sync::atomic::{AtomicI64, Ordering};
 
 pub struct GraphQlState {
-    next_attack_id: AtomicI64,
-    next_report_id: AtomicI64,
+    next_attack_id: i64,
+    next_report_id: i64,
 }
 
 impl GraphQlState {
     pub(super) const fn new() -> GraphQlState {
         GraphQlState {
-            next_attack_id: AtomicI64::new(0),
-            next_report_id: AtomicI64::new(0),
+            next_attack_id: 0,
+            next_report_id: 0,
         }
     }
 
-    pub(super) fn attacks_query(
-        &'static self,
-    ) -> PadlResult<impl Future<Output = PadlResult<NetMsg>>> {
+    pub(super) fn update_attack_id(&mut self, id: i64) {
+        self.next_attack_id = self.next_attack_id.max(id + 1);
+    }
+    pub(super) fn update_report_id(&mut self, id: i64) {
+        self.next_report_id = self.next_report_id.max(id + 1);
+    }
+
+    pub(super) fn attacks_query(&self) -> PadlResult<impl Future<Output = PadlResult<NetMsg>>> {
+        let next = self.next_attack_id;
         current_village_async().map(|fut| {
             fut.and_then(move |village: VillageKey| {
-                http_read_incoming_attacks(
-                    Some(self.next_attack_id.load(Ordering::Relaxed)),
-                    village,
-                )
-                .expect("Query building error")
+                http_read_incoming_attacks(Some(next), village).expect("Query building error")
             })
             .map(move |response| {
                 let r: AttacksResponse = response?;
@@ -46,8 +48,7 @@ impl GraphQlState {
                         .iter()
                         .map(|atk| atk.id.parse().unwrap())
                         .fold(0, i64::max);
-                    let next = self.next_attack_id.load(Ordering::Relaxed).max(max_id + 1);
-                    self.next_attack_id.store(next, Ordering::Relaxed);
+                    nuts::publish(NewAttackId { id: max_id });
                 }
                 Ok(NetMsg::Attacks(r))
             })
@@ -154,13 +155,11 @@ impl GraphQlState {
             ))
         }))
     }
-    pub(super) fn reports_query(
-        &'static self,
-    ) -> PadlResult<impl Future<Output = PadlResult<NetMsg>>> {
+    pub(super) fn reports_query(&self) -> PadlResult<impl Future<Output = PadlResult<NetMsg>>> {
+        let report_id = self.next_report_id;
         current_village_async().map(|fut| {
             fut.and_then(move |village: VillageKey| {
-                http_read_reports(Some(self.next_report_id.load(Ordering::Relaxed)), village)
-                    .expect("Query building error")
+                http_read_reports(Some(report_id), village).expect("Query building error")
             })
             .map(move |response| {
                 let data: ReportsResponse = response?;
@@ -170,8 +169,7 @@ impl GraphQlState {
                     .iter()
                     .map(|r| r.id.parse().unwrap())
                     .fold(0, i64::max);
-                let next = self.next_report_id.load(Ordering::Relaxed).max(max_id + 1);
-                self.next_report_id.store(next, Ordering::Relaxed);
+                nuts::publish(NewReportId { id: max_id });
                 Ok(NetMsg::Reports(data))
             })
         })

@@ -51,7 +51,7 @@ impl PointerManager<'_, '_> {
         }
     }
 
-    pub(crate) fn run(&mut self, game: &mut crate::game::Game<'static, 'static>) {
+    pub(crate) fn run(&mut self, game: &mut crate::game::Game) {
         if let Some((fpos, button)) = self.buffered_click {
             let pos = (fpos.x as i32, fpos.y as i32);
             match button {

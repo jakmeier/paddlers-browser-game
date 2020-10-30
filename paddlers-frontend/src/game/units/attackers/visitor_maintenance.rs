@@ -43,7 +43,7 @@ pub fn release_and_move_visitor(
     Moving::new(now, pos, momentum, speed)
 }
 
-impl<'a, 'b> Game<'a, 'b> {
+impl Game {
     /// Ensure there are not too many visitors resting in the town. (Without consulting the server)
     pub fn check_resting_queue(&mut self) -> PadlResult<()> {
         let town_world = self.town_world();

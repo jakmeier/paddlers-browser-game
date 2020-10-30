@@ -13,9 +13,8 @@ macro_rules! error {
 
 pub fn setup_wasm() {
     stdweb::initialize();
-    std::panic::set_hook(Box::new(|panic_info| {
-        error!("PANIC: {}\n", &panic_info);
-    }));
+    #[cfg(feature = "console_error_panic_hook")]
+    std::panic::set_hook(Box::new(console_error_panic_hook::hook));
 }
 
 /// Extension trait for stdweb::web::INode

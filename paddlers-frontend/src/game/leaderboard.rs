@@ -63,7 +63,7 @@ impl LeaderboardFrame<'_, '_> {
 
     pub fn network_message(
         &mut self,
-        _state: &mut Game<'static, 'static>,
+        _state: &mut Game,
         msg: &NetMsg,
     ) -> Result<(), PadlError> {
         match msg {
@@ -81,7 +81,7 @@ impl LeaderboardFrame<'_, '_> {
 
 impl<'a, 'b> Frame for LeaderboardFrame<'a, 'b> {
     type Error = PadlError;
-    type State = Game<'a, 'b>;
+    type State = Game;
     type Graphics = QuicksilverWindow;
 
     fn draw(

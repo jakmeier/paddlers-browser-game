@@ -207,7 +207,7 @@ pub struct NewStoryState {
 impl<'a, 'b> DialogueFrame<'a, 'b> {
     pub fn receive_load_scene(
         &mut self,
-        state: &mut Game<'a, 'b>,
+        state: &mut Game,
         msg: &LoadNewDialogueScene,
     ) -> Result<(), PadlError> {
         self.load_scene(msg.scene.load_scene(msg.slide), &state.locale);
@@ -216,7 +216,7 @@ impl<'a, 'b> DialogueFrame<'a, 'b> {
     }
     pub fn receive_new_story_state(
         &mut self,
-        state: &mut Game<'a, 'b>,
+        state: &mut Game,
         msg: &NewStoryState,
     ) -> Result<(), PadlError> {
         state.set_story_state(msg.new_story_state);
@@ -226,7 +226,7 @@ impl<'a, 'b> DialogueFrame<'a, 'b> {
 }
 impl<'a, 'b> Frame for DialogueFrame<'a, 'b> {
     type Error = PadlError;
-    type State = Game<'a, 'b>;
+    type State = Game;
     type Graphics = QuicksilverWindow;
     fn draw(
         &mut self,

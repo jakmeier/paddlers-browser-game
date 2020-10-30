@@ -24,7 +24,7 @@ pub(crate) struct TownFrame<'a, 'b> {
 
 impl<'a, 'b> Frame for TownFrame<'a, 'b> {
     type Error = PadlError;
-    type State = Game<'a, 'b>;
+    type State = Game;
     type Graphics = Window;
 
     fn update(&mut self, state: &mut Self::State) -> Result<(), Self::Error> {
@@ -159,7 +159,7 @@ impl<'a, 'b> TownFrame<'a, 'b> {
     }
     pub fn signal(
         &mut self,
-        state: &mut Game<'static, 'static>,
+        state: &mut Game,
         msg: &Signal,
     ) -> Result<(), PadlError> {
         match msg {
@@ -171,7 +171,7 @@ impl<'a, 'b> TownFrame<'a, 'b> {
         Ok(())
     }
 }
-impl<'a, 'b> Game<'a, 'b> {
+impl Game {
     /// Copy over Resources from global world to town world
     // Note: This is ugly but how else to share resources?
     //       The best solution I could think of would be to call all systems directly, instead of using a dispatcher.

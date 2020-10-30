@@ -40,7 +40,7 @@ impl Renderable {
     }
 }
 
-impl Game<'_, '_> {
+impl Game {
     pub fn draw_town_main(&mut self, window: &mut Window) -> PadlResult<()> {
         let world = self.town_context.world();
         let ui_state = world.read_resource::<UiState>();

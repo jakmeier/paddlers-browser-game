@@ -1,4 +1,4 @@
-use crate::game::fight::*;
+use crate::{net::game_master_api::HttpDeleteBuilding, game::fight::*};
 use crate::game::movement::Position;
 use crate::gui::input::pointer::PointerManager;
 use crate::gui::ui_state::Now;
@@ -47,11 +47,10 @@ pub enum Grabbable {
     Ability(AbilityType),
 }
 
-impl crate::game::Game<'_, '_> {
+impl crate::game::Game {
     pub fn handle_quicksilver_event(
         &mut self,
         event: &Event,
-        window: &mut Window,
         pointer_manager: &mut PointerManager,
     ) -> PadlResult<()> {
         match event {
@@ -93,9 +92,10 @@ impl crate::game::Game<'_, '_> {
                             std::mem::drop(pos_store);
                             std::mem::drop(resolution);
 
-                            let r = RestApiState::get()
-                                .http_delete_building(tile_index, current_village());
-                            self.check(r);
+                            nuts::publish(HttpDeleteBuilding {
+                                idx: tile_index,
+                                village: current_village(),
+                            });
 
                             // Account for changes in aura total
                             let aura_store = town_world.read_storage::<Aura>();

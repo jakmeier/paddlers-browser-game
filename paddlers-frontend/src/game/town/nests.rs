@@ -51,7 +51,7 @@ impl Town {
             nest: netid.as_building().expect("building"),
             to: current_village(),
         };
-        RestApiState::get().http_invite(msg)?;
+        nuts::publish(msg);
         crate::game::game_event_manager::game_event(GameEvent::DisplayConfirmation(
             "invitation-sent".into(),
         ));

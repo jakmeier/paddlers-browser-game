@@ -28,7 +28,7 @@ pub enum Test {
 }
 
 impl TestData {
-    pub fn start_test(game: &mut Game<'_, '_>, setting: Test) -> Self {
+    pub fn start_test(game: &mut Game, setting: Test) -> Self {
         let resolution = *game.world.fetch::<ScreenResolution>();
         match setting {
             Test::Vanilla => { /* NOP */ }

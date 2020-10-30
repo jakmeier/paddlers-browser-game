@@ -1,10 +1,9 @@
-use crate::game::town::TownContext;
 use crate::game::town_resources::TownResources;
 use crate::game::units::hobos::insert_hobos;
 use crate::game::{
     components::*, units::worker_factory::create_worker_entities, units::workers::Worker,
 };
-use crate::init::loading::LoadingState;
+use crate::init::loading::LoadingFrame;
 use crate::init::quicksilver_integration::Signal;
 use crate::net::graphql::query_types::WorkerResponse;
 use crate::net::graphql::query_types::{
@@ -12,6 +11,7 @@ use crate::net::graphql::query_types::{
 };
 use crate::net::NetMsg;
 use crate::prelude::*;
+use crate::{game::town::TownContext, net::game_master_api::HttpCreatePlayer};
 use paddle::LoadScheduler;
 use paddlers_shared_lib::prelude::*;
 use std::convert::TryInto;
@@ -20,56 +20,57 @@ use std::sync::mpsc::TryRecvError;
 use super::*;
 use specs::prelude::*;
 
-impl LoadingState {
-    pub fn update_net(&mut self, progress: &mut LoadScheduler) -> PadlResult<()> {
-        match self.base.net_chan.try_recv() {
-            Ok(msg) => match msg {
-                NetMsg::Error(e) => match e.err {
-                    PadlErrorCode::UserNotInDB => {
-                        RestApiState::get().http_create_player()?;
-                    }
-                    _ => {
-                        println!("Network Error: {}", e);
-                    }
-                },
-                NetMsg::Workers(response, _vid) => {
-                    progress.add_progress(response);
+pub fn loading_update_net(
+    net_chan: &mut Receiver<NetMsg>,
+    progress: &mut LoadScheduler,
+) -> PadlResult<()> {
+    match net_chan.try_recv() {
+        Ok(msg) => match msg {
+            NetMsg::Error(e) => match e.err {
+                PadlErrorCode::UserNotInDB => {
+                    nuts::publish(HttpCreatePlayer);
                 }
-                NetMsg::Player(player_info) => {
-                    progress.add_progress(player_info);
-                }
-                NetMsg::Buildings(response) => {
-                    progress.add_progress(response);
-                }
-                NetMsg::Hobos(hobos, _vid) => {
-                    progress.add_progress(hobos);
-                }
-                NetMsg::Attacks(response) => {
-                    progress.add_progress(response);
-                }
-                NetMsg::VillageInfo(response) => {
-                    progress.add_progress(response);
-                }
-                NetMsg::Leaderboard(offset, list) => {
-                    progress.add_progress::<NetMsg>(NetMsg::Leaderboard(offset, list));
-                }
-                other => {
-                    println!(
-                        "Unexpected network message before complete initialization {:?}",
-                        other,
-                    );
+                _ => {
+                    println!("Network Error: {}", e);
                 }
             },
-            Err(TryRecvError::Disconnected) => {
-                return PadlErrorCode::NoNetwork.usr();
+            NetMsg::Workers(response, _vid) => {
+                progress.add_progress(response);
             }
-            Err(TryRecvError::Empty) => {}
+            NetMsg::Player(player_info) => {
+                progress.add_progress(player_info);
+            }
+            NetMsg::Buildings(response) => {
+                progress.add_progress(response);
+            }
+            NetMsg::Hobos(hobos, _vid) => {
+                progress.add_progress(hobos);
+            }
+            NetMsg::Attacks(response) => {
+                progress.add_progress(response);
+            }
+            NetMsg::VillageInfo(response) => {
+                progress.add_progress(response);
+            }
+            NetMsg::Leaderboard(offset, list) => {
+                progress.add_progress::<NetMsg>(NetMsg::Leaderboard(offset, list));
+            }
+            other => {
+                println!(
+                    "Unexpected network message before complete initialization {:?}",
+                    other,
+                );
+            }
+        },
+        Err(TryRecvError::Disconnected) => {
+            return PadlErrorCode::NoNetwork.usr();
         }
-        Ok(())
+        Err(TryRecvError::Empty) => {}
     }
+    Ok(())
 }
 
-impl Game<'static, 'static> {
+impl Game {
     pub fn update_net(&mut self) -> PadlResult<()> {
         match self.net.try_recv() {
             Ok(msg) => {
@@ -168,7 +169,7 @@ impl Game<'static, 'static> {
         Ok(())
     }
 }
-impl<'a, 'b> Game<'a, 'b> {
+impl Game {
     pub fn load_buildings_from_net_response(
         &mut self,
         response: BuildingsResponse,

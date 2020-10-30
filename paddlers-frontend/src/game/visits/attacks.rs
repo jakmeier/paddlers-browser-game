@@ -6,13 +6,13 @@ use crate::net::game_master_api::RestApiState;
 use crate::net::state::current_village;
 use crate::prelude::*;
 use chrono::NaiveDateTime;
+use div::new_pane;
 use paddle::quicksilver_compat::{Col, Rectangle, Transform};
 use paddle::{utc_now, Frame, TextNode, Window};
 use paddlers_shared_lib::api::attacks::*;
-use div::new_pane;
 use specs::prelude::*;
-use web_sys::{HtmlElement, Node};
 use wasm_bindgen::JsCast;
+use web_sys::{HtmlElement, Node};
 
 #[derive(Component, Debug)]
 #[storage(HashMapStorage)]
@@ -23,7 +23,7 @@ pub struct Attack {
     dom_node: Option<TextNode>,
 }
 
-impl Game<'_, '_> {
+impl Game {
     pub fn send_prophet_attack(&mut self, target: (i32, i32)) -> PadlResult<()> {
         let maybe_prophet = self.town_mut().idle_prophets.pop();
         if let Some(prophet) = maybe_prophet {
@@ -33,7 +33,7 @@ impl Game<'_, '_> {
                 to: target,
                 units: vec![hobo],
             };
-            RestApiState::get().http_send_attack(atk)?;
+            nuts::publish(atk);
             Ok(())
         } else {
             PadlErrorCode::NotEnoughUnits.usr()
@@ -131,7 +131,7 @@ impl<'a, 'b> VisitorFrame<'a, 'b> {
 
 impl<'a, 'b> Frame for VisitorFrame<'a, 'b> {
     type Error = PadlError;
-    type State = Game<'a, 'b>;
+    type State = Game;
     type Graphics = Window;
 
     fn update(&mut self, state: &mut Self::State) -> Result<(), Self::Error> {
@@ -143,7 +143,8 @@ impl<'a, 'b> Frame for VisitorFrame<'a, 'b> {
                 match self.add_row(&html) {
                     Ok(node) => {
                         if let Some(arrival_node) = node.last_child() {
-                            let text_node = TextNode::new(arrival_node.dyn_into().unwrap(), a.arrival());
+                            let text_node =
+                                TextNode::new(arrival_node.dyn_into().unwrap(), a.arrival());
                             a.dom_node = Some(text_node);
                         } else {
                             nuts::publish(PadlError::dev_err(PadlErrorCode::InvalidDom(

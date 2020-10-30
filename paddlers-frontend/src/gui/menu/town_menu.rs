@@ -28,7 +28,7 @@ pub(crate) struct TownMenuFrame<'a, 'b> {
 
 impl<'a, 'b> Frame for TownMenuFrame<'a, 'b> {
     type Error = PadlError;
-    type State = Game<'a, 'b>;
+    type State = Game;
     type Graphics = Window;
 
     fn draw(
@@ -201,7 +201,7 @@ impl TownMenuFrame<'_, '_> {
 
     pub fn new_story_state(
         &mut self,
-        state: &mut Game<'static, 'static>,
+        state: &mut Game,
         msg: &crate::game::dialogue::NewStoryState,
     ) -> Result<(), PadlError> {
         // FIXME: redundant with the same call also in dialogue
@@ -211,7 +211,7 @@ impl TownMenuFrame<'_, '_> {
     }
     pub fn signal(
         &mut self,
-        state: &mut Game<'static, 'static>,
+        state: &mut Game,
         e: &Signal,
     ) -> Result<(), PadlError> {
         match e {

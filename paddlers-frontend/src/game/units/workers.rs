@@ -61,10 +61,8 @@ impl Worker {
         let msg =
             self.try_create_task_list(entity, start, destination, job, &town, containers, mana);
         match msg {
-            Ok(msg) => {
-                RestApiState::get()
-                    .http_overwrite_tasks(msg)
-                    .unwrap_or_else(|e| nuts::publish(e));
+            Ok(task_list) => {
+                nuts::publish(task_list);
             }
             Err(e) => {
                 nuts::publish(e);
@@ -161,8 +159,8 @@ pub fn move_worker_out_of_building<'a>(
     let worker = workers.get_mut(worker_e).unwrap();
     let http_msg = worker.go_idle(tile);
     match http_msg {
-        Ok(msg) => {
-            RestApiState::get().http_overwrite_tasks(msg)?;
+        Ok(task_list) => {
+            nuts::publish(task_list);
         }
         Err(e) => {
             println!("Failure on moving out of building: {}", e);

@@ -43,10 +43,10 @@ impl<'a> IAttackingHobo for AttackingHobo<'a> {
     }
 }
 
-impl<'a, 'b> ITownLayoutMarker for Game<'a, 'b> {
+impl<'a, 'b> ITownLayoutMarker for Game {
     const LAYOUT: TownLayout = TownLayout::Basic;
 }
-impl<'a, 'b> IDefendingTown for Game<'a, 'b> {
+impl<'a, 'b> IDefendingTown for Game {
     type AuraId = u32;
     fn auras_in_range(&self, index: &Self::Index, time: Timestamp) -> Vec<(Self::AuraId, i32)> {
         let mut out = vec![];

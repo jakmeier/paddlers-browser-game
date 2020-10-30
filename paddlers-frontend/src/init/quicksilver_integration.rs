@@ -7,28 +7,27 @@
 //!
 //! All this is glued together by implementing quicksilver's State
 
-use crate::init::loading::LoadingState;
-use crate::net::game_master_api::RestApiState;
 use crate::prelude::*;
+use crate::{
+    init::loading::LoadingFrame,
+    web_integration::{start_drawing_thread, start_thread},
+};
+use crate::{net::game_master_api::RestApiState, web_integration::ThreadHandler};
 use paddle::utc_now;
 use paddle::*;
+use wasm_bindgen::{prelude::Closure, JsCast};
 
 use crate::game::*;
 use crate::gui::ui_state::*;
 use crate::specs::WorldExt;
 use paddle::quicksilver_compat::*;
 
-use std::sync::Once;
+use std::{
+    rc::Rc,
+    sync::{Mutex, Once},
+};
 static INIT: Once = Once::new();
 
-// pub(crate) enum QuicksilverState {
-//     /// Used for easy data swapping
-//     Empty,
-//     // While downloading resources
-//     Loading(LoadingState),
-//     // During fully initialized game (Game is stored in nuts)
-//     Ready,
-// }
 #[derive(Clone, Debug)]
 /// Signals are a way to broadcast events for event listeners across views.
 pub enum Signal {
@@ -39,7 +38,7 @@ pub enum Signal {
 }
 
 // impl QuicksilverState {
-//     pub fn load(state: LoadingState) -> Self {
+//     pub fn load(state: LoadingFrame) -> Self {
 //         Self::Loading(state)
 //     }
 // }
@@ -83,34 +82,38 @@ pub enum Signal {
 //         Ok(())
 //     }
 // }
+
+pub fn start_drawing() -> PadlResult<ThreadHandler> {
+    start_drawing_thread(|| nuts::publish(DrawWorld::new()))
+}
+
+pub fn start_updating() -> PadlResult<ThreadHandler> {
+    start_thread(|| nuts::publish(UpdateWorld::new()), 10)
+}
+
 struct GameActivity;
-impl Game<'static, 'static> {
+impl Game {
     pub fn register_in_nuts() {
         let aid = nuts::new_domained_activity(GameActivity, &Domain::Frame);
         aid.subscribe_domained_mut(|_, domain, msg: &mut UpdateWorld| {
             let game: &mut Game = domain.try_get_mut().expect("Game missing");
-            let window = msg.window();
-            if let Err(e) = game.update(window) {
+            if let Err(e) = game.update() {
                 let err: PadlError = e.into();
                 nuts::publish(err);
             }
         });
         aid.subscribe_domained_mut(|_, domain, msg: &mut DrawWorld| {
-            let game: &mut Game = domain.try_get_mut().expect("Game missing");
-            let window = msg.window();
+            let (game, window) = domain.try_get_2_mut::<Game, Window>();
+            let (game, window) = (game.expect("Game missing"), window.expect("Window missing"));
             if let Err(e) = game.draw(window) {
                 let err: PadlError = e.into();
                 nuts::publish(err);
             }
         });
     }
-    fn update(&mut self, window: &mut Window) -> PadlResult<()> {
+    fn update(&mut self) -> PadlResult<()> {
         #[cfg(feature = "dev_view")]
         self.start_update();
-
-        INIT.call_once(|| {
-            self.initialize_with_window(window);
-        });
 
         self.total_updates += 1;
         self.update_time_reference();
@@ -124,7 +127,7 @@ impl Game<'static, 'static> {
 
         let res = self.update_net();
         self.check(res);
-        self.main_update_loop(window)?;
+        self.main_update_loop()?;
 
         #[cfg(feature = "dev_view")]
         self.end_update();
@@ -145,11 +148,12 @@ impl Game<'static, 'static> {
             self.check(err);
         }
 
-        {
-            let mut rest = RestApiState::get();
-            let err = self.stats.track_frame(&mut *rest, utc_now());
-            self.check(err);
-        }
+        // Probably just remove
+        // {
+        //     let mut rest = RestApiState::get();
+        //     let err = self.stats.track_frame(&mut *rest, utc_now());
+        //     self.check(err);
+        // }
 
         #[cfg(feature = "dev_view")]
         self.draw_dev_view(window);

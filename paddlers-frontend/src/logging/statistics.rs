@@ -21,18 +21,17 @@ impl Statistician {
         }
     }
 
-    /// Call this once per frame to keep track of FPS and occasionally log data back to server
-    pub fn track_frame(&mut self, rest: &mut RestApiState, now: NaiveDateTime) -> PadlResult<()> {
-        self.frames += 1;
-        if self.last_sent + Duration::seconds(INTERVAL_SECONDS) < now {
-            self.send(rest, now)?;
-            self.last_sent = now;
-            self.frames = 0;
-        }
-        Ok(())
-    }
+    // /// Call this once per frame to keep track of FPS and occasionally log data back to server
+    // pub fn track_frame(&mut self, rest: &mut RestApiState, now: NaiveDateTime) {
+    //     self.frames += 1;
+    //     if self.last_sent + Duration::seconds(INTERVAL_SECONDS) < now {
+    //         self.send(rest, now);
+    //         self.last_sent = now;
+    //         self.frames = 0;
+    //     }
+    // }
 
-    fn send(&mut self, rest: &mut RestApiState, now: NaiveDateTime) -> PadlResult<()> {
+    fn send(&mut self, rest: &mut RestApiState, now: NaiveDateTime) {
         let interval_us = now - self.last_sent;
         let fps = 1_000_000.0 * self.frames as f64 / interval_us.num_microseconds().unwrap() as f64;
         let duration_us = now - self.session_start;
@@ -46,11 +45,10 @@ impl Statistician {
 }
 
 fn browser_info() -> BrowserInfo {
-    let user_agent: String = js!(
-        return navigator.userAgent;
-    )
-    .try_into()
-    .unwrap_or("NotAvailable".to_owned());
+    let navigator = web_sys::window().unwrap().navigator();
+    let user_agent = navigator
+        .user_agent()
+        .unwrap_or_else(|_| "NotAvailable".to_owned());
 
     let window = stdweb::web::window();
     BrowserInfo {

@@ -52,7 +52,7 @@ impl TownSummaryFrame<'_, '_> {
 
 impl<'a, 'b> Frame for TownSummaryFrame<'a, 'b> {
     type Error = PadlError;
-    type State = Game<'a, 'b>;
+    type State = Game;
     type Graphics = QuicksilverWindow;
 
     fn draw(

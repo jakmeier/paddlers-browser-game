@@ -3,6 +3,7 @@ use super::{
 };
 use crate::prelude::*;
 use futures_util::future::FutureExt;
+use paddle::{Domain, NutsCheck};
 use paddlers_shared_lib::api::reports::ReportCollect;
 use paddlers_shared_lib::api::story::StoryStateTransition;
 use paddlers_shared_lib::api::{
@@ -20,176 +21,188 @@ pub struct RestApiState {
         stdweb::PromiseFuture<std::string::String, AjaxError>,
         Option<NetUpdateRequest>,
     )>,
+    pub game_master_url: String,
+}
+pub struct UpdateRestApi;
+
+pub struct HttpBuyProphet;
+pub struct HttpCollectReward;
+pub struct HttpCreatePlayer;
+pub struct HttpDeleteBuilding {
+    pub idx: (usize, usize),
+    pub village: VillageKey,
+}
+pub struct HttpInvite;
+pub struct HttpNotifyVisitorSatisfied {
+    pub hobo: HoboKey,
+}
+pub struct HttpPlaceBuilding {
+    pub pos: (usize, usize),
+    pub building_type: BuildingType,
+    pub village: VillageKey,
 }
 
 impl RestApiState {
-    pub fn new() -> Self {
-        RestApiState {
+    pub fn init() {
+        let rest = RestApiState {
             queue: VecDeque::new(),
-        }
-    }
-    /// Get the global instance
-    pub fn get<'a>() -> std::sync::MutexGuard<'a, Self> {
-        unsafe {
-            super::STATIC_NET_STATE
-                .rest
-                .as_ref()
-                .expect("Tried to load REST API state before initialization")
-                .lock()
-                .unwrap()
-        }
+            game_master_url: game_master_url().nuts_check().unwrap_or_default(),
+        };
+        let rest_activity = nuts::new_domained_activity(rest, &Domain::Network);
+        rest_activity.subscribe_owned(Self::http_buy_prophet);
+        rest_activity.subscribe_owned(Self::http_collect_reward);
+        rest_activity.subscribe_owned(Self::http_create_player);
+        rest_activity.subscribe_owned(Self::http_delete_building);
+        rest_activity.subscribe_owned(Self::http_invite);
+        rest_activity.subscribe_owned(Self::http_notify_visitor_satisfied);
+        rest_activity.subscribe_owned(Self::http_overwrite_tasks);
+        rest_activity.subscribe_owned(Self::http_place_building_0);
+        rest_activity.subscribe_owned(Self::http_send_attack);
+        rest_activity.subscribe_owned(Self::http_send_statistics);
+        rest_activity.subscribe_owned(Self::http_update_story_state);
     }
     pub fn http_place_building(
-        &mut self,
         pos: (usize, usize),
         building_type: BuildingType,
         village: VillageKey,
-    ) -> PadlResult<()> {
+    ) {
+        nuts::publish(HttpPlaceBuilding {
+            pos,
+            building_type,
+            village,
+        });
+    }
+    fn http_place_building_0(&mut self, input: HttpPlaceBuilding) {
         let msg = BuildingPurchase {
-            building_type: building_type,
-            x: pos.0,
-            y: pos.1,
-            village,
+            building_type: input.building_type,
+            x: input.pos.0,
+            y: input.pos.1,
+            village: input.village,
         };
 
         let request_string = &serde_json::to_string(&msg).unwrap();
         let promise = ajax::send(
             "POST",
-            &format!("{}/shop/building", game_master_url()?),
+            &format!("{}/shop/building", self.game_master_url),
             request_string,
         );
         self.push_promise(promise, None);
-        Ok(())
     }
 
-    pub fn http_delete_building(
-        &mut self,
-        idx: (usize, usize),
-        village: VillageKey,
-    ) -> PadlResult<()> {
+    fn http_delete_building(&mut self, input: HttpDeleteBuilding) {
         let msg = BuildingDeletion {
-            x: idx.0,
-            y: idx.1,
-            village,
+            x: input.idx.0,
+            y: input.idx.1,
+            village: input.village,
         };
         let request_string = &serde_json::to_string(&msg).unwrap();
         let promise = ajax::send(
             "POST",
-            &format!("{}/shop/building/delete", game_master_url()?),
+            &format!("{}/shop/building/delete", self.game_master_url),
             request_string,
         );
         self.push_promise(promise, None);
-        Ok(())
     }
 
-    pub fn http_buy_prophet(&mut self, msg: ProphetPurchase) -> PadlResult<()> {
+    fn http_buy_prophet(&mut self, msg: ProphetPurchase) {
         let request_string = &serde_json::to_string(&msg).unwrap();
         let promise = ajax::send(
             "POST",
-            &format!("{}/shop/unit/prophet", game_master_url()?),
+            &format!("{}/shop/unit/prophet", self.game_master_url),
             request_string,
         );
         let afterwards = NetUpdateRequest::PlayerInfo;
         // TODO: Also update hobos afterwards, not only player info...
         self.push_promise(promise, Some(afterwards));
-        Ok(())
     }
 
-    pub fn http_overwrite_tasks(&mut self, msg: TaskList) -> PadlResult<()> {
+    fn http_overwrite_tasks(&mut self, msg: TaskList) {
         let request_string = &serde_json::to_string(&msg).unwrap();
         let promise = ajax::send(
             "POST",
-            &format!("{}/worker/overwriteTasks", game_master_url()?),
+            &format!("{}/worker/overwriteTasks", self.game_master_url),
             request_string,
         );
         let afterwards = NetUpdateRequest::WorkerTasks(msg.worker_id.num());
         self.push_promise(promise, Some(afterwards));
-        Ok(())
     }
 
-    pub fn http_send_statistics(&mut self, msg: FrontendRuntimeStatistics) -> PadlResult<()> {
+    pub fn http_send_statistics(&mut self, msg: FrontendRuntimeStatistics) {
         let request_string = &serde_json::to_string(&msg).unwrap();
         let promise = ajax::send(
             "POST",
-            &format!("{}/stats", game_master_url()?),
+            &format!("{}/stats", &self.game_master_url),
             request_string,
         );
         self.push_promise(promise, None);
-        Ok(())
     }
 
-    pub fn http_create_player(&mut self) -> PadlResult<()> {
+    fn http_create_player(&mut self, _: &HttpCreatePlayer) {
         if !SENT_PLAYER_CREATION.load(std::sync::atomic::Ordering::Relaxed) {
             let display_name = read_jwt_preferred_username().unwrap_or("Unnamed Player".to_owned());
             let msg = PlayerInitData { display_name };
             let request_string = &serde_json::to_string(&msg).unwrap();
             let promise = ajax::send(
                 "POST",
-                &format!("{}/player/create", game_master_url()?),
+                &format!("{}/player/create", self.game_master_url),
                 request_string,
             );
             self.push_promise(promise, Some(NetUpdateRequest::CompleteReload));
             SENT_PLAYER_CREATION.store(true, std::sync::atomic::Ordering::Relaxed)
         }
-        Ok(())
     }
 
-    pub fn http_send_attack(&mut self, msg: AttackDescriptor) -> PadlResult<()> {
+    fn http_send_attack(&mut self, msg: AttackDescriptor) {
         let request_string = &serde_json::to_string(&msg).unwrap();
         let promise = ajax::send(
             "POST",
-            &format!("{}/attacks/create", game_master_url()?),
+            &format!("{}/attacks/create", self.game_master_url),
             request_string,
         );
         self.push_promise(promise, None);
-        Ok(())
     }
 
-    pub fn http_invite(&mut self, msg: InvitationDescriptor) -> PadlResult<()> {
+    fn http_invite(&mut self, msg: InvitationDescriptor) {
         let request_string = &serde_json::to_string(&msg).unwrap();
         let promise = ajax::send(
             "POST",
-            &format!("{}/attacks/invite", game_master_url()?),
+            &format!("{}/attacks/invite", self.game_master_url),
             request_string,
         );
         self.push_promise(promise, None);
-        Ok(())
     }
 
-    pub fn http_notify_visitor_satisfied(&mut self, msg: HoboKey) -> PadlResult<()> {
-        let request_string = &serde_json::to_string(&msg).unwrap();
+    fn http_notify_visitor_satisfied(&mut self, msg: HttpNotifyVisitorSatisfied) {
+        let request_string = &serde_json::to_string(&msg.hobo).unwrap();
         let promise = ajax::send(
             "POST",
             &format!(
                 "{}/attacks/notifications/visitor_satisfied",
-                game_master_url()?
+                &self.game_master_url
             ),
             request_string,
         );
         self.push_promise(promise, None);
-        Ok(())
     }
 
-    pub fn http_update_story_state(&mut self, msg: StoryStateTransition) -> PadlResult<()> {
+    fn http_update_story_state(&mut self, msg: StoryStateTransition) {
         let request_string = &serde_json::to_string(&msg).unwrap();
         let promise = ajax::send(
             "POST",
-            &format!("{}/story/transition", game_master_url()?),
+            &format!("{}/story/transition", &self.game_master_url),
             request_string,
         );
         self.push_promise(promise, None);
-        Ok(())
     }
 
-    pub fn http_collect_reward(&mut self, msg: ReportCollect) -> PadlResult<()> {
+    fn http_collect_reward(&mut self, msg: ReportCollect) {
         let request_string = &serde_json::to_string(&msg).unwrap();
         let promise = ajax::send(
             "POST",
-            &format!("{}/report/collect", game_master_url()?),
+            &format!("{}/report/collect", &self.game_master_url),
             request_string,
         );
         self.push_promise(promise, None);
-        Ok(())
     }
 
     fn push_promise(
@@ -202,7 +215,7 @@ impl RestApiState {
             Err(e) => nuts::publish(e),
         }
     }
-    pub fn poll_queue(&mut self) {
+    pub fn poll_queue(&mut self, _: &UpdateRestApi) {
         while let Some((promise, afterwards)) = self.queue.pop_front() {
             stdweb::spawn_local(promise.map(move |r| {
                 if r.is_err() {
@@ -223,14 +236,5 @@ impl RestApiState {
                 }
             }));
         }
-    }
-}
-
-pub struct RestApiSystem;
-impl<'a> System<'a> for RestApiSystem {
-    type SystemData = ();
-
-    fn run(&mut self, _: Self::SystemData) {
-        RestApiState::get().poll_queue();
     }
 }

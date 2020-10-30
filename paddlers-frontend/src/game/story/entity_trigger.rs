@@ -14,7 +14,7 @@ pub struct EntityTrigger {
     pub actions: Vec<StoryAction>,
 }
 
-impl Game<'_, '_> {
+impl Game {
     pub fn load_story_triggers(&mut self, story_state: &StoryState) -> PadlResult<()> {
         match story_state {
             StoryState::Initialized => {

@@ -1,4 +1,5 @@
 use crate::prelude::*;
+use paddle::JsError;
 use paddlers_shared_lib::prelude::*;
 
 pub fn graphql_url() -> PadlResult<String> {
@@ -27,12 +28,11 @@ pub fn read_current_village_id() -> PadlResult<VillageKey> {
 }
 
 fn hostname() -> PadlResult<String> {
-    stdweb::web::window()
+    web_sys::window()
+        .unwrap()
         .location()
-        .ok_or(PadlError::dev_err(PadlErrorCode::NoDataFromBrowser(
-            "Location",
-        )))?
         .hostname()
+        .map_err(JsError::from_js_value)
         .map_err(PadlError::from)
 }
 

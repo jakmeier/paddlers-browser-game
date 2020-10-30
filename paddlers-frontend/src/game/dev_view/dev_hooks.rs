@@ -3,7 +3,7 @@ use crate::prelude::ScreenResolution;
 use paddle::JmrRectangle;
 use stdweb::unstable::TryInto;
 
-impl Game<'_, '_> {
+impl Game {
     #[cfg(feature = "dev_view")]
     pub fn start_update(&mut self) {
         if let Some(test) = self.active_test.as_mut() {
@@ -33,11 +33,10 @@ impl Game<'_, '_> {
                 #[cfg(not(feature = "mobile_debug"))]
                 let device = "laptop";
                 let version = env!("CARGO_PKG_VERSION");
-                let user_agent: String = js!(
-                    return navigator.userAgent;
-                )
-                .try_into()
-                .unwrap_or("NotAvailable".to_owned());
+                let navigator = web_sys::window().unwrap().navigator();
+                let user_agent = navigator
+                    .user_agent()
+                    .unwrap_or_else(|| "NotAvailable".to_owned());
                 let resolution = *self.world.fetch::<ScreenResolution>();
                 println!(
                     "{} {} {:?} {} \"{}\" {:?} {}",

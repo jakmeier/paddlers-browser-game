@@ -38,7 +38,7 @@ impl<'a, 'b> VisitorMenuFrame<'a, 'b> {
 
 impl<'a, 'b> Frame for VisitorMenuFrame<'a, 'b> {
     type Error = PadlError;
-    type State = Game<'a, 'b>;
+    type State = Game;
     type Graphics = Window;
 
     fn draw(

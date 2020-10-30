@@ -31,7 +31,7 @@ impl MapMenuFrame<'_, '_> {
 }
 impl<'a, 'b> Frame for MapMenuFrame<'a, 'b> {
     type Error = PadlError;
-    type State = Game<'a, 'b>;
+    type State = Game;
     type Graphics = Window;
 
     fn draw(

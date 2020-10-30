@@ -6,7 +6,7 @@ window.keycloak.init({
     })
     .success(() => {
         wasm.main();
-        // wasm.start_network_thread();
+        wasm.start_network_thread();
     })
     .error(function(errorData) {
         console.error("Login Failed: ", errorData);

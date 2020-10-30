@@ -20,7 +20,7 @@ impl<'a, 'b> MapFrame<'a, 'b> {
 
 impl<'a, 'b> Frame for MapFrame<'a, 'b> {
     type Error = PadlError;
-    type State = Game<'a, 'b>;
+    type State = Game;
     type Graphics = Window;
 
     fn draw(

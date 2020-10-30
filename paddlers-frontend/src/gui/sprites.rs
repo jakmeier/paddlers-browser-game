@@ -4,7 +4,7 @@ pub mod paths;
 use crate::gui::shapes::*;
 use crate::gui::utils::*;
 use animation::AnimatedObject;
-use paddle::quicksilver_compat::graphics::Image;
+use paddle::graphics::Image;
 use paddle::quicksilver_compat::*;
 use paddle::quicksilver_compat::*;
 use stdweb::web::html_element::ImageElement;

@@ -14,7 +14,7 @@ use specs::prelude::*;
 #[storage(NullStorage)]
 pub struct Hobo;
 
-impl Game<'_, '_> {
+impl Game {
     pub fn hobo_key(&self, e: Entity) -> PadlResult<HoboKey> {
         let net = self.town_world().read_storage::<NetObj>();
         if let Some(obj) = net.get(e) {

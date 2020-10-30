@@ -137,7 +137,7 @@ impl<'a, 'b> ReportFrame<'a, 'b> {
     }
     pub fn network_message(
         &mut self,
-        state: &mut Game<'static, 'static>,
+        state: &mut Game,
         msg: &NetMsg,
     ) -> Result<(), PadlError> {
         match msg {
@@ -163,7 +163,7 @@ impl<'a, 'b> ReportFrame<'a, 'b> {
 
 impl<'a, 'b> Frame for ReportFrame<'a, 'b> {
     type Error = PadlError;
-    type State = Game<'a, 'b>;
+    type State = Game;
     type Graphics = Window;
     fn draw(
         &mut self,

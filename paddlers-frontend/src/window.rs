@@ -1,10 +1,11 @@
 use crate::prelude::*;
-use paddle::{quicksilver_compat::Vector, Window};
+use paddle::{quicksilver_compat::Vector, JsError, Window};
 use stdweb::traits::*;
 use stdweb::unstable::TryFrom;
 use stdweb::web::html_element::CanvasElement;
 use stdweb::web::IHtmlElement;
 use strum::IntoEnumIterator;
+use wasm_bindgen::JsCast;
 
 pub fn adapt_window_size(window: &mut Window) -> PadlResult<()> {
     // TODO: (optimization) cache canvas
@@ -39,14 +40,22 @@ pub fn adapt_window_size(window: &mut Window) -> PadlResult<()> {
 }
 
 /// Determines a resolution which is close to the current window size
-pub fn estimate_screen_size() -> ScreenResolution {
-    let screen_w = stdweb::web::window().inner_width() as f32;
-    let screen_h = stdweb::web::window().inner_height() as f32;
-    ScreenResolution::iter()
+pub fn estimate_screen_size() -> PadlResult<ScreenResolution> {
+    let screen_w: f32 = web_sys::window()
+        .unwrap()
+        .inner_width()
+        .map(|f| f.as_f64().unwrap() as f32)
+        .map_err(JsError::from_js_value)?;
+        let screen_h: f32 = web_sys::window()
+        .unwrap()
+        .inner_height()
+        .map(|f| f.as_f64().unwrap() as f32)
+        .map_err(JsError::from_js_value)?;
+    Ok(ScreenResolution::iter()
         .filter(|res| {
             let (w, h) = res.pixels();
             w * 0.75 < screen_w && 0.75 * h < screen_h
         })
         .last()
-        .unwrap_or(ScreenResolution::Low)
+        .unwrap_or(ScreenResolution::Low))
 }

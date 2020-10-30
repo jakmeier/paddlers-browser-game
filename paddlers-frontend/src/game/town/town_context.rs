@@ -112,7 +112,7 @@ impl TownContext {
     }
 }
 
-impl<'a, 'b> Game<'a, 'b> {
+impl Game {
     pub fn town_world(&self) -> &World {
         self.town_context.world()
     }

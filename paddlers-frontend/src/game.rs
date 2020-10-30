@@ -21,17 +21,13 @@ pub(crate) mod town_resources;
 pub(crate) mod units;
 pub(crate) mod visits;
 
-use crate::game::net_receiver::*;
 use crate::game::{components::*, player_info::PlayerInfo, town::TownContextManager};
 use crate::gui::{input, sprites::*, ui_state::*};
-use crate::init::loading::BaseState;
 use crate::init::loading::GameLoadingData;
 use crate::logging::statistics::Statistician;
-use crate::net::{
-    game_master_api::{RestApiState, RestApiSystem},
-    NetMsg,
-};
+use crate::net::{game_master_api::RestApiState, NetMsg};
 use crate::prelude::*;
+use crate::{game::net_receiver::*, net::game_master_api::UpdateRestApi};
 use chrono::NaiveDateTime;
 use game_event_manager::GameEvent;
 use map::{GlobalMap, GlobalMapPrivateState};
@@ -43,8 +39,7 @@ use specs::prelude::*;
 use std::sync::mpsc::Receiver;
 use town::{DefaultShop, Town};
 
-pub(crate) struct Game<'a, 'b> {
-    pub dispatcher: Dispatcher<'a, 'b>,
+pub(crate) struct Game {
     pub world: World,
     pub sprites: Sprites,
     pub locale: TextDb,
@@ -64,32 +59,26 @@ pub(crate) struct Game<'a, 'b> {
     pub active_test: Option<Box<crate::game::dev_view::benchmark::TestData>>,
 }
 
-impl Game<'_, '_> {
+impl Game {
     pub fn load_game(
         sprites: Sprites,
         locale: TextDb,
         resolution: ScreenResolution,
         game_data: GameLoadingData,
-        base: BaseState,
+        net_chan: Receiver<NetMsg>,
     ) -> PadlResult<Self> {
         let player_info = game_data.player_info;
         let town_context = TownContextManager::new(resolution, player_info.clone());
         let mut world = crate::init::init_world(resolution, player_info);
-        let mut dispatcher = DispatcherBuilder::new()
-            .with(RestApiSystem, "rest", &[])
-            .build();
-        dispatcher.setup(&mut world);
-
         let now = utc_now();
         world.insert::<Now>(Now(now));
 
         world.maintain();
         let mut game = Game {
-            dispatcher: dispatcher,
             world: world,
             sprites,
             locale,
-            net: base.net_chan,
+            net: net_chan,
             time_zero: now,
             total_updates: 0,
             stats: Statistician::new(now),
@@ -134,17 +123,18 @@ impl Game<'_, '_> {
         self.check(err);
     }
 
-    pub fn main_update_loop(&mut self, window: &mut Window) -> PadlResult<()> {
+    pub fn main_update_loop(&mut self) -> PadlResult<()> {
         {
             self.map_mut().update();
         }
         self.update_time_reference();
-        self.dispatcher.dispatch(&mut self.world);
-        if self.total_updates % 300 == 15 {
-            self.reaper(&Rectangle::new_sized(
-                window.project() * window.screen_size(),
-            ));
-        }
+        nuts::publish(UpdateRestApi);
+        // TODO: remove dead units
+        // if self.total_updates % 300 == 15 {
+        //     self.reaper(&Rectangle::new_sized(
+        //         window.project() * window.screen_size(),
+        //     ));
+        // }
         self.world.maintain();
         Ok(())
     }

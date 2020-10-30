@@ -112,7 +112,7 @@ use crate::net::graphql::attacks_query::AttacksQueryVillageAttacks;
 impl AttacksQueryVillageAttacks {
     pub(crate) fn create_entities<'a, 'b>(
         self,
-        game: &mut Game<'a, 'b>,
+        game: &mut Game,
     ) -> PadlResult<Vec<Entity>> {
         let ul = game.world.fetch::<ScreenResolution>().unit_length();
         let birth_time = GqlTimestamp::from_string(&self.arrival)
@@ -157,7 +157,7 @@ impl<'a> AttackingHobo<'a> {
         birth: NaiveDateTime,
         pos_rank: usize,
         ul: f32,
-        auras: Vec<(<Game<'_, '_> as IDefendingTown>::AuraId, i32)>,
+        auras: Vec<(<Game as IDefendingTown>::AuraId, i32)>,
     ) -> PadlResult<specs::EntityBuilder<'a>> {
         let v = self.unit.hobo.speed as f32 * ul;
         let w = TOWN_X as f32 * ul;
@@ -177,7 +177,7 @@ impl<'a> AttackingHobo<'a> {
         let time_until_resting = self.time_until_resting().as_duration();
 
         // Simulate all interactions with buildings for the visitor which happened in the past
-        let dmg = <Game<'_, '_> as IDefendingTown>::damage(&auras) + self.effects_strength();
+        let dmg = <Game as IDefendingTown>::damage(&auras) + self.effects_strength();
         let hp_left = (hp - dmg as i64).max(0);
         let aura_ids = auras.into_iter().map(|a| a.0).collect();
         let health = Health::new(hp, hp_left, aura_ids);

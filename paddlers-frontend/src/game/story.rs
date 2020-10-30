@@ -13,7 +13,7 @@ pub enum StoryAction {
     TownSelectEntity(Option<specs::Entity>),
 }
 
-impl Game<'_, '_> {
+impl Game {
     pub fn set_story_state(&self, s: StoryState) {
         self.world.fetch_mut::<PlayerInfo>().set_story_state(s);
     }

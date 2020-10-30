@@ -127,7 +127,7 @@ pub fn menu_selected_entity_spacing(area: &Rectangle) -> (Rectangle, Rectangle) 
     (img_bg_area, text_area)
 }
 
-impl Game<'_, '_> {
+impl Game {
     pub fn button_area(&self) -> Rectangle {
         let data = self.world.read_resource::<ViewState>();
         data.button_area.clone()

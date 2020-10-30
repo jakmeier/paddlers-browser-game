@@ -1,18 +1,19 @@
-use crate::gui::input::UiView;
-use crate::init::quicksilver_integration::Signal;
 use crate::net::graphql::query_types::{
     AttacksResponse, BuildingsResponse, HobosQueryResponse, VolatileVillageInfoResponse,
 };
 use crate::{game::game_event_manager::load_game_event_manager, prelude::PadlError};
+use crate::{game::leaderboard::doc, gui::input::UiView};
+use crate::{game::net_receiver::loading_update_net, init::quicksilver_integration::Signal};
 use futures::future::join_all;
 use js_sys::JsString;
 use nuts::LifecycleStatus;
 use paddle::{
-    ErrorMessage, Frame, JsError, LoadScheduler, LoadedData, LoadingDone, LoadingProgress,
-    NutsCheck, TextBoard, UpdateWorld, Window,
+    graphics::Image, graphics::ImageLoader, ErrorMessage, Frame, JsError, LoadScheduler,
+    LoadedData, LoadingDone, LoadingProgress, NutsCheck, TextBoard, UpdateWorld, Window,
 };
 use wasm_bindgen::JsCast;
 use wasm_bindgen_futures::JsFuture;
+use web_sys::HtmlCanvasElement;
 
 use crate::game::player_info::PlayerInfo;
 use crate::game::Game;
@@ -27,20 +28,17 @@ use crate::net::NetMsg;
 use crate::prelude::{PadlResult, ScreenResolution, TextDb};
 use paddle::quicksilver_compat::*;
 use paddle::{Domain, FloatingText, WorldEvent};
-use std::{rc::Rc, sync::mpsc::Receiver};
+use std::{
+    rc::Rc,
+    sync::{mpsc::Receiver, Mutex},
+};
 
-/// State which must always be present to enable basic tasks
-/// like networking and error handling.
-pub struct BaseState {
-    pub net_chan: Receiver<NetMsg>,
-    pub canvas: Rc<Window>,
-}
-
-/// State that is used while loading all data over the network
-pub(crate) struct LoadingState {
-    pub base: BaseState,
+/// State that is used while loading all data over the network.
+/// It will automatically be removed when loading is done.
+pub(crate) struct LoadingFrame {
     pub resolution: ScreenResolution,
     preload_float: FloatingText,
+    net_chan: Receiver<NetMsg>,
 }
 
 pub struct GameLoadingData {
@@ -52,9 +50,9 @@ pub struct GameLoadingData {
     pub village_info: VolatileVillageInfoResponse,
 }
 
-impl LoadingState {
-    pub fn run(self) {
-        let aid = paddle::frame_to_activity(self, &Domain::Load);
+impl LoadingFrame {
+    fn run_as_activity(self) {
+        let aid = paddle::frame_to_activity(self, &Domain::Frame);
         aid.subscribe_domained(|_loading_state, domain, msg: &LoadingProgress| {
             domain.store(Some(msg.clone()));
         });
@@ -65,20 +63,37 @@ impl LoadingState {
         aid.subscribe_domained(move |loading_state, domain, msg: &LoadingDone| {
             aid.set_status(LifecycleStatus::Deleted);
         });
+        let draw_handle = super::quicksilver_integration::start_drawing();
+        let update_handle = super::quicksilver_integration::start_updating();
+        nuts::store_to_domain(&Domain::Frame, (draw_handle, update_handle));
     }
-    pub fn new(resolution: ScreenResolution, canvas_id: &str, net_chan: Receiver<NetMsg>) -> Self {
-        // crate::net::request_client_state();
-        let preload_float = FloatingText::try_default().expect("FloatingText");
-        let canvas = Rc::new(Window::from_canvas_id(canvas_id).expect("Failed loading canvas"));
-        let base = BaseState {
-            net_chan,
-            canvas: canvas.clone(),
-        };
-
+    pub fn start(
+        resolution: ScreenResolution,
+        root_id: &str,
+        net_chan: Receiver<NetMsg>,
+    ) -> PadlResult<()> {
+        let document = doc()?;
+        let root = document.get_element_by_id(root_id);
+        let canvas = document
+            .create_element("canvas")
+            .map_err(|_| "canvas creation failed")?
+            .dyn_into()
+            .unwrap();
+        Self::start_with_canvas(resolution, canvas, net_chan);
+        Ok(())
+    }
+    pub fn start_with_canvas(
+        resolution: ScreenResolution,
+        canvas: HtmlCanvasElement,
+        net_chan: Receiver<NetMsg>,
+    ) {
+        crate::net::request_client_state();
+        let canvas = Window::new(canvas).expect("Failed creating window");
+        ImageLoader::register(canvas.clone_webgl());
+        nuts::store_to_domain(&Domain::Frame, canvas);
         let mut images = vec![];
         for src in &SPRITE_PATHS {
-            let owned_c = canvas.clone();
-            let img = async move { owned_c.load_image(src).await };
+            let img = async move { Image::load(src).await };
             images.push(img);
         }
         let locale = start_loading_locale();
@@ -96,11 +111,14 @@ impl LoadingState {
 
         load_manager.attach_to_domain();
 
-        LoadingState {
-            base,
+        let preload_float = FloatingText::try_default().expect("FloatingText");
+
+        LoadingFrame {
             resolution,
             preload_float,
+            net_chan,
         }
+        .run_as_activity();
     }
     // pub fn progress(&mut self) -> (f32, &'static str) {
     //     let images_loaded = self
@@ -145,7 +163,7 @@ impl LoadingState {
     fn finalize(self, mut loaded_data: LoadedData) -> PadlResult<()> {
         let images = loaded_data.extract_vec()?;
         let catalog = loaded_data.extract()?;
-        let (resolution, base) = { (self.resolution, self.base) };
+        let (resolution, net_chan) = (self.resolution, self.net_chan);
         let sprites = Sprites::new(images);
 
         let game_data = GameLoadingData::from_boxes(
@@ -159,7 +177,7 @@ impl LoadingState {
 
         let viewer_data: Vec<NetMsg> = *loaded_data.extract()?;
 
-        match Game::load_game(sprites, *catalog, resolution, game_data, base) {
+        match Game::load_game(sprites, *catalog, resolution, game_data, net_chan) {
             Err(e) => {
                 TextBoard::display_error_message(":(\nLoading game failed".to_owned()).nuts_check(); // TODO: multi-lang errors
                 panic!("Fatal Error: Could not load game {:?}", e);
@@ -177,7 +195,7 @@ impl LoadingState {
 
                 let viewer_activity = nuts::new_domained_activity(viewer, &Domain::Frame);
                 viewer_activity.subscribe_domained(|viewer, domain, _: &UpdateWorld| {
-                    let game: &mut Game<'static, 'static> =
+                    let game: &mut Game =
                         domain.try_get_mut().expect("Forgot to insert Game?");
                     // FIXME; really need to be set every frame?
                     let view: UiView = *game.world.fetch();
@@ -188,18 +206,17 @@ impl LoadingState {
                     nuts::new_domained_activity(pointer_manager, &Domain::Frame);
                 pointer_manager_activity.subscribe_domained(
                     |pointer_manager, domain, _: &UpdateWorld| {
-                        let game: &mut Game<'static, 'static> =
+                        let game: &mut Game =
                             domain.try_get_mut().expect("Forgot to insert Game?");
                         pointer_manager.run(game);
                     },
                 );
                 pointer_manager_activity.subscribe_domained_mut(
                     |pointer_manager, domain, msg: &mut WorldEvent| {
-                        let game: &mut Game<'static, 'static> =
+                        let game: &mut Game =
                             domain.try_get_mut().expect("Forgot to insert Game?");
                         let event = msg.event();
-                        let window = msg.window();
-                        let res = game.handle_quicksilver_event(&event, window, pointer_manager);
+                        let res = game.handle_quicksilver_event(&event, pointer_manager);
                         if let Err(e) = res {
                             nuts::publish(e);
                         }
@@ -213,13 +230,15 @@ impl LoadingState {
             }
         }
     }
-    async fn load_image_from_variant(&self, v: &AnimationVariantDef) -> PadlResult<Image> {
-        match v {
-            AnimationVariantDef::Animated(path) | AnimationVariantDef::Static(path) => {
-                Ok(self.base.canvas.load_image(*path).await?)
-            }
-        }
-    }
+    // TODO
+    // async fn load_image_from_variant(&self, v: &AnimationVariantDef) -> PadlResult<Image> {
+    //     match v {
+    //         AnimationVariantDef::Animated(path) | AnimationVariantDef::Static(path) => {
+    //             let canvas = self.base.canvas.lock().unwrap();
+    //             Ok(canvas.load_image(*path).await?)
+    //         }
+    //     }
+    // }
     // TODO
     // pub async fn start_loading_animations(&self, images: &Vec<Image>){
     //     ANIMATION_DEFS
@@ -303,7 +322,7 @@ impl ScreenResolution {
     }
 }
 
-impl Frame for LoadingState {
+impl Frame for LoadingFrame {
     type State = Option<LoadScheduler>;
     type Error = PadlError;
     type Graphics = Window;
@@ -324,7 +343,7 @@ impl Frame for LoadingState {
     }
     fn update(&mut self, maybe_lm: &mut Self::State) -> Result<(), Self::Error> {
         if let Some(lm) = maybe_lm.as_mut() {
-            self.update_net(lm)?;
+            loading_update_net(&mut self.net_chan, lm)?;
         }
         Ok(())
     }

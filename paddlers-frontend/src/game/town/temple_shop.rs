@@ -20,13 +20,13 @@ pub fn purchase_prophet(player_info: &PlayerInfo) -> PadlResult<()> {
     if player_info.prophets_limit() <= player_info.prophets_total() {
         return PadlErrorCode::NotEnoughKarma.usr();
     }
-    RestApiState::get().http_buy_prophet(ProphetPurchase {
+    nuts::publish(ProphetPurchase {
         village: current_village(),
-    })?;
+    });
     Ok(())
 }
 
-impl<'a, 'b> Game<'a, 'b> {
+impl Game {
     pub fn update_temple(&self) -> PadlResult<()> {
         let player_info = self.world.fetch::<PlayerInfo>();
         if let Some(temple) = find_temple(&self.town_context.home_world()) {

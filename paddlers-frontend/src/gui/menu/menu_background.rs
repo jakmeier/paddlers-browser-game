@@ -62,7 +62,7 @@ impl<'a, 'b> MenuBackgroundFrame<'a, 'b> {
     }
     pub fn network_message(
         &mut self,
-        _state: &mut Game<'static, 'static>,
+        _state: &mut Game,
         msg: &NetMsg,
     ) -> Result<(), PadlError> {
         match msg {
@@ -77,7 +77,7 @@ impl<'a, 'b> MenuBackgroundFrame<'a, 'b> {
     }
     pub fn signal(
         &mut self,
-        _state: &mut Game<'static, 'static>,
+        _state: &mut Game,
         msg: &Signal,
     ) -> Result<(), PadlError> {
         match msg {
@@ -93,7 +93,7 @@ impl<'a, 'b> MenuBackgroundFrame<'a, 'b> {
 
 impl<'a, 'b> Frame for MenuBackgroundFrame<'a, 'b> {
     type Error = PadlError;
-    type State = Game<'a, 'b>;
+    type State = Game;
     type Graphics = Window;
 
     fn draw(&mut self, state: &mut Self::State, window: &mut Window) -> Result<(), Self::Error> {

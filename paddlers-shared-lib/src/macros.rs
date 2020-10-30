@@ -1,10 +1,9 @@
 #[allow(unused_macros)]
 #[cfg(target_arch = "wasm32")]
 macro_rules! println {
-    ($($tt:tt)*) => {{
-        let msg = format!($($tt)*);
-        js! { console.log(@{ msg }) }
-    }}
+    ( $( $t:tt )* ) => {
+        web_sys::console::log_1(&format!( $( $t )* ).into());
+    }
 }
 
 #[allow(unused_macros)]
@@ -12,10 +11,9 @@ macro_rules! println {
 #[macro_export]
 /// for printing that should only happen on the web
 macro_rules! webprintln {
-    ($($tt:tt)*) => {{
-        let msg = format!($($tt)*);
-        js! { console.log(@{ msg }) }
-    }}
+    ( $( $t:tt )* ) => {
+        web_sys::console::log_1(&format!( $( $t )* ).into());
+    }
 }
 
 #[allow(unused_macros)]
