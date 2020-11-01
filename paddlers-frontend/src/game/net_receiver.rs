@@ -27,7 +27,7 @@ pub fn loading_update_net(
     match net_chan.try_recv() {
         Ok(msg) => match msg {
             NetMsg::Error(e) => match e.err {
-                PadlErrorCode::UserNotInDB => {
+                PadlErrorCode::GraphQlResponseError(PadlApiError::PlayerNotCreated) => {
                     nuts::publish(HttpCreatePlayer);
                 }
                 _ => {
@@ -93,30 +93,26 @@ impl Game {
                     NetMsg::Leaderboard(offset, list) => {
                         paddle::share(NetMsg::Leaderboard(offset, list));
                     }
-                    NetMsg::Map(response, min, max) => {
-                        if let Some(data) = response.data {
-                            let streams = data
-                                .map
-                                .streams
-                                .iter()
-                                .map(|s| {
-                                    s.control_points
-                                        .chunks(2)
-                                        .map(|slice| (slice[0] as f32, slice[1] as f32))
-                                        .collect()
-                                })
-                                .collect();
-                            let villages = data
-                                .map
-                                .villages
-                                .into_iter()
-                                .map(VillageMetaInfo::from)
-                                .collect();
-                            let (map, world) = (self.map.as_mut(), &mut self.world);
-                            map.map(|map| map.add_segment(world, streams, villages, min, max));
-                        } else {
-                            println!("No map data available");
-                        }
+                    NetMsg::Map(data, min, max) => {
+                        let streams = data
+                            .map
+                            .streams
+                            .iter()
+                            .map(|s| {
+                                s.control_points
+                                    .chunks(2)
+                                    .map(|slice| (slice[0] as f32, slice[1] as f32))
+                                    .collect()
+                            })
+                            .collect();
+                        let villages = data
+                            .map
+                            .villages
+                            .into_iter()
+                            .map(VillageMetaInfo::from)
+                            .collect();
+                        let (map, world) = (self.map.as_mut(), &mut self.world);
+                        map.map(|map| map.add_segment(world, streams, villages, min, max));
                     }
                     NetMsg::Player(player_info) => {
                         self.load_player_info(player_info)?;
@@ -170,39 +166,28 @@ impl Game {
     }
 }
 impl Game {
-    pub fn load_buildings_from_net_response(
-        &mut self,
-        response: BuildingsResponse,
-    ) -> PadlResult<()> {
-        if let Some(data) = response.data {
-            if let Some(ctx) = self.town_context.context_by_key_mut(data.village_id()) {
-                let world = ctx.world_mut();
-                flush_buildings(world)?;
-                world.maintain();
-                data.create_entities(self.town_context.active_context_mut());
-            } else {
-                return PadlErrorCode::DataForInactiveTownReceived("buildings").dev();
-            }
+    pub fn load_buildings_from_net_response(&mut self, data: BuildingsResponse) -> PadlResult<()> {
+        if let Some(ctx) = self.town_context.context_by_key_mut(data.village_id()) {
+            let world = ctx.world_mut();
+            flush_buildings(world)?;
+            world.maintain();
+            data.create_entities(self.town_context.active_context_mut());
         } else {
-            println!("No buildings available");
+            return PadlErrorCode::DataForInactiveTownReceived("buildings").dev();
         }
         Ok(())
     }
-    pub fn load_attacking_hobos(&mut self, response: AttacksResponse) -> PadlResult<()> {
-        if let Some(data) = response.data {
-            for atk in data.village.attacks {
-                atk.create_entities(self)?;
-            }
+    pub fn load_attacking_hobos(&mut self, data: AttacksResponse) -> PadlResult<()> {
+        for atk in data.village.attacks {
+            atk.create_entities(self)?;
         }
         Ok(())
     }
-    pub fn load_village_info(&mut self, response: VolatileVillageInfoResponse) -> PadlResult<()> {
-        if let Some(data) = response.data {
-            self.town_mut().faith = data.village.faith.try_into().map_err(|_| {
-                PadlError::dev_err(PadlErrorCode::InvalidGraphQLData("Faith does not fit u8"))
-            })?;
-            self.town_world().fetch_mut::<TownResources>().update(data);
-        }
+    pub fn load_village_info(&mut self, data: VolatileVillageInfoResponse) -> PadlResult<()> {
+        self.town_mut().faith = data.village.faith.try_into().map_err(|_| {
+            PadlError::dev_err(PadlErrorCode::InvalidGraphQLData("Faith does not fit u8"))
+        })?;
+        self.town_world().fetch_mut::<TownResources>().update(data);
         Ok(())
     }
     pub fn load_player_info(&mut self, player_info: PlayerInfo) -> PadlResult<()> {

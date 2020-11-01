@@ -22,7 +22,7 @@ fn timestamp(s: &String) -> graphql_types::GqlTimestamp {
     query_path = "api/queries/attacks_query.graphql"
 )]
 pub struct AttacksQuery;
-pub type AttacksResponse = Response<attacks_query::ResponseData>;
+pub type AttacksResponse = attacks_query::ResponseData;
 pub type HoboEffect = attacks_query::AttacksQueryVillageAttacksUnitsHoboEffects;
 pub type HoboAttribute = attacks_query::HoboAttributeType;
 
@@ -53,7 +53,7 @@ impl Into<HoboAttributeType> for &HoboAttribute {
     query_path = "api/queries/buildings_query.graphql"
 )]
 pub struct BuildingsQuery;
-pub type BuildingsResponse = Response<buildings_query::ResponseData>;
+pub type BuildingsResponse = buildings_query::ResponseData;
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -61,7 +61,7 @@ pub type BuildingsResponse = Response<buildings_query::ResponseData>;
     query_path = "api/queries/volatile_village_info_query.graphql"
 )]
 pub struct VolatileVillageInfoQuery;
-pub type VolatileVillageInfoResponse = Response<volatile_village_info_query::ResponseData>;
+pub type VolatileVillageInfoResponse = volatile_village_info_query::ResponseData;
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -144,7 +144,7 @@ impl WorkerTaskEx {
     query_path = "api/queries/hobos_query.graphql"
 )]
 pub struct HobosQuery;
-pub type HobosQueryRawResponse = Response<hobos_query::ResponseData>;
+pub type HobosQueryRawResponse = hobos_query::ResponseData;
 pub type HobosQueryResponseVillage = hobos_query::HobosQueryVillage;
 pub type HobosQueryResponse = Vec<hobos_query::HobosQueryVillageHobos>;
 pub type HobosQueryUnitColor = hobos_query::UnitColor;
@@ -155,7 +155,7 @@ pub type HobosQueryUnitColor = hobos_query::UnitColor;
     query_path = "api/queries/player_query.graphql"
 )]
 pub struct PlayerQuery;
-pub type PlayerQueryRawResponse = Response<player_query::ResponseData>;
+pub type PlayerQueryRawResponse = player_query::ResponseData;
 pub type PlayerQueryResponse = player_query::PlayerQueryPlayer;
 pub type PlayerStoryState = player_query::StoryState;
 
@@ -173,7 +173,7 @@ pub type MapResponse = Response<map_query::ResponseData>;
     query_path = "api/queries/player_villages_query.graphql"
 )]
 pub struct PlayerVillagesQuery;
-pub type PlayerVillagesRawResponse = Response<player_villages_query::ResponseData>;
+pub type PlayerVillagesRawResponse = player_villages_query::ResponseData;
 pub type PlayerVillagesResponse = player_villages_query::PlayerVillagesQueryPlayer;
 
 use paddlers_shared_lib::models::TaskType;
@@ -234,7 +234,7 @@ impl Into<UnitColor> for &attacks_query::UnitColor {
     query_path = "api/queries/leaderboard_query.graphql"
 )]
 pub struct LeaderboardQuery;
-pub type LeaderboardRawResponse = Response<leaderboard_query::ResponseData>;
+pub type LeaderboardRawResponse = leaderboard_query::ResponseData;
 pub type LeaderboardResponse = Vec<leaderboard_query::LeaderboardQueryScoreboard>;
 
 use paddlers_shared_lib::story::story_state::StoryState;

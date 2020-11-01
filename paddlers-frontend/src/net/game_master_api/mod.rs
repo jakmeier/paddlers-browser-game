@@ -69,7 +69,7 @@ impl RestApiState {
             village: input.village,
         };
 
-        let future = ajax::fetch(
+        let future = ajax::fetch_json(
             "POST",
             &format!("{}/shop/building", self.game_master_url),
             &msg,
@@ -83,7 +83,7 @@ impl RestApiState {
             y: input.idx.1,
             village: input.village,
         };
-        let future = ajax::fetch(
+        let future = ajax::fetch_json(
             "POST",
             &format!("{}/shop/building/delete", self.game_master_url),
             &msg,
@@ -94,7 +94,7 @@ impl RestApiState {
     fn http_buy_prophet(&mut self, msg: ProphetPurchase) {
         let uri = self.game_master_url.clone() + "/shop/unit/prophet";
         let future = async move {
-            ajax::fetch("POST", &uri, &msg).await?;
+            ajax::fetch_json("POST", &uri, &msg).await?;
             crate::net::request_player_update();
             // TODO: Also update hobos afterwards, not only player info...
             Ok(())
@@ -105,7 +105,7 @@ impl RestApiState {
     fn http_overwrite_tasks(&mut self, msg: TaskList) {
         let uri = self.game_master_url.clone() + "/worker/overwriteTasks";
         let future = async move {
-            ajax::fetch("POST", &uri, &msg).await?;
+            ajax::fetch_json("POST", &uri, &msg).await?;
             crate::net::request_worker_tasks_update(msg.worker_id.num());
             Ok(())
         };
@@ -113,27 +113,30 @@ impl RestApiState {
     }
 
     pub fn http_send_statistics(&mut self, msg: FrontendRuntimeStatistics) {
-        let future = ajax::fetch("POST", &format!("{}/stats", &self.game_master_url), &msg);
+        let future = ajax::fetch_json("POST", &format!("{}/stats", &self.game_master_url), &msg);
         super::spawn_future(future);
     }
 
-    fn http_create_player(&mut self, _: &HttpCreatePlayer) {
+    fn http_create_player(&mut self, _: HttpCreatePlayer) {
         if !SENT_PLAYER_CREATION.load(std::sync::atomic::Ordering::Relaxed) {
+            println!("Sending create player");
             let display_name = keycloak_preferred_name().unwrap_or("Unnamed Player".to_owned());
             let uri = self.game_master_url.clone() + "/player/create";
             let msg = PlayerInitData { display_name };
             let future = async move {
-                ajax::fetch("POST", &uri, &msg).await?;
+                ajax::fetch_json("POST", &uri, &msg).await?;
                 crate::net::request_client_state();
                 Ok(())
             };
             super::spawn_future(future);
             SENT_PLAYER_CREATION.store(true, std::sync::atomic::Ordering::Relaxed)
+        } else {
+            println!("NOT Sending create player");
         }
     }
 
     fn http_send_attack(&mut self, msg: AttackDescriptor) {
-        let future = ajax::fetch(
+        let future = ajax::fetch_json(
             "POST",
             &format!("{}/attacks/create", self.game_master_url),
             &msg,
@@ -142,7 +145,7 @@ impl RestApiState {
     }
 
     fn http_invite(&mut self, msg: InvitationDescriptor) {
-        let future = ajax::fetch(
+        let future = ajax::fetch_json(
             "POST",
             &format!("{}/attacks/invite", self.game_master_url),
             &msg,
@@ -151,7 +154,7 @@ impl RestApiState {
     }
 
     fn http_notify_visitor_satisfied(&mut self, msg: HttpNotifyVisitorSatisfied) {
-        let future = ajax::fetch(
+        let future = ajax::fetch_json(
             "POST",
             &format!(
                 "{}/attacks/notifications/visitor_satisfied",
@@ -163,7 +166,7 @@ impl RestApiState {
     }
 
     fn http_update_story_state(&mut self, msg: StoryStateTransition) {
-        let future = ajax::fetch(
+        let future = ajax::fetch_json(
             "POST",
             &format!("{}/story/transition", &self.game_master_url),
             &msg,
@@ -172,7 +175,7 @@ impl RestApiState {
     }
 
     fn http_collect_reward(&mut self, msg: ReportCollect) {
-        let future = ajax::fetch(
+        let future = ajax::fetch_json(
             "POST",
             &format!("{}/report/collect", &self.game_master_url),
             &msg,

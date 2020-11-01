@@ -1,10 +1,12 @@
 mod http_calls;
 pub mod query_types;
+mod response;
 use std::future::Future;
 
 use super::{NetMsg, NewAttackId, NewReportId};
 use http_calls::*;
 pub use query_types::*;
+pub(crate) use response::gql_extract_data;
 
 use crate::net::state::current_village_async;
 use crate::prelude::*;
@@ -35,15 +37,13 @@ impl GraphQlState {
         async move {
             let village = current_village_async().await?;
             let response = http_read_incoming_attacks(Some(next), village).await?;
-            if let Some(data) = &response.data {
-                let max_id = data
-                    .village
-                    .attacks
-                    .iter()
-                    .map(|atk| atk.id.parse().unwrap())
-                    .fold(0, i64::max);
-                nuts::publish(NewAttackId { id: max_id });
-            }
+            let max_id = response
+                .village
+                .attacks
+                .iter()
+                .map(|atk| atk.id.parse().unwrap())
+                .fold(0, i64::max);
+            nuts::publish(NewAttackId { id: max_id });
             Ok(NetMsg::Attacks(response))
         }
     }
@@ -63,14 +63,10 @@ impl GraphQlState {
     }
     pub(super) async fn workers_query() -> PadlResult<NetMsg> {
         let village = current_village_async().await?;
-        let response = http_read_workers(village).await?;
-        if let Some(data) = response.data {
-            let workers = data.village.workers;
-            let village = VillageKey(data.village.id);
-            Ok(NetMsg::Workers(workers, village))
-        } else {
-            gql_empty_error("workers")
-        }
+        let data = http_read_workers(village).await?;
+        let workers = data.village.workers;
+        let village = VillageKey(data.village.id);
+        Ok(NetMsg::Workers(workers, village))
     }
     pub(super) async fn hobos_query() -> PadlResult<NetMsg> {
         let village = current_village_async().await?;
@@ -82,12 +78,8 @@ impl GraphQlState {
         Ok(NetMsg::Hobos(response.hobos, VillageKey(response.id)))
     }
     pub(super) async fn worker_tasks_query(unit_id: i64) -> PadlResult<NetMsg> {
-        let response = http_read_worker_tasks(unit_id).await?;
-        if let Some(data) = response.data {
-            Ok(NetMsg::UpdateWorkerTasks(data.worker))
-        } else {
-            gql_empty_error("worker_tasks")
-        }
+        let data = http_read_worker_tasks(unit_id).await?;
+        Ok(NetMsg::UpdateWorkerTasks(data.worker))
     }
     pub(super) async fn map_query(min: i32, max: i32) -> PadlResult<NetMsg> {
         let response = http_read_map(min as i64, max as i64).await?;

@@ -1,5 +1,6 @@
 use js_sys::Object;
 use paddle::{ErrorMessage, JsError};
+use paddlers_shared_lib::prelude::PadlApiError;
 use wasm_bindgen::JsValue;
 
 use crate::game::town::{TileIndex, TileType};
@@ -80,6 +81,9 @@ pub enum PadlErrorCode {
     RestAPI(String),
     EmptyGraphQLData(&'static str),
     InvalidGraphQLData(&'static str),
+    GraphQlNoDataOrErrors,
+    GraphQlGenericResponseError(String),
+    GraphQlResponseError(PadlApiError),
     UnknownNetObj(crate::game::components::NetObj),
     InvalidDom(&'static str),
     PaddleError(String),
@@ -89,7 +93,6 @@ pub enum PadlErrorCode {
     NoDataFromBrowser(&'static str),
     BrowserError(String),
     DialogueEmpty,
-    UserNotInDB,
     AuthorizationRequired,
     DataForInactiveTownReceived(&'static str),
 }
@@ -135,6 +138,13 @@ impl fmt::Display for PadlErrorCode {
             PadlErrorCode::InvalidGraphQLData(reason) => {
                 write!(f, "GraphQL query result has invalid data: {}", reason)
             }
+            PadlErrorCode::GraphQlNoDataOrErrors => {
+                write!(f, "GraphQL response contains no data and no errors.")
+            }
+            PadlErrorCode::GraphQlGenericResponseError(s) => {
+                write!(f, "GraphQL response error: {}", s)
+            }
+            PadlErrorCode::GraphQlResponseError(code) => write!(f, "GraphQL API error: {}", code),
             PadlErrorCode::UnknownNetObj(key) => {
                 write!(f, "GraphQL query result has unknown key: {:?}", key)
             }
@@ -152,9 +162,6 @@ impl fmt::Display for PadlErrorCode {
             }
             PadlErrorCode::BrowserError(s) => write!(f, "Unexpected browser error: {}", s),
             PadlErrorCode::DialogueEmpty => write!(f, "No scene loaded in dialogue"),
-            PadlErrorCode::UserNotInDB => {
-                write!(f, "The user logged in is not present in the game database.")
-            }
             PadlErrorCode::AuthorizationRequired => {
                 write!(f, "The requested resource permits authorized access only.")
             }

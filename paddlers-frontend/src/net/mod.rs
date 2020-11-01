@@ -23,14 +23,14 @@ use std::{
 use crate::prelude::*;
 
 pub enum NetMsg {
-    Attacks(AttacksResponse),
-    Buildings(BuildingsResponse),
+    Attacks(attacks_query::ResponseData),
+    Buildings(buildings_query::ResponseData),
     Error(PadlError),
     Hobos(HobosQueryResponse, VillageKey),
     Leaderboard(usize, Vec<(String, i64)>),
-    Map(MapResponse, i32, i32),
+    Map(map_query::ResponseData, i32, i32),
     Player(PlayerInfo),
-    VillageInfo(VolatileVillageInfoResponse),
+    VillageInfo(volatile_village_info_query::ResponseData),
     UpdateWorkerTasks(WorkerTasksResponse),
     Workers(WorkerResponse, VillageKey),
     Reports(ReportsResponse),
@@ -194,10 +194,16 @@ impl NetState {
     }
     fn transfer_response<Q: Future<Output = PadlResult<NetMsg>> + 'static>(&self, query: Q) {
         let sender = self.get_channel();
-        spawn_future(async move {
-            let response = query.await?;
-            sender.send(response).expect("Transferring data to game");
-            Ok(())
+        wasm_bindgen_futures::spawn_local(async move {
+            let netmsg = match query.await {
+                Ok(msg) => msg,
+                Err(e) => {
+                    // Do not send messge here through nuts, yet.
+                    // The net receiver needs a chance to recover failures first.y
+                    NetMsg::Error(e)
+                }
+            };
+            sender.send(netmsg).expect("Transferring data to game");
         });
     }
 }
