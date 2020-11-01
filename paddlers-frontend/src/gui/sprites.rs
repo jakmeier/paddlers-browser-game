@@ -6,8 +6,6 @@ use crate::gui::utils::*;
 use animation::AnimatedObject;
 use paddle::graphics::Image;
 use paddle::quicksilver_compat::*;
-use paddle::quicksilver_compat::*;
-use stdweb::web::html_element::ImageElement;
 
 /// Manager of all sprites.
 /// Cannot easily be in a component because Image is thread local.

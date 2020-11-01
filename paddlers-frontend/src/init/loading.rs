@@ -4,15 +4,12 @@ use crate::net::graphql::query_types::{
 use crate::{game::game_event_manager::load_game_event_manager, prelude::PadlError};
 use crate::{game::leaderboard::doc, gui::input::UiView};
 use crate::{game::net_receiver::loading_update_net, init::quicksilver_integration::Signal};
-use futures::future::join_all;
-use js_sys::JsString;
 use nuts::LifecycleStatus;
 use paddle::{
-    graphics::Image, graphics::ImageLoader, ErrorMessage, Frame, JsError, LoadScheduler,
-    LoadedData, LoadingDone, LoadingProgress, NutsCheck, TextBoard, UpdateWorld, Window,
+    graphics::Image, graphics::ImageLoader, ErrorMessage, Frame, LoadScheduler, LoadedData,
+    LoadingDone, LoadingProgress, NutsCheck, TextBoard, UpdateWorld, Window,
 };
 use wasm_bindgen::JsCast;
-use wasm_bindgen_futures::JsFuture;
 use web_sys::HtmlCanvasElement;
 
 use crate::game::player_info::PlayerInfo;
@@ -28,10 +25,7 @@ use crate::net::NetMsg;
 use crate::prelude::{PadlResult, ScreenResolution, TextDb};
 use paddle::quicksilver_compat::*;
 use paddle::{Domain, FloatingText, WorldEvent};
-use std::{
-    rc::Rc,
-    sync::{mpsc::Receiver, Mutex},
-};
+use std::sync::mpsc::Receiver;
 
 /// State that is used while loading all data over the network.
 /// It will automatically be removed when loading is done.
@@ -195,8 +189,7 @@ impl LoadingFrame {
 
                 let viewer_activity = nuts::new_domained_activity(viewer, &Domain::Frame);
                 viewer_activity.subscribe_domained(|viewer, domain, _: &UpdateWorld| {
-                    let game: &mut Game =
-                        domain.try_get_mut().expect("Forgot to insert Game?");
+                    let game: &mut Game = domain.try_get_mut().expect("Forgot to insert Game?");
                     // FIXME; really need to be set every frame?
                     let view: UiView = *game.world.fetch();
                     viewer.set_view(view);
@@ -206,15 +199,13 @@ impl LoadingFrame {
                     nuts::new_domained_activity(pointer_manager, &Domain::Frame);
                 pointer_manager_activity.subscribe_domained(
                     |pointer_manager, domain, _: &UpdateWorld| {
-                        let game: &mut Game =
-                            domain.try_get_mut().expect("Forgot to insert Game?");
+                        let game: &mut Game = domain.try_get_mut().expect("Forgot to insert Game?");
                         pointer_manager.run(game);
                     },
                 );
                 pointer_manager_activity.subscribe_domained_mut(
                     |pointer_manager, domain, msg: &mut WorldEvent| {
-                        let game: &mut Game =
-                            domain.try_get_mut().expect("Forgot to insert Game?");
+                        let game: &mut Game = domain.try_get_mut().expect("Forgot to insert Game?");
                         let event = msg.event();
                         let res = game.handle_quicksilver_event(&event, pointer_manager);
                         if let Err(e) = res {

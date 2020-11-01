@@ -22,7 +22,7 @@ impl Drop for ThreadHandler {
     fn drop(&mut self) {
         match self.typ {
             ThreadType::AnimationFrame => {
-                web_sys::window()
+                let _ = web_sys::window()
                     .unwrap()
                     .cancel_animation_frame(self.handle);
             }

@@ -5,7 +5,7 @@ mod map_tesselation;
 mod village_meta;
 
 use crate::gui::{input::Clickable, render::Renderable, sprites::*, ui_state::*, utils::*, z::*};
-use crate::net::authentication::read_jwt_preferred_username;
+use crate::net::authentication::keycloak_preferred_name;
 use map_position::*;
 use map_segment::MapSegment;
 use map_tesselation::*;
@@ -186,12 +186,7 @@ impl<'a> GlobalMap<'a> {
                         ),
                         (pt, pt),
                     );
-                    window.draw_ex(
-                        &area,
-                        Col(WHITE),
-                        Transform::rotate(45),
-                        1000,
-                    );
+                    window.draw_ex(&area, Col(WHITE), Transform::rotate(45), 1000);
                 }
             }
         }
@@ -213,7 +208,7 @@ impl GlobalMapPrivateState {
         segment.tesselate_rivers();
         self.segments.push(segment);
 
-        let my_name = read_jwt_preferred_username().unwrap();
+        let my_name = keycloak_preferred_name().unwrap();
         for village in villages.iter() {
             let owner_name = village.player_name();
             let is_mine = owner_name.is_some() && owner_name.unwrap() == my_name; // TODO: Better check not relying on unique display names

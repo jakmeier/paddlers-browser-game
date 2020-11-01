@@ -157,11 +157,7 @@ impl<'a, 'b> TownFrame<'a, 'b> {
             town_dispatcher,
         }
     }
-    pub fn signal(
-        &mut self,
-        state: &mut Game,
-        msg: &Signal,
-    ) -> Result<(), PadlError> {
+    pub fn signal(&mut self, state: &mut Game, msg: &Signal) -> Result<(), PadlError> {
         match msg {
             Signal::PlayerInfoUpdated => {
                 state.update_temple()?;

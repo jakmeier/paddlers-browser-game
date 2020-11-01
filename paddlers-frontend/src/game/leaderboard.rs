@@ -3,13 +3,13 @@ use crate::gui::utils::colors::DARK_BLUE;
 use crate::gui::z::*;
 use crate::net::NetMsg;
 use crate::prelude::*;
-use paddle::quicksilver_compat::{Col, Rectangle, Transform};
 use div::DivError;
+use paddle::quicksilver_compat::{Col, Rectangle, Transform};
 use paddle::Frame;
 use paddle::Window as QuicksilverWindow;
 use specs::WorldExt;
 use std::marker::PhantomData;
-use web_sys::{Node};
+use web_sys::Node;
 
 pub(crate) struct LeaderboardFrame<'a, 'b> {
     pane: div::PaneHandle,
@@ -61,11 +61,7 @@ impl LeaderboardFrame<'_, '_> {
         Ok(())
     }
 
-    pub fn network_message(
-        &mut self,
-        _state: &mut Game,
-        msg: &NetMsg,
-    ) -> Result<(), PadlError> {
+    pub fn network_message(&mut self, _state: &mut Game, msg: &NetMsg) -> Result<(), PadlError> {
         match msg {
             NetMsg::Leaderboard(offset, list) => {
                 self.clear()?;

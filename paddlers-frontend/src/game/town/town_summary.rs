@@ -5,12 +5,11 @@ use crate::game::Game;
 use crate::gui::utils::colors::DARK_BLUE;
 use crate::gui::z::*;
 use crate::prelude::*;
-use paddle::{Frame, JmrRectangle};
-use paddle::Window as QuicksilverWindow;
 use paddle::quicksilver_compat::{Col, Rectangle, Transform};
+use paddle::Window as QuicksilverWindow;
+use paddle::{Frame, JmrRectangle};
 use specs::WorldExt;
 use std::marker::PhantomData;
-use stdweb::web::*;
 
 pub(crate) struct TownSummaryFrame<'a, 'b> {
     pane: div::PaneHandle,
@@ -34,13 +33,13 @@ impl TownSummaryFrame<'_, '_> {
         // let new_node = Node::from_html(html).map_err(|_| "Syntax Error")?;
         // node.append_child(&new_node);
         // js!{
-            
+
         //     new window.rusvelte.Test({target: @{node}, props: {}});
-            
+
         //     // new Test({target: @{node}, props: {}});
         // };
 
-        // // document.head.appendChild(script); 
+        // // document.head.appendChild(script);
         pane.hide()?;
 
         Ok(TownSummaryFrame {

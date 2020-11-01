@@ -1,8 +1,7 @@
 use crate::net::game_master_api::RestApiState;
-use crate::prelude::*;
 use chrono::{Duration, NaiveDateTime};
 use paddlers_shared_lib::api::statistics::*;
-use stdweb::unstable::TryInto;
+use wasm_bindgen::prelude::wasm_bindgen;
 
 const INTERVAL_SECONDS: i64 = 10;
 
@@ -45,17 +44,13 @@ impl Statistician {
 }
 
 fn browser_info() -> BrowserInfo {
-    let navigator = web_sys::window().unwrap().navigator();
-    let user_agent = navigator
-        .user_agent()
-        .unwrap_or_else(|_| "NotAvailable".to_owned());
+    JsBrowserInfo::new().into_serde().unwrap()
+}
 
-    let window = stdweb::web::window();
-    BrowserInfo {
-        user_agent: user_agent,
-        inner_width: window.inner_width(),
-        inner_height: window.inner_height(),
-        outer_width: window.outer_width(),
-        outer_height: window.outer_height(),
-    }
+#[wasm_bindgen(module = "/src/logging/statistics.js")]
+extern "C" {
+    type JsBrowserInfo;
+
+    #[wasm_bindgen(constructor)]
+    fn new() -> JsBrowserInfo;
 }

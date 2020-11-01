@@ -1,10 +1,9 @@
+use crate::game::leaderboard::doc;
 use crate::gui::sprites::paths::SPRITE_PATHS;
 use crate::gui::sprites::{SpriteSet, WithSprite};
 use crate::prelude::*;
 use paddle::quicksilver_compat::Rectangle;
-use stdweb::web::html_element::ImageElement;
 use web_sys::{Element, HtmlElement, HtmlImageElement};
-use crate::game::leaderboard::doc;
 
 pub struct ResourcesComponent {
     pane: div::PaneHandle,

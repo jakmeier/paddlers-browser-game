@@ -6,9 +6,6 @@
     const_fn,
     const_fn_floating_point_arithmetic
 )]
-// extern crate quicksilver;
-#[macro_use]
-extern crate stdweb;
 extern crate specs;
 #[macro_use]
 extern crate specs_derive;
@@ -28,7 +25,7 @@ pub(crate) mod window;
 
 mod web_integration;
 
-use init::{loading::LoadingFrame, wasm_setup::setup_wasm};
+use init::wasm_setup::setup_wasm;
 
 use std::sync::mpsc::channel;
 use wasm_bindgen::prelude::wasm_bindgen;

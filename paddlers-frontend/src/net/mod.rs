@@ -8,15 +8,16 @@ pub mod url;
 use crate::{game::player_info::PlayerInfo, web_integration::*};
 use game_master_api::RestApiState;
 use graphql::{query_types::*, GraphQlState};
-use paddle::Domain;
+use paddle::{Domain, NutsCheck};
 use paddlers_shared_lib::prelude::VillageKey;
 use wasm_bindgen::prelude::*;
 
-use futures::future::TryFutureExt;
-use futures::Future;
-use std::sync::{
-    atomic::{AtomicBool, Ordering},
-    mpsc::Sender,
+use std::{
+    future::Future,
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        mpsc::Sender,
+    },
 };
 
 use crate::prelude::*;
@@ -33,12 +34,6 @@ pub enum NetMsg {
     UpdateWorkerTasks(WorkerTasksResponse),
     Workers(WorkerResponse, VillageKey),
     Reports(ReportsResponse),
-}
-
-pub enum NetUpdateRequest {
-    CompleteReload,
-    WorkerTasks(i64),
-    PlayerInfo,
 }
 
 struct NetState {
@@ -128,10 +123,10 @@ impl NetState {
 
     // For frequent updates
     fn work(&mut self, _: &NetworkUpdate) {
-        self.spawn(self.gql_state.attacks_query());
-        self.spawn(self.gql_state.reports_query());
-        self.spawn(self.gql_state.resource_query());
-        self.spawn(GraphQlState::player_info_query());
+        self.transfer_response(self.gql_state.attacks_query());
+        self.transfer_response(self.gql_state.reports_query());
+        self.transfer_response(GraphQlState::resource_query());
+        self.transfer_response(GraphQlState::player_info_query());
     }
 
     // Sends all requests out necessary for the client state to display a full game view including the home town
@@ -139,46 +134,46 @@ impl NetState {
         // TODO: Instead of forcing a request every time the 10s are too long, use something smarter.
         // E.g.: Once a second check what needs to be updated and then allow this list to be altered from outside
         if self.logged_in.load(Ordering::Relaxed) {
-            self.spawn(self.gql_state.buildings_query());
-            self.spawn(self.gql_state.workers_query());
-            self.spawn(self.gql_state.hobos_query());
-            self.spawn(self.gql_state.leaderboard_query());
-            self.spawn(self.gql_state.attacks_query());
-            self.spawn(self.gql_state.resource_query());
+            self.transfer_response(GraphQlState::buildings_query());
+            self.transfer_response(GraphQlState::workers_query());
+            self.transfer_response(GraphQlState::hobos_query());
+            self.transfer_response(GraphQlState::leaderboard_query());
+            self.transfer_response(self.gql_state.attacks_query());
+            self.transfer_response(GraphQlState::resource_query());
             request_player_update();
         } else {
             let mut thread = crate::web_integration::create_thread(request_client_state);
-            thread.set_timeout(50);
+            thread.set_timeout(50).nuts_check();
             nuts::store_to_domain(&Domain::Network, thread);
         }
     }
 
     fn request_foreign_town(&mut self, msg: &RequestForeignTownUpdate) {
-        self.spawn(Ok(self.gql_state.foreign_buildings_query(msg.vid)));
-        self.spawn(Ok(self.gql_state.foreign_hobos_query(msg.vid)));
+        self.transfer_response(GraphQlState::foreign_buildings_query(msg.vid));
+        self.transfer_response(GraphQlState::foreign_hobos_query(msg.vid));
         // TODO: Other state
     }
 
     fn request_player_update(&mut self, _: &RequestPlayerUpdate) {
         if self.logged_in.load(Ordering::Relaxed) {
-            self.spawn(GraphQlState::player_info_query());
+            self.transfer_response(GraphQlState::player_info_query());
         } else {
             let mut thread = crate::web_integration::create_thread(request_player_update);
-            thread.set_timeout(50);
+            thread.set_timeout(50).nuts_check();
             nuts::store_to_domain(&Domain::Network, (thread,));
         }
     }
 
     fn request_worker_tasks_update(&mut self, msg: &RequestWorkerTasksUpdate) {
-        self.spawn(self.gql_state.worker_tasks_query(msg.unit_id));
+        self.transfer_response(GraphQlState::worker_tasks_query(msg.unit_id));
     }
 
     fn request_resource_update(&mut self, _: &RequestResourceUpdate) {
-        self.spawn(self.gql_state.resource_query());
+        self.transfer_response(GraphQlState::resource_query());
     }
 
     fn request_map_read(&mut self, msg: &RequestMapRead) {
-        self.spawn(self.gql_state.map_query(msg.min, msg.max));
+        self.transfer_response(GraphQlState::map_query(msg.min, msg.max));
     }
 
     fn log_in(&mut self, _: &LoggedIn) {
@@ -197,31 +192,22 @@ impl NetState {
     fn get_channel(&self) -> Sender<NetMsg> {
         self.chan.clone()
     }
-
-    fn spawn<Q: Future<Output = PadlResult<NetMsg>> + 'static>(&self, maybe_query: PadlResult<Q>) {
-        match maybe_query {
-            Ok(query) => {
-                let sender = self.get_channel();
-                let sender2 = self.get_channel();
-                wasm_bindgen_futures::spawn_local(
-                    query
-                        .map_ok(move |msg| sender.send(msg).expect("Transferring data to game"))
-                        .unwrap_or_else(move |e| {
-                            sender2
-                                .send(NetMsg::Error(e))
-                                .expect("Transferring data to game")
-                        }),
-                );
-            }
-            Err(e) => {
-                self.net_msg_to_game_thread(NetMsg::Error(e));
-            }
-        }
-    }
-    fn net_msg_to_game_thread(&self, msg: NetMsg) {
+    fn transfer_response<Q: Future<Output = PadlResult<NetMsg>> + 'static>(&self, query: Q) {
         let sender = self.get_channel();
-        sender.send(msg).expect("Transferring data to game");
+        spawn_future(async move {
+            let response = query.await?;
+            sender.send(response).expect("Transferring data to game");
+            Ok(())
+        });
     }
+}
+
+fn spawn_future(future: impl Future<Output = PadlResult<()>> + 'static) {
+    wasm_bindgen_futures::spawn_local(async {
+        if let Err(err) = future.await {
+            nuts::publish(err);
+        }
+    });
 }
 
 impl std::fmt::Debug for NetMsg {

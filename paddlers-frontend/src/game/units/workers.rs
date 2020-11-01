@@ -5,7 +5,6 @@ use crate::game::{
 };
 use crate::gui::render::Renderable;
 use crate::gui::z::*;
-use crate::net::game_master_api::RestApiState;
 use crate::prelude::*;
 use chrono::NaiveDateTime;
 use paddle::quicksilver_compat::*;

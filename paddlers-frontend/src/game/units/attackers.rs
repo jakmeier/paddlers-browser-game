@@ -110,10 +110,7 @@ pub fn build_new_duck_entity<'a>(
 
 use crate::net::graphql::attacks_query::AttacksQueryVillageAttacks;
 impl AttacksQueryVillageAttacks {
-    pub(crate) fn create_entities<'a, 'b>(
-        self,
-        game: &mut Game,
-    ) -> PadlResult<Vec<Entity>> {
+    pub(crate) fn create_entities<'a, 'b>(self, game: &mut Game) -> PadlResult<Vec<Entity>> {
         let ul = game.world.fetch::<ScreenResolution>().unit_length();
         let birth_time = GqlTimestamp::from_string(&self.arrival)
             .unwrap()

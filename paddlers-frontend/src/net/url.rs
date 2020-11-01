@@ -41,7 +41,7 @@ fn query_param(key: &str) -> PadlResult<String> {
         "No such URL query param: {}",
         key
     )));
-    let s = stdweb::web::window().location().unwrap().search()?;
+    let s = web_sys::window().unwrap().location().search()?;
     if s.len() == 0 {
         return Err(err);
     }

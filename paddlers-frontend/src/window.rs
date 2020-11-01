@@ -1,33 +1,20 @@
 use crate::prelude::*;
 use paddle::{quicksilver_compat::Vector, JsError, Window};
-use stdweb::traits::*;
-use stdweb::unstable::TryFrom;
-use stdweb::web::html_element::CanvasElement;
-use stdweb::web::IHtmlElement;
 use strum::IntoEnumIterator;
-use wasm_bindgen::JsCast;
 
 pub fn adapt_window_size(window: &mut Window) -> PadlResult<()> {
-    // TODO: (optimization) cache canvas
-    let canvas: CanvasElement = stdweb::web::document()
-        .get_element_by_id("game-root")
-        .expect("Failed to find specified HTML id")
-        .child_nodes()
-        .iter()
-        .map(CanvasElement::try_from)
-        .find(|res| res.is_ok())
-        .map(|res| res.unwrap())
-        .expect("No canvas");
+    let canvas = window.html_element();
 
-    let w = stdweb::web::window().inner_width();
-    let h = stdweb::web::window().inner_height();
+    let web_window = web_sys::window().unwrap();
+    let w = web_window.inner_width()?.as_f64().unwrap();
+    let h = web_window.inner_height()?.as_f64().unwrap();
     canvas.set_width(w as u32);
     canvas.set_height(h as u32);
 
     // Check what the actual size is after CSS messes with the canvas
     let size_in_browser = canvas.get_bounding_client_rect();
-    let x = size_in_browser.get_width();
-    let y = size_in_browser.get_height();
+    let x = size_in_browser.width();
+    let y = size_in_browser.height();
     let size_in_browser = Vector::new(x as f32, y as f32);
     window.set_size(size_in_browser);
 
@@ -46,7 +33,7 @@ pub fn estimate_screen_size() -> PadlResult<ScreenResolution> {
         .inner_width()
         .map(|f| f.as_f64().unwrap() as f32)
         .map_err(JsError::from_js_value)?;
-        let screen_h: f32 = web_sys::window()
+    let screen_h: f32 = web_sys::window()
         .unwrap()
         .inner_height()
         .map(|f| f.as_f64().unwrap() as f32)

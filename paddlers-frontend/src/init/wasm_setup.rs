@@ -12,7 +12,6 @@ macro_rules! error {
 }
 
 pub fn setup_wasm() {
-    stdweb::initialize();
     #[cfg(feature = "console_error_panic_hook")]
     std::panic::set_hook(Box::new(console_error_panic_hook::hook));
 }
@@ -23,15 +22,6 @@ pub trait PadlINode {
 }
 
 impl PadlINode for web_sys::Node {
-    fn remove_all_children(&self) {
-        while let Some(child) = self.first_child() {
-            self.remove_child(&child).expect("not found");
-        }
-    }
-}
-
-use crate::stdweb::web::INode;
-impl PadlINode for stdweb::web::Node {
     fn remove_all_children(&self) {
         while let Some(child) = self.first_child() {
             self.remove_child(&child).expect("not found");

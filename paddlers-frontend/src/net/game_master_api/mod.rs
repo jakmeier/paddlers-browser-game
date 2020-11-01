@@ -1,26 +1,16 @@
-use super::{
-    ajax, ajax::AjaxError, authentication::read_jwt_preferred_username, url::*, NetUpdateRequest,
-};
+use super::{ajax, authentication::keycloak_preferred_name, url::*};
 use crate::prelude::*;
-use futures_util::future::FutureExt;
 use paddle::{Domain, NutsCheck};
 use paddlers_shared_lib::api::reports::ReportCollect;
 use paddlers_shared_lib::api::story::StoryStateTransition;
 use paddlers_shared_lib::api::{
     attacks::*, keys::*, shop::*, statistics::*, tasks::TaskList, PlayerInitData,
 };
-use specs::prelude::*;
-use std::collections::VecDeque;
 use std::sync::atomic::AtomicBool;
-use stdweb::PromiseFuture;
 
 static SENT_PLAYER_CREATION: AtomicBool = AtomicBool::new(false);
 
 pub struct RestApiState {
-    pub queue: VecDeque<(
-        stdweb::PromiseFuture<std::string::String, AjaxError>,
-        Option<NetUpdateRequest>,
-    )>,
     pub game_master_url: String,
 }
 pub struct UpdateRestApi;
@@ -45,7 +35,6 @@ pub struct HttpPlaceBuilding {
 impl RestApiState {
     pub fn init() {
         let rest = RestApiState {
-            queue: VecDeque::new(),
             game_master_url: game_master_url().nuts_check().unwrap_or_default(),
         };
         let rest_activity = nuts::new_domained_activity(rest, &Domain::Network);
@@ -80,13 +69,12 @@ impl RestApiState {
             village: input.village,
         };
 
-        let request_string = &serde_json::to_string(&msg).unwrap();
-        let promise = ajax::send(
+        let future = ajax::fetch(
             "POST",
             &format!("{}/shop/building", self.game_master_url),
-            request_string,
+            &msg,
         );
-        self.push_promise(promise, None);
+        super::spawn_future(future);
     }
 
     fn http_delete_building(&mut self, input: HttpDeleteBuilding) {
@@ -95,146 +83,100 @@ impl RestApiState {
             y: input.idx.1,
             village: input.village,
         };
-        let request_string = &serde_json::to_string(&msg).unwrap();
-        let promise = ajax::send(
+        let future = ajax::fetch(
             "POST",
             &format!("{}/shop/building/delete", self.game_master_url),
-            request_string,
+            &msg,
         );
-        self.push_promise(promise, None);
+        super::spawn_future(future);
     }
 
     fn http_buy_prophet(&mut self, msg: ProphetPurchase) {
-        let request_string = &serde_json::to_string(&msg).unwrap();
-        let promise = ajax::send(
-            "POST",
-            &format!("{}/shop/unit/prophet", self.game_master_url),
-            request_string,
-        );
-        let afterwards = NetUpdateRequest::PlayerInfo;
-        // TODO: Also update hobos afterwards, not only player info...
-        self.push_promise(promise, Some(afterwards));
+        let uri = self.game_master_url.clone() + "/shop/unit/prophet";
+        let future = async move {
+            ajax::fetch("POST", &uri, &msg).await?;
+            crate::net::request_player_update();
+            // TODO: Also update hobos afterwards, not only player info...
+            Ok(())
+        };
+        super::spawn_future(future);
     }
 
     fn http_overwrite_tasks(&mut self, msg: TaskList) {
-        let request_string = &serde_json::to_string(&msg).unwrap();
-        let promise = ajax::send(
-            "POST",
-            &format!("{}/worker/overwriteTasks", self.game_master_url),
-            request_string,
-        );
-        let afterwards = NetUpdateRequest::WorkerTasks(msg.worker_id.num());
-        self.push_promise(promise, Some(afterwards));
+        let uri = self.game_master_url.clone() + "/worker/overwriteTasks";
+        let future = async move {
+            ajax::fetch("POST", &uri, &msg).await?;
+            crate::net::request_worker_tasks_update(msg.worker_id.num());
+            Ok(())
+        };
+        super::spawn_future(future);
     }
 
     pub fn http_send_statistics(&mut self, msg: FrontendRuntimeStatistics) {
-        let request_string = &serde_json::to_string(&msg).unwrap();
-        let promise = ajax::send(
-            "POST",
-            &format!("{}/stats", &self.game_master_url),
-            request_string,
-        );
-        self.push_promise(promise, None);
+        let future = ajax::fetch("POST", &format!("{}/stats", &self.game_master_url), &msg);
+        super::spawn_future(future);
     }
 
     fn http_create_player(&mut self, _: &HttpCreatePlayer) {
         if !SENT_PLAYER_CREATION.load(std::sync::atomic::Ordering::Relaxed) {
-            let display_name = read_jwt_preferred_username().unwrap_or("Unnamed Player".to_owned());
+            let display_name = keycloak_preferred_name().unwrap_or("Unnamed Player".to_owned());
+            let uri = self.game_master_url.clone() + "/player/create";
             let msg = PlayerInitData { display_name };
-            let request_string = &serde_json::to_string(&msg).unwrap();
-            let promise = ajax::send(
-                "POST",
-                &format!("{}/player/create", self.game_master_url),
-                request_string,
-            );
-            self.push_promise(promise, Some(NetUpdateRequest::CompleteReload));
+            let future = async move {
+                ajax::fetch("POST", &uri, &msg).await?;
+                crate::net::request_client_state();
+                Ok(())
+            };
+            super::spawn_future(future);
             SENT_PLAYER_CREATION.store(true, std::sync::atomic::Ordering::Relaxed)
         }
     }
 
     fn http_send_attack(&mut self, msg: AttackDescriptor) {
-        let request_string = &serde_json::to_string(&msg).unwrap();
-        let promise = ajax::send(
+        let future = ajax::fetch(
             "POST",
             &format!("{}/attacks/create", self.game_master_url),
-            request_string,
+            &msg,
         );
-        self.push_promise(promise, None);
+        super::spawn_future(future);
     }
 
     fn http_invite(&mut self, msg: InvitationDescriptor) {
-        let request_string = &serde_json::to_string(&msg).unwrap();
-        let promise = ajax::send(
+        let future = ajax::fetch(
             "POST",
             &format!("{}/attacks/invite", self.game_master_url),
-            request_string,
+            &msg,
         );
-        self.push_promise(promise, None);
+        super::spawn_future(future);
     }
 
     fn http_notify_visitor_satisfied(&mut self, msg: HttpNotifyVisitorSatisfied) {
-        let request_string = &serde_json::to_string(&msg.hobo).unwrap();
-        let promise = ajax::send(
+        let future = ajax::fetch(
             "POST",
             &format!(
                 "{}/attacks/notifications/visitor_satisfied",
                 &self.game_master_url
             ),
-            request_string,
+            &msg.hobo,
         );
-        self.push_promise(promise, None);
+        super::spawn_future(future);
     }
 
     fn http_update_story_state(&mut self, msg: StoryStateTransition) {
-        let request_string = &serde_json::to_string(&msg).unwrap();
-        let promise = ajax::send(
+        let future = ajax::fetch(
             "POST",
             &format!("{}/story/transition", &self.game_master_url),
-            request_string,
+            &msg,
         );
-        self.push_promise(promise, None);
+        super::spawn_future(future);
     }
 
     fn http_collect_reward(&mut self, msg: ReportCollect) {
-        let request_string = &serde_json::to_string(&msg).unwrap();
-        let promise = ajax::send(
+        let future = ajax::fetch(
             "POST",
             &format!("{}/report/collect", &self.game_master_url),
-            request_string,
+            &msg,
         );
-        self.push_promise(promise, None);
-    }
-
-    fn push_promise(
-        &mut self,
-        maybe_promise: PadlResult<PromiseFuture<String, AjaxError>>,
-        afterwards: Option<NetUpdateRequest>,
-    ) {
-        match maybe_promise {
-            Ok(promise) => self.queue.push_back((promise, afterwards)),
-            Err(e) => nuts::publish(e),
-        }
-    }
-    pub fn poll_queue(&mut self, _: &UpdateRestApi) {
-        while let Some((promise, afterwards)) = self.queue.pop_front() {
-            stdweb::spawn_local(promise.map(move |r| {
-                if r.is_err() {
-                    let err: PadlResult<()> =
-                        PadlErrorCode::RestAPI(format!("Rest API Error: {:?}", r.unwrap_err()))
-                            .dev();
-                    nuts::publish(err.unwrap_err());
-                } else {
-                    if let Some(req) = afterwards {
-                        match req {
-                            NetUpdateRequest::WorkerTasks(unit_id) => {
-                                crate::net::request_worker_tasks_update(unit_id)
-                            }
-                            NetUpdateRequest::CompleteReload => crate::net::request_client_state(),
-                            NetUpdateRequest::PlayerInfo => crate::net::request_player_update(),
-                        }
-                    }
-                }
-            }));
-        }
+        super::spawn_future(future);
     }
 }

@@ -1,14 +1,13 @@
-use crate::{net::game_master_api::HttpDeleteBuilding, game::fight::*};
 use crate::game::movement::Position;
 use crate::gui::input::pointer::PointerManager;
 use crate::gui::ui_state::Now;
-use crate::net::game_master_api::RestApiState;
 use crate::net::state::current_village;
 use crate::prelude::*;
+use crate::{game::fight::*, net::game_master_api::HttpDeleteBuilding};
+use paddle::quicksilver_compat::Vector;
 /// This module keeps the logic to read input and, in most cases,
 /// redirect it to suitable modules to handle the input
 use paddle::quicksilver_compat::*;
-use paddle::{quicksilver_compat::Vector, Window};
 use paddlers_shared_lib::prelude::*;
 use specs::prelude::*;
 

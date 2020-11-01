@@ -60,11 +60,7 @@ impl<'a, 'b> MenuBackgroundFrame<'a, 'b> {
         self.ui
             .update_notifications(Some(vec![0, 0, self.reports_to_collect, 0]));
     }
-    pub fn network_message(
-        &mut self,
-        _state: &mut Game,
-        msg: &NetMsg,
-    ) -> Result<(), PadlError> {
+    pub fn network_message(&mut self, _state: &mut Game, msg: &NetMsg) -> Result<(), PadlError> {
         match msg {
             NetMsg::Reports(data) => {
                 let new_reports = data.village.reports.len();
@@ -75,11 +71,7 @@ impl<'a, 'b> MenuBackgroundFrame<'a, 'b> {
         }
         Ok(())
     }
-    pub fn signal(
-        &mut self,
-        _state: &mut Game,
-        msg: &Signal,
-    ) -> Result<(), PadlError> {
+    pub fn signal(&mut self, _state: &mut Game, msg: &Signal) -> Result<(), PadlError> {
         match msg {
             Signal::NewReportCount(n) => {
                 self.reports_to_collect = *n;

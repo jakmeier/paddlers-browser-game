@@ -25,7 +25,7 @@ use crate::game::{components::*, player_info::PlayerInfo, town::TownContextManag
 use crate::gui::{input, sprites::*, ui_state::*};
 use crate::init::loading::GameLoadingData;
 use crate::logging::statistics::Statistician;
-use crate::net::{game_master_api::RestApiState, NetMsg};
+use crate::net::NetMsg;
 use crate::prelude::*;
 use crate::{game::net_receiver::*, net::game_master_api::UpdateRestApi};
 use chrono::NaiveDateTime;

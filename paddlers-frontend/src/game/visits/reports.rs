@@ -1,16 +1,14 @@
 use crate::gui::utils::colors::LIGHT_BLUE;
 use crate::gui::z::*;
-use crate::net::game_master_api::RestApiState;
 use crate::net::NetMsg;
 use crate::prelude::*;
 use crate::{game::leaderboard::doc, gui::sprites::*};
 use core::marker::PhantomData;
 use paddle::quicksilver_compat::{Col, Rectangle, Transform};
 use paddle::Window;
-use paddlers_shared_lib::api::reports::ReportCollect;
 use paddlers_shared_lib::prelude::VisitReportKey;
 use specs::prelude::*;
-use web_sys::{Element, HtmlElement, Node};
+use web_sys::{Element, Node};
 
 pub(crate) struct ReportFrame<'a, 'b> {
     pane: div::PaneHandle,
@@ -135,11 +133,7 @@ impl<'a, 'b> ReportFrame<'a, 'b> {
     fn number_or_reports(&self) -> usize {
         self.table.child_nodes().length() as usize - 1 // -1 for title
     }
-    pub fn network_message(
-        &mut self,
-        state: &mut Game,
-        msg: &NetMsg,
-    ) -> Result<(), PadlError> {
+    pub fn network_message(&mut self, state: &mut Game, msg: &NetMsg) -> Result<(), PadlError> {
         match msg {
             NetMsg::Reports(data) => {
                 for r in &data.village.reports {

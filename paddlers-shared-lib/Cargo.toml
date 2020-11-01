@@ -14,8 +14,6 @@ chrono = { version = "0.4", features = ["serde"] }
 # Using old version of ring to avoid dependency conflict with Rocket 4.0 > cookie 11.0
 jsonwebtoken = { version = "5.0.1", optional = true }
 once_cell = { version = "1.3.1", optional = true }
-stdweb = {version = "0.4.20", features = ["experimental_features_which_may_break_on_minor_version_bumps"], optional = true }
-# stdweb = { git = "https://github.com/alvinhochun/stdweb", features = ["experimental_features_which_may_break_on_minor_version_bumps"], optional = true, rev="f492a459cdfd7d67ee3f2c657d4243ac73a45269" }
 
 # For deriving
 juniper = { version = "0.14.2", optional = true }
@@ -29,6 +27,6 @@ sql_db = ["diesel", "diesel-derive-enum", "dotenv", "chrono/serde"]
 enum_utils = ["strum", "strum_macros"]
 game_mechanics = []
 user_authentication = ["jsonwebtoken", "once_cell"]
-web = ["stdweb"]
+web = []
 
 default = []

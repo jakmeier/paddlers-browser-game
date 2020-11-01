@@ -9,11 +9,6 @@ extern crate diesel_migrations;
 #[macro_use]
 extern crate strum_macros;
 
-#[cfg(feature = "web")]
-#[allow(unused_imports)]
-#[macro_use]
-extern crate stdweb;
-
 #[cfg(feature = "enum_utils")]
 pub extern crate strum;
 

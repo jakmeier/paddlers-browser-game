@@ -17,7 +17,6 @@ pub mod specs_registration;
 use crate::game::player_info::PlayerInfo;
 use crate::init::loading::LoadingFrame;
 use crate::prelude::*;
-use paddle::quicksilver_compat::*;
 use specs::prelude::*;
 use specs_registration::{insert_global_resources, register_global_components};
 

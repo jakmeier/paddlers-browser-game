@@ -7,8 +7,8 @@
 //! (It might become reusable in the future, though!)
 
 use crate::gui::{sprites::*, utils::*, z::*};
-use paddle::{quicksilver_compat::*, Window};
 use paddle::graphics::Image;
+use paddle::{quicksilver_compat::*, Window};
 
 pub fn draw_leaf_border(
     window: &mut Window,

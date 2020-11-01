@@ -1,17 +1,14 @@
 mod http_calls;
 pub mod query_types;
+use std::future::Future;
+
 use super::{NetMsg, NewAttackId, NewReportId};
 use http_calls::*;
 pub use query_types::*;
 
 use crate::net::state::current_village_async;
 use crate::prelude::*;
-use futures::future::TryFuture;
-use futures::Future;
-use futures_util::future::FutureExt;
-use futures_util::try_future::TryFutureExt;
 use paddlers_shared_lib::prelude::VillageKey;
-use std::sync::atomic::{AtomicI64, Ordering};
 
 pub struct GraphQlState {
     next_attack_id: i64,
@@ -33,158 +30,109 @@ impl GraphQlState {
         self.next_report_id = self.next_report_id.max(id + 1);
     }
 
-    pub(super) fn attacks_query(&self) -> PadlResult<impl Future<Output = PadlResult<NetMsg>>> {
+    pub(super) fn attacks_query(&self) -> impl Future<Output = PadlResult<NetMsg>> {
         let next = self.next_attack_id;
-        current_village_async().map(|fut| {
-            fut.and_then(move |village: VillageKey| {
-                http_read_incoming_attacks(Some(next), village).expect("Query building error")
-            })
-            .map(move |response| {
-                let r: AttacksResponse = response?;
-                if let Some(data) = &r.data {
-                    let max_id = data
-                        .village
-                        .attacks
-                        .iter()
-                        .map(|atk| atk.id.parse().unwrap())
-                        .fold(0, i64::max);
-                    nuts::publish(NewAttackId { id: max_id });
-                }
-                Ok(NetMsg::Attacks(r))
-            })
-        })
-    }
-    pub(super) fn resource_query(&self) -> PadlResult<impl Future<Output = PadlResult<NetMsg>>> {
-        current_village_async().map(|fut| {
-            fut.and_then(move |village: VillageKey| {
-                http_read_resources(village).expect("Query building error")
-            })
-            .map(|response| Ok(NetMsg::VillageInfo(response?)))
-        })
-    }
-    pub(super) fn buildings_query(&self) -> PadlResult<impl Future<Output = PadlResult<NetMsg>>> {
-        current_village_async().map(|fut| {
-            fut.and_then(move |village: VillageKey| {
-                http_read_buildings(village).expect("Query building error")
-            })
-            .map(|response| Ok(NetMsg::Buildings(response?)))
-        })
-    }
-    pub(super) fn foreign_buildings_query(
-        &self,
-        vid: VillageKey,
-    ) -> impl Future<Output = PadlResult<NetMsg>> {
-        http_read_buildings(vid)
-            .expect("Query building error")
-            .map(|response| Ok(NetMsg::Buildings(response?)))
-    }
-    pub(super) fn workers_query(&self) -> PadlResult<impl Future<Output = PadlResult<NetMsg>>> {
-        current_village_async().map(|fut| {
-            fut.and_then(move |village: VillageKey| {
-                http_read_workers(village).expect("Query building error")
-            })
-            .map(|response| {
-                if let Some(data) = response?.data {
-                    let workers = data.village.workers;
-                    let village = VillageKey(data.village.id);
-                    Ok(NetMsg::Workers(workers, village))
-                } else {
-                    gql_empty_error("workers")
-                }
-            })
-        })
-    }
-    pub(super) fn hobos_query(&self) -> PadlResult<impl Future<Output = PadlResult<NetMsg>>> {
-        current_village_async().map(|fut| {
-            fut.and_then(move |village: VillageKey| {
-                http_read_hobos(village).expect("Query building error")
-            })
-            .map(|village| {
-                let village = village?;
-                Ok(NetMsg::Hobos(village.hobos, VillageKey(village.id)))
-            })
-        })
-    }
-    pub(super) fn foreign_hobos_query(
-        &self,
-        village: VillageKey,
-    ) -> impl Future<Output = PadlResult<NetMsg>> {
-        http_read_hobos(village)
-            .expect("Query building error")
-            .map(|village| {
-                let village = village?;
-                Ok(NetMsg::Hobos(village.hobos, VillageKey(village.id)))
-            })
-    }
-    pub(super) fn worker_tasks_query(
-        &self,
-        unit_id: i64,
-    ) -> PadlResult<impl Future<Output = PadlResult<NetMsg>>> {
-        let fp = http_read_worker_tasks(unit_id)?;
-        Ok(fp.map(|response| {
-            if let Some(data) = response?.data {
-                Ok(NetMsg::UpdateWorkerTasks(data.worker))
-            } else {
-                gql_empty_error("worker_tasks")
-            }
-        }))
-    }
-    pub(super) fn map_query(
-        &self,
-        min: i32,
-        max: i32,
-    ) -> PadlResult<impl Future<Output = PadlResult<NetMsg>>> {
-        let fp = http_read_map(min as i64, max as i64)?;
-        Ok(fp.map(move |response| Ok(NetMsg::Map(response?, min, max))))
-    }
-
-    pub fn player_info_query() -> PadlResult<impl Future<Output = PadlResult<NetMsg>>> {
-        let fp = http_read_player_info()?;
-        Ok(fp.map(move |response| Ok(NetMsg::Player(response?.into()))))
-    }
-
-    pub fn leaderboard_query(&self) -> PadlResult<impl Future<Output = PadlResult<NetMsg>>> {
-        let fp = http_read_leaderboard()?;
-        Ok(fp.map(move |response| {
-            Ok(NetMsg::Leaderboard(
-                1,
-                response?
-                    .into_iter()
-                    .map(|player| (player.display_name, player.karma))
-                    .collect(),
-            ))
-        }))
-    }
-    pub(super) fn reports_query(&self) -> PadlResult<impl Future<Output = PadlResult<NetMsg>>> {
-        let report_id = self.next_report_id;
-        current_village_async().map(|fut| {
-            fut.and_then(move |village: VillageKey| {
-                http_read_reports(Some(report_id), village).expect("Query building error")
-            })
-            .map(move |response| {
-                let data: ReportsResponse = response?;
+        async move {
+            let village = current_village_async().await?;
+            let response = http_read_incoming_attacks(Some(next), village).await?;
+            if let Some(data) = &response.data {
                 let max_id = data
                     .village
-                    .reports
+                    .attacks
                     .iter()
-                    .map(|r| r.id.parse().unwrap())
+                    .map(|atk| atk.id.parse().unwrap())
                     .fold(0, i64::max);
-                nuts::publish(NewReportId { id: max_id });
-                Ok(NetMsg::Reports(data))
-            })
-        })
+                nuts::publish(NewAttackId { id: max_id });
+            }
+            Ok(NetMsg::Attacks(response))
+        }
+    }
+    pub(super) async fn resource_query() -> PadlResult<NetMsg> {
+        let village = current_village_async().await?;
+        let response = http_read_resources(village).await?;
+        Ok(NetMsg::VillageInfo(response))
+    }
+    pub(super) async fn buildings_query() -> PadlResult<NetMsg> {
+        let village = current_village_async().await?;
+        let response = http_read_buildings(village).await?;
+        Ok(NetMsg::Buildings(response))
+    }
+    pub(super) async fn foreign_buildings_query(vid: VillageKey) -> PadlResult<NetMsg> {
+        let response = http_read_buildings(vid).await?;
+        Ok(NetMsg::Buildings(response))
+    }
+    pub(super) async fn workers_query() -> PadlResult<NetMsg> {
+        let village = current_village_async().await?;
+        let response = http_read_workers(village).await?;
+        if let Some(data) = response.data {
+            let workers = data.village.workers;
+            let village = VillageKey(data.village.id);
+            Ok(NetMsg::Workers(workers, village))
+        } else {
+            gql_empty_error("workers")
+        }
+    }
+    pub(super) async fn hobos_query() -> PadlResult<NetMsg> {
+        let village = current_village_async().await?;
+        let response = http_read_hobos(village).await?;
+        Ok(NetMsg::Hobos(response.hobos, VillageKey(response.id)))
+    }
+    pub(super) async fn foreign_hobos_query(village: VillageKey) -> PadlResult<NetMsg> {
+        let response = http_read_hobos(village).await?;
+        Ok(NetMsg::Hobos(response.hobos, VillageKey(response.id)))
+    }
+    pub(super) async fn worker_tasks_query(unit_id: i64) -> PadlResult<NetMsg> {
+        let response = http_read_worker_tasks(unit_id).await?;
+        if let Some(data) = response.data {
+            Ok(NetMsg::UpdateWorkerTasks(data.worker))
+        } else {
+            gql_empty_error("worker_tasks")
+        }
+    }
+    pub(super) async fn map_query(min: i32, max: i32) -> PadlResult<NetMsg> {
+        let response = http_read_map(min as i64, max as i64).await?;
+        Ok(NetMsg::Map(response, min, max))
+    }
+
+    pub async fn player_info_query() -> PadlResult<NetMsg> {
+        let response = http_read_player_info().await?;
+        Ok(NetMsg::Player(response.into()))
+    }
+
+    pub async fn leaderboard_query() -> PadlResult<NetMsg> {
+        let response = http_read_leaderboard().await?;
+        Ok(NetMsg::Leaderboard(
+            1,
+            response
+                .into_iter()
+                .map(|player| (player.display_name, player.karma))
+                .collect(),
+        ))
+    }
+    pub(super) fn reports_query(&self) -> impl Future<Output = PadlResult<NetMsg>> {
+        let report_id = self.next_report_id;
+        async move {
+            let village = current_village_async().await?;
+            let data: ReportsResponse = http_read_reports(Some(report_id), village).await?;
+            let max_id = data
+                .village
+                .reports
+                .iter()
+                .map(|r| r.id.parse().unwrap())
+                .fold(0, i64::max);
+            nuts::publish(NewReportId { id: max_id });
+            Ok(NetMsg::Reports(data))
+        }
     }
 }
 
-pub fn own_villages_query() -> PadlResult<impl TryFuture<Ok = Vec<VillageKey>, Error = PadlError>> {
-    let fp = http_read_own_villages()?;
-    Ok(fp.map(move |response| {
-        Ok(response?
-            .villages
-            .into_iter()
-            .map(|v| VillageKey(v.id as i64))
-            .collect())
-    }))
+pub async fn own_villages_query() -> PadlResult<Vec<VillageKey>> {
+    let response = http_read_own_villages().await?;
+    Ok(response
+        .villages
+        .into_iter()
+        .map(|v| VillageKey(v.id as i64))
+        .collect())
 }
 
 fn gql_empty_error<R>(data_set: &'static str) -> PadlResult<R> {

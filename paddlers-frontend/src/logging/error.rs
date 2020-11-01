@@ -1,10 +1,9 @@
 use js_sys::Object;
 use paddle::{ErrorMessage, JsError};
+use wasm_bindgen::JsValue;
 
 use crate::game::town::{TileIndex, TileType};
-use crate::net::ajax::AjaxError;
 use crate::prelude::*;
-use crate::stdweb::unstable::TryInto;
 use std::fmt;
 use std::sync::mpsc::SendError;
 
@@ -82,12 +81,8 @@ pub enum PadlErrorCode {
     EmptyGraphQLData(&'static str),
     InvalidGraphQLData(&'static str),
     UnknownNetObj(crate::game::components::NetObj),
-    StdWebGenericError(stdweb::web::error::Error),
-    StdWebConversion(stdweb::private::ConversionError),
-    StdWebSecurityError(stdweb::web::error::SecurityError),
     InvalidDom(&'static str),
     PaddleError(String),
-    QuicksilverError(String),
     DivError(String),
     JsonParseError(serde_json::error::Error),
     UrlParseError(String),
@@ -143,20 +138,8 @@ impl fmt::Display for PadlErrorCode {
             PadlErrorCode::UnknownNetObj(key) => {
                 write!(f, "GraphQL query result has unknown key: {:?}", key)
             }
-            PadlErrorCode::StdWebGenericError(cause) => write!(f, "A web error ocurred: {}", cause),
-            PadlErrorCode::StdWebConversion(cause) => write!(
-                f,
-                "A conversion error in the web std library occurred: {}",
-                cause
-            ),
-            PadlErrorCode::StdWebSecurityError(cause) => write!(
-                f,
-                "A security error in the web std library occurred: {}",
-                cause
-            ),
             PadlErrorCode::InvalidDom(cause) => write!(f, "DOM error: {}", cause),
             PadlErrorCode::PaddleError(cause) => write!(f, "Paddle error: {}", cause),
-            PadlErrorCode::QuicksilverError(cause) => write!(f, "Quicksilver error: {}", cause),
             PadlErrorCode::DivError(cause) => write!(f, "Panes error: {}", cause),
             PadlErrorCode::JsonParseError(cause) => {
                 write!(f, "Error while parsing JSON data: {}", cause)
@@ -182,12 +165,6 @@ impl fmt::Display for PadlErrorCode {
     }
 }
 
-impl From<stdweb::private::ConversionError> for PadlError {
-    fn from(error: stdweb::private::ConversionError) -> Self {
-        PadlError::dev_err(PadlErrorCode::StdWebConversion(error))
-    }
-}
-
 impl From<serde_json::error::Error> for PadlError {
     fn from(error: serde_json::error::Error) -> Self {
         PadlError::dev_err(PadlErrorCode::JsonParseError(error))
@@ -197,34 +174,6 @@ impl From<serde_json::error::Error> for PadlError {
 impl From<url::ParseError> for PadlError {
     fn from(error: url::ParseError) -> Self {
         PadlError::dev_err(PadlErrorCode::UrlParseError(format!("{}", error)))
-    }
-}
-
-impl From<stdweb::web::error::Error> for PadlError {
-    fn from(error: stdweb::web::error::Error) -> Self {
-        PadlError::dev_err(PadlErrorCode::StdWebGenericError(error))
-    }
-}
-impl From<stdweb::Value> for PadlError {
-    fn from(val: stdweb::Value) -> Self {
-        let s: String = js! { return String(@{val}); }
-            .try_into()
-            .unwrap_or("Reading Browser Error Value failed".to_owned());
-        PadlError::dev_err(PadlErrorCode::BrowserError(s))
-    }
-}
-impl From<stdweb::web::error::SecurityError> for PadlError {
-    fn from(error: stdweb::web::error::SecurityError) -> Self {
-        PadlError::dev_err(PadlErrorCode::StdWebSecurityError(error))
-    }
-}
-impl From<AjaxError> for PadlError {
-    fn from(ajax: AjaxError) -> Self {
-        if let Some(e) = ajax.padl_error {
-            PadlError::dev_err(e)
-        } else {
-            PadlError::dev_err(PadlErrorCode::BrowserError(ajax.description))
-        }
     }
 }
 impl From<ErrorMessage> for PadlError {
@@ -250,6 +199,14 @@ impl From<specs::error::Error> for PadlError {
 impl From<&'static str> for PadlError {
     fn from(msg: &'static str) -> Self {
         PadlError::dev_err(PadlErrorCode::DevMsg(msg))
+    }
+}
+
+impl From<JsValue> for PadlError {
+    fn from(err: JsValue) -> Self {
+        let obj: Object = err.into();
+        let msg = obj.to_string().as_string().unwrap();
+        PadlError::dev_err(PadlErrorCode::BrowserError(msg))
     }
 }
 

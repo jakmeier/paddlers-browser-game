@@ -8,24 +8,18 @@
 //! All this is glued together by implementing quicksilver's State
 
 use crate::prelude::*;
+use crate::web_integration::ThreadHandler;
 use crate::{
     init::loading::LoadingFrame,
     web_integration::{start_drawing_thread, start_thread},
 };
-use crate::{net::game_master_api::RestApiState, web_integration::ThreadHandler};
-use paddle::utc_now;
 use paddle::*;
-use wasm_bindgen::{prelude::Closure, JsCast};
 
 use crate::game::*;
 use crate::gui::ui_state::*;
 use crate::specs::WorldExt;
-use paddle::quicksilver_compat::*;
 
-use std::{
-    rc::Rc,
-    sync::{Mutex, Once},
-};
+use std::sync::Once;
 static INIT: Once = Once::new();
 
 #[derive(Clone, Debug)]
@@ -37,42 +31,9 @@ pub enum Signal {
     NewReportCount(usize),       // Notification
 }
 
-// impl QuicksilverState {
-//     pub fn load(state: LoadingFrame) -> Self {
-//         Self::Loading(state)
-//     }
-// }
-// TODO TODO TODO
+// TODO: send events through nuts
 // impl State for QuicksilverState {
-//     fn update(&mut self, window: &mut Window) -> Result<()> {
-//         match self {
-//             Self::Loading(state) => {
-//                 let err = state.update_net();
-//                 state.queue_error(err);
-//                 self.try_finalize();
-//             }
-//             Self::Ready => nuts::publish(UpdateWorld::new(window)),
-
-//             Self::Empty => {
-//                 println!("Fatal error: No state");
-//             }
-//         }
-//         Ok(())
-//     }
-//     fn draw(&mut self, window: &mut Window) -> Result<()> {
-//         match self {
-//             Self::Loading(state) => {
-//                 if let Err(e) = state.draw_loading(window) {
-//                     nuts::publish(e);
-//                 }
-//             }
-//             Self::Ready => {
-//                 nuts::publish(DrawWorld::new(window));
-//             }
-//             Self::Empty => {}
-//         }
-//         Ok(())
-//     }
+//      ...
 //     fn event(&mut self, event: &Event, window: &mut Window) -> Result<()> {
 //         match self {
 //             Self::Empty => {}

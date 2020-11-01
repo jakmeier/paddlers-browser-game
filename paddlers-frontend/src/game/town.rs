@@ -11,7 +11,7 @@ mod temple_shop;
 mod town_context;
 mod town_frame;
 pub use default_shop::*;
-pub (crate) mod town_summary;
+pub(crate) mod town_summary;
 pub(crate) use temple_shop::*;
 pub(crate) use town_context::*;
 pub(crate) use town_frame::*;

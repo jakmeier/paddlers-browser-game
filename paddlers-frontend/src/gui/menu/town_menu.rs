@@ -209,11 +209,7 @@ impl TownMenuFrame<'_, '_> {
         DefaultShop::reload(state.town_world_mut());
         Ok(())
     }
-    pub fn signal(
-        &mut self,
-        state: &mut Game,
-        e: &Signal,
-    ) -> Result<(), PadlError> {
+    pub fn signal(&mut self, state: &mut Game, e: &Signal) -> Result<(), PadlError> {
         match e {
             Signal::ResourcesUpdated => {
                 self.bank_component.draw(

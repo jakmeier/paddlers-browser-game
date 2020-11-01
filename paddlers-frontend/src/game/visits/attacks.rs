@@ -2,7 +2,6 @@
 
 use crate::gui::utils::colors::LIGHT_BLUE;
 use crate::gui::z::*;
-use crate::net::game_master_api::RestApiState;
 use crate::net::state::current_village;
 use crate::prelude::*;
 use chrono::NaiveDateTime;
