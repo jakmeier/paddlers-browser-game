@@ -12,13 +12,7 @@ use paddle::{Domain, NutsCheck};
 use paddlers_shared_lib::prelude::VillageKey;
 use wasm_bindgen::prelude::*;
 
-use std::{
-    future::Future,
-    sync::{
-        atomic::{AtomicBool, Ordering},
-        mpsc::Sender,
-    },
-};
+use std::{future::Future, sync::mpsc::Sender};
 
 use crate::prelude::*;
 
@@ -28,7 +22,7 @@ pub enum NetMsg {
     Error(PadlError),
     Hobos(HobosQueryResponse, VillageKey),
     Leaderboard(usize, Vec<(String, i64)>),
-    Map(map_query::ResponseData, i32, i32),
+    Map(MapResponse, i32, i32),
     Player(PlayerInfo),
     VillageInfo(volatile_village_info_query::ResponseData),
     UpdateWorkerTasks(WorkerTasksResponse),
@@ -38,7 +32,7 @@ pub enum NetMsg {
 
 struct NetState {
     chan: Sender<NetMsg>,
-    logged_in: AtomicBool,
+    logged_in: bool,
     gql_state: GraphQlState,
 }
 
@@ -75,6 +69,11 @@ pub fn init_net(chan: Sender<NetMsg>) {
     RestApiState::init();
 }
 
+/// Initiates regular updates to sync with backend
+pub fn start_sync() {
+    NetState::start_working();
+}
+
 #[wasm_bindgen]
 /// Sets up continuous networking with the help of JS setTimeout
 /// Must be called from JS once the user is logged in
@@ -104,7 +103,7 @@ pub fn request_foreign_town(vid: VillageKey) {
 impl NetState {
     fn init(chan: Sender<NetMsg>) {
         let ns = NetState {
-            logged_in: AtomicBool::new(false),
+            logged_in: false,
             chan,
             gql_state: GraphQlState::new(),
         };
@@ -121,7 +120,8 @@ impl NetState {
         net_activity.subscribe(NetState::update_report_id);
     }
 
-    // For frequent updates
+    // For frequent updates.
+    // This is called every time NetworkUpdate is being published, which happens every NET_THREAD_TIMEOUT_MS once loading has completed.
     fn work(&mut self, _: &NetworkUpdate) {
         self.transfer_response(self.gql_state.attacks_query());
         self.transfer_response(self.gql_state.reports_query());
@@ -129,17 +129,23 @@ impl NetState {
         self.transfer_response(GraphQlState::player_info_query());
     }
 
+    pub fn start_working() {
+        let work_thread = start_thread(|| nuts::publish(NetworkUpdate), NET_THREAD_TIMEOUT_MS);
+        nuts::store_to_domain(&Domain::Network, work_thread);
+    }
+
     // Sends all requests out necessary for the client state to display a full game view including the home town
     fn request_client_state(&mut self, _: &RequestClientStateUpdate) {
         // TODO: Instead of forcing a request every time the 10s are too long, use something smarter.
         // E.g.: Once a second check what needs to be updated and then allow this list to be altered from outside
-        if self.logged_in.load(Ordering::Relaxed) {
+        if self.logged_in {
             self.transfer_response(GraphQlState::buildings_query());
             self.transfer_response(GraphQlState::workers_query());
             self.transfer_response(GraphQlState::hobos_query());
             self.transfer_response(GraphQlState::leaderboard_query());
             self.transfer_response(self.gql_state.attacks_query());
             self.transfer_response(GraphQlState::resource_query());
+            self.transfer_response(self.gql_state.reports_query());
             request_player_update();
         } else {
             let mut thread = crate::web_integration::create_thread(request_client_state);
@@ -155,7 +161,7 @@ impl NetState {
     }
 
     fn request_player_update(&mut self, _: &RequestPlayerUpdate) {
-        if self.logged_in.load(Ordering::Relaxed) {
+        if self.logged_in {
             self.transfer_response(GraphQlState::player_info_query());
         } else {
             let mut thread = crate::web_integration::create_thread(request_player_update);
@@ -177,9 +183,7 @@ impl NetState {
     }
 
     fn log_in(&mut self, _: &LoggedIn) {
-        self.logged_in.store(true, Ordering::Relaxed);
-        let work_thread = start_thread(|| nuts::publish(NetworkUpdate), NET_THREAD_TIMEOUT_MS);
-        nuts::store_to_domain(&Domain::Network, work_thread)
+        self.logged_in = true;
     }
 
     fn update_attack_id(&mut self, msg: &NewAttackId) {

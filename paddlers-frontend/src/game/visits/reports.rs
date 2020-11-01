@@ -1,9 +1,10 @@
+use crate::gui::sprites::*;
 use crate::gui::utils::colors::LIGHT_BLUE;
 use crate::gui::z::*;
 use crate::net::NetMsg;
 use crate::prelude::*;
-use crate::{game::leaderboard::doc, gui::sprites::*};
 use core::marker::PhantomData;
+use div::doc;
 use paddle::quicksilver_compat::{Col, Rectangle, Transform};
 use paddle::Window;
 use paddlers_shared_lib::prelude::VisitReportKey;
@@ -39,7 +40,7 @@ impl<'a, 'b> ReportFrame<'a, 'b> {
 
         let title = doc()?.create_element("h2").unwrap();
         title.set_text_content(Some("Mailbox"));
-        node.append_child(&title);
+        node.append_child(&title)?;
 
         Ok(ReportFrame {
             pane,
@@ -47,50 +48,56 @@ impl<'a, 'b> ReportFrame<'a, 'b> {
             _phantom: Default::default(),
         })
     }
-    fn add_report(&mut self, report: Report, sprites: &Sprites) {
-        let letter_node = doc().unwrap().create_element("div").unwrap();
-        letter_node.set_attribute("class", "letter").unwrap();
+    fn add_report(&mut self, report: Report, sprites: &Sprites) -> PadlResult<()> {
+        let letter_node = doc()?.create_element("div")?;
+        letter_node.set_attribute("class", "letter")?;
 
-        let text_node = doc().unwrap().create_element("p").unwrap();
+        let text_node = doc()?.create_element("p")?;
         text_node.set_text_content(Some(&self.letter_text(&report)));
-        letter_node.append_child(&text_node);
+        letter_node.append_child(&text_node)?;
 
         if report.karma > 0 {
             letter_node.append_child(&self.new_res_node(
                 report.karma,
                 SingleSprite::Karma,
                 sprites,
-            ));
+            ))?;
         }
         if report.feathers > 0 {
             letter_node.append_child(&self.new_res_node(
                 report.feathers,
                 SingleSprite::Feathers,
                 sprites,
-            ));
+            ))?;
         }
         if report.sticks > 0 {
             letter_node.append_child(&self.new_res_node(
                 report.sticks,
                 SingleSprite::Sticks,
                 sprites,
-            ));
+            ))?;
         }
         if report.logs > 0 {
-            letter_node.append_child(&self.new_res_node(report.logs, SingleSprite::Logs, sprites));
+            letter_node.append_child(&self.new_res_node(
+                report.logs,
+                SingleSprite::Logs,
+                sprites,
+            ))?;
         }
 
-        let button_node = doc().unwrap().create_element("div").unwrap();
-        button_node.set_attribute("class", "letter-button").unwrap();
+        let button_node = doc()?.create_element("div")?;
+        button_node.set_attribute("class", "letter-button")?;
         button_node.set_text_content(Some(&"Collect"));
         self.add_listener(&button_node, report, letter_node.clone());
 
-        letter_node.append_child(&button_node);
+        letter_node.append_child(&button_node)?;
 
-        self.table.append_child(&letter_node);
+        self.table.append_child(&letter_node)?;
+        Ok(())
     }
+    #[allow(unused_variables)]//TODO
     fn add_listener(&self, button_node: &Element, report: Report, parent: Element) {
-        let table_ref = self.table.clone();
+        let _table_ref = self.table.clone();
 
         // TODO XXX TODO
         // TODO XXX TODO
@@ -116,8 +123,8 @@ impl<'a, 'b> ReportFrame<'a, 'b> {
         num_node.set_text_content(Some(&n.to_string()));
         let img = sprites.new_image_node(SpriteIndex::Simple(s));
 
-        node.append_child(&num_node);
-        node.append_child(&Node::from(img));
+        node.append_child(&num_node).unwrap();
+        node.append_child(&Node::from(img)).unwrap();
         node
     }
     fn letter_text(&self, report: &Report) -> &'static str {
@@ -146,7 +153,7 @@ impl<'a, 'b> ReportFrame<'a, 'b> {
                             sticks: r.sticks,
                         },
                         &state.sprites,
-                    )
+                    )?;
                 }
             }
             _ => {}

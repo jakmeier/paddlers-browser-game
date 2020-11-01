@@ -3,7 +3,6 @@ use crate::game::units::hobos::insert_hobos;
 use crate::game::{
     components::*, units::worker_factory::create_worker_entities, units::workers::Worker,
 };
-use crate::init::loading::LoadingFrame;
 use crate::init::quicksilver_integration::Signal;
 use crate::net::graphql::query_types::WorkerResponse;
 use crate::net::graphql::query_types::{
@@ -54,6 +53,9 @@ pub fn loading_update_net(
             }
             NetMsg::Leaderboard(offset, list) => {
                 progress.add_progress::<NetMsg>(NetMsg::Leaderboard(offset, list));
+            }
+            NetMsg::Reports(data) => {
+                progress.add_progress(data);
             }
             other => {
                 println!(

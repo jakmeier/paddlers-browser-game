@@ -112,6 +112,10 @@ impl Game {
         game.load_story_state()?;
         game.update_temple()?;
 
+        nuts::publish(NetMsg::Reports(game_data.reports));
+
+        crate::net::start_sync();
+
         Ok(game)
     }
 

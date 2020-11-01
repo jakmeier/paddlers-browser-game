@@ -79,7 +79,6 @@ pub enum PadlErrorCode {
     SpecsError(specs::error::Error),
     EventPoolSend(SendError<GameEvent>),
     RestAPI(String),
-    EmptyGraphQLData(&'static str),
     InvalidGraphQLData(&'static str),
     GraphQlNoDataOrErrors,
     GraphQlGenericResponseError(String),
@@ -90,7 +89,6 @@ pub enum PadlErrorCode {
     DivError(String),
     JsonParseError(serde_json::error::Error),
     UrlParseError(String),
-    NoDataFromBrowser(&'static str),
     BrowserError(String),
     DialogueEmpty,
     AuthorizationRequired,
@@ -132,9 +130,6 @@ impl fmt::Display for PadlErrorCode {
             PadlErrorCode::SpecsError(component) => write!(f, "Specs error: {}", component),
             PadlErrorCode::EventPoolSend(e) => write!(f, "EventPool send error: {}", e),
             PadlErrorCode::RestAPI(msg) => write!(f, "A REST API error occurred: {}", msg),
-            PadlErrorCode::EmptyGraphQLData(data_set) => {
-                write!(f, "GraphQL query result has no data for: {}", data_set)
-            }
             PadlErrorCode::InvalidGraphQLData(reason) => {
                 write!(f, "GraphQL query result has invalid data: {}", reason)
             }
@@ -156,9 +151,6 @@ impl fmt::Display for PadlErrorCode {
             }
             PadlErrorCode::UrlParseError(cause) => {
                 write!(f, "Error while parsing browser URL: {}", cause)
-            }
-            PadlErrorCode::NoDataFromBrowser(data) => {
-                write!(f, "Could not read data from browser: {}", data)
             }
             PadlErrorCode::BrowserError(s) => write!(f, "Unexpected browser error: {}", s),
             PadlErrorCode::DialogueEmpty => write!(f, "No scene loaded in dialogue"),

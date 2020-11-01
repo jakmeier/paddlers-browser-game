@@ -11,7 +11,7 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 paddlers-shared-lib = { path = "../paddlers-shared-lib", features = ["enum_utils", "game_mechanics", "web"] }
-div = "0.2"
+div = {path = "../div-rs" }
 nuts = { path = "../nuts" } # rev = "edfdc66c251407361cc3b2e5bb9c875fb87768c0"
 # nuts = { git = "https://github.com/jakmeier/nuts", rev = "158e3fefa8139b2f1f33cb6c4a460c8ec1efa6c7" }
 paddle = { path = "../paddle" }

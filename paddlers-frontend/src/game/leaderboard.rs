@@ -3,7 +3,7 @@ use crate::gui::utils::colors::DARK_BLUE;
 use crate::gui::z::*;
 use crate::net::NetMsg;
 use crate::prelude::*;
-use div::DivError;
+use div::doc;
 use paddle::quicksilver_compat::{Col, Rectangle, Transform};
 use paddle::Frame;
 use paddle::Window as QuicksilverWindow;
@@ -40,23 +40,23 @@ impl LeaderboardFrame<'_, '_> {
     }
     pub fn clear(&self) -> PadlResult<()> {
         while let Some(child) = self.table.last_child() {
-            self.table.remove_child(&child);
+            self.table.remove_child(&child)?;
         }
         Ok(())
     }
 
     pub fn insert_row(&self, rank: usize, name: &str, karma: i64) -> PadlResult<()> {
-        let node = doc()?.create_element("div").unwrap();
+        let node = doc()?.create_element("div")?;
         node.set_text_content(Some(&rank.to_string()));
-        self.table.append_child(&node);
+        self.table.append_child(&node)?;
 
-        let node = doc()?.create_element("div").unwrap();
+        let node = doc()?.create_element("div")?;
         node.set_text_content(Some(&name));
-        self.table.append_child(&node);
+        self.table.append_child(&node)?;
 
-        let node = doc()?.create_element("div").unwrap();
+        let node = doc()?.create_element("div")?;
         node.set_text_content(Some(&karma.to_string()));
-        self.table.append_child(&node);
+        self.table.append_child(&node)?;
 
         Ok(())
     }
@@ -105,17 +105,4 @@ impl<'a, 'b> Frame for LeaderboardFrame<'a, 'b> {
         self.pane.hide()?;
         Ok(())
     }
-}
-
-// fn insert_h3(node: &Node, text: &str) {
-//     let inner = document().create_element("h3").unwrap();
-//     inner.set_text_content(text);
-//     node.append_child(&inner);
-//     std::mem::drop(inner);
-// }
-
-// TODO: replace with pub oic div version after update
-pub(crate) fn doc() -> Result<web_sys::Document, DivError> {
-    let window = web_sys::window().ok_or(DivError::MissingWindow)?;
-    window.document().ok_or(DivError::MissingDocument)
 }

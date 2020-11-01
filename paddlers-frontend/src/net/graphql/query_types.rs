@@ -1,7 +1,7 @@
 use crate::game::components::NetObj;
 use crate::prelude::*;
 use chrono::NaiveDateTime;
-use graphql_client::{GraphQLQuery, Response};
+use graphql_client::GraphQLQuery;
 use paddlers_shared_lib::graphql_types;
 use paddlers_shared_lib::models::*;
 use specs::prelude::*;
@@ -69,7 +69,7 @@ pub type VolatileVillageInfoResponse = volatile_village_info_query::ResponseData
     query_path = "api/queries/village_units_query.graphql"
 )]
 pub struct VillageUnitsQuery;
-pub type VillageUnitsResponse = Response<village_units_query::ResponseData>;
+pub type VillageUnitsResponse = village_units_query::ResponseData;
 pub type WorkerResponse = Vec<village_units_query::VillageUnitsQueryVillageWorkers>;
 #[allow(dead_code)]
 pub type VillageUnitsTask = village_units_query::VillageUnitsQueryVillageWorkersTasks;
@@ -112,7 +112,7 @@ impl Into<AbilityType> for &VillageUnitsAbilityType {
     query_path = "api/queries/worker_tasks_query.graphql"
 )]
 pub struct WorkerTasksQuery;
-pub type WorkerTasksRawResponse = Response<worker_tasks_query::ResponseData>;
+pub type WorkerTasksRawResponse = worker_tasks_query::ResponseData;
 pub type WorkerTasksResponse = worker_tasks_query::WorkerTasksQueryWorker;
 #[allow(dead_code)]
 pub type WorkerTaskEx = worker_tasks_query::WorkerTasksQueryWorkerTasks;
@@ -165,7 +165,7 @@ pub type PlayerStoryState = player_query::StoryState;
     query_path = "api/queries/map_query.graphql"
 )]
 pub struct MapQuery;
-pub type MapResponse = Response<map_query::ResponseData>;
+pub type MapResponse = map_query::ResponseData;
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -269,5 +269,4 @@ impl Into<StoryState> for PlayerStoryState {
     query_path = "api/queries/reports_query.graphql"
 )]
 pub struct ReportsQuery;
-pub type ReportsRawResponse = Response<reports_query::ResponseData>;
 pub type ReportsResponse = reports_query::ResponseData;

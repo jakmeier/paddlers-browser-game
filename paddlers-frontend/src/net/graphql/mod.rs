@@ -126,7 +126,3 @@ pub async fn own_villages_query() -> PadlResult<Vec<VillageKey>> {
         .map(|v| VillageKey(v.id as i64))
         .collect())
 }
-
-fn gql_empty_error<R>(data_set: &'static str) -> PadlResult<R> {
-    PadlErrorCode::EmptyGraphQLData(data_set).dev()
-}

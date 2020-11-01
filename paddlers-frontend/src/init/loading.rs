@@ -1,9 +1,12 @@
-use crate::net::graphql::query_types::{
-    AttacksResponse, BuildingsResponse, HobosQueryResponse, VolatileVillageInfoResponse,
+use crate::net::graphql::{
+    query_types::{
+        AttacksResponse, BuildingsResponse, HobosQueryResponse, VolatileVillageInfoResponse,
+    },
+    ReportsResponse,
 };
 use crate::{game::game_event_manager::load_game_event_manager, prelude::PadlError};
-use crate::{game::leaderboard::doc, gui::input::UiView};
 use crate::{game::net_receiver::loading_update_net, init::quicksilver_integration::Signal};
+use crate::{gui::input::UiView, prelude::PadlErrorCode};
 use nuts::LifecycleStatus;
 use paddle::{
     graphics::Image, graphics::ImageLoader, ErrorMessage, Frame, LoadScheduler, LoadedData,
@@ -42,6 +45,7 @@ pub struct GameLoadingData {
     pub hobos_response: HobosQueryResponse,
     pub attacking_hobos: AttacksResponse,
     pub village_info: VolatileVillageInfoResponse,
+    pub reports: ReportsResponse,
 }
 
 impl LoadingFrame {
@@ -52,9 +56,10 @@ impl LoadingFrame {
         });
         aid.on_delete_domained(|loading_state, domain| {
             let loaded_data = std::mem::take(domain.get_mut::<LoadedData>());
-            loading_state.finalize(loaded_data);
+            loading_state.finalize(loaded_data).nuts_check();
+            Game::register_in_nuts();
         });
-        aid.subscribe_domained(move |loading_state, domain, msg: &LoadingDone| {
+        aid.subscribe(move |_loading_state, _msg: &LoadingDone| {
             aid.set_status(LifecycleStatus::Deleted);
         });
         let draw_handle = super::quicksilver_integration::start_drawing();
@@ -66,13 +71,18 @@ impl LoadingFrame {
         root_id: &str,
         net_chan: Receiver<NetMsg>,
     ) -> PadlResult<()> {
-        let document = doc()?;
-        let root = document.get_element_by_id(root_id);
-        let canvas = document
+        let document = div::doc()?;
+        let root = document
+            .get_element_by_id(root_id)
+            .ok_or(PadlError::dev_err(PadlErrorCode::DevMsg(
+                "Root element not found by id.",
+            )))?;
+        let canvas: HtmlCanvasElement = document
             .create_element("canvas")
             .map_err(|_| "canvas creation failed")?
             .dyn_into()
             .unwrap();
+        root.append_child(&canvas)?;
         Self::start_with_canvas(resolution, canvas, net_chan);
         Ok(())
     }
@@ -101,7 +111,8 @@ impl LoadingFrame {
             .with_manually_reported::<BuildingsResponse>("Construct buildings")
             .with_manually_reported::<HobosQueryResponse>("Summon non-working Paddlers")
             .with_manually_reported::<AttacksResponse>("Summon visitors")
-            .with_manually_reported::<VolatileVillageInfoResponse>("Gather village news");
+            .with_manually_reported::<VolatileVillageInfoResponse>("Gather village news")
+            .with_manually_reported::<ReportsResponse>("Gather village news");
 
         load_manager.attach_to_domain();
 
@@ -149,25 +160,13 @@ impl LoadingFrame {
 
         draw_progress_bar(window, &mut self.preload_float, area, progress, &msg)
     }
-    pub fn queue_error(&mut self, res: PadlResult<()>) {
-        if let Err(e) = res {
-            nuts::publish(e);
-        }
-    }
     fn finalize(self, mut loaded_data: LoadedData) -> PadlResult<()> {
         let images = loaded_data.extract_vec()?;
         let catalog = loaded_data.extract()?;
         let (resolution, net_chan) = (self.resolution, self.net_chan);
         let sprites = Sprites::new(images);
 
-        let game_data = GameLoadingData::from_boxes(
-            loaded_data.extract()?,
-            loaded_data.extract()?,
-            loaded_data.extract()?,
-            loaded_data.extract()?,
-            loaded_data.extract()?,
-            loaded_data.extract()?,
-        );
+        let game_data = GameLoadingData::try_from_loaded_data(&mut loaded_data)?;
 
         let viewer_data: Vec<NetMsg> = *loaded_data.extract()?;
 
@@ -341,21 +340,15 @@ impl Frame for LoadingFrame {
 }
 
 impl GameLoadingData {
-    pub fn from_boxes(
-        player_info: Box<PlayerInfo>,
-        worker_response: Box<WorkerResponse>,
-        buildings_response: Box<BuildingsResponse>,
-        hobos_response: Box<HobosQueryResponse>,
-        attacking_hobos: Box<AttacksResponse>,
-        village_info: Box<VolatileVillageInfoResponse>,
-    ) -> Self {
-        Self {
-            player_info: *player_info,
-            worker_response: *worker_response,
-            buildings_response: *buildings_response,
-            hobos_response: *hobos_response,
-            attacking_hobos: *attacking_hobos,
-            village_info: *village_info,
-        }
+    pub fn try_from_loaded_data(loaded_data: &mut LoadedData) -> PadlResult<Self> {
+        Ok(Self {
+            player_info: *loaded_data.extract()?,
+            worker_response: *loaded_data.extract()?,
+            buildings_response: *loaded_data.extract()?,
+            hobos_response: *loaded_data.extract()?,
+            attacking_hobos: *loaded_data.extract()?,
+            village_info: *loaded_data.extract()?,
+            reports: *loaded_data.extract()?,
+        })
     }
 }

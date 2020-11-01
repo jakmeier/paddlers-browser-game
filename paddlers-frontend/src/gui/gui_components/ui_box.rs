@@ -233,7 +233,6 @@ impl UiBox {
 
     pub fn draw_hover_info(
         &mut self,
-        window: &Window,
         res_comp: &mut ResourcesComponent,
         area: &Rectangle,
         mouse_pos: Vector,

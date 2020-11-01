@@ -1,7 +1,7 @@
-use crate::game::leaderboard::doc;
 use crate::gui::sprites::paths::SPRITE_PATHS;
 use crate::gui::sprites::{SpriteSet, WithSprite};
 use crate::prelude::*;
+use div::doc;
 use paddle::quicksilver_compat::Rectangle;
 use web_sys::{Element, HtmlElement, HtmlImageElement};
 
@@ -43,12 +43,12 @@ impl ResourcesComponent {
         )?;
         self.parent.remove_all_children();
         for (res, n) in resis {
-            let new_node = Self::new_resource_element(*res, *n);
-            self.parent.append_child(&new_node);
+            let new_node = Self::new_resource_element(*res, *n)?;
+            self.parent.append_child(&new_node)?;
         }
         Ok(())
     }
-    fn new_resource_element(res: ResourceType, n: i64) -> Element {
+    fn new_resource_element(res: ResourceType, n: i64) -> PadlResult<Element> {
         let node = doc().unwrap().create_element("span").unwrap();
         let number = doc().unwrap().create_text_node(&n.to_string());
         let img = HtmlImageElement::new().unwrap();
@@ -60,8 +60,8 @@ impl ResourcesComponent {
         let img_src = SPRITE_PATHS[i];
         img.set_src(img_src);
 
-        node.append_child(&number);
-        node.append_child(&img);
-        node
+        node.append_child(&number)?;
+        node.append_child(&img)?;
+        Ok(node)
     }
 }

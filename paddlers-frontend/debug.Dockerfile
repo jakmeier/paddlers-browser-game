@@ -7,6 +7,7 @@ COPY ./paddlers-shared-lib/src ./paddlers-shared-lib/src
 COPY ./paddlers-frontend/src ./paddlers-frontend/src
 COPY ./paddlers-frontend/api ./paddlers-frontend/api
 COPY ./nuts ./nuts
+COPY ./div-rs ./div-rs
 COPY ./paddle ./paddle
 COPY ./www ./www
 RUN cd paddlers-frontend; wasm-pack build

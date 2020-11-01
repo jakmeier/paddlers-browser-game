@@ -15,14 +15,11 @@ pub struct RestApiState {
 }
 pub struct UpdateRestApi;
 
-pub struct HttpBuyProphet;
-pub struct HttpCollectReward;
 pub struct HttpCreatePlayer;
 pub struct HttpDeleteBuilding {
     pub idx: (usize, usize),
     pub village: VillageKey,
 }
-pub struct HttpInvite;
 pub struct HttpNotifyVisitorSatisfied {
     pub hobo: HoboKey,
 }

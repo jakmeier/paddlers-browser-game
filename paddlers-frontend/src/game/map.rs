@@ -9,9 +9,12 @@ use crate::net::authentication::keycloak_preferred_name;
 use map_position::*;
 use map_segment::MapSegment;
 use map_tesselation::*;
-use paddle::quicksilver_compat::{Col, Mesh, Rectangle, Transform, Vector};
 use paddle::FitStrategy;
 use paddle::Window;
+use paddle::{
+    quicksilver_compat::{Col, Mesh, Rectangle, Transform, Vector},
+    NutsCheck,
+};
 use specs::prelude::*;
 
 pub(crate) use map_frame::MapFrame;
@@ -147,7 +150,8 @@ impl<'a> GlobalMap<'a> {
                 Z_BUILDINGS,
                 FitStrategy::Center,
                 self.view_transform(),
-            );
+            )
+            .nuts_check();
         }
     }
 

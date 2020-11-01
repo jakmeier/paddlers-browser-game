@@ -9,10 +9,7 @@
 
 use crate::prelude::*;
 use crate::web_integration::ThreadHandler;
-use crate::{
-    init::loading::LoadingFrame,
-    web_integration::{start_drawing_thread, start_thread},
-};
+use crate::web_integration::{start_drawing_thread, start_thread};
 use paddle::*;
 
 use crate::game::*;
@@ -56,14 +53,14 @@ struct GameActivity;
 impl Game {
     pub fn register_in_nuts() {
         let aid = nuts::new_domained_activity(GameActivity, &Domain::Frame);
-        aid.subscribe_domained_mut(|_, domain, msg: &mut UpdateWorld| {
+        aid.subscribe_domained_mut(|_, domain, _msg: &mut UpdateWorld| {
             let game: &mut Game = domain.try_get_mut().expect("Game missing");
             if let Err(e) = game.update() {
                 let err: PadlError = e.into();
                 nuts::publish(err);
             }
         });
-        aid.subscribe_domained_mut(|_, domain, msg: &mut DrawWorld| {
+        aid.subscribe_domained_mut(|_, domain, _msg: &mut DrawWorld| {
             let (game, window) = domain.try_get_2_mut::<Game, Window>();
             let (game, window) = (game.expect("Game missing"), window.expect("Window missing"));
             if let Err(e) = game.draw(window) {

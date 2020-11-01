@@ -4,3 +4,6 @@
 [submodule "nuts"]
 	path = nuts
 	url = https://github.com/jakmeier/nuts
+[submodule "div-rs"]
+	path = div-rs
+	url = git@github.com:jakmeier/div-rs.git

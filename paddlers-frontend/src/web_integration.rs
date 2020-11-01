@@ -79,7 +79,7 @@ pub fn start_thread(f: impl Fn() + 'static, timeout_ms: i32) -> PadlResult<Threa
 pub fn create_thread(f: impl Fn() + 'static) -> ThreadHandler {
     let function = Closure::wrap(Box::new(f) as Box<dyn Fn()>);
     ThreadHandler {
-        typ: ThreadType::Interval,
+        typ: ThreadType::Unscheduled,
         handle: 0,
         function,
     }

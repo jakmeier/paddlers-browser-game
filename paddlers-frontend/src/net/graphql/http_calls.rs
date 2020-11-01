@@ -35,7 +35,7 @@ pub(super) async fn http_read_resources(
 
 pub(super) async fn http_read_workers(
     village_id: VillageKey,
-) -> PadlResult<village_units_query::ResponseData> {
+) -> PadlResult<VillageUnitsResponse> {
     let request_body = VillageUnitsQuery::build_query(village_units_query::Variables {
         village_id: village_id.num(),
     });
@@ -54,12 +54,12 @@ pub(super) async fn http_read_hobos(
 
 pub(super) async fn http_read_worker_tasks(
     unit_id: i64,
-) -> PadlResult<worker_tasks_query::ResponseData> {
+) -> PadlResult<WorkerTasksRawResponse> {
     let request_body =
         WorkerTasksQuery::build_query(worker_tasks_query::Variables { worker_id: unit_id });
     ajax::gql_query(&graphql_url()?, &request_body).await
 }
-pub(super) async fn http_read_map(low_x: i64, high_x: i64) -> PadlResult<map_query::ResponseData> {
+pub(super) async fn http_read_map(low_x: i64, high_x: i64) -> PadlResult<MapResponse> {
     let request_body = MapQuery::build_query(map_query::Variables { low_x, high_x });
     ajax::gql_query(&graphql_url()?, &request_body).await
 }

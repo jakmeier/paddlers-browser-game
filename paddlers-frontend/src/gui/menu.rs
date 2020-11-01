@@ -190,7 +190,7 @@ impl Game {
         ));
         table.push(total_aura_details(self.town().ambience()));
         let shop = &mut self.town_context.world().write_resource::<DefaultShop>();
-        Self::draw_shop_prices(window, &mut area, &mut shop.ui, res_comp, self.mouse.pos())?;
+        Self::draw_shop_prices(&mut area, &mut shop.ui, res_comp, self.mouse.pos())?;
 
         table.push(TableRow::InteractiveArea(&mut shop.ui));
 
@@ -208,7 +208,6 @@ impl Game {
         )
     }
     fn draw_shop_prices(
-        window: &mut Window,
         area: &mut Rectangle,
         ui: &mut UiBox,
         res_comp: &mut ResourcesComponent,
@@ -217,7 +216,7 @@ impl Game {
         let price_tag_h = 50.0;
         let (shop_area, price_tag_area) = area.cut_horizontal(area.height() - price_tag_h);
         *area = shop_area;
-        ui.draw_hover_info(window, res_comp, &price_tag_area, mouse_pos)?;
+        ui.draw_hover_info(res_comp, &price_tag_area, mouse_pos)?;
         Ok(())
     }
 }
@@ -369,7 +368,7 @@ pub fn draw_town_entity_details_table(
     }
 
     if let Some(ui) = ui_menu.get_mut(e) {
-        Game::draw_shop_prices(window, &mut area, &mut ui.ui, res_comp, mouse_pos)?;
+        Game::draw_shop_prices(&mut area, &mut ui.ui, res_comp, mouse_pos)?;
         table.push(TableRow::InteractiveArea(&mut ui.ui));
     }
 
