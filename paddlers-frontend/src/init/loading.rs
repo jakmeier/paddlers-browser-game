@@ -64,6 +64,7 @@ impl LoadingFrame {
         });
         let draw_handle = super::quicksilver_integration::start_drawing();
         let update_handle = super::quicksilver_integration::start_updating();
+        // Dropping the handles would delete and stop the threads, hence they are store in the domain.
         nuts::store_to_domain(&Domain::Frame, (draw_handle, update_handle));
     }
     pub fn start(
@@ -158,7 +159,9 @@ impl LoadingFrame {
         let ph = r.progress_bar_area_h();
         let area = Rectangle::new((w * 0.1, y), (w * 0.8, ph));
 
-        draw_progress_bar(window, &mut self.preload_float, area, progress, &msg)
+        draw_progress_bar(window, &mut self.preload_float, area, progress, &msg)?;
+        window.flush()?;
+        Ok(())
     }
     fn finalize(self, mut loaded_data: LoadedData) -> PadlResult<()> {
         let images = loaded_data.extract_vec()?;

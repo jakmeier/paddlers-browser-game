@@ -42,7 +42,7 @@ pub enum Signal {
 // }
 
 pub fn start_drawing() -> PadlResult<ThreadHandler> {
-    start_drawing_thread(|| nuts::publish(DrawWorld::new()))
+    start_drawing_thread(|t| nuts::publish(DrawWorld::new(t)))
 }
 
 pub fn start_updating() -> PadlResult<ThreadHandler> {
@@ -60,7 +60,7 @@ impl Game {
                 nuts::publish(err);
             }
         });
-        aid.subscribe_domained_mut(|_, domain, _msg: &mut DrawWorld| {
+        aid.subscribe_domained(|_, domain, _msg: &DrawWorld| {
             let (game, window) = domain.try_get_2_mut::<Game, Window>();
             let (game, window) = (game.expect("Game missing"), window.expect("Window missing"));
             if let Err(e) = game.draw(window) {
