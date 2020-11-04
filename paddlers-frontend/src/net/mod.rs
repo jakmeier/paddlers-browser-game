@@ -17,14 +17,14 @@ use std::{future::Future, sync::mpsc::Sender};
 use crate::prelude::*;
 
 pub enum NetMsg {
-    Attacks(attacks_query::ResponseData),
-    Buildings(buildings_query::ResponseData),
+    Attacks(AttacksResponse),
+    Buildings(BuildingsResponse),
     Error(PadlError),
     Hobos(HobosQueryResponse, VillageKey),
     Leaderboard(usize, Vec<(String, i64)>),
     Map(MapResponse, i32, i32),
     Player(PlayerInfo),
-    VillageInfo(volatile_village_info_query::ResponseData),
+    VillageInfo(VolatileVillageInfoResponse),
     UpdateWorkerTasks(WorkerTasksResponse),
     Workers(WorkerResponse, VillageKey),
     Reports(ReportsResponse),
@@ -150,7 +150,7 @@ impl NetState {
         } else {
             let mut thread = crate::web_integration::create_thread(request_client_state);
             thread.set_timeout(50).nuts_check();
-            nuts::store_to_domain(&Domain::Network, thread);
+            nuts::store_to_domain(&Domain::Network, (thread,));
         }
     }
 
@@ -210,14 +210,6 @@ impl NetState {
             sender.send(netmsg).expect("Transferring data to game");
         });
     }
-}
-
-fn spawn_future(future: impl Future<Output = PadlResult<()>> + 'static) {
-    wasm_bindgen_futures::spawn_local(async {
-        if let Err(err) = future.await {
-            nuts::publish(err);
-        }
-    });
 }
 
 impl std::fmt::Debug for NetMsg {

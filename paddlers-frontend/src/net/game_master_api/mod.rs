@@ -71,7 +71,7 @@ impl RestApiState {
             &format!("{}/shop/building", self.game_master_url),
             &msg,
         );
-        super::spawn_future(future);
+        spawn_future(future);
     }
 
     fn http_delete_building(&mut self, input: HttpDeleteBuilding) {
@@ -85,7 +85,7 @@ impl RestApiState {
             &format!("{}/shop/building/delete", self.game_master_url),
             &msg,
         );
-        super::spawn_future(future);
+        spawn_future(future);
     }
 
     fn http_buy_prophet(&mut self, msg: ProphetPurchase) {
@@ -96,7 +96,7 @@ impl RestApiState {
             // TODO: Also update hobos afterwards, not only player info...
             Ok(())
         };
-        super::spawn_future(future);
+        spawn_future(future);
     }
 
     fn http_overwrite_tasks(&mut self, msg: TaskList) {
@@ -106,12 +106,12 @@ impl RestApiState {
             crate::net::request_worker_tasks_update(msg.worker_id.num());
             Ok(())
         };
-        super::spawn_future(future);
+        spawn_future(future);
     }
 
     pub fn http_send_statistics(&mut self, msg: FrontendRuntimeStatistics) {
         let future = ajax::fetch_json("POST", &format!("{}/stats", &self.game_master_url), &msg);
-        super::spawn_future(future);
+        spawn_future(future);
     }
 
     fn http_create_player(&mut self, _: HttpCreatePlayer) {
@@ -125,7 +125,7 @@ impl RestApiState {
                 crate::net::request_client_state();
                 Ok(())
             };
-            super::spawn_future(future);
+            spawn_future(future);
             SENT_PLAYER_CREATION.store(true, std::sync::atomic::Ordering::Relaxed)
         } else {
             println!("NOT Sending create player");
@@ -138,7 +138,7 @@ impl RestApiState {
             &format!("{}/attacks/create", self.game_master_url),
             &msg,
         );
-        super::spawn_future(future);
+        spawn_future(future);
     }
 
     fn http_invite(&mut self, msg: InvitationDescriptor) {
@@ -147,7 +147,7 @@ impl RestApiState {
             &format!("{}/attacks/invite", self.game_master_url),
             &msg,
         );
-        super::spawn_future(future);
+        spawn_future(future);
     }
 
     fn http_notify_visitor_satisfied(&mut self, msg: HttpNotifyVisitorSatisfied) {
@@ -159,7 +159,7 @@ impl RestApiState {
             ),
             &msg.hobo,
         );
-        super::spawn_future(future);
+        spawn_future(future);
     }
 
     fn http_update_story_state(&mut self, msg: StoryStateTransition) {
@@ -168,7 +168,7 @@ impl RestApiState {
             &format!("{}/story/transition", &self.game_master_url),
             &msg,
         );
-        super::spawn_future(future);
+        spawn_future(future);
     }
 
     fn http_collect_reward(&mut self, msg: ReportCollect) {
@@ -177,6 +177,14 @@ impl RestApiState {
             &format!("{}/report/collect", &self.game_master_url),
             &msg,
         );
-        super::spawn_future(future);
+        spawn_future(future);
     }
+}
+
+fn spawn_future(future: impl std::future::Future<Output = PadlResult<()>> + 'static) {
+    wasm_bindgen_futures::spawn_local(async {
+        if let Err(err) = future.await {
+            nuts::publish(err);
+        }
+    });
 }

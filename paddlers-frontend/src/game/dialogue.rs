@@ -235,7 +235,7 @@ impl<'a, 'b> Frame for DialogueFrame<'a, 'b> {
     ) -> Result<(), Self::Error> {
         self.text_provider.reset();
         let resolution = *state.world.read_resource::<ScreenResolution>();
-        let main_area = Rectangle::new_sized(window.project() * window.screen_size());
+        let main_area = Rectangle::new_sized(window.project() * window.browser_region().size());
         self.draw_background(&mut state.sprites, window, main_area, resolution);
         self.draw_image_with_text_bubble(&mut state.sprites, window, self.image)?;
         self.draw_active_area(

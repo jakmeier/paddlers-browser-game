@@ -16,9 +16,6 @@ use crate::game::*;
 use crate::gui::ui_state::*;
 use crate::specs::WorldExt;
 
-use std::sync::Once;
-static INIT: Once = Once::new();
-
 #[derive(Clone, Debug)]
 /// Signals are a way to broadcast events for event listeners across views.
 pub enum Signal {
@@ -95,10 +92,6 @@ impl Game {
     fn draw(&mut self, window: &mut Window) -> PadlResult<()> {
         #[cfg(feature = "dev_view")]
         self.start_draw();
-
-        INIT.call_once(|| {
-            self.initialize_with_window(window);
-        });
 
         // TODO (optimization): Refactor to make this call event-based
         if self.total_updates % 50 == 0 {

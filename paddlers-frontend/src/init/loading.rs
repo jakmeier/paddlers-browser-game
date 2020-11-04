@@ -92,8 +92,7 @@ impl LoadingFrame {
         canvas: HtmlCanvasElement,
         net_chan: Receiver<NetMsg>,
     ) {
-        crate::net::request_client_state();
-        let canvas = Window::new(canvas).expect("Failed creating window");
+        let canvas = Window::new(canvas, resolution.pixels()).expect("Failed creating window");
         ImageLoader::register(canvas.clone_webgl());
         nuts::store_to_domain(&Domain::Frame, canvas);
         let mut images = vec![];
@@ -152,6 +151,9 @@ impl LoadingFrame {
     //     Ok(())
     // }
     fn draw_progress(&mut self, window: &mut Window, progress: f32, msg: &str) -> PadlResult<()> {
+        // TODO (optimization): Refactor to make this call event-based
+        crate::window::adapt_window_size(window)?;
+
         window.clear(DARK_GREEN);
         let r = self.resolution;
         let w = r.pixels().0;

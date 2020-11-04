@@ -112,19 +112,14 @@ impl Game {
         game.load_story_state()?;
         game.update_temple()?;
 
+        game.load_resolution();
+        game.init_map();
+
         nuts::publish(NetMsg::Reports(game_data.reports));
 
         crate::net::start_sync();
 
         Ok(game)
-    }
-
-    /// Called at the first draw loop iteration (the first time quicksilver leaks access to it)
-    pub fn initialize_with_window(&mut self, window: &mut Window) {
-        self.load_resolution();
-        self.init_map();
-        let err = crate::window::adapt_window_size(window);
-        self.check(err);
     }
 
     pub fn main_update_loop(&mut self) -> PadlResult<()> {
@@ -136,7 +131,7 @@ impl Game {
         // TODO: remove dead units
         // if self.total_updates % 300 == 15 {
         //     self.reaper(&Rectangle::new_sized(
-        //         window.project() * window.screen_size(),
+        //         window.project() * window.browser_region().size(),
         //     ));
         // }
         self.world.maintain();

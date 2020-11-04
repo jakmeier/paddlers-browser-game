@@ -33,7 +33,7 @@ impl<'a, 'b> Frame for MapFrame<'a, 'b> {
             (0, 0),
             (
                 ui_state.menu_box_area.x(),
-                (window.project() * window.screen_size()).y,
+                (window.project() * window.browser_region().size()).y,
             ),
         );
         let (sprites, mut map) = (

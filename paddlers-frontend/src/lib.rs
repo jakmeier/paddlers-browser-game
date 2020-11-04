@@ -32,6 +32,7 @@ use wasm_bindgen::prelude::wasm_bindgen;
 
 #[wasm_bindgen]
 pub fn main() {
+    /* Start with most essential setup, which should not take a lot of time */
     setup_wasm();
     let version = env!("CARGO_PKG_VERSION");
     println!("Paddlers {}", version);
@@ -46,12 +47,17 @@ pub fn main() {
     paddle::TextBoard::init();
     crate::logging::init_error_handling();
 
-    // Set up loading state with interfaces to networking
+    /* Now load the actual game */
+    // Timing is key: network state should be registered in Nuts before rest of the game is loaded.
     let (net_sender, net_receiver) = channel();
+    net::init_net(net_sender);
+    
     init::loading::LoadingFrame::start(resolution, "game-root", net_receiver)
         .expect("Failed loading.");
-    // Initialize networking
-    net::init_net(net_sender);
+
+    // Now start loading data over the network.
+    // To keep things simple, this done at the end, even if that means extra latency.
+    crate::net::request_client_state();
 }
 
 pub use paddlers_shared_lib::shared_types::Timestamp;

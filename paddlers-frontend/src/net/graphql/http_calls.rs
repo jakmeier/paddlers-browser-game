@@ -33,9 +33,7 @@ pub(super) async fn http_read_resources(
     ajax::gql_query(&graphql_url()?, &request_body).await
 }
 
-pub(super) async fn http_read_workers(
-    village_id: VillageKey,
-) -> PadlResult<VillageUnitsResponse> {
+pub(super) async fn http_read_workers(village_id: VillageKey) -> PadlResult<VillageUnitsResponse> {
     let request_body = VillageUnitsQuery::build_query(village_units_query::Variables {
         village_id: village_id.num(),
     });
@@ -52,9 +50,7 @@ pub(super) async fn http_read_hobos(
     Ok(response.village)
 }
 
-pub(super) async fn http_read_worker_tasks(
-    unit_id: i64,
-) -> PadlResult<WorkerTasksRawResponse> {
+pub(super) async fn http_read_worker_tasks(unit_id: i64) -> PadlResult<WorkerTasksRawResponse> {
     let request_body =
         WorkerTasksQuery::build_query(worker_tasks_query::Variables { worker_id: unit_id });
     ajax::gql_query(&graphql_url()?, &request_body).await
