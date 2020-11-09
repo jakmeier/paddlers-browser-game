@@ -57,7 +57,6 @@ impl LoadingFrame {
         aid.on_delete_domained(|loading_state, domain| {
             let loaded_data = std::mem::take(domain.get_mut::<LoadedData>());
             loading_state.finalize(loaded_data).nuts_check();
-            Game::register_in_nuts();
         });
         aid.subscribe(move |_loading_state, _msg: &LoadingDone| {
             aid.set_status(LifecycleStatus::Deleted);
@@ -125,31 +124,7 @@ impl LoadingFrame {
         }
         .run_as_activity();
     }
-    // pub fn progress(&mut self) -> (f32, &'static str) {
-    //     let images_loaded = self
-    //         .images
-    //         .iter_mut()
-    //         .map(Self::asset_loaded)
-    //         .filter(|b| *b)
-    //         .count();
-    //     self.progress.report_progress::<Image>(images_loaded);
-    //     let locale_loaded = if Self::asset_loaded(&mut self.locale) {
-    //         1
-    //     } else {
-    //         0
-    //     };
-    //     self.progress.report_progress::<TextDb>(locale_loaded);
-    //     let p = self.progress.progress();
-    //     // This could be handled nicer by a separate loader object but I kept it simple for now
-    //     let msg = self.progress.waiting_for();
-    //     (p, msg)
-    // }
-    // pub fn draw_loading(&mut self, window: &mut Window) -> PadlResult<()> {
-    //     let (progress, msg) = self.progress();
 
-    //     self.draw_progress(window, progress, msg)?;
-    //     Ok(())
-    // }
     fn draw_progress(&mut self, window: &mut Window, progress: f32, msg: &str) -> PadlResult<()> {
         // TODO (optimization): Refactor to make this call event-based
         crate::window::adapt_window_size(window)?;
@@ -166,16 +141,21 @@ impl LoadingFrame {
         Ok(())
     }
     fn finalize(self, mut loaded_data: LoadedData) -> PadlResult<()> {
-        let images = loaded_data.extract_vec()?;
-        let catalog = loaded_data.extract()?;
+        let catalog = (*loaded_data.extract::<PadlResult<gettext::Catalog>>()?)?;
+        let maybe_images: Vec<paddle::PaddleResult<Image>> = loaded_data.extract_vec()?;
+        let mut images = vec![];
+        for maybe_image in maybe_images {
+            images.push(maybe_image?);
+        }
+
         let (resolution, net_chan) = (self.resolution, self.net_chan);
         let sprites = Sprites::new(images);
 
         let game_data = GameLoadingData::try_from_loaded_data(&mut loaded_data)?;
 
-        let viewer_data: Vec<NetMsg> = *loaded_data.extract()?;
+        let leaderboard_data = *loaded_data.extract::<NetMsg>()?;
 
-        match Game::load_game(sprites, *catalog, resolution, game_data, net_chan) {
+        match Game::load_game(sprites, catalog, resolution, game_data, net_chan) {
             Err(e) => {
                 TextBoard::display_error_message(":(\nLoading game failed".to_owned()).nuts_check(); // TODO: multi-lang errors
                 panic!("Fatal Error: Could not load game {:?}", e);
@@ -186,9 +166,7 @@ impl LoadingFrame {
                 nuts::store_to_domain(&Domain::Frame, game);
                 let view = UiView::Town;
                 let viewer = super::frame_loading::load_viewer(view, resolution);
-                for evt in viewer_data {
-                    paddle::share(evt);
-                }
+                paddle::share(leaderboard_data);
                 paddle::share_foreground(Signal::ResourcesUpdated);
 
                 let viewer_activity = nuts::new_domained_activity(viewer, &Domain::Frame);
@@ -221,6 +199,9 @@ impl LoadingFrame {
                 pointer_manager_activity
                     .on_leave(|_| panic!("Pointer manager should not be deactived"));
                 load_game_event_manager();
+
+                Game::register_in_nuts();
+
                 Ok(())
             }
         }
@@ -274,32 +255,6 @@ async fn start_loading_locale() -> PadlResult<TextDb> {
         .map_err(|_| ErrorMessage::technical("could not parse the catalog".to_owned()))?;
     Ok(tdb)
 }
-
-// impl QuicksilverState {
-//     pub(crate) fn try_finalize(&mut self) {
-//         match self {
-//             Self::Loading(state) => {
-//                 if state.progress.done() {
-//                     let err = state.preload_float.hide();
-//                     state.queue_error(err.map_err(|e| e.into()));
-//                     self.finalize();
-//                     crate::net::activate_net();
-//                 }
-//             }
-//             _ => println!("Attempted second finalization"),
-//         }
-//     }
-//     fn finalize(&mut self) {
-//         let moved_state = std::mem::replace(self, QuicksilverState::Empty);
-//         match moved_state {
-//             Self::Loading(state) => {
-//                 Game::register_in_nuts();
-//                 state.finalize();
-//                 *self = QuicksilverState::Ready;
-//             }
-//             _ => unreachable!(),
-//         }
-//     }
 
 impl ScreenResolution {
     fn progress_bar_area_y(&self) -> f32 {

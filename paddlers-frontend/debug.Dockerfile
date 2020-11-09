@@ -10,7 +10,7 @@ COPY ./nuts ./nuts
 COPY ./div-rs ./div-rs
 COPY ./paddle ./paddle
 COPY ./www ./www
-RUN cd paddlers-frontend; wasm-pack build
+RUN cd paddlers-frontend; wasm-pack build --debug
 RUN cd www; npm run build
 
 # A lightweight image to host application

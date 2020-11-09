@@ -36,6 +36,8 @@ pub fn main() {
     setup_wasm();
     let version = env!("CARGO_PKG_VERSION");
     println!("Paddlers {}", version);
+    #[cfg(debug_assertions)]
+    println!("Debug mode");
 
     // Initialize panes, enabling HTML access
     let resolution = crate::window::estimate_screen_size().expect("Reading window size failed");

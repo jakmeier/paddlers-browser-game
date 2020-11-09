@@ -116,19 +116,16 @@ impl RestApiState {
 
     fn http_create_player(&mut self, _: HttpCreatePlayer) {
         if !SENT_PLAYER_CREATION.load(std::sync::atomic::Ordering::Relaxed) {
-            println!("Sending create player");
             let display_name = keycloak_preferred_name().unwrap_or("Unnamed Player".to_owned());
             let uri = self.game_master_url.clone() + "/player/create";
             let msg = PlayerInitData { display_name };
             let future = async move {
-                ajax::fetch_json("POST", &uri, &msg).await?;
+                ajax::fetch_empty_response("POST", &uri, &msg).await?;
                 crate::net::request_client_state();
                 Ok(())
             };
             spawn_future(future);
             SENT_PLAYER_CREATION.store(true, std::sync::atomic::Ordering::Relaxed)
-        } else {
-            println!("NOT Sending create player");
         }
     }
 
