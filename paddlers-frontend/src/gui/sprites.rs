@@ -11,16 +11,15 @@ use paddle::quicksilver_compat::*;
 /// Cannot easily be in a component because Image is thread local.
 pub struct Sprites {
     img: Vec<Image>,
-    // animations: Vec<(Asset<AnimatedObject>, Image)>,
+    animations: Vec<AnimatedObject>,
     shapes: Vec<PadlShape>,
 }
 
 impl Sprites {
-    pub fn new(images: Vec<Image>) -> Self {
-        // let future_animations = start_loading_animations(&images);
+    pub fn new(images: Vec<Image>, animations: Vec<AnimatedObject>) -> Self {
         Sprites {
             img: images,
-            // animations: future_animations,
+            animations,
             shapes: load_shapes(),
         }
     }
@@ -168,20 +167,9 @@ impl Sprites {
                 self.img[i].clone()
             }
             SpriteIndex::Animated(j, d, a) => {
-                todo!()
-                // let i = j.index_in_vector();
-                // let animations = &mut self.animations;
-
-                // // TODO: Find better way to read return value from Asset execution
-                // let mut result = animations[i].1.clone();
-                // animations[i]
-                //     .0
-                //     .execute(|v| {
-                //         result = v.sprite(d, a);
-                //         Ok(())
-                //     })
-                //     .unwrap();
-                // result
+                let animations = &mut self.animations;
+                let i = j.index_in_vector();
+                animations[i].sprite(d, a)
             }
         }
     }

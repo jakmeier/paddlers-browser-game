@@ -99,10 +99,12 @@ impl LoadingFrame {
             let img = async move { Image::load(src).await };
             images.push(img);
         }
+        let animations = start_loading_animations();
         let locale = start_loading_locale();
 
         let load_manager = LoadScheduler::new()
             .with_vec(images, "Drawing visuals for the game")
+            .with_vec(animations, "Animating fellow Paddlers")
             .with(locale, "Writing localized texts")
             .with_manually_reported::<NetMsg>("Collecting news in Paddland")
             .with_manually_reported::<PlayerInfo>("Downloading player data")
@@ -147,9 +149,14 @@ impl LoadingFrame {
         for maybe_image in maybe_images {
             images.push(maybe_image?);
         }
+        let maybe_animations: Vec<PadlResult<AnimatedObject>> = loaded_data.extract_vec()?;
+        let mut animations = vec![];
+        for maybe_animation in maybe_animations {
+            animations.push(maybe_animation?);
+        }
 
         let (resolution, net_chan) = (self.resolution, self.net_chan);
-        let sprites = Sprites::new(images);
+        let sprites = Sprites::new(images, animations);
 
         let game_data = GameLoadingData::try_from_loaded_data(&mut loaded_data)?;
 
@@ -206,47 +213,31 @@ impl LoadingFrame {
             }
         }
     }
-    // TODO
-    // async fn load_image_from_variant(&self, v: &AnimationVariantDef) -> PadlResult<Image> {
-    //     match v {
-    //         AnimationVariantDef::Animated(path) | AnimationVariantDef::Static(path) => {
-    //             let canvas = self.base.canvas.lock().unwrap();
-    //             Ok(canvas.load_image(*path).await?)
-    //         }
-    //     }
-    // }
-    // TODO
-    // pub async fn start_loading_animations(&self, images: &Vec<Image>){
-    //     ANIMATION_DEFS
-    //         .iter()
-    //         .for_each(|a| { self.load_animation(a, images).await; });
-    // }
-    // // Potential bug? https://github.com/rust-lang/rust/issues/63033
-    // async fn load_animation(
-    //     &self,
-    //     def: &'static AnimatedObjectDef,
-    //     images: &Vec<Image>,
-    // ) -> PadlResult<(AnimatedObject, Image)> {
-    //     let futures = join_all(vec![
-    //         self.load_image_from_variant(&def.up),
-    //         self.load_image_from_variant(&def.left),
-    //         self.load_image_from_variant(&def.down),
-    //         self.load_image_from_variant(&def.standing),
-    //     ]);
-    //     let cols = def.cols as u32;
-    //     let rows = def.rows as u32;
-
-    //     let mut iter = futures.await.into_iter();
-    //     let obj = AnimatedObject::walking(
-    //         iter.next().unwrap()?,
-    //         iter.next().unwrap()?,
-    //         iter.next().unwrap()?,
-    //         cols,
-    //         rows,
-    //         iter.next().unwrap()?,
-    //     );
-    //     Ok((obj, images[def.alternative.index_in_vector()].clone()))
-    // }
+}
+async fn load_image_from_variant(v: &AnimationVariantDef) -> PadlResult<Image> {
+    Ok(match v {
+        AnimationVariantDef::Animated(path) | AnimationVariantDef::Static(path) => {
+            Image::load(*path).await?
+        }
+    })
+}
+fn start_loading_animations() -> Vec<impl std::future::Future<Output = PadlResult<AnimatedObject>>>
+{
+    ANIMATION_DEFS.iter().map(|a| load_animation(a)).collect()
+}
+async fn load_animation(def: &'static AnimatedObjectDef) -> PadlResult<AnimatedObject> {
+    let cols = def.cols as u32;
+    let rows = def.rows as u32;
+    // TODO: Load in parallel
+    let obj = AnimatedObject::walking(
+        load_image_from_variant(&def.up).await?,
+        load_image_from_variant(&def.left).await?,
+        load_image_from_variant(&def.down).await?,
+        cols,
+        rows,
+        load_image_from_variant(&def.standing).await?,
+    );
+    Ok(obj)
 }
 
 async fn start_loading_locale() -> PadlResult<TextDb> {

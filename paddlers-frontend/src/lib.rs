@@ -53,7 +53,7 @@ pub fn main() {
     // Timing is key: network state should be registered in Nuts before rest of the game is loaded.
     let (net_sender, net_receiver) = channel();
     net::init_net(net_sender);
-    
+
     init::loading::LoadingFrame::start(resolution, "game-root", net_receiver)
         .expect("Failed loading.");
 
