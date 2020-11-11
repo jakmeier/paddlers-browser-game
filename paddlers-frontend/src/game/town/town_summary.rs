@@ -6,7 +6,7 @@ use crate::gui::utils::colors::DARK_BLUE;
 use crate::gui::z::*;
 use crate::prelude::*;
 use paddle::quicksilver_compat::{Col, Rectangle, Transform};
-use paddle::Window as QuicksilverWindow;
+use paddle::WebGLCanvas as QuicksilverWindow;
 use paddle::{Frame, JmrRectangle};
 use specs::WorldExt;
 use std::marker::PhantomData;

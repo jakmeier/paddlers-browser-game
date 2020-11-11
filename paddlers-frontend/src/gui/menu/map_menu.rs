@@ -32,7 +32,7 @@ impl MapMenuFrame<'_, '_> {
 impl<'a, 'b> Frame for MapMenuFrame<'a, 'b> {
     type Error = PadlError;
     type State = Game;
-    type Graphics = Window;
+    type Graphics = WebGLCanvas;
 
     fn draw(
         &mut self,

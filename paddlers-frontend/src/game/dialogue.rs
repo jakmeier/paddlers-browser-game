@@ -13,7 +13,7 @@ use lyon::{math::point, path::Path, tessellation::*};
 use paddle::quicksilver_compat::graphics::{Mesh, ShapeRenderer};
 use paddle::quicksilver_compat::{Col, Rectangle, Transform};
 use paddle::Frame;
-use paddle::Window as QuicksilverWindow;
+use paddle::WebGLCanvas as QuicksilverWindow;
 use paddle::*;
 use paddlers_shared_lib::story::story_state::StoryState;
 use specs::WorldExt;

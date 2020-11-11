@@ -11,7 +11,7 @@ use crate::init::quicksilver_integration::Signal;
 use crate::prelude::*;
 use paddle::quicksilver_compat::graphics::Mesh;
 use paddle::quicksilver_compat::{MouseButton, Shape, Vector};
-use paddle::{Frame, Window};
+use paddle::{Frame, WebGLCanvas};
 use specs::prelude::*;
 use std::ops::Deref;
 
@@ -25,7 +25,7 @@ pub(crate) struct TownFrame<'a, 'b> {
 impl<'a, 'b> Frame for TownFrame<'a, 'b> {
     type Error = PadlError;
     type State = Game;
-    type Graphics = Window;
+    type Graphics = WebGLCanvas;
 
     fn update(&mut self, state: &mut Self::State) -> Result<(), Self::Error> {
         state.prepare_town_resources();

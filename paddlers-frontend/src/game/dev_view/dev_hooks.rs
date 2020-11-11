@@ -47,7 +47,7 @@ impl Game {
         }
     }
     #[cfg(feature = "dev_view")]
-    pub fn draw_dev_view(&mut self, window: &mut Window) {
+    pub fn draw_dev_view(&mut self, window: &mut WebGLCanvas) {
         if self.palette {
             let area = Rectangle::new((0, 0), window.project() * window.browser_region().size())
                 .padded(100.0);

@@ -3,7 +3,7 @@ use crate::game::Game;
 use crate::prelude::*;
 use paddle::quicksilver_compat::geom::Shape;
 use paddle::Frame;
-use paddle::Window;
+use paddle::WebGLCanvas;
 use std::marker::PhantomData;
 
 pub(crate) struct MapFrame<'a, 'b> {
@@ -21,7 +21,7 @@ impl<'a, 'b> MapFrame<'a, 'b> {
 impl<'a, 'b> Frame for MapFrame<'a, 'b> {
     type Error = PadlError;
     type State = Game;
-    type Graphics = Window;
+    type Graphics = WebGLCanvas;
 
     fn draw(
         &mut self,

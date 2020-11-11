@@ -29,7 +29,7 @@ pub(crate) struct TownMenuFrame<'a, 'b> {
 impl<'a, 'b> Frame for TownMenuFrame<'a, 'b> {
     type Error = PadlError;
     type State = Game;
-    type Graphics = Window;
+    type Graphics = WebGLCanvas;
 
     fn draw(
         &mut self,
@@ -176,7 +176,7 @@ impl TownMenuFrame<'_, '_> {
     fn render_foreign_town_extras(
         &mut self,
         sprites: &mut Sprites,
-        window: &mut Window,
+        window: &mut WebGLCanvas,
         area: &Rectangle,
         now: NaiveDateTime,
         mouse_pos: Vector,

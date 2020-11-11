@@ -29,7 +29,7 @@ use crate::gui::{
 use crate::prelude::*;
 use crate::resolution::ScreenResolution;
 use paddle::quicksilver_compat::{Col, Rectangle, Transform, Vector};
-use paddle::Window;
+use paddle::WebGLCanvas;
 use specs::prelude::*;
 
 impl ScreenResolution {
@@ -141,7 +141,7 @@ impl Game {
         data.inner_menu_box_area.clone()
     }
 
-    pub fn draw_menu_background(&mut self, window: &mut Window) -> PadlResult<()> {
+    pub fn draw_menu_background(&mut self, window: &mut WebGLCanvas) -> PadlResult<()> {
         let mut area = self.menu_box_area();
         let resolution = *self.world.read_resource::<ScreenResolution>();
 
@@ -176,7 +176,7 @@ impl Game {
 
     fn render_default_shop(
         &mut self,
-        window: &mut Window,
+        window: &mut WebGLCanvas,
         area: &Rectangle,
         text_provider: &mut TableTextProvider,
         res_comp: &mut ResourcesComponent,
@@ -224,7 +224,7 @@ impl Game {
 pub fn draw_entity_img(
     world: &World,
     sprites: &mut Sprites,
-    window: &mut Window,
+    window: &mut WebGLCanvas,
     e: Entity,
     area: &Rectangle,
 ) -> PadlResult<()> {
@@ -270,7 +270,7 @@ pub fn draw_entity_img(
 pub fn draw_map_entity_details_table(
     world: &World,
     sprites: &mut Sprites,
-    window: &mut Window,
+    window: &mut WebGLCanvas,
     e: Entity,
     area: &Rectangle,
     text_provider: &mut TableTextProvider,
@@ -307,7 +307,7 @@ pub fn draw_map_entity_details_table(
 pub fn draw_town_entity_details_table(
     world: &World,
     sprites: &mut Sprites,
-    window: &mut Window,
+    window: &mut WebGLCanvas,
     e: Entity,
     area: &Rectangle,
     text_provider: &mut TableTextProvider,

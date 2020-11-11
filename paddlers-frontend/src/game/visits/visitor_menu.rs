@@ -3,7 +3,7 @@ use crate::gui::{
 };
 use crate::prelude::*;
 use core::marker::PhantomData;
-use paddle::Window;
+use paddle::WebGLCanvas;
 use specs::WorldExt;
 
 pub(crate) struct VisitorMenuFrame<'a, 'b> {
@@ -39,7 +39,7 @@ impl<'a, 'b> VisitorMenuFrame<'a, 'b> {
 impl<'a, 'b> Frame for VisitorMenuFrame<'a, 'b> {
     type Error = PadlError;
     type State = Game;
-    type Graphics = Window;
+    type Graphics = WebGLCanvas;
 
     fn draw(
         &mut self,

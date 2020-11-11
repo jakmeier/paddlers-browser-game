@@ -21,7 +21,7 @@ pub fn init_error_handling() {
             web_sys::console::error_1(&error.text.into());
         }
         MessageChannel::UserFacing => {
-            TextBoard::display_error_message(error.text);
+            TextBoard::display_error_message(error.text).expect("Failed to display error message.");
         }
     });
 }

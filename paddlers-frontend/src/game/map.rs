@@ -10,7 +10,7 @@ use map_position::*;
 use map_segment::MapSegment;
 use map_tesselation::*;
 use paddle::FitStrategy;
-use paddle::Window;
+use paddle::WebGLCanvas;
 use paddle::{
     quicksilver_compat::{Col, Mesh, Rectangle, Transform, Vector},
     NutsCheck,
@@ -73,7 +73,7 @@ impl<'a> GlobalMap<'a> {
         (map, shared)
     }
 
-    pub fn render(&mut self, window: &mut Window, sprites: &mut Sprites, area: &Rectangle) {
+    pub fn render(&mut self, window: &mut WebGLCanvas, sprites: &mut Sprites, area: &Rectangle) {
         window.draw_ex(area, Col(GREEN), Transform::IDENTITY, Z_TEXTURE);
 
         self.apply_scaling(area.size());
@@ -106,7 +106,7 @@ impl<'a> GlobalMap<'a> {
             self.private.loaded.1 = self.private.loaded.1.max(high);
         }
     }
-    fn draw_grid(&mut self, window: &mut Window) {
+    fn draw_grid(&mut self, window: &mut WebGLCanvas) {
         let mut x = self.shared.x_offset % 1.0;
         if x > 0.0 {
             x -= 1.0
@@ -114,7 +114,7 @@ impl<'a> GlobalMap<'a> {
         let t = Transform::translate((x * self.shared.scaling, 0));
         extend_transformed(window.mesh(), &self.private.grid_mesh, t);
     }
-    fn draw_water(&mut self, window: &mut Window, area: &Rectangle) {
+    fn draw_water(&mut self, window: &mut WebGLCanvas, area: &Rectangle) {
         let visible_frame = Rectangle::new(
             (-self.shared.x_offset, 0),
             area.size() / self.shared.scaling,
@@ -127,7 +127,7 @@ impl<'a> GlobalMap<'a> {
             }
         }
     }
-    fn draw_villages(&mut self, window: &mut Window, sprites: &mut Sprites) {
+    fn draw_villages(&mut self, window: &mut WebGLCanvas, sprites: &mut Sprites) {
         #[cfg(feature = "dev_view")]
         self.visualize_control_points(window);
 
@@ -178,7 +178,7 @@ impl<'a> GlobalMap<'a> {
     }
 
     #[cfg(feature = "dev_view")]
-    fn visualize_control_points(&self, window: &mut Window) {
+    fn visualize_control_points(&self, window: &mut WebGLCanvas) {
         let pt = self.shared.scaling / 5.0;
         for seg in &self.private.segments {
             for s in &seg.streams {

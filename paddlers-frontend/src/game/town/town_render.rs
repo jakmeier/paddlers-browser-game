@@ -2,7 +2,7 @@ use super::*;
 use paddle::quicksilver_compat::*;
 use paddle::{
     quicksilver_compat::graphics::{Drawable, Mesh},
-    Window,
+    WebGLCanvas,
 };
 use std::f32::consts::PI;
 
@@ -34,7 +34,7 @@ impl Town {
     }
     pub fn render(
         &self,
-        window: &mut Window,
+        window: &mut WebGLCanvas,
         sprites: &mut Sprites,
         tick: u32,
         unit_length: f32,
@@ -95,7 +95,7 @@ impl Town {
 
     pub fn shadow_rectified_circle(
         resolution: ScreenResolution,
-        window: &mut Window,
+        window: &mut WebGLCanvas,
         center: impl Into<Vector>,
         radius: f32,
     ) {
@@ -105,7 +105,11 @@ impl Town {
         }
     }
 
-    fn shadow_tile(resolution: ScreenResolution, window: &mut Window, coordinates: (usize, usize)) {
+    fn shadow_tile(
+        resolution: ScreenResolution,
+        window: &mut WebGLCanvas,
+        coordinates: (usize, usize),
+    ) {
         let shadow_col = Color {
             r: 1.0,
             g: 1.0,
@@ -122,7 +126,7 @@ impl Town {
 }
 
 /// Draws a simple animation around the border of a specified area
-pub fn draw_shiny_border(window: &mut Window, area: Rectangle, tick: u32) {
+pub fn draw_shiny_border(window: &mut WebGLCanvas, area: Rectangle, tick: u32) {
     let animation_length = 200;
     let side_length = animation_length / 4;
     let side_progress = (tick % side_length) as f32 / side_length as f32;
@@ -142,7 +146,7 @@ pub fn draw_shiny_border(window: &mut Window, area: Rectangle, tick: u32) {
     }
 }
 
-fn draw_dot(window: &mut Window, p: Vector) {
+fn draw_dot(window: &mut WebGLCanvas, p: Vector) {
     let dot = Circle::new(p, 3.0);
     let dot_col = Color {
         r: 1.0,

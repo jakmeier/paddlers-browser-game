@@ -41,7 +41,7 @@ impl Renderable {
 }
 
 impl Game {
-    pub fn draw_town_main(&mut self, window: &mut Window) -> PadlResult<()> {
+    pub fn draw_town_main(&mut self, window: &mut WebGLCanvas) -> PadlResult<()> {
         let world = self.town_context.world();
         let ui_state = world.read_resource::<UiState>();
         let hovered_entity = ui_state.hovered_entity;
@@ -68,7 +68,7 @@ impl Game {
 
 pub fn render_town_entities(
     world: &World,
-    window: &mut Window,
+    window: &mut WebGLCanvas,
     sprites: &mut Sprites,
 ) -> PadlResult<()> {
     let pos_store = world.read_storage::<Position>();
@@ -117,7 +117,7 @@ pub fn render_town_entities(
 
 pub fn render_hovering(
     world: &World,
-    window: &mut Window,
+    window: &mut WebGLCanvas,
     sprites: &mut Sprites,
     entity: Entity,
 ) -> PadlResult<()> {
@@ -144,7 +144,7 @@ pub fn render_hovering(
 
 pub fn render_grabbed_item(
     world: &World,
-    window: &mut Window,
+    window: &mut WebGLCanvas,
     sprites: &mut Sprites,
     item: &Grabbable,
     mouse: Vector,
@@ -176,7 +176,7 @@ pub fn render_grabbed_item(
 fn render_health(
     health: &Health,
     sprites: &mut Sprites,
-    window: &mut Window,
+    window: &mut WebGLCanvas,
     area: &Rectangle,
 ) -> PadlResult<()> {
     let (max, hp) = (health.max_hp, health.hp);
@@ -227,7 +227,7 @@ fn render_health(
 impl Range {
     fn draw(
         &self,
-        window: &mut Window,
+        window: &mut WebGLCanvas,
         area: &Rectangle,
         resolution: ScreenResolution,
     ) -> PadlResult<()> {
@@ -237,10 +237,10 @@ impl Range {
     }
 }
 #[inline]
-fn draw_rect(window: &mut Window, area: &Rectangle, col: Color) {
+fn draw_rect(window: &mut WebGLCanvas, area: &Rectangle, col: Color) {
     draw_rect_z(window, area, col, 0);
 }
 #[inline]
-fn draw_rect_z(window: &mut Window, area: &Rectangle, col: Color, z_shift: i32) {
+fn draw_rect_z(window: &mut WebGLCanvas, area: &Rectangle, col: Color, z_shift: i32) {
     window.draw_ex(area, Col(col), Transform::IDENTITY, Z_HP_BAR + z_shift);
 }

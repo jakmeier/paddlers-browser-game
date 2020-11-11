@@ -8,8 +8,7 @@
 //! All this is glued together by implementing quicksilver's State
 
 use crate::prelude::*;
-use crate::web_integration::ThreadHandler;
-use crate::web_integration::{start_drawing_thread, start_thread};
+use paddle::web_integration::{start_drawing_thread, start_thread, ThreadHandler};
 use paddle::*;
 
 use crate::game::*;
@@ -28,7 +27,7 @@ pub enum Signal {
 // TODO: send events through nuts
 // impl State for QuicksilverState {
 //      ...
-//     fn event(&mut self, event: &Event, window: &mut Window) -> Result<()> {
+//     fn event(&mut self, event: &Event, window: &mut WebGLCanvas) -> Result<()> {
 //         match self {
 //             Self::Empty => {}
 //             Self::Loading(_state) => {}
@@ -39,11 +38,11 @@ pub enum Signal {
 // }
 
 pub fn start_drawing() -> PadlResult<ThreadHandler> {
-    start_drawing_thread(|t| nuts::publish(DrawWorld::new(t)))
+    Ok(start_drawing_thread(|t| nuts::publish(DrawWorld::new(t)))?)
 }
 
 pub fn start_updating() -> PadlResult<ThreadHandler> {
-    start_thread(|| nuts::publish(UpdateWorld::new()), 10)
+    Ok(start_thread(|| nuts::publish(UpdateWorld::new()), 10)?)
 }
 
 struct GameActivity;
@@ -58,7 +57,7 @@ impl Game {
             }
         });
         aid.subscribe_domained(|_, domain, _msg: &DrawWorld| {
-            let (game, window) = domain.try_get_2_mut::<Game, Window>();
+            let (game, window) = domain.try_get_2_mut::<Game, WebGLCanvas>();
             let (game, window) = (game.expect("Game missing"), window.expect("Window missing"));
             if let Err(e) = game.draw(window) {
                 let err: PadlError = e.into();
@@ -89,7 +88,7 @@ impl Game {
         Ok(())
     }
 
-    fn draw(&mut self, window: &mut Window) -> PadlResult<()> {
+    fn draw(&mut self, window: &mut WebGLCanvas) -> PadlResult<()> {
         #[cfg(feature = "dev_view")]
         self.start_draw();
 

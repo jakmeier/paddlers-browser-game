@@ -3,7 +3,7 @@ use crate::init::quicksilver_integration::Signal;
 use crate::net::NetMsg;
 use crate::prelude::*;
 use core::marker::PhantomData;
-use paddle::Window;
+use paddle::WebGLCanvas;
 use specs::prelude::*;
 
 pub(crate) struct MenuBackgroundFrame<'a, 'b> {
@@ -86,9 +86,13 @@ impl<'a, 'b> MenuBackgroundFrame<'a, 'b> {
 impl<'a, 'b> Frame for MenuBackgroundFrame<'a, 'b> {
     type Error = PadlError;
     type State = Game;
-    type Graphics = Window;
+    type Graphics = WebGLCanvas;
 
-    fn draw(&mut self, state: &mut Self::State, window: &mut Window) -> Result<(), Self::Error> {
+    fn draw(
+        &mut self,
+        state: &mut Self::State,
+        window: &mut WebGLCanvas,
+    ) -> Result<(), Self::Error> {
         self.tp.reset();
         state.draw_menu_background(window)?;
         let button_area = state.button_area();

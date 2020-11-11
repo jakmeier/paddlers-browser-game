@@ -30,7 +30,7 @@ pub trait InteractiveTableArea {
     /// Draw the area on a specified area
     fn draw(
         &mut self,
-        window: &mut Window,
+        window: &mut WebGLCanvas,
         sprites: &mut Sprites,
         tp: &mut TableTextProvider,
         now: NaiveDateTime,
@@ -108,7 +108,7 @@ impl TableTextProvider {
 }
 
 pub fn draw_table(
-    window: &mut Window,
+    window: &mut WebGLCanvas,
     sprites: &mut Sprites,
     table: &mut [TableRow],
     max_area: &Rectangle,

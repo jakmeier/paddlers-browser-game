@@ -10,7 +10,7 @@ use crate::{gui::input::UiView, prelude::PadlErrorCode};
 use nuts::LifecycleStatus;
 use paddle::{
     graphics::Image, graphics::ImageLoader, ErrorMessage, Frame, LoadScheduler, LoadedData,
-    LoadingDone, LoadingProgress, NutsCheck, TextBoard, UpdateWorld, Window,
+    LoadingDone, LoadingProgress, NutsCheck, TextBoard, UpdateWorld, WebGLCanvas,
 };
 use wasm_bindgen::JsCast;
 use web_sys::HtmlCanvasElement;
@@ -91,7 +91,7 @@ impl LoadingFrame {
         canvas: HtmlCanvasElement,
         net_chan: Receiver<NetMsg>,
     ) {
-        let canvas = Window::new(canvas, resolution.pixels()).expect("Failed creating window");
+        let canvas = WebGLCanvas::new(canvas, resolution.pixels()).expect("Failed creating window");
         ImageLoader::register(canvas.clone_webgl());
         nuts::store_to_domain(&Domain::Frame, canvas);
         let mut images = vec![];
@@ -127,7 +127,12 @@ impl LoadingFrame {
         .run_as_activity();
     }
 
-    fn draw_progress(&mut self, window: &mut Window, progress: f32, msg: &str) -> PadlResult<()> {
+    fn draw_progress(
+        &mut self,
+        window: &mut WebGLCanvas,
+        progress: f32,
+        msg: &str,
+    ) -> PadlResult<()> {
         // TODO (optimization): Refactor to make this call event-based
         crate::window::adapt_window_size(window)?;
 
@@ -266,7 +271,7 @@ impl ScreenResolution {
 impl Frame for LoadingFrame {
     type State = Option<LoadScheduler>;
     type Error = PadlError;
-    type Graphics = Window;
+    type Graphics = WebGLCanvas;
 
     fn draw(
         &mut self,

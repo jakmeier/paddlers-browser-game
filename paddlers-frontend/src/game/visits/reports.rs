@@ -6,7 +6,7 @@ use crate::prelude::*;
 use core::marker::PhantomData;
 use div::doc;
 use paddle::quicksilver_compat::{Col, Rectangle, Transform};
-use paddle::Window;
+use paddle::WebGLCanvas;
 use paddlers_shared_lib::prelude::VisitReportKey;
 use specs::prelude::*;
 use web_sys::{Element, Node};
@@ -95,7 +95,7 @@ impl<'a, 'b> ReportFrame<'a, 'b> {
         self.table.append_child(&letter_node)?;
         Ok(())
     }
-    #[allow(unused_variables)]//TODO
+    #[allow(unused_variables)] //TODO
     fn add_listener(&self, button_node: &Element, report: Report, parent: Element) {
         let _table_ref = self.table.clone();
 
@@ -165,7 +165,7 @@ impl<'a, 'b> ReportFrame<'a, 'b> {
 impl<'a, 'b> Frame for ReportFrame<'a, 'b> {
     type Error = PadlError;
     type State = Game;
-    type Graphics = Window;
+    type Graphics = WebGLCanvas;
     fn draw(
         &mut self,
         state: &mut Self::State,

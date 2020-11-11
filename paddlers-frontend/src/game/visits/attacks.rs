@@ -7,7 +7,7 @@ use crate::prelude::*;
 use chrono::NaiveDateTime;
 use div::new_pane;
 use paddle::quicksilver_compat::{Col, Rectangle, Transform};
-use paddle::{utc_now, Frame, TextNode, Window};
+use paddle::{utc_now, Frame, TextNode, WebGLCanvas};
 use paddlers_shared_lib::api::attacks::*;
 use specs::prelude::*;
 use wasm_bindgen::JsCast;
@@ -131,7 +131,7 @@ impl<'a, 'b> VisitorFrame<'a, 'b> {
 impl<'a, 'b> Frame for VisitorFrame<'a, 'b> {
     type Error = PadlError;
     type State = Game;
-    type Graphics = Window;
+    type Graphics = WebGLCanvas;
 
     fn update(&mut self, state: &mut Self::State) -> Result<(), Self::Error> {
         self.update_dispatcher.dispatch(&mut state.world);

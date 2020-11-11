@@ -6,7 +6,7 @@ use crate::prelude::*;
 use div::doc;
 use paddle::quicksilver_compat::{Col, Rectangle, Transform};
 use paddle::Frame;
-use paddle::Window as QuicksilverWindow;
+use paddle::WebGLCanvas as QuicksilverWindow;
 use specs::WorldExt;
 use std::marker::PhantomData;
 use web_sys::Node;

@@ -4,7 +4,7 @@ use paddle::NutsCheck;
 use paddle::*;
 
 pub fn draw_progress_bar(
-    window: &mut Window,
+    window: &mut WebGLCanvas,
     float: &mut FloatingText,
     area: Rectangle,
     progress: f32,

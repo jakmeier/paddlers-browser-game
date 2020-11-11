@@ -1,10 +1,10 @@
 use crate::prelude::*;
-use paddle::{quicksilver_compat::Vector, JsError, Window};
+use paddle::{quicksilver_compat::Vector, JsError, WebGLCanvas};
 use paddlers_shared_lib::game_mechanics::town::{TOWN_X, TOWN_Y};
 use strum::IntoEnumIterator;
 
-pub fn adapt_window_size(window: &mut Window) -> PadlResult<()> {
-    window.fit_to_screen()?;
+pub fn adapt_window_size(window: &mut WebGLCanvas) -> PadlResult<()> {
+    window.fit_to_screen(20.0)?;
     let area = window.browser_region();
 
     let x = area.x();

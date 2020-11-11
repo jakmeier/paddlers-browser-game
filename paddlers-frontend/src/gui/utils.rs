@@ -12,7 +12,7 @@ use crate::gui::animation::AnimationState;
 use crate::gui::sprites::*;
 use crate::prelude::*;
 use paddle::quicksilver_compat::*;
-use paddle::{FitStrategy, JmrRectangle, Window};
+use paddle::{FitStrategy, JmrRectangle, WebGLCanvas};
 
 // Improvement: Would be nice to have Copy here (maybe with string interning)
 #[derive(Debug, Clone)]
@@ -40,7 +40,7 @@ pub enum Direction {
 
 pub fn draw_animated_sprite(
     asset: &mut Sprites,
-    window: &mut Window,
+    window: &mut WebGLCanvas,
     max_area: &Rectangle,
     i: SpriteSet,
     z: i32,
@@ -53,7 +53,7 @@ pub fn draw_animated_sprite(
 }
 pub fn draw_static_image(
     asset: &mut Sprites,
-    window: &mut Window,
+    window: &mut WebGLCanvas,
     max_area: &Rectangle,
     i: SpriteIndex,
     z: i32,
@@ -71,7 +71,7 @@ pub fn draw_static_image(
 }
 pub fn draw_image(
     sprites: &mut Sprites,
-    window: &mut Window,
+    window: &mut WebGLCanvas,
     max_area: &Rectangle,
     i: SpriteIndex,
     z: i32,
@@ -105,7 +105,7 @@ pub fn draw_image(
 }
 pub fn draw_shape(
     sprites: &mut Sprites,
-    window: &mut Window,
+    window: &mut WebGLCanvas,
     draw_area: &Rectangle,
     i: PadlShapeIndex,
     fit_strat: FitStrategy,

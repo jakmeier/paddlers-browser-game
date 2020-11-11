@@ -40,7 +40,7 @@ impl InteractiveTableArea for UiBox {
     // TODO: margin / padding needs resolution adjustment
     fn draw(
         &mut self,
-        window: &mut Window,
+        window: &mut WebGLCanvas,
         sprites: &mut Sprites,
         tp: &mut TableTextProvider,
         now: NaiveDateTime,
@@ -250,7 +250,7 @@ impl UiBox {
 }
 
 impl UiElement {
-    fn draw_overlay(&self, window: &mut Window, area: &Rectangle, now: NaiveDateTime) {
+    fn draw_overlay(&self, window: &mut WebGLCanvas, area: &Rectangle, now: NaiveDateTime) {
         if let Some((start, end)) = self.overlay {
             if now > start && now < end {
                 let progress = (now - start).num_microseconds().unwrap() as f32

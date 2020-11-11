@@ -8,10 +8,10 @@
 
 use crate::gui::{sprites::*, utils::*, z::*};
 use paddle::graphics::Image;
-use paddle::{quicksilver_compat::*, Window};
+use paddle::{quicksilver_compat::*, WebGLCanvas};
 
 pub fn draw_leaf_border(
-    window: &mut Window,
+    window: &mut WebGLCanvas,
     sprites: &mut Sprites,
     area: &Rectangle,
     leaf_w: f32,
@@ -55,7 +55,7 @@ pub fn draw_leaf_border(
 }
 
 fn draw_column_texture(
-    window: &mut Window,
+    window: &mut WebGLCanvas,
     top: &Image,
     mid: &Image,
     bot: &Image,
@@ -78,7 +78,7 @@ fn draw_column_texture(
     window.draw_ex(&stamp, Img(bot), Transform::IDENTITY, Z_UI_BORDERS);
 }
 
-fn fill_row_with_img(window: &mut Window, img: &Image, start: Vector, end: f32, h: f32) {
+fn fill_row_with_img(window: &mut WebGLCanvas, img: &Image, start: Vector, end: f32, h: f32) {
     let mut stamp = img.area();
     let factor = h / stamp.height();
     stamp.size = stamp.size * factor;
@@ -90,7 +90,7 @@ fn fill_row_with_img(window: &mut Window, img: &Image, start: Vector, end: f32, 
 }
 
 pub fn draw_duck_step_line(
-    window: &mut Window,
+    window: &mut WebGLCanvas,
     sprites: &mut Sprites,
     start: Vector,
     end: f32,

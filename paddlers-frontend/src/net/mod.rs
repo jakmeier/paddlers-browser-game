@@ -5,9 +5,10 @@ pub mod graphql;
 pub mod state;
 pub mod url;
 
-use crate::{game::player_info::PlayerInfo, web_integration::*};
+use crate::game::player_info::PlayerInfo;
 use game_master_api::RestApiState;
 use graphql::{query_types::*, GraphQlState};
+use paddle::web_integration::*;
 use paddle::{Domain, NutsCheck};
 use paddlers_shared_lib::prelude::VillageKey;
 use wasm_bindgen::prelude::*;
@@ -148,7 +149,7 @@ impl NetState {
             self.transfer_response(self.gql_state.reports_query());
             request_player_update();
         } else {
-            let mut thread = crate::web_integration::create_thread(request_client_state);
+            let mut thread = paddle::web_integration::create_thread(request_client_state);
             thread.set_timeout(50).nuts_check();
             nuts::store_to_domain(&Domain::Network, (thread,));
         }
@@ -164,7 +165,7 @@ impl NetState {
         if self.logged_in {
             self.transfer_response(GraphQlState::player_info_query());
         } else {
-            let mut thread = crate::web_integration::create_thread(request_player_update);
+            let mut thread = paddle::web_integration::create_thread(request_player_update);
             thread.set_timeout(50).nuts_check();
             nuts::store_to_domain(&Domain::Network, (thread,));
         }

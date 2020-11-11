@@ -23,8 +23,6 @@ pub(crate) mod resolution;
 mod view;
 pub(crate) mod window;
 
-mod web_integration;
-
 use init::wasm_setup::setup_wasm;
 
 use std::sync::mpsc::channel;
