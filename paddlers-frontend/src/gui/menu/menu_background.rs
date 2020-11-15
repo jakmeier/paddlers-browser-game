@@ -2,18 +2,16 @@ use crate::gui::{gui_components::*, input::UiView, sprites::*, ui_state::Now, ut
 use crate::init::quicksilver_integration::Signal;
 use crate::net::NetMsg;
 use crate::prelude::*;
-use core::marker::PhantomData;
 use paddle::WebGLCanvas;
 use specs::prelude::*;
 
-pub(crate) struct MenuBackgroundFrame<'a, 'b> {
+pub(crate) struct MenuBackgroundFrame {
     ui: UiBox,
     tp: TableTextProvider,
     reports_to_collect: usize,
-    _phantom: PhantomData<(&'a (), &'b ())>,
 }
 
-impl<'a, 'b> MenuBackgroundFrame<'a, 'b> {
+impl MenuBackgroundFrame {
     pub fn new() -> Self {
         let mut ui_box = UiBox::new(4, 1, 0.0, 5.0);
 
@@ -49,7 +47,6 @@ impl<'a, 'b> MenuBackgroundFrame<'a, 'b> {
         MenuBackgroundFrame {
             ui: ui_box,
             tp,
-            _phantom: Default::default(),
             reports_to_collect: 0,
         }
     }
@@ -83,15 +80,15 @@ impl<'a, 'b> MenuBackgroundFrame<'a, 'b> {
     }
 }
 
-impl<'a, 'b> Frame for MenuBackgroundFrame<'a, 'b> {
+impl Frame for MenuBackgroundFrame {
     type Error = PadlError;
     type State = Game;
-    type Graphics = WebGLCanvas;
 
     fn draw(
         &mut self,
         state: &mut Self::State,
         window: &mut WebGLCanvas,
+        _timestamp: f64,
     ) -> Result<(), Self::Error> {
         self.tp.reset();
         state.draw_menu_background(window)?;

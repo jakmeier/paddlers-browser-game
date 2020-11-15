@@ -1,6 +1,5 @@
 use crate::prelude::*;
-use paddle::{quicksilver_compat::Vector, JsError, WebGLCanvas};
-use paddlers_shared_lib::game_mechanics::town::{TOWN_X, TOWN_Y};
+use paddle::{JsError, WebGLCanvas};
 use strum::IntoEnumIterator;
 
 pub fn adapt_window_size(window: &mut WebGLCanvas) -> PadlResult<()> {

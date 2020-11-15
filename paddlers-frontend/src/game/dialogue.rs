@@ -17,9 +17,8 @@ use paddle::WebGLCanvas as QuicksilverWindow;
 use paddle::*;
 use paddlers_shared_lib::story::story_state::StoryState;
 use specs::WorldExt;
-use std::marker::PhantomData;
 
-pub(crate) struct DialogueFrame<'a, 'b> {
+pub(crate) struct DialogueFrame {
     left_area: Rectangle,
     active_area: Rectangle,
     image: SpriteIndex,
@@ -28,10 +27,9 @@ pub(crate) struct DialogueFrame<'a, 'b> {
     text_provider: TableTextProvider,
     text_bubble: Mesh,
     current_scene: Option<Scene>,
-    phantom: PhantomData<(&'a (), &'b ())>,
 }
 
-impl<'a, 'b> DialogueFrame<'a, 'b> {
+impl DialogueFrame {
     pub fn new(area: &Rectangle) -> PadlResult<Self> {
         let (left_area, bubble_area) = area
             .shrink_to_center(0.875)
@@ -54,7 +52,6 @@ impl<'a, 'b> DialogueFrame<'a, 'b> {
             text_provider,
             text_bubble,
             current_scene: None,
-            phantom: PhantomData,
         };
 
         Ok(dialogue)
@@ -204,7 +201,7 @@ pub struct NewStoryState {
     pub new_story_state: StoryState,
 }
 
-impl<'a, 'b> DialogueFrame<'a, 'b> {
+impl DialogueFrame {
     pub fn receive_load_scene(
         &mut self,
         state: &mut Game,
@@ -224,14 +221,14 @@ impl<'a, 'b> DialogueFrame<'a, 'b> {
         Ok(())
     }
 }
-impl<'a, 'b> Frame for DialogueFrame<'a, 'b> {
+impl Frame for DialogueFrame {
     type Error = PadlError;
     type State = Game;
-    type Graphics = QuicksilverWindow;
     fn draw(
         &mut self,
         state: &mut Self::State,
-        window: &mut Self::Graphics,
+        window: &mut WebGLCanvas,
+        _timestamp: f64,
     ) -> Result<(), Self::Error> {
         self.text_provider.reset();
         let resolution = *state.world.read_resource::<ScreenResolution>();

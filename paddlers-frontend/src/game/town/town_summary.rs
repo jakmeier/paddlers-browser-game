@@ -6,17 +6,14 @@ use crate::gui::utils::colors::DARK_BLUE;
 use crate::gui::z::*;
 use crate::prelude::*;
 use paddle::quicksilver_compat::{Col, Rectangle, Transform};
-use paddle::WebGLCanvas as QuicksilverWindow;
 use paddle::{Frame, JmrRectangle};
 use specs::WorldExt;
-use std::marker::PhantomData;
 
-pub(crate) struct TownSummaryFrame<'a, 'b> {
+pub(crate) struct TownSummaryFrame {
     pane: div::PaneHandle,
-    phantom: PhantomData<(&'a (), &'b ())>,
 }
 
-impl TownSummaryFrame<'_, '_> {
+impl TownSummaryFrame {
     pub fn new(area: &Rectangle) -> PadlResult<Self> {
         let pane = div::new_styled_pane(
             area.x() as u32,
@@ -44,20 +41,18 @@ impl TownSummaryFrame<'_, '_> {
 
         Ok(TownSummaryFrame {
             pane,
-            phantom: PhantomData,
         })
     }
 }
 
-impl<'a, 'b> Frame for TownSummaryFrame<'a, 'b> {
+impl Frame for TownSummaryFrame {
     type Error = PadlError;
     type State = Game;
-    type Graphics = QuicksilverWindow;
-
     fn draw(
         &mut self,
         state: &mut Self::State,
-        window: &mut Self::Graphics,
+        window: &mut paddle::WebGLCanvas,
+        _timestamp: f64,
     ) -> Result<(), Self::Error> {
         let ui_state = state.world.read_resource::<ViewState>();
         let main_area = Rectangle::new(

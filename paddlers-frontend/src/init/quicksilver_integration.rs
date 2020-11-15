@@ -8,7 +8,6 @@
 //! All this is glued together by implementing quicksilver's State
 
 use crate::prelude::*;
-use paddle::web_integration::{start_drawing_thread, start_thread, ThreadHandler};
 use paddle::*;
 
 use crate::game::*;
@@ -37,35 +36,30 @@ pub enum Signal {
 //     }
 // }
 
-pub fn start_drawing() -> PadlResult<ThreadHandler> {
-    Ok(start_drawing_thread(|t| nuts::publish(DrawWorld::new(t)))?)
-}
-
-pub fn start_updating() -> PadlResult<ThreadHandler> {
-    Ok(start_thread(|| nuts::publish(UpdateWorld::new()), 10)?)
-}
-
 struct GameActivity;
+impl Frame for GameActivity {
+    type Error = PadlError;
+    type State = Game;
+
+    fn draw(
+        &mut self,
+        game: &mut Self::State,
+        canvas: &mut WebGLCanvas,
+        _timestamp: f64,
+    ) -> Result<(), Self::Error> {
+        game.draw(canvas)
+    }
+    fn update(&mut self, game: &mut Self::State) -> Result<(), Self::Error> {
+        game.update()
+    }
+}
 impl Game {
-    pub fn register_in_nuts() {
-        let aid = nuts::new_domained_activity(GameActivity, &Domain::Frame);
-        aid.subscribe_domained_mut(|_, domain, _msg: &mut UpdateWorld| {
-            let game: &mut Game = domain.try_get_mut().expect("Game missing");
-            if let Err(e) = game.update() {
-                let err: PadlError = e.into();
-                nuts::publish(err);
-            }
-        });
-        aid.subscribe_domained(|_, domain, _msg: &DrawWorld| {
-            let (game, window) = domain.try_get_2_mut::<Game, WebGLCanvas>();
-            let (game, window) = (game.expect("Game missing"), window.expect("Window missing"));
-            if let Err(e) = game.draw(window) {
-                let err: PadlError = e.into();
-                nuts::publish(err);
-            }
-        });
+    pub fn register(self) {
+        nuts::store_to_domain(&Domain::Frame, self);
+        paddle::frame_to_activity(GameActivity, &Domain::Frame);
     }
     fn update(&mut self) -> PadlResult<()> {
+        // TODO: Time tracking like this does not work anymore. Probably add to paddle?
         #[cfg(feature = "dev_view")]
         self.start_update();
 

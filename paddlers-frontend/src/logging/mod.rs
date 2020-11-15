@@ -16,14 +16,6 @@ pub fn init_error_handling() {
         q.route_err(err);
         q.run();
     });
-    paddle::enable_nuts_checks(|error| match error.channel {
-        MessageChannel::Technical => {
-            web_sys::console::error_1(&error.text.into());
-        }
-        MessageChannel::UserFacing => {
-            TextBoard::display_error_message(error.text).expect("Failed to display error message.");
-        }
-    });
 }
 
 impl ErrorQueue {

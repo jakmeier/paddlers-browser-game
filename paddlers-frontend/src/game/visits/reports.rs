@@ -3,7 +3,6 @@ use crate::gui::utils::colors::LIGHT_BLUE;
 use crate::gui::z::*;
 use crate::net::NetMsg;
 use crate::prelude::*;
-use core::marker::PhantomData;
 use div::doc;
 use paddle::quicksilver_compat::{Col, Rectangle, Transform};
 use paddle::WebGLCanvas;
@@ -11,10 +10,9 @@ use paddlers_shared_lib::prelude::VisitReportKey;
 use specs::prelude::*;
 use web_sys::{Element, Node};
 
-pub(crate) struct ReportFrame<'a, 'b> {
+pub(crate) struct ReportFrame {
     pane: div::PaneHandle,
     table: Node,
-    _phantom: PhantomData<(&'a (), &'b ())>,
 }
 
 struct Report {
@@ -25,7 +23,7 @@ struct Report {
     logs: i64,
 }
 
-impl<'a, 'b> ReportFrame<'a, 'b> {
+impl ReportFrame {
     pub fn new(area: Rectangle, resolution: ScreenResolution) -> PadlResult<Self> {
         let right_padding = resolution.leaves_border_w() * 0.75;
         let pane = div::new_pane(
@@ -42,11 +40,7 @@ impl<'a, 'b> ReportFrame<'a, 'b> {
         title.set_text_content(Some("Mailbox"));
         node.append_child(&title)?;
 
-        Ok(ReportFrame {
-            pane,
-            table: node,
-            _phantom: Default::default(),
-        })
+        Ok(ReportFrame { pane, table: node })
     }
     fn add_report(&mut self, report: Report, sprites: &Sprites) -> PadlResult<()> {
         let letter_node = doc()?.create_element("div")?;
@@ -162,14 +156,15 @@ impl<'a, 'b> ReportFrame<'a, 'b> {
     }
 }
 
-impl<'a, 'b> Frame for ReportFrame<'a, 'b> {
+impl Frame for ReportFrame {
     type Error = PadlError;
     type State = Game;
-    type Graphics = WebGLCanvas;
+
     fn draw(
         &mut self,
         state: &mut Self::State,
-        window: &mut Self::Graphics,
+        window: &mut WebGLCanvas,
+        _timestamp: f64,
     ) -> Result<(), Self::Error> {
         let ui_state = state.world.read_resource::<ViewState>();
         let main_area = Rectangle::new(

@@ -4,29 +4,24 @@ use crate::prelude::*;
 use paddle::quicksilver_compat::geom::Shape;
 use paddle::Frame;
 use paddle::WebGLCanvas;
-use std::marker::PhantomData;
 
-pub(crate) struct MapFrame<'a, 'b> {
-    phantom: PhantomData<(&'a (), &'b ())>,
-}
+pub(crate) struct MapFrame {}
 
-impl<'a, 'b> MapFrame<'a, 'b> {
+impl MapFrame {
     pub fn new() -> Self {
-        MapFrame {
-            phantom: PhantomData,
-        }
+        MapFrame {}
     }
 }
 
-impl<'a, 'b> Frame for MapFrame<'a, 'b> {
+impl Frame for MapFrame {
     type Error = PadlError;
     type State = Game;
-    type Graphics = WebGLCanvas;
 
     fn draw(
         &mut self,
         state: &mut Self::State,
-        window: &mut Self::Graphics,
+        window: &mut WebGLCanvas,
+        _timestamp: f64,
     ) -> Result<(), Self::Error> {
         let ui_state = state.world.read_resource::<ViewState>();
         let area = Rectangle::new(

@@ -23,32 +23,22 @@ pub(crate) mod resolution;
 mod view;
 pub(crate) mod window;
 
-use init::wasm_setup::setup_wasm;
-
 use std::sync::mpsc::channel;
 use wasm_bindgen::prelude::wasm_bindgen;
 
 #[wasm_bindgen]
 pub fn main() {
-    /* Start with most essential setup, which should not take a lot of time */
-    setup_wasm();
     let version = env!("CARGO_PKG_VERSION");
     println!("Paddlers {}", version);
     #[cfg(debug_assertions)]
     println!("Debug mode");
 
-    // Initialize panes, enabling HTML access
-    let resolution = crate::window::estimate_screen_size().expect("Reading window size failed");
-    let (w, h) = resolution.pixels();
-    div::init_ex(Some("game-root"), (0, 0), Some((w as u32, h as u32)))
-        .expect("Panes initialization failed");
-
-    // Setup logging
-    paddle::TextBoard::init();
     crate::logging::init_error_handling();
+    let resolution = crate::window::estimate_screen_size().expect("Reading window size failed");
 
     /* Now load the actual game */
     // Timing is key: network state should be registered in Nuts before rest of the game is loaded.
+    // The problem is, error reporting is not yet ready...
     let (net_sender, net_receiver) = channel();
     net::init_net(net_sender);
 

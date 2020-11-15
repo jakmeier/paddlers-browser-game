@@ -32,12 +32,12 @@ impl MapMenuFrame<'_, '_> {
 impl<'a, 'b> Frame for MapMenuFrame<'a, 'b> {
     type Error = PadlError;
     type State = Game;
-    type Graphics = WebGLCanvas;
 
     fn draw(
         &mut self,
         state: &mut Self::State,
-        window: &mut Self::Graphics,
+        window: &mut WebGLCanvas,
+        _timestamp: f64,
     ) -> Result<(), Self::Error> {
         self.text_provider.reset();
         let inner_area = state.inner_menu_area();

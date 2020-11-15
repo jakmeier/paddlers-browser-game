@@ -61,10 +61,6 @@ impl LoadingFrame {
         aid.subscribe(move |_loading_state, _msg: &LoadingDone| {
             aid.set_status(LifecycleStatus::Deleted);
         });
-        let draw_handle = super::quicksilver_integration::start_drawing();
-        let update_handle = super::quicksilver_integration::start_updating();
-        // Dropping the handles would delete and stop the threads, hence they are store in the domain.
-        nuts::store_to_domain(&Domain::Frame, (draw_handle, update_handle));
     }
     pub fn start(
         resolution: ScreenResolution,
@@ -91,9 +87,11 @@ impl LoadingFrame {
         canvas: HtmlCanvasElement,
         net_chan: Receiver<NetMsg>,
     ) {
-        let canvas = WebGLCanvas::new(canvas, resolution.pixels()).expect("Failed creating window");
-        ImageLoader::register(canvas.clone_webgl());
-        nuts::store_to_domain(&Domain::Frame, canvas);
+        let config = paddle::PaddleConfig::default()
+            .with_resolution(resolution.pixels())
+            .with_canvas(canvas);
+        paddle::init(config).expect("Failed creating window");
+
         let mut images = vec![];
         for src in &SPRITE_PATHS {
             let img = async move { Image::load(src).await };
@@ -144,7 +142,6 @@ impl LoadingFrame {
         let area = Rectangle::new((w * 0.1, y), (w * 0.8, ph));
 
         draw_progress_bar(window, &mut self.preload_float, area, progress, &msg)?;
-        window.flush()?;
         Ok(())
     }
     fn finalize(self, mut loaded_data: LoadedData) -> PadlResult<()> {
@@ -175,7 +172,7 @@ impl LoadingFrame {
             Ok(mut game) => {
                 let pointer_manager =
                     crate::gui::input::pointer::PointerManager::init(&mut game.world);
-                nuts::store_to_domain(&Domain::Frame, game);
+                game.register();
                 let view = UiView::Town;
                 let viewer = super::frame_loading::load_viewer(view, resolution);
                 paddle::share(leaderboard_data);
@@ -211,8 +208,6 @@ impl LoadingFrame {
                 pointer_manager_activity
                     .on_leave(|_| panic!("Pointer manager should not be deactived"));
                 load_game_event_manager();
-
-                Game::register_in_nuts();
 
                 Ok(())
             }
@@ -271,12 +266,12 @@ impl ScreenResolution {
 impl Frame for LoadingFrame {
     type State = Option<LoadScheduler>;
     type Error = PadlError;
-    type Graphics = WebGLCanvas;
 
     fn draw(
         &mut self,
         state: &mut Self::State,
-        canvas: &mut Self::Graphics,
+        canvas: &mut WebGLCanvas,
+        _timestamp: f64,
     ) -> Result<(), Self::Error> {
         if let Some(lm) = state.as_ref() {
             let progress = lm.progress();

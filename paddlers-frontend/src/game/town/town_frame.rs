@@ -25,7 +25,6 @@ pub(crate) struct TownFrame<'a, 'b> {
 impl<'a, 'b> Frame for TownFrame<'a, 'b> {
     type Error = PadlError;
     type State = Game;
-    type Graphics = WebGLCanvas;
 
     fn update(&mut self, state: &mut Self::State) -> Result<(), Self::Error> {
         state.prepare_town_resources();
@@ -38,7 +37,8 @@ impl<'a, 'b> Frame for TownFrame<'a, 'b> {
     fn draw(
         &mut self,
         state: &mut Self::State,
-        window: &mut Self::Graphics,
+        window: &mut WebGLCanvas,
+        _timestamp: f64,
     ) -> Result<(), Self::Error> {
         {
             // FIXME: This should not be necessary if resources are defined properly

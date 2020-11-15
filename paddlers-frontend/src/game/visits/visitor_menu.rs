@@ -2,17 +2,15 @@ use crate::gui::{
     gui_components::*, input::UiView, shapes::PadlShapeIndex, sprites::*, ui_state::Now, utils::*,
 };
 use crate::prelude::*;
-use core::marker::PhantomData;
 use paddle::WebGLCanvas;
 use specs::WorldExt;
 
-pub(crate) struct VisitorMenuFrame<'a, 'b> {
+pub(crate) struct VisitorMenuFrame {
     ui: UiBox,
     text_provider: TableTextProvider,
-    _phantom: PhantomData<(&'a (), &'b ())>,
 }
 
-impl<'a, 'b> VisitorMenuFrame<'a, 'b> {
+impl VisitorMenuFrame {
     pub fn new() -> Self {
         let mut ui_box = UiBox::new(1, 5, 0.0, 10.0);
         let tabs = [
@@ -31,20 +29,19 @@ impl<'a, 'b> VisitorMenuFrame<'a, 'b> {
         VisitorMenuFrame {
             ui: ui_box,
             text_provider: TableTextProvider::new(),
-            _phantom: Default::default(),
         }
     }
 }
 
-impl<'a, 'b> Frame for VisitorMenuFrame<'a, 'b> {
+impl Frame for VisitorMenuFrame {
     type Error = PadlError;
     type State = Game;
-    type Graphics = WebGLCanvas;
 
     fn draw(
         &mut self,
         state: &mut Self::State,
-        window: &mut Self::Graphics,
+        window: &mut WebGLCanvas,
+        _timestamp: f64,
     ) -> Result<(), Self::Error> {
         self.text_provider.reset();
         let inner_area = state.inner_menu_area();

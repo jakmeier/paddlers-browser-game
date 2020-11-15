@@ -6,18 +6,15 @@ use crate::prelude::*;
 use div::doc;
 use paddle::quicksilver_compat::{Col, Rectangle, Transform};
 use paddle::Frame;
-use paddle::WebGLCanvas as QuicksilverWindow;
 use specs::WorldExt;
-use std::marker::PhantomData;
 use web_sys::Node;
 
-pub(crate) struct LeaderboardFrame<'a, 'b> {
+pub(crate) struct LeaderboardFrame {
     pane: div::PaneHandle,
     table: Node,
-    phantom: PhantomData<(&'a (), &'b ())>,
 }
 
-impl LeaderboardFrame<'_, '_> {
+impl LeaderboardFrame {
     pub fn new(area: &Rectangle) -> PadlResult<Self> {
         let pane = div::new_styled_pane(
             area.x() as u32,
@@ -32,11 +29,7 @@ impl LeaderboardFrame<'_, '_> {
 
         pane.hide()?;
 
-        Ok(LeaderboardFrame {
-            pane,
-            table: node,
-            phantom: PhantomData,
-        })
+        Ok(LeaderboardFrame { pane, table: node })
     }
     pub fn clear(&self) -> PadlResult<()> {
         while let Some(child) = self.table.last_child() {
@@ -75,15 +68,14 @@ impl LeaderboardFrame<'_, '_> {
     }
 }
 
-impl<'a, 'b> Frame for LeaderboardFrame<'a, 'b> {
+impl Frame for LeaderboardFrame {
     type Error = PadlError;
     type State = Game;
-    type Graphics = QuicksilverWindow;
-
     fn draw(
         &mut self,
         state: &mut Self::State,
-        window: &mut Self::Graphics,
+        window: &mut paddle::WebGLCanvas,
+        _timestamp: f64,
     ) -> Result<(), Self::Error> {
         let ui_state = state.world.read_resource::<ViewState>();
         let main_area = Rectangle::new(

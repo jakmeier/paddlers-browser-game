@@ -131,7 +131,6 @@ impl<'a, 'b> VisitorFrame<'a, 'b> {
 impl<'a, 'b> Frame for VisitorFrame<'a, 'b> {
     type Error = PadlError;
     type State = Game;
-    type Graphics = WebGLCanvas;
 
     fn update(&mut self, state: &mut Self::State) -> Result<(), Self::Error> {
         self.update_dispatcher.dispatch(&mut state.world);
@@ -160,7 +159,8 @@ impl<'a, 'b> Frame for VisitorFrame<'a, 'b> {
     fn draw(
         &mut self,
         state: &mut Self::State,
-        window: &mut Self::Graphics,
+        window: &mut WebGLCanvas,
+        _timestamp: f64,
     ) -> Result<(), Self::Error> {
         let ui_state = state.world.read_resource::<ViewState>();
         let main_area = Rectangle::new(
