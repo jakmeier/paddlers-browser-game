@@ -35,17 +35,17 @@ impl RestApiState {
             game_master_url: game_master_url().nuts_check().unwrap_or_default(),
         };
         let rest_activity = nuts::new_domained_activity(rest, &Domain::Network);
-        rest_activity.subscribe_owned(Self::http_buy_prophet);
-        rest_activity.subscribe_owned(Self::http_collect_reward);
-        rest_activity.subscribe_owned(Self::http_create_player);
-        rest_activity.subscribe_owned(Self::http_delete_building);
-        rest_activity.subscribe_owned(Self::http_invite);
-        rest_activity.subscribe_owned(Self::http_notify_visitor_satisfied);
-        rest_activity.subscribe_owned(Self::http_overwrite_tasks);
-        rest_activity.subscribe_owned(Self::http_place_building_0);
-        rest_activity.subscribe_owned(Self::http_send_attack);
-        rest_activity.subscribe_owned(Self::http_send_statistics);
-        rest_activity.subscribe_owned(Self::http_update_story_state);
+        rest_activity.private_channel(Self::http_buy_prophet);
+        rest_activity.private_channel(Self::http_collect_reward);
+        rest_activity.private_channel(Self::http_create_player);
+        rest_activity.private_channel(Self::http_delete_building);
+        rest_activity.private_channel(Self::http_invite);
+        rest_activity.private_channel(Self::http_notify_visitor_satisfied);
+        rest_activity.private_channel(Self::http_overwrite_tasks);
+        rest_activity.private_channel(Self::http_place_building_0);
+        rest_activity.private_channel(Self::http_send_attack);
+        rest_activity.private_channel(Self::http_send_statistics);
+        rest_activity.private_channel(Self::http_update_story_state);
     }
     pub fn http_place_building(
         pos: (usize, usize),

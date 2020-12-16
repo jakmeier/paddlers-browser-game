@@ -8,10 +8,10 @@
 
 use crate::gui::{sprites::*, utils::*, z::*};
 use paddle::graphics::Image;
-use paddle::{quicksilver_compat::*, WebGLCanvas};
+use paddle::{quicksilver_compat::*, DisplayArea};
 
 pub fn draw_leaf_border(
-    window: &mut WebGLCanvas,
+    window: &mut DisplayArea,
     sprites: &mut Sprites,
     area: &Rectangle,
     leaf_w: f32,
@@ -55,7 +55,7 @@ pub fn draw_leaf_border(
 }
 
 fn draw_column_texture(
-    window: &mut WebGLCanvas,
+    window: &mut DisplayArea,
     top: &Image,
     mid: &Image,
     bot: &Image,
@@ -63,26 +63,24 @@ fn draw_column_texture(
     end: f32,
     w: f32,
 ) {
-    let mut stamp = top.area();
+    let mut stamp = Rectangle::new(start, top.natural_size());
     let factor = w / stamp.width();
     stamp.size = stamp.size * factor;
-    stamp.pos = start;
     window.draw_ex(&stamp, Img(top), Transform::IDENTITY, Z_UI_BORDERS);
     stamp.pos.y += stamp.height();
-    stamp.size = mid.area().size * factor;
+    stamp.size = mid.natural_size() * factor;
     while stamp.y() + stamp.height() < end {
         window.draw_ex(&stamp, Img(mid), Transform::IDENTITY, Z_UI_BORDERS);
         stamp.pos.y += stamp.height();
     }
-    stamp.size = bot.area().size * factor;
+    stamp.size = bot.natural_size() * factor;
     window.draw_ex(&stamp, Img(bot), Transform::IDENTITY, Z_UI_BORDERS);
 }
 
-fn fill_row_with_img(window: &mut WebGLCanvas, img: &Image, start: Vector, end: f32, h: f32) {
-    let mut stamp = img.area();
+fn fill_row_with_img(window: &mut DisplayArea, img: &Image, start: Vector, end: f32, h: f32) {
+    let mut stamp = Rectangle::new(start, img.natural_size());
     let factor = h / stamp.height();
     stamp.size = stamp.size * factor;
-    stamp.pos = start;
     while stamp.x() < end {
         window.draw_ex(&stamp, Img(img), Transform::IDENTITY, Z_UI_BORDERS - 1);
         stamp.pos.x += stamp.width() * 0.9;
@@ -90,7 +88,7 @@ fn fill_row_with_img(window: &mut WebGLCanvas, img: &Image, start: Vector, end: 
 }
 
 pub fn draw_duck_step_line(
-    window: &mut WebGLCanvas,
+    window: &mut DisplayArea,
     sprites: &mut Sprites,
     start: Vector,
     end: f32,

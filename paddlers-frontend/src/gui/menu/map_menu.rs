@@ -1,4 +1,3 @@
-use crate::game::Game;
 use crate::gui::{
     gui_components::{ResourcesComponent, TableTextProvider},
     input::left_click::MapLeftClickSystem,
@@ -7,7 +6,8 @@ use crate::gui::{
     ui_state::UiState,
 };
 use crate::prelude::*;
-use paddle::quicksilver_compat::{MouseButton, Shape};
+use crate::{game::Game, gui::input::MouseButton};
+use paddle::quicksilver_compat::Shape;
 use paddle::Frame;
 use specs::prelude::*;
 
@@ -30,15 +30,11 @@ impl MapMenuFrame<'_, '_> {
     }
 }
 impl<'a, 'b> Frame for MapMenuFrame<'a, 'b> {
-    type Error = PadlError;
     type State = Game;
+    const WIDTH: u32 = crate::resolution::MENU_AREA_W;
+    const HEIGHT: u32 = crate::resolution::MENU_AREA_H;
 
-    fn draw(
-        &mut self,
-        state: &mut Self::State,
-        window: &mut WebGLCanvas,
-        _timestamp: f64,
-    ) -> Result<(), Self::Error> {
+    fn draw(&mut self, state: &mut Self::State, window: &mut DisplayArea, _timestamp: f64) {
         self.text_provider.reset();
         let inner_area = state.inner_menu_area();
 
@@ -47,7 +43,7 @@ impl<'a, 'b> Frame for MapMenuFrame<'a, 'b> {
             let (img_area, table_area) = menu_selected_entity_spacing(&inner_area);
             let world = &state.world;
             let sprites = &mut state.sprites;
-            draw_entity_img(world, sprites, window, e, &img_area)?;
+            draw_entity_img(world, sprites, window, e, &img_area);
             draw_map_entity_details_table(
                 world,
                 sprites,
@@ -56,28 +52,25 @@ impl<'a, 'b> Frame for MapMenuFrame<'a, 'b> {
                 &table_area,
                 &mut self.text_provider,
                 state.mouse.pos(),
-            )?;
+            );
         }
         self.text_provider.finish_draw();
-        Ok(())
     }
-    fn left_click(&mut self, state: &mut Self::State, pos: (i32, i32)) -> Result<(), Self::Error> {
+    fn left_click(&mut self, state: &mut Self::State, pos: (i32, i32)) {
         // This can be removed once the frame positions are checked properly before right_click is called
         let ui_state = state.world.fetch::<ViewState>();
         let mouse_pos: Vector = pos.into();
         let in_menu_area = mouse_pos.overlaps_rectangle(&(*ui_state).menu_box_area);
         if !in_menu_area {
-            return Ok(());
+            return;
         }
         std::mem::drop(ui_state);
 
         let ms = MouseState(mouse_pos, Some(MouseButton::Left));
         state.world.insert(ms);
         self.left_click_dispatcher.dispatch(&state.world);
-        Ok(())
     }
-    fn leave(&mut self, _state: &mut Self::State) -> Result<(), Self::Error> {
+    fn leave(&mut self, _state: &mut Self::State) {
         self.text_provider.hide();
-        Ok(())
     }
 }

@@ -1,13 +1,13 @@
 use crate::gui::utils::*;
 use paddle::quicksilver_compat::*;
-pub fn draw_color_palette(window: &mut WebGLCanvas, area: Rectangle) {
+pub fn draw_color_palette(window: &mut DisplayArea, area: Rectangle) {
     let (green, blue) = area.cut_horizontal(area.height() / 2.0);
     draw_three_colors(window, green, LIGHT_GREEN, GREEN, DARK_GREEN);
     draw_three_colors(window, blue, LIGHT_BLUE, BLUE, DARK_BLUE);
 }
 
 fn draw_three_colors(
-    window: &mut WebGLCanvas,
+    window: &mut DisplayArea,
     mut area: Rectangle,
     col1: Color,
     col2: Color,

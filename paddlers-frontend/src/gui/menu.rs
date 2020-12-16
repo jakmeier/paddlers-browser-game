@@ -29,7 +29,7 @@ use crate::gui::{
 use crate::prelude::*;
 use crate::resolution::ScreenResolution;
 use paddle::quicksilver_compat::{Col, Rectangle, Transform, Vector};
-use paddle::WebGLCanvas;
+use paddle::DisplayArea;
 use specs::prelude::*;
 
 impl ScreenResolution {
@@ -141,7 +141,7 @@ impl Game {
         data.inner_menu_box_area.clone()
     }
 
-    pub fn draw_menu_background(&mut self, window: &mut WebGLCanvas) -> PadlResult<()> {
+    pub fn draw_menu_background(&mut self, window: &mut DisplayArea) -> PadlResult<()> {
         let mut area = self.menu_box_area();
         let resolution = *self.world.read_resource::<ScreenResolution>();
 
@@ -176,11 +176,11 @@ impl Game {
 
     fn render_default_shop(
         &mut self,
-        window: &mut WebGLCanvas,
+        window: &mut DisplayArea,
         area: &Rectangle,
         text_provider: &mut TableTextProvider,
         res_comp: &mut ResourcesComponent,
-    ) -> PadlResult<()> {
+    ) {
         let mut table = vec![];
         let mut area = *area;
         // table.push(faith_details(self.town().faith));
@@ -190,7 +190,7 @@ impl Game {
         ));
         table.push(total_aura_details(self.town().ambience()));
         let shop = &mut self.town_context.world().write_resource::<DefaultShop>();
-        Self::draw_shop_prices(&mut area, &mut shop.ui, res_comp, self.mouse.pos())?;
+        Self::draw_shop_prices(&mut area, &mut shop.ui, res_comp, self.mouse.pos()).nuts_check();
 
         table.push(TableRow::InteractiveArea(&mut shop.ui));
 
@@ -224,10 +224,10 @@ impl Game {
 pub fn draw_entity_img(
     world: &World,
     sprites: &mut Sprites,
-    window: &mut WebGLCanvas,
+    window: &mut DisplayArea,
     e: Entity,
     area: &Rectangle,
-) -> PadlResult<()> {
+) {
     let r = world.read_storage::<Renderable>();
     let inner_area = area.shrink_to_center(0.8);
     if let Some(rd) = r.get(e) {
@@ -240,7 +240,7 @@ pub fn draw_entity_img(
                     SpriteIndex::Simple(background),
                     Z_MENU_BOX + 1,
                     FitStrategy::Center,
-                )?;
+                );
                 draw_static_image(
                     sprites,
                     window,
@@ -248,7 +248,7 @@ pub fn draw_entity_img(
                     main.default(),
                     Z_MENU_BOX + 2,
                     FitStrategy::Center,
-                )?;
+                );
             }
             RenderVariant::ImgWithColBackground(main, col) => {
                 window.draw_ex(area, Col(col), Transform::IDENTITY, Z_MENU_BOX + 1);
@@ -259,23 +259,22 @@ pub fn draw_entity_img(
                     main.default(),
                     Z_MENU_BOX + 2,
                     FitStrategy::Center,
-                )?;
+                );
             }
             _ => panic!("Not implemented"),
         }
     }
-    Ok(())
 }
 
 pub fn draw_map_entity_details_table(
     world: &World,
     sprites: &mut Sprites,
-    window: &mut WebGLCanvas,
+    window: &mut DisplayArea,
     e: Entity,
     area: &Rectangle,
     text_provider: &mut TableTextProvider,
     mouse_pos: Vector,
-) -> PadlResult<()> {
+) {
     let mut table = vec![];
     {
         let villages = world.read_storage::<VillageMetaInfo>();
@@ -301,19 +300,18 @@ pub fn draw_map_entity_details_table(
         world.read_resource::<Now>().0,
         TableVerticalAlignment::Top,
         mouse_pos,
-    )?;
-    Ok(())
+    );
 }
 pub fn draw_town_entity_details_table(
     world: &World,
     sprites: &mut Sprites,
-    window: &mut WebGLCanvas,
+    window: &mut DisplayArea,
     e: Entity,
     area: &Rectangle,
     text_provider: &mut TableTextProvider,
     res_comp: &mut ResourcesComponent,
     mouse_pos: Vector,
-) -> PadlResult<()> {
+) {
     let mut area = *area;
     let mut table = vec![];
 
@@ -368,7 +366,7 @@ pub fn draw_town_entity_details_table(
     }
 
     if let Some(ui) = ui_menu.get_mut(e) {
-        Game::draw_shop_prices(&mut area, &mut ui.ui, res_comp, mouse_pos)?;
+        Game::draw_shop_prices(&mut area, &mut ui.ui, res_comp, mouse_pos).nuts_check();
         table.push(TableRow::InteractiveArea(&mut ui.ui));
     }
 
@@ -383,8 +381,7 @@ pub fn draw_town_entity_details_table(
         world.read_resource::<Now>().0,
         TableVerticalAlignment::Top,
         mouse_pos,
-    )?;
-    Ok(())
+    );
 }
 
 fn aura_details(aura: &Aura) -> TableRow {

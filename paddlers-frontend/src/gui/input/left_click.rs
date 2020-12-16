@@ -1,3 +1,8 @@
+//! TODO: This module structure has not aged well...
+//!
+//! Right now, this module contains several specs systems, which
+//!  1) logically should be where the remaining code of those components is
+//!  2) could potentially be rewritten to not use dispatcher at all
 use super::{Clickable, MouseState};
 use crate::game::{
     components::*,
@@ -186,10 +191,7 @@ impl<'a> System<'a> for MapLeftClickSystem {
         let MouseState(mouse_pos, _button) = *mouse_state;
         if let Some(entity) = (*ui_state).selected_entity {
             if let Some(ui_menu) = ui_menus.get_mut(entity) {
-                let click_output = ui_menu.ui.click(mouse_pos).unwrap_or_else(|e| {
-                    nuts::publish(e);
-                    None
-                });
+                let click_output = ui_menu.ui.click(mouse_pos);
                 match click_output {
                     Some((ClickOutput::Event(e), _)) => {
                         nuts::publish(e);

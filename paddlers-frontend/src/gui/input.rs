@@ -1,9 +1,7 @@
-use crate::game::movement::Position;
-use crate::gui::input::pointer::PointerManager;
-use crate::gui::ui_state::Now;
 use crate::net::state::current_village;
 use crate::prelude::*;
 use crate::{game::fight::*, net::game_master_api::HttpDeleteBuilding};
+use crate::{game::movement::Position, net::game_master_api::RestApiState};
 use paddle::quicksilver_compat::Vector;
 /// This module keeps the logic to read input and, in most cases,
 /// redirect it to suitable modules to handle the input
@@ -11,12 +9,19 @@ use paddle::quicksilver_compat::*;
 use paddlers_shared_lib::prelude::*;
 use specs::prelude::*;
 
-pub mod drag;
-pub mod hover;
 pub mod left_click;
-pub mod pointer;
-pub use self::{hover::*, left_click::*};
+pub use self::left_click::*;
 use crate::gui::ui_state::UiState;
+
+#[derive(Clone, Copy, Debug, Default)]
+pub struct MouseInfo {
+    pub(crate) pos: Vector,
+}
+#[derive(Clone, Copy, Debug)]
+pub enum MouseButton {
+    Left,
+    Right,
+}
 
 #[derive(Default, Clone, Copy)]
 pub struct MouseState(pub Vector, pub Option<MouseButton>);
@@ -47,23 +52,9 @@ pub enum Grabbable {
 }
 
 impl crate::game::Game {
-    pub fn handle_quicksilver_event(
-        &mut self,
-        event: &Event,
-        pointer_manager: &mut PointerManager,
-    ) -> PadlResult<()> {
-        match event {
-            Event::MouseMoved(pos) => {
-                pointer_manager.move_pointer(&mut self.world, &pos);
-                self.prepare_town_resources();
-                pointer_manager.move_pointer(self.town_world_mut(), &pos);
-            }
-            Event::MouseButton(button, state) => {
-                let now = self.world.read_resource::<Now>().0;
-                let pos = &self.mouse.pos();
-                pointer_manager.button_event(now, pos, *button, *state);
-            }
-            Event::Key(key, state) if *key == Key::Escape && *state == ButtonState::Pressed => {
+    pub fn hotkey(&mut self, key: Key) {
+        match key {
+            Key::Escape => {
                 let mut ui_state = self.world.write_resource::<UiState>();
                 if ui_state.take_grabbed_item().is_none() {
                     ui_state.selected_entity = None;
@@ -73,7 +64,7 @@ impl crate::game::Game {
                     ui_state.selected_entity = None;
                 }
             }
-            Event::Key(key, state) if *key == Key::Delete && *state == ButtonState::Pressed => {
+            Key::Delete => {
                 let view = *self.world.fetch::<UiView>();
                 let town_world = self.town_world();
                 let mut ui_state = town_world.write_resource::<UiState>();
@@ -91,7 +82,7 @@ impl crate::game::Game {
                             std::mem::drop(pos_store);
                             std::mem::drop(resolution);
 
-                            nuts::publish(HttpDeleteBuilding {
+                            nuts::send_to::<RestApiState, _>(HttpDeleteBuilding {
                                 idx: tile_index,
                                 village: current_village(),
                             });
@@ -123,19 +114,27 @@ impl crate::game::Game {
                     _ => {}
                 }
             }
-            Event::Key(key, state) if *key == Key::Tab && *state == ButtonState::Pressed => {
+            Key::Tab => {
                 self.toggle_view();
             }
-            Event::Key(key, state) if *key == Key::H && *state == ButtonState::Pressed => {
+            Key::KeyH => {
                 self.toggle_help_view();
             }
-            _evt => {
-                // println!("Event: {:#?}", _evt)
+            _key => {
+                // println!("Key: {:#?}", _evt)
             }
         };
         #[cfg(feature = "dev_view")]
-        self.dev_view_event(event);
+        self.dev_view_hotkey(key);
         self.world.maintain();
-        Ok(())
+    }
+}
+
+impl MouseInfo {
+    pub fn pos(&self) -> Vector {
+        self.pos
+    }
+    pub fn set_pos(&mut self, pos: Vector) {
+        self.pos = pos
     }
 }

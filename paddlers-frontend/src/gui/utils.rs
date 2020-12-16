@@ -12,7 +12,7 @@ use crate::gui::animation::AnimationState;
 use crate::gui::sprites::*;
 use crate::prelude::*;
 use paddle::quicksilver_compat::*;
-use paddle::{FitStrategy, JmrRectangle, WebGLCanvas};
+use paddle::{DisplayArea, FitStrategy, JmrRectangle};
 
 // Improvement: Would be nice to have Copy here (maybe with string interning)
 #[derive(Debug, Clone)]
@@ -40,25 +40,25 @@ pub enum Direction {
 
 pub fn draw_animated_sprite(
     asset: &mut Sprites,
-    window: &mut WebGLCanvas,
+    window: &mut DisplayArea,
     max_area: &Rectangle,
     i: SpriteSet,
     z: i32,
     fit_strat: FitStrategy,
     animation_state: &AnimationState,
     frame: u32,
-) -> PadlResult<()> {
+) {
     let (image, transform) = i.animated(&animation_state.direction, frame);
     draw_image(asset, window, max_area, image, z, fit_strat, transform)
 }
 pub fn draw_static_image(
     asset: &mut Sprites,
-    window: &mut WebGLCanvas,
+    window: &mut DisplayArea,
     max_area: &Rectangle,
     i: SpriteIndex,
     z: i32,
     fit_strat: FitStrategy,
-) -> PadlResult<()> {
+) {
     draw_image(
         asset,
         window,
@@ -71,16 +71,16 @@ pub fn draw_static_image(
 }
 pub fn draw_image(
     sprites: &mut Sprites,
-    window: &mut WebGLCanvas,
+    window: &mut DisplayArea,
     max_area: &Rectangle,
     i: SpriteIndex,
     z: i32,
     fit_strat: FitStrategy,
     transform: Transform,
-) -> PadlResult<()> {
+) {
     let img = sprites.index(i);
     let mut area = *max_area;
-    let img_slope = img.area().height() / img.area().width();
+    let img_slope = img.natural_height() as f32 / img.natural_width() as f32;
     if img_slope < area.height() / area.width() {
         // high image
         area.size.y = area.width() * img_slope;
@@ -101,11 +101,10 @@ pub fn draw_image(
     }
 
     window.draw_ex(&area, Img(&img), transform, z);
-    Ok(())
 }
 pub fn draw_shape(
     sprites: &mut Sprites,
-    window: &mut WebGLCanvas,
+    window: &mut DisplayArea,
     draw_area: &Rectangle,
     i: PadlShapeIndex,
     fit_strat: FitStrategy,
@@ -117,7 +116,7 @@ pub fn draw_shape(
         place.size.y / shape.bounding_box.size.y,
     );
     let t = Transform::translate(place.pos) * Transform::scale(factor);
-    extend_transformed(window.mesh(), &shape.mesh, t);
+    window.draw_triangles_ex(&shape.mesh, t);
 }
 
 pub fn horizontal_flip() -> Transform {

@@ -1,6 +1,19 @@
 use paddlers_shared_lib::game_mechanics::town::{TOWN_X, TOWN_Y};
 use strum_macros::EnumIter;
 
+// These are game coordinates, which are an abstraction over different resolution.
+pub const SCREEN_H: u32 = 1080;
+pub const SCREEN_W: u32 = 1920;
+
+pub const MAIN_AREA_H: u32 = SCREEN_H;
+pub const TOWN_TILE_S: u32 = MAIN_AREA_H / TOWN_Y as u32;
+pub const MAIN_AREA_W: u32 = TOWN_TILE_S * TOWN_X as u32;
+
+pub const MENU_AREA_X: u32 = MAIN_AREA_W;
+pub const MENU_AREA_Y: u32 = 0;
+pub const MENU_AREA_W: u32 = SCREEN_W - MAIN_AREA_W;
+pub const MENU_AREA_H: u32 = SCREEN_H;
+
 #[derive(EnumIter, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ScreenResolution {
     Low,

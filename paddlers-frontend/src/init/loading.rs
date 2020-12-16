@@ -5,12 +5,12 @@ use crate::net::graphql::{
     ReportsResponse,
 };
 use crate::{game::game_event_manager::load_game_event_manager, prelude::PadlError};
-use crate::{game::net_receiver::loading_update_net, init::quicksilver_integration::Signal};
+use crate::{game::net_receiver::loading_update_net, game::toplevel::Signal};
 use crate::{gui::input::UiView, prelude::PadlErrorCode};
 use nuts::LifecycleStatus;
 use paddle::{
-    graphics::Image, graphics::ImageLoader, ErrorMessage, Frame, LoadScheduler, LoadedData,
-    LoadingDone, LoadingProgress, NutsCheck, TextBoard, UpdateWorld, WebGLCanvas,
+    graphics::Image, DisplayArea, ErrorMessage, Frame, LoadScheduler, LoadedData, LoadingDone,
+    LoadingProgress, NutsCheck, TextBoard, UpdateWorld,
 };
 use wasm_bindgen::JsCast;
 use web_sys::HtmlCanvasElement;
@@ -27,7 +27,7 @@ use crate::net::graphql::query_types::WorkerResponse;
 use crate::net::NetMsg;
 use crate::prelude::{PadlResult, ScreenResolution, TextDb};
 use paddle::quicksilver_compat::*;
-use paddle::{Domain, FloatingText, WorldEvent};
+use paddle::{Domain, FloatingText};
 use std::sync::mpsc::Receiver;
 
 /// State that is used while loading all data over the network.
@@ -50,7 +50,8 @@ pub struct GameLoadingData {
 
 impl LoadingFrame {
     fn run_as_activity(self) {
-        let aid = paddle::frame_to_activity(self, &Domain::Frame);
+        let fh = paddle::register_frame_no_state(self, (0, 0));
+        let aid = fh.activity();
         aid.subscribe_domained(|_loading_state, domain, msg: &LoadingProgress| {
             domain.store(Some(msg.clone()));
         });
@@ -87,9 +88,13 @@ impl LoadingFrame {
         canvas: HtmlCanvasElement,
         net_chan: Receiver<NetMsg>,
     ) {
+        let texture_config =
+            paddle::graphics::TextureConfig::default().with_bilinear_filtering_no_mipmaps();
         let config = paddle::PaddleConfig::default()
             .with_resolution(resolution.pixels())
-            .with_canvas(canvas);
+            .with_canvas(canvas)
+            .with_texture_config(texture_config)
+            .with_background_color(DARK_GREEN);
         paddle::init(config).expect("Failed creating window");
 
         let mut images = vec![];
@@ -127,14 +132,13 @@ impl LoadingFrame {
 
     fn draw_progress(
         &mut self,
-        window: &mut WebGLCanvas,
+        window: &mut DisplayArea,
         progress: f32,
         msg: &str,
     ) -> PadlResult<()> {
         // TODO (optimization): Refactor to make this call event-based
-        crate::window::adapt_window_size(window)?;
+        window.fit_display(20.0);
 
-        window.clear(DARK_GREEN);
         let r = self.resolution;
         let w = r.pixels().0;
         let y = r.progress_bar_area_y();
@@ -169,12 +173,10 @@ impl LoadingFrame {
                 TextBoard::display_error_message(":(\nLoading game failed".to_owned()).nuts_check(); // TODO: multi-lang errors
                 panic!("Fatal Error: Could not load game {:?}", e);
             }
-            Ok(mut game) => {
-                let pointer_manager =
-                    crate::gui::input::pointer::PointerManager::init(&mut game.world);
+            Ok(game) => {
                 game.register();
                 let view = UiView::Town;
-                let viewer = super::frame_loading::load_viewer(view, resolution);
+                let viewer = super::frame_loading::load_viewer(view);
                 paddle::share(leaderboard_data);
                 paddle::share_foreground(Signal::ResourcesUpdated);
 
@@ -185,28 +187,6 @@ impl LoadingFrame {
                     let view: UiView = *game.world.fetch();
                     viewer.set_view(view);
                 });
-
-                let pointer_manager_activity =
-                    nuts::new_domained_activity(pointer_manager, &Domain::Frame);
-                pointer_manager_activity.subscribe_domained(
-                    |pointer_manager, domain, _: &UpdateWorld| {
-                        let game: &mut Game = domain.try_get_mut().expect("Forgot to insert Game?");
-                        pointer_manager.run(game);
-                    },
-                );
-                pointer_manager_activity.subscribe_domained_mut(
-                    |pointer_manager, domain, msg: &mut WorldEvent| {
-                        let game: &mut Game = domain.try_get_mut().expect("Forgot to insert Game?");
-                        let event = msg.event();
-                        let res = game.handle_quicksilver_event(&event, pointer_manager);
-                        if let Err(e) = res {
-                            nuts::publish(e);
-                        }
-                    },
-                );
-                // For debugging (Consider removing)
-                pointer_manager_activity
-                    .on_leave(|_| panic!("Pointer manager should not be deactived"));
                 load_game_event_manager();
 
                 Ok(())
@@ -265,28 +245,23 @@ impl ScreenResolution {
 
 impl Frame for LoadingFrame {
     type State = Option<LoadScheduler>;
-    type Error = PadlError;
+    const WIDTH: u32 = crate::resolution::SCREEN_W;
+    const HEIGHT: u32 = crate::resolution::SCREEN_H;
 
-    fn draw(
-        &mut self,
-        state: &mut Self::State,
-        canvas: &mut WebGLCanvas,
-        _timestamp: f64,
-    ) -> Result<(), Self::Error> {
+    fn draw(&mut self, state: &mut Self::State, canvas: &mut DisplayArea, _timestamp: f64) {
         if let Some(lm) = state.as_ref() {
             let progress = lm.progress();
             let msg = lm.waiting_for();
-            self.draw_progress(canvas, progress, msg.unwrap_or("Done."))?;
+            self.draw_progress(canvas, progress, msg.unwrap_or("Done."))
+                .nuts_check();
         } else {
-            self.draw_progress(canvas, 0.0, "Loading...")?;
+            self.draw_progress(canvas, 0.0, "Loading...").nuts_check();
         }
-        Ok(())
     }
-    fn update(&mut self, maybe_lm: &mut Self::State) -> Result<(), Self::Error> {
+    fn update(&mut self, maybe_lm: &mut Self::State) {
         if let Some(lm) = maybe_lm.as_mut() {
-            loading_update_net(&mut self.net_chan, lm)?;
+            loading_update_net(&mut self.net_chan, lm).nuts_check();
         }
-        Ok(())
     }
 }
 

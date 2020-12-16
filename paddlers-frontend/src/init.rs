@@ -7,9 +7,6 @@ pub mod wasm_setup;
 /// Handles the loading phase when all assets are downloaded
 pub mod loading;
 
-// doc comment inlined
-pub(crate) mod quicksilver_integration;
-
 mod frame_loading;
 /// Boiler-plate code for initializing SPECS
 pub mod specs_registration;

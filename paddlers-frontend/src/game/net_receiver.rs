@@ -1,9 +1,8 @@
-use crate::game::town_resources::TownResources;
 use crate::game::units::hobos::insert_hobos;
 use crate::game::{
     components::*, units::worker_factory::create_worker_entities, units::workers::Worker,
 };
-use crate::init::quicksilver_integration::Signal;
+use crate::game::toplevel::Signal;
 use crate::net::graphql::query_types::WorkerResponse;
 use crate::net::graphql::query_types::{
     AttacksResponse, BuildingsResponse, HobosQueryResponse, VolatileVillageInfoResponse,
@@ -11,6 +10,7 @@ use crate::net::graphql::query_types::{
 use crate::net::NetMsg;
 use crate::prelude::*;
 use crate::{game::town::TownContext, net::game_master_api::HttpCreatePlayer};
+use crate::{game::town_resources::TownResources, net::game_master_api::RestApiState};
 use paddle::LoadScheduler;
 use paddlers_shared_lib::prelude::*;
 use std::convert::TryInto;
@@ -27,7 +27,7 @@ pub fn loading_update_net(
         Ok(msg) => match msg {
             NetMsg::Error(e) => match e.err {
                 PadlErrorCode::GraphQlResponseError(PadlApiError::PlayerNotCreated) => {
-                    nuts::publish(HttpCreatePlayer);
+                    nuts::send_to::<RestApiState, _>(HttpCreatePlayer);
                 }
                 _ => {
                     println!("Network Error: {}", e);

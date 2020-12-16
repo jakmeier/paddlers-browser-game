@@ -1,9 +1,7 @@
 use super::*;
-use crate::game::Game;
-use crate::prelude::*;
+use crate::{game::Game, resolution::{MAIN_AREA_H, MAIN_AREA_W}};
 use paddle::quicksilver_compat::geom::Shape;
-use paddle::Frame;
-use paddle::WebGLCanvas;
+use paddle::{DisplayArea, Frame};
 
 pub(crate) struct MapFrame {}
 
@@ -14,23 +12,12 @@ impl MapFrame {
 }
 
 impl Frame for MapFrame {
-    type Error = PadlError;
     type State = Game;
+    const WIDTH: u32 = MAIN_AREA_W;
+    const HEIGHT: u32 = MAIN_AREA_H;
 
-    fn draw(
-        &mut self,
-        state: &mut Self::State,
-        window: &mut WebGLCanvas,
-        _timestamp: f64,
-    ) -> Result<(), Self::Error> {
-        let ui_state = state.world.read_resource::<ViewState>();
-        let area = Rectangle::new(
-            (0, 0),
-            (
-                ui_state.menu_box_area.x(),
-                (window.project() * window.browser_region().size()).y,
-            ),
-        );
+    fn draw(&mut self, state: &mut Self::State, window: &mut DisplayArea, _timestamp: f64) {
+        let area = Rectangle::new((0, 0), Self::size());
         let (sprites, mut map) = (
             &mut state.sprites,
             GlobalMap::combined(
@@ -39,9 +26,8 @@ impl Frame for MapFrame {
             ),
         );
         map.render(window, sprites, &area);
-        Ok(())
     }
-    fn left_click(&mut self, state: &mut Self::State, pos: (i32, i32)) -> Result<(), Self::Error> {
+    fn left_click(&mut self, state: &mut Self::State, pos: (i32, i32)) {
         let mut map = state.world.fetch_mut::<GlobalMapSharedState>();
 
         let pos: Vector = pos.into();
@@ -55,6 +41,34 @@ impl Frame for MapFrame {
                 state.world.read_storage(),
             );
         }
-        Ok(())
     }
+    // TODO: dragging
+    // fn mouse_move(&mut self, state: &mut Self::State, pos: (i32, i32)) {
+    //     let v = end - start;
+    //     map.drag(v * 0.02);
+    // }
 }
+
+// TODO
+// #[derive(Default, Clone, Copy)]
+// /// Represents a drag input waiting to be processed by the DragSystem.
+// /// Can only hold one drag at the time.
+// /// When more drags are added, they are summarized to one single movement.
+// pub struct Drag(Option<(Vector, Vector)>);
+
+// impl Drag {
+//     // THIS NEEDS INTEGRATION
+//     pub fn add(&mut self, start: Vector, end: Vector) {
+//         if let Some(old) = self.0 {
+//             self.0 = Some((old.0, end));
+//         } else {
+//             self.0 = Some((start, end));
+//         }
+//     }
+//     pub fn is_some(&self) -> bool {
+//         self.0.is_some()
+//     }
+//     pub fn clear(&mut self) {
+//         self.0 = None;
+//     }
+// }

@@ -1,17 +1,20 @@
-use crate::game::{
-    components::*, fight::*, forestry::ForestrySystem, mana::extend_transformed,
-    movement::MoveSystem, story::entity_trigger::EntityTriggerSystem, town::Town,
-    units::worker_system::WorkerSystem, units::workers::Worker, Game,
-};
+use crate::game::toplevel::Signal;
 use crate::gui::{
     input::{left_click::TownLeftClickSystem, MouseState},
     ui_state::*,
 };
-use crate::init::quicksilver_integration::Signal;
 use crate::prelude::*;
+use crate::{
+    game::{
+        components::*, fight::*, forestry::ForestrySystem, movement::MoveSystem,
+        story::entity_trigger::EntityTriggerSystem, town::Town, units::worker_system::WorkerSystem,
+        units::workers::Worker, Game,
+    },
+    gui::input::MouseButton,
+};
 use paddle::quicksilver_compat::graphics::Mesh;
-use paddle::quicksilver_compat::{MouseButton, Shape, Vector};
-use paddle::{Frame, WebGLCanvas};
+use paddle::quicksilver_compat::{Shape, Vector};
+use paddle::{DisplayArea, Frame, NutsCheck};
 use specs::prelude::*;
 use std::ops::Deref;
 
@@ -23,23 +26,17 @@ pub(crate) struct TownFrame<'a, 'b> {
 }
 
 impl<'a, 'b> Frame for TownFrame<'a, 'b> {
-    type Error = PadlError;
     type State = Game;
+    const WIDTH: u32 = crate::resolution::MAIN_AREA_W;
+    const HEIGHT: u32 = crate::resolution::MAIN_AREA_H;
 
-    fn update(&mut self, state: &mut Self::State) -> Result<(), Self::Error> {
+    fn update(&mut self, state: &mut Self::State) {
         state.prepare_town_resources();
         let world = state.town_world_mut();
         world.maintain();
         self.town_dispatcher.dispatch(world);
-
-        Ok(())
     }
-    fn draw(
-        &mut self,
-        state: &mut Self::State,
-        window: &mut WebGLCanvas,
-        _timestamp: f64,
-    ) -> Result<(), Self::Error> {
+    fn draw(&mut self, state: &mut Self::State, window: &mut DisplayArea, _timestamp: f64) {
         {
             // FIXME: This should not be necessary if resources are defined properly
             state.prepare_town_resources();
@@ -50,21 +47,16 @@ impl<'a, 'b> Frame for TownFrame<'a, 'b> {
             let town = state.town_context.town_mut();
             if self.background_cache.is_none() {
                 self.background_cache = Some(Mesh::new());
-                town.render_background(self.background_cache.as_mut().unwrap(), asset, ul)?;
+                town.render_background(self.background_cache.as_mut().unwrap(), asset, ul);
             }
             self.background_cache.as_ref().unwrap().vertices.len();
-            extend_transformed(
-                window.mesh(),
-                self.background_cache.as_ref().unwrap(),
-                Default::default(),
-            );
-            town.render(window, asset, tick, ul)?;
+            window.draw_triangles(self.background_cache.as_ref().unwrap());
+            town.render(window, asset, tick, ul);
         }
-        state.draw_town_main(window)?;
-        Ok(())
+        state.draw_town_main(window);
     }
 
-    fn left_click(&mut self, state: &mut Self::State, pos: (i32, i32)) -> Result<(), Self::Error> {
+    fn left_click(&mut self, state: &mut Self::State, pos: (i32, i32)) {
         let town_world = state.town_world();
         let ui_state = town_world.fetch_mut::<ViewState>();
 
@@ -72,16 +64,15 @@ impl<'a, 'b> Frame for TownFrame<'a, 'b> {
         let mouse_pos: Vector = pos.into();
         let in_main_area = mouse_pos.overlaps_rectangle(&(*ui_state).main_area);
         if !in_main_area {
-            return Ok(());
+            return;
         }
         std::mem::drop(ui_state);
 
         let ms = MouseState(pos.into(), Some(MouseButton::Left));
         state.town_world_mut().insert(ms);
         self.left_click_dispatcher.dispatch(state.town_world());
-        Ok(())
     }
-    fn right_click(&mut self, state: &mut Self::State, pos: (i32, i32)) -> Result<(), Self::Error> {
+    fn right_click(&mut self, state: &mut Self::State, pos: (i32, i32)) {
         let town_world = state.town_world();
         let view_state = town_world.fetch_mut::<ViewState>();
 
@@ -89,13 +80,13 @@ impl<'a, 'b> Frame for TownFrame<'a, 'b> {
         let mouse_pos: Vector = pos.into();
         let in_main_area = mouse_pos.overlaps_rectangle(&(*view_state).main_area);
         if !in_main_area {
-            return Ok(());
+            return;
         }
 
         // Right click cancels grabbed item (take removes from option)
         let mut ui_state = town_world.fetch_mut::<UiState>();
         if ui_state.take_grabbed_item().is_some() {
-            return Ok(());
+            return;
         }
 
         let entities = town_world.entities();
@@ -132,8 +123,19 @@ impl<'a, 'b> Frame for TownFrame<'a, 'b> {
                 }
             }
         }
-
-        Ok(())
+    }
+    fn mouse_move(&mut self, state: &mut Self::State, mouse_pos: (i32, i32)) {
+        let mouse_pos = Vector::from(mouse_pos);
+        let mut ui_state = state.world.write_resource::<UiState>();
+        let position = state.world.read_storage::<Position>();
+        let entities = state.world.entities();
+        (*ui_state).hovered_entity = None;
+        for (e, pos) in (&entities, &position).join() {
+            if mouse_pos.overlaps_rectangle(&pos.area) {
+                (*ui_state).hovered_entity = Some(e);
+                break;
+            }
+        }
     }
 }
 
@@ -157,14 +159,13 @@ impl<'a, 'b> TownFrame<'a, 'b> {
             town_dispatcher,
         }
     }
-    pub fn signal(&mut self, state: &mut Game, msg: &Signal) -> Result<(), PadlError> {
+    pub fn signal(&mut self, state: &mut Game, msg: &Signal) {
         match msg {
             Signal::PlayerInfoUpdated => {
-                state.update_temple()?;
+                state.update_temple().nuts_check();
             }
             _ => {}
         }
-        Ok(())
     }
 }
 impl Game {

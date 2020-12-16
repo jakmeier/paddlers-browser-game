@@ -16,18 +16,21 @@ pub(crate) mod net_receiver;
 pub(crate) mod player_info;
 pub(crate) mod status_effects;
 pub(crate) mod story;
+pub(crate) mod toplevel;
 pub(crate) mod town;
 pub(crate) mod town_resources;
 pub(crate) mod units;
 pub(crate) mod visits;
 
-use crate::game::{components::*, player_info::PlayerInfo, town::TownContextManager};
 use crate::gui::{input, sprites::*, ui_state::*};
 use crate::init::loading::GameLoadingData;
-use crate::logging::statistics::Statistician;
 use crate::net::NetMsg;
 use crate::prelude::*;
 use crate::{game::net_receiver::*, net::game_master_api::UpdateRestApi};
+use crate::{
+    game::{components::*, player_info::PlayerInfo, town::TownContextManager},
+    gui::input::MouseInfo,
+};
 use chrono::NaiveDateTime;
 use game_event_manager::GameEvent;
 use map::{GlobalMap, GlobalMapPrivateState};
@@ -46,8 +49,7 @@ pub(crate) struct Game {
     pub net: Receiver<NetMsg>,
     pub time_zero: NaiveDateTime,
     pub total_updates: u64,
-    pub stats: Statistician,
-    pub mouse: Mouse,
+    pub mouse: MouseInfo,
     // TODO: [0.1.4] These would better fit into frame state, however,
     // there is currently no good solution to share it between main-frame and menu-frame
     pub map: Option<GlobalMapPrivateState>,
@@ -81,10 +83,9 @@ impl Game {
             net: net_chan,
             time_zero: now,
             total_updates: 0,
-            stats: Statistician::new(now),
             map: None,
             town_context,
-            mouse: Mouse::init(),
+            mouse: MouseInfo::default(),
             #[cfg(feature = "dev_view")]
             palette: false,
             #[cfg(feature = "dev_view")]

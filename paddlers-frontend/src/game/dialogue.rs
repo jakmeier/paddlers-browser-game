@@ -13,7 +13,6 @@ use lyon::{math::point, path::Path, tessellation::*};
 use paddle::quicksilver_compat::graphics::{Mesh, ShapeRenderer};
 use paddle::quicksilver_compat::{Col, Rectangle, Transform};
 use paddle::Frame;
-use paddle::WebGLCanvas as QuicksilverWindow;
 use paddle::*;
 use paddlers_shared_lib::story::story_state::StoryState;
 use specs::WorldExt;
@@ -30,7 +29,8 @@ pub(crate) struct DialogueFrame {
 }
 
 impl DialogueFrame {
-    pub fn new(area: &Rectangle) -> PadlResult<Self> {
+    pub fn new() -> PadlResult<Self> {
+        let area = Self::area();
         let (left_area, bubble_area) = area
             .shrink_to_center(0.875)
             .cut_vertical(0.38195 * area.size.x);
@@ -127,9 +127,9 @@ impl DialogueFrame {
         &mut self,
         sprites: &mut Sprites,
         now: NaiveDateTime,
-        window: &mut QuicksilverWindow,
+        window: &mut DisplayArea,
         mouse_pos: Vector,
-    ) -> PadlResult<()> {
+    ) {
         let mut table = Vec::new();
         for s in &self.text_lines {
             table.push(TableRow::Text(s.to_owned()));
@@ -146,13 +146,12 @@ impl DialogueFrame {
             now,
             TableVerticalAlignment::Center,
             mouse_pos,
-        )?;
-        Ok(())
+        );
     }
     pub fn draw_background(
         &self,
         sprites: &mut Sprites,
-        window: &mut QuicksilverWindow,
+        window: &mut DisplayArea,
         main_area: Rectangle,
         resolution: ScreenResolution,
     ) {
@@ -169,9 +168,9 @@ impl DialogueFrame {
     pub fn draw_image_with_text_bubble(
         &self,
         sprites: &mut Sprites,
-        window: &mut QuicksilverWindow,
+        window: &mut DisplayArea,
         image: SpriteIndex,
-    ) -> PadlResult<()> {
+    ) {
         draw_static_image(
             sprites,
             window,
@@ -179,12 +178,8 @@ impl DialogueFrame {
             image,
             Z_TEXTURE + 1,
             FitStrategy::Center,
-        )?;
-
-        let t = Transform::default();
-        extend_transformed(window.mesh(), &self.text_bubble, t);
-
-        Ok(())
+        );
+        window.draw_triangles(&self.text_bubble);
     }
 }
 
@@ -202,54 +197,38 @@ pub struct NewStoryState {
 }
 
 impl DialogueFrame {
-    pub fn receive_load_scene(
-        &mut self,
-        state: &mut Game,
-        msg: &LoadNewDialogueScene,
-    ) -> Result<(), PadlError> {
+    pub fn receive_load_scene(&mut self, state: &mut Game, msg: &LoadNewDialogueScene) {
         self.load_scene(msg.scene.load_scene(msg.slide), &state.locale);
-
-        Ok(())
     }
-    pub fn receive_new_story_state(
-        &mut self,
-        state: &mut Game,
-        msg: &NewStoryState,
-    ) -> Result<(), PadlError> {
+    pub fn receive_new_story_state(&mut self, state: &mut Game, msg: &NewStoryState) {
         state.set_story_state(msg.new_story_state);
-        state.load_story_state()?;
-        Ok(())
+        state.load_story_state().nuts_check();
     }
 }
 impl Frame for DialogueFrame {
-    type Error = PadlError;
     type State = Game;
-    fn draw(
-        &mut self,
-        state: &mut Self::State,
-        window: &mut WebGLCanvas,
-        _timestamp: f64,
-    ) -> Result<(), Self::Error> {
+    const WIDTH: u32 = crate::resolution::SCREEN_W;
+    const HEIGHT: u32 = crate::resolution::SCREEN_H;
+    fn draw(&mut self, state: &mut Self::State, window: &mut DisplayArea, _timestamp: f64) {
         self.text_provider.reset();
         let resolution = *state.world.read_resource::<ScreenResolution>();
-        let main_area = Rectangle::new_sized(window.project() * window.browser_region().size());
+        let main_area = Rectangle::new_sized(Self::size());
         self.draw_background(&mut state.sprites, window, main_area, resolution);
-        self.draw_image_with_text_bubble(&mut state.sprites, window, self.image)?;
+        self.draw_image_with_text_bubble(&mut state.sprites, window, self.image);
         self.draw_active_area(
             &mut state.sprites,
             state.world.read_resource::<Now>().0,
             window,
             state.mouse.pos(),
-        )?;
+        );
         self.text_provider.finish_draw();
-        Ok(())
     }
-    fn left_click(&mut self, state: &mut Self::State, pos: (i32, i32)) -> Result<(), Self::Error> {
-        if let Some(output) = self.buttons.click(pos.into())? {
+    fn left_click(&mut self, state: &mut Self::State, pos: (i32, i32)) {
+        if let Some(output) = self.buttons.click(pos.into()) {
             match output {
                 (ClickOutput::SlideAction(a), None) => {
                     if let Some(i) = a.next_slide {
-                        self.load_slide(i, &state.locale)?;
+                        self.load_slide(i, &state.locale).nuts_check();
                     }
                     if let Some(v) = a.next_view {
                         let evt = GameEvent::SwitchToView(v);
@@ -260,17 +239,16 @@ impl Frame for DialogueFrame {
                         nuts::publish(evt);
                     }
                 }
-                _ => PadlErrorCode::DevMsg("Unimplemented ClickOutput in dialogue.rs").dev()?,
+                _ => {
+                    PadlErrorCode::DevMsg("Unimplemented ClickOutput in dialogue.rs")
+                        .dev::<()>()
+                        .nuts_check();
+                }
             }
         }
-        Ok(())
     }
-    fn enter(&mut self, _state: &mut Self::State) -> Result<(), Self::Error> {
-        Ok(())
-    }
-    fn leave(&mut self, _state: &mut Self::State) -> Result<(), Self::Error> {
+    fn leave(&mut self, _state: &mut Self::State) {
         self.text_provider.hide();
-        Ok(())
     }
 }
 

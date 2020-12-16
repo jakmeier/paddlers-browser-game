@@ -1,7 +1,6 @@
 use crate::game::player_info::PlayerInfo;
 use crate::gui::{gui_components::*, utils::*};
 use crate::gui::{input::Grabbable, sprites::WithSprite};
-use crate::prelude::*;
 use paddle::quicksilver_compat::*;
 use paddlers_shared_lib::api::shop::*;
 use paddlers_shared_lib::prelude::*;
@@ -44,16 +43,13 @@ impl DefaultShop {
         );
     }
 
-    pub fn click(
-        &self,
-        mouse: impl Into<Vector>,
-    ) -> PadlResult<Option<(Grabbable, Option<Condition>)>> {
-        self.ui.click(mouse.into()).map(|buy_this| {
-            if let Some((ClickOutput::BuildingType(building_type), condition)) = buy_this {
-                Some((Grabbable::NewBuilding(building_type), condition))
-            } else {
-                None
-            }
-        })
+    pub fn click(&self, mouse: impl Into<Vector>) -> Option<(Grabbable, Option<Condition>)> {
+        if let Some((ClickOutput::BuildingType(building_type), condition)) =
+            self.ui.click(mouse.into())
+        {
+            Some((Grabbable::NewBuilding(building_type), condition))
+        } else {
+            None
+        }
     }
 }

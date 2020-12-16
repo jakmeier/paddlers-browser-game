@@ -1,8 +1,8 @@
 use crate::gui::{gui_components::*, input::UiView, sprites::*, ui_state::Now, utils::*};
-use crate::init::quicksilver_integration::Signal;
+use crate::game::toplevel::Signal;
 use crate::net::NetMsg;
 use crate::prelude::*;
-use paddle::WebGLCanvas;
+use paddle::{DisplayArea, NutsCheck};
 use specs::prelude::*;
 
 pub(crate) struct MenuBackgroundFrame {
@@ -57,7 +57,7 @@ impl MenuBackgroundFrame {
         self.ui
             .update_notifications(Some(vec![0, 0, self.reports_to_collect, 0]));
     }
-    pub fn network_message(&mut self, _state: &mut Game, msg: &NetMsg) -> Result<(), PadlError> {
+    pub fn network_message(&mut self, _state: &mut Game, msg: &NetMsg) {
         match msg {
             NetMsg::Reports(data) => {
                 let new_reports = data.village.reports.len();
@@ -66,9 +66,8 @@ impl MenuBackgroundFrame {
             }
             _ => {}
         }
-        Ok(())
     }
-    pub fn signal(&mut self, _state: &mut Game, msg: &Signal) -> Result<(), PadlError> {
+    pub fn signal(&mut self, _state: &mut Game, msg: &Signal) {
         match msg {
             Signal::NewReportCount(n) => {
                 self.reports_to_collect = *n;
@@ -76,22 +75,17 @@ impl MenuBackgroundFrame {
             }
             _ => {}
         }
-        Ok(())
     }
 }
 
 impl Frame for MenuBackgroundFrame {
-    type Error = PadlError;
     type State = Game;
+    const WIDTH: u32 = crate::resolution::MENU_AREA_W;
+    const HEIGHT: u32 = crate::resolution::MENU_AREA_H;
 
-    fn draw(
-        &mut self,
-        state: &mut Self::State,
-        window: &mut WebGLCanvas,
-        _timestamp: f64,
-    ) -> Result<(), Self::Error> {
+    fn draw(&mut self, state: &mut Self::State, window: &mut DisplayArea, _timestamp: f64) {
         self.tp.reset();
-        state.draw_menu_background(window)?;
+        state.draw_menu_background(window).nuts_check();
         let button_area = state.button_area();
         let (sprites, now) = (&mut state.sprites, state.world.read_resource::<Now>().0);
         self.ui.draw(
@@ -101,18 +95,16 @@ impl Frame for MenuBackgroundFrame {
             now,
             &button_area,
             state.mouse.pos(),
-        )?;
+        );
         self.tp.finish_draw();
-        Ok(())
     }
-    fn left_click(&mut self, state: &mut Self::State, pos: (i32, i32)) -> Result<(), Self::Error> {
-        let result = match self.ui.click(pos.into())? {
+    fn left_click(&mut self, state: &mut Self::State, pos: (i32, i32)) {
+        let result = match self.ui.click(pos.into()) {
             Some((ClickOutput::Event(event), _)) => Ok(Some(event)),
             _ => Ok(None),
         };
         if let Some(event) = state.check(result).flatten() {
             nuts::publish(event);
         }
-        Ok(())
     }
 }

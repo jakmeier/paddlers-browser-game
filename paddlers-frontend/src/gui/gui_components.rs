@@ -30,15 +30,15 @@ pub trait InteractiveTableArea {
     /// Draw the area on a specified area
     fn draw(
         &mut self,
-        window: &mut WebGLCanvas,
+        window: &mut DisplayArea,
         sprites: &mut Sprites,
         tp: &mut TableTextProvider,
         now: NaiveDateTime,
         area: &Rectangle,
         mouse_pos: Vector,
-    ) -> PadlResult<()>;
+    );
     /// Check if the mouse hits somthing on the area
-    fn click(&self, mouse: Vector) -> PadlResult<Option<(ClickOutput, Option<Condition>)>>;
+    fn click(&self, mouse: Vector) -> Option<(ClickOutput, Option<Condition>)>;
     /// Remove one of the clickable options
     fn remove(&mut self, output: ClickOutput);
 }
@@ -108,7 +108,7 @@ impl TableTextProvider {
 }
 
 pub fn draw_table(
-    window: &mut WebGLCanvas,
+    window: &mut DisplayArea,
     sprites: &mut Sprites,
     table: &mut [TableRow],
     max_area: &Rectangle,
@@ -118,7 +118,7 @@ pub fn draw_table(
     now: NaiveDateTime,
     alignment: TableVerticalAlignment,
     mouse_pos: Vector,
-) -> PadlResult<()> {
+) {
     let total_rows = row_count(table);
     let row_height = max_row_height.min(max_area.height() / total_rows as f32);
     let font_h = row_height * 0.9;
@@ -158,13 +158,13 @@ pub fn draw_table(
                     .allocate()
                     .write(window, &text_area, z, FitStrategy::Center, text)
                     .nuts_check();
-                draw_static_image(sprites, window, &symbol, *img, z, FitStrategy::Center)?;
+                draw_static_image(sprites, window, &symbol, *img, z, FitStrategy::Center);
                 line.pos.y += row_height;
             }
             TableRow::InteractiveArea(ia) => {
                 let mut area = line.clone();
                 area.size.y = area.size.y * ia.rows() as f32;
-                ia.draw(window, sprites, text_provider, now, &area, mouse_pos)?;
+                ia.draw(window, sprites, text_provider, now, &area, mouse_pos);
                 line.pos.y += area.size.y;
             }
             TableRow::ProgressBar(bkgcol, col, i, n, label) => {
@@ -202,7 +202,6 @@ pub fn draw_table(
             }
         }
     }
-    Ok(())
 }
 
 fn row_count(table: &[TableRow]) -> usize {

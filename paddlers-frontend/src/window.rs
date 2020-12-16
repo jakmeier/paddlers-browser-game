@@ -1,21 +1,6 @@
 use crate::prelude::*;
-use paddle::{JsError, WebGLCanvas};
+use paddle::{JsError};
 use strum::IntoEnumIterator;
-
-pub fn adapt_window_size(window: &mut WebGLCanvas) -> PadlResult<()> {
-    window.fit_to_screen(20.0)?;
-    let area = window.browser_region();
-
-    let x = area.x();
-    let y = area.y();
-    let w = area.width();
-    let h = area.height();
-
-    div::reposition(x as u32, y as u32)?;
-    window.set_size((w, h));
-    div::resize(w as u32, h as u32)?;
-    Ok(())
-}
 
 /// Determines a resolution which is close to the current window size
 pub fn estimate_screen_size() -> PadlResult<ScreenResolution> {

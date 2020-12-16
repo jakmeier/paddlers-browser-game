@@ -1,13 +1,14 @@
-use crate::gui::sprites::*;
 use crate::gui::utils::colors::LIGHT_BLUE;
-use crate::gui::z::*;
 use crate::net::NetMsg;
 use crate::prelude::*;
+use crate::{
+    gui::sprites::*,
+    resolution::{MAIN_AREA_H, MAIN_AREA_W},
+};
 use div::doc;
-use paddle::quicksilver_compat::{Col, Rectangle, Transform};
-use paddle::WebGLCanvas;
+use paddle::DisplayArea;
+use paddle::NutsCheck;
 use paddlers_shared_lib::prelude::VisitReportKey;
-use specs::prelude::*;
 use web_sys::{Element, Node};
 
 pub(crate) struct ReportFrame {
@@ -24,8 +25,9 @@ struct Report {
 }
 
 impl ReportFrame {
-    pub fn new(area: Rectangle, resolution: ScreenResolution) -> PadlResult<Self> {
-        let right_padding = resolution.leaves_border_w() * 0.75;
+    pub fn new() -> PadlResult<Self> {
+        let area = Self::area();
+        let right_padding = ScreenResolution::High.leaves_border_w() * 0.75;
         let pane = div::new_pane(
             area.x() as u32,
             area.y() as u32,
@@ -134,7 +136,7 @@ impl ReportFrame {
     fn number_or_reports(&self) -> usize {
         self.table.child_nodes().length() as usize - 1 // -1 for title
     }
-    pub fn network_message(&mut self, state: &mut Game, msg: &NetMsg) -> Result<(), PadlError> {
+    pub fn network_message(&mut self, state: &mut Game, msg: &NetMsg) {
         match msg {
             NetMsg::Reports(data) => {
                 for r in &data.village.reports {
@@ -147,43 +149,27 @@ impl ReportFrame {
                             sticks: r.sticks,
                         },
                         &state.sprites,
-                    )?;
+                    )
+                    .nuts_check();
                 }
             }
             _ => {}
         }
-        Ok(())
     }
 }
 
 impl Frame for ReportFrame {
-    type Error = PadlError;
     type State = Game;
+    const WIDTH: u32 = MAIN_AREA_W;
+    const HEIGHT: u32 = MAIN_AREA_H;
 
-    fn draw(
-        &mut self,
-        state: &mut Self::State,
-        window: &mut WebGLCanvas,
-        _timestamp: f64,
-    ) -> Result<(), Self::Error> {
-        let ui_state = state.world.read_resource::<ViewState>();
-        let main_area = Rectangle::new(
-            (0, 0),
-            (
-                ui_state.menu_box_area.x(),
-                (window.project() * window.browser_region().size()).y,
-            ),
-        );
-        std::mem::drop(ui_state);
-        window.draw_ex(&main_area, Col(LIGHT_BLUE), Transform::IDENTITY, Z_TEXTURE);
-        Ok(())
+    fn draw(&mut self, state: &mut Self::State, window: &mut DisplayArea, _timestamp: f64) {
+        window.fill(LIGHT_BLUE);
     }
-    fn enter(&mut self, _state: &mut Self::State) -> Result<(), Self::Error> {
-        self.pane.show()?;
-        Ok(())
+    fn enter(&mut self, _state: &mut Self::State) {
+        self.pane.show().nuts_check();
     }
-    fn leave(&mut self, _state: &mut Self::State) -> Result<(), Self::Error> {
-        self.pane.hide()?;
-        Ok(())
+    fn leave(&mut self, _state: &mut Self::State) {
+        self.pane.hide().nuts_check();
     }
 }

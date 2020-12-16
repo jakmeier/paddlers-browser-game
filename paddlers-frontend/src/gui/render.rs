@@ -41,7 +41,7 @@ impl Renderable {
 }
 
 impl Game {
-    pub fn draw_town_main(&mut self, window: &mut WebGLCanvas) -> PadlResult<()> {
+    pub fn draw_town_main(&mut self, window: &mut DisplayArea) {
         let world = self.town_context.world();
         let ui_state = world.read_resource::<UiState>();
         let hovered_entity = ui_state.hovered_entity;
@@ -50,7 +50,7 @@ impl Game {
 
         let sprites = &mut self.sprites;
         if let Some(entity) = hovered_entity {
-            render_hovering(world, window, sprites, entity)?;
+            render_hovering(world, window, sprites, entity);
         }
         // TODO XXX TODO
         // if let Some(grabbed) = grabbed_item {
@@ -60,17 +60,11 @@ impl Game {
         //     window.set_cursor(MouseCursor::Default);
         // }
 
-        render_town_entities(world, window, sprites)?;
-
-        Ok(())
+        render_town_entities(world, window, sprites);
     }
 }
 
-pub fn render_town_entities(
-    world: &World,
-    window: &mut WebGLCanvas,
-    sprites: &mut Sprites,
-) -> PadlResult<()> {
+pub fn render_town_entities(world: &World, window: &mut DisplayArea, sprites: &mut Sprites) {
     let pos_store = world.read_storage::<Position>();
     let rend_store = world.read_storage::<Renderable>();
     let animation_store = world.read_storage::<AnimationState>();
@@ -94,7 +88,7 @@ pub fn render_town_entities(
                         FitStrategy::TopLeft,
                         animation,
                         tick.0,
-                    )?;
+                    );
                 } else {
                     draw_static_image(
                         sprites,
@@ -103,7 +97,7 @@ pub fn render_town_entities(
                         i.default(),
                         pos.z,
                         FitStrategy::TopLeft,
-                    )?;
+                    );
                 }
             }
             _ => panic!("Not implemented"),
@@ -112,15 +106,14 @@ pub fn render_town_entities(
             draw_shiny_border(window, pos.area, tick.0);
         }
     }
-    Ok(())
 }
 
 pub fn render_hovering(
     world: &World,
-    window: &mut WebGLCanvas,
+    window: &mut DisplayArea,
     sprites: &mut Sprites,
     entity: Entity,
-) -> PadlResult<()> {
+) {
     let position_store = world.read_storage::<Position>();
     let range_store = world.read_storage::<Range>();
     let health_store = world.read_storage::<Health>();
@@ -130,25 +123,24 @@ pub fn render_hovering(
         .join()
         .get(entity, &world.entities())
     {
-        range.draw(window, &p.area, *resolution)?;
+        range.draw(window, &p.area, *resolution);
     }
 
     if let Some((health, p)) = (&health_store, &position_store)
         .join()
         .get(entity, &world.entities())
     {
-        render_health(&health, sprites, window, &p.area)?;
+        render_health(&health, sprites, window, &p.area);
     }
-    Ok(())
 }
 
 pub fn render_grabbed_item(
     world: &World,
-    window: &mut WebGLCanvas,
+    window: &mut DisplayArea,
     sprites: &mut Sprites,
     item: &Grabbable,
     mouse: Vector,
-) -> PadlResult<()> {
+) {
     let ul = world.fetch::<ScreenResolution>().unit_length();
     let center = mouse - (ul / 2.0, ul / 2.0).into();
     let max_area = Rectangle::new(center, (ul, ul));
@@ -160,7 +152,7 @@ pub fn render_grabbed_item(
             building_type.sprite().default(),
             Z_GRABBED_ITEM,
             FitStrategy::TopLeft,
-        )?,
+        ),
         Grabbable::Ability(ability) => draw_static_image(
             sprites,
             window,
@@ -168,17 +160,16 @@ pub fn render_grabbed_item(
             ability.sprite().default(),
             Z_GRABBED_ITEM,
             FitStrategy::TopLeft,
-        )?,
+        ),
     }
-    Ok(())
 }
 
 fn render_health(
     health: &Health,
     sprites: &mut Sprites,
-    window: &mut WebGLCanvas,
+    window: &mut DisplayArea,
     area: &Rectangle,
-) -> PadlResult<()> {
+) {
     let (max, hp) = (health.max_hp, health.hp);
     let unit_pos = area.pos;
     let w = area.width();
@@ -196,7 +187,7 @@ fn render_health(
                 SpriteIndex::Simple(SingleSprite::Heart),
                 Z_HP_BAR,
                 FitStrategy::Center,
-            )?;
+            );
         }
         hp if hp < 10 => {
             let d = w / hp as f32;
@@ -220,14 +211,12 @@ fn render_health(
             draw_rect_z(window, &lost_hp_area, GREEN, 1);
         }
     }
-
-    Ok(())
 }
 
 impl Range {
     fn draw(
         &self,
-        window: &mut WebGLCanvas,
+        window: &mut DisplayArea,
         area: &Rectangle,
         resolution: ScreenResolution,
     ) -> PadlResult<()> {
@@ -237,10 +226,10 @@ impl Range {
     }
 }
 #[inline]
-fn draw_rect(window: &mut WebGLCanvas, area: &Rectangle, col: Color) {
+fn draw_rect(window: &mut DisplayArea, area: &Rectangle, col: Color) {
     draw_rect_z(window, area, col, 0);
 }
 #[inline]
-fn draw_rect_z(window: &mut WebGLCanvas, area: &Rectangle, col: Color, z_shift: i32) {
+fn draw_rect_z(window: &mut DisplayArea, area: &Rectangle, col: Color, z_shift: i32) {
     window.draw_ex(area, Col(col), Transform::IDENTITY, Z_HP_BAR + z_shift);
 }

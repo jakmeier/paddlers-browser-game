@@ -1,13 +1,16 @@
 //! For incoming visits (attacks)
 
-use crate::gui::utils::colors::LIGHT_BLUE;
 use crate::gui::z::*;
 use crate::net::state::current_village;
 use crate::prelude::*;
+use crate::{gui::utils::colors::LIGHT_BLUE, net::game_master_api::RestApiState};
 use chrono::NaiveDateTime;
 use div::new_pane;
-use paddle::quicksilver_compat::{Col, Rectangle, Transform};
-use paddle::{utc_now, Frame, TextNode, WebGLCanvas};
+use paddle::{
+    quicksilver_compat::{Col, Rectangle, Transform},
+    NutsCheck,
+};
+use paddle::{utc_now, DisplayArea, Frame, TextNode};
 use paddlers_shared_lib::api::attacks::*;
 use specs::prelude::*;
 use wasm_bindgen::JsCast;
@@ -32,7 +35,7 @@ impl Game {
                 to: target,
                 units: vec![hobo],
             };
-            nuts::publish(atk);
+            nuts::send_to::<RestApiState, _>(atk);
             Ok(())
         } else {
             PadlErrorCode::NotEnoughUnits.usr()
@@ -89,12 +92,12 @@ pub(crate) struct VisitorFrame<'a, 'b> {
 }
 
 impl<'a, 'b> VisitorFrame<'a, 'b> {
-    pub fn new(x: f32, y: f32, w: f32, h: f32) -> PadlResult<Self> {
+    pub fn new(x: f32, y: f32) -> PadlResult<Self> {
         let pane = new_pane(
             x as u32,
             y as u32,
-            (w / 2.0) as u32,
-            h as u32,
+            Self::WIDTH / 2,
+            Self::HEIGHT,
             r#"<div class="attack-table"></div>"#,
         )
         .expect("Pane not set up properly");
@@ -129,10 +132,11 @@ impl<'a, 'b> VisitorFrame<'a, 'b> {
 }
 
 impl<'a, 'b> Frame for VisitorFrame<'a, 'b> {
-    type Error = PadlError;
     type State = Game;
+    const WIDTH: u32 = crate::resolution::MAIN_AREA_W;
+    const HEIGHT: u32 = crate::resolution::MAIN_AREA_H;
 
-    fn update(&mut self, state: &mut Self::State) -> Result<(), Self::Error> {
+    fn update(&mut self, state: &mut Self::State) {
         self.update_dispatcher.dispatch(&mut state.world);
         let mut attack = state.world.write_storage::<Attack>();
         for a in (&mut attack).join() {
@@ -154,33 +158,18 @@ impl<'a, 'b> Frame for VisitorFrame<'a, 'b> {
                 }
             }
         }
-        Ok(())
     }
-    fn draw(
-        &mut self,
-        state: &mut Self::State,
-        window: &mut WebGLCanvas,
-        _timestamp: f64,
-    ) -> Result<(), Self::Error> {
+    fn draw(&mut self, state: &mut Self::State, window: &mut DisplayArea, _timestamp: f64) {
         let ui_state = state.world.read_resource::<ViewState>();
-        let main_area = Rectangle::new(
-            (0, 0),
-            (
-                ui_state.menu_box_area.x(),
-                (window.project() * window.browser_region().size()).y,
-            ),
-        );
+        let main_area = Rectangle::new((0, 0), Self::size());
         std::mem::drop(ui_state);
         window.draw_ex(&main_area, Col(LIGHT_BLUE), Transform::IDENTITY, Z_TEXTURE);
-        Ok(())
     }
-    fn enter(&mut self, _state: &mut Self::State) -> Result<(), Self::Error> {
-        self.pane.show()?;
-        Ok(())
+    fn enter(&mut self, _state: &mut Self::State) {
+        self.pane.show().nuts_check();
     }
-    fn leave(&mut self, _state: &mut Self::State) -> Result<(), Self::Error> {
-        self.pane.hide()?;
-        Ok(())
+    fn leave(&mut self, _state: &mut Self::State) {
+        self.pane.hide().nuts_check();
     }
 }
 

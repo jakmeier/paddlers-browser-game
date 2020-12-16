@@ -1,5 +1,4 @@
 pub mod error;
-pub mod statistics;
 use error::*;
 use paddle::*;
 use std::collections::VecDeque;

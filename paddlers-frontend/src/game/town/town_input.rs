@@ -13,7 +13,7 @@ use crate::game::{
 use crate::gui::gui_components::{ClickOutput, Condition, InteractiveTableArea};
 use crate::gui::input::{Clickable, Grabbable};
 use crate::gui::ui_state::*;
-use crate::init::quicksilver_integration::Signal;
+use crate::game::toplevel::Signal;
 use crate::net::game_master_api::RestApiState;
 use crate::net::state::current_village;
 use crate::prelude::*;
@@ -35,10 +35,7 @@ impl Town {
         lazy: Read<'a, LazyUpdate>,
         resources: &TownResources,
     ) {
-        let click_output = ui_menu.ui.click(mouse_pos).unwrap_or_else(|e| {
-            nuts::publish(e);
-            None
-        });
+        let click_output = ui_menu.ui.click(mouse_pos);
         if let Some((_, Some(condition))) = &click_output {
             let err = check_condition(condition, resources);
             if let Err(e) = err {
@@ -98,7 +95,7 @@ impl Town {
         shop: ReadExpect<'a, DefaultShop>,
         resources: WriteExpect<'a, TownResources>,
     ) -> PadlResult<()> {
-        let maybe_grab = shop.click(mouse_pos)?;
+        let maybe_grab = shop.click(mouse_pos);
         match maybe_grab {
             None => {}
             Some((g, None)) => {

@@ -55,37 +55,32 @@ impl Game {
         }
     }
     #[cfg(feature = "dev_view")]
-    pub fn dev_view_event(&mut self, event: &Event) {
-        match event {
-            Event::Key(key, state) if *key == Key::Space && *state == ButtonState::Pressed => {
-                self.palette = !self.palette;
-            }
-            Event::Key(key, state)
-                if *state == ButtonState::Pressed && self.active_test.is_none() =>
-            {
-                match key {
-                    Key::T => {
-                        let test = dev_view::benchmark::Test::Vanilla;
-                        self.active_test = Some(Box::new(
-                            crate::game::dev_view::benchmark::TestData::start_test(self, test),
-                        ));
-                    }
-                    Key::Key1 => {
-                        let test = dev_view::benchmark::Test::Empty;
-                        self.active_test = Some(Box::new(
-                            crate::game::dev_view::benchmark::TestData::start_test(self, test),
-                        ));
-                    }
-                    Key::Key2 => {
-                        let test = dev_view::benchmark::Test::StandardVillage;
-                        self.active_test = Some(Box::new(
-                            crate::game::dev_view::benchmark::TestData::start_test(self, test),
-                        ));
-                    }
-                    _ => {}
+    pub fn dev_view_hotkey(&mut self, key: Key) {
+        if self.active_test.is_none() {
+            match key {
+                Key::Space => {
+                    self.palette = !self.palette;
                 }
+                Key::T => {
+                    let test = dev_view::benchmark::Test::Vanilla;
+                    self.active_test = Some(Box::new(
+                        crate::game::dev_view::benchmark::TestData::start_test(self, test),
+                    ));
+                }
+                Key::Key1 => {
+                    let test = dev_view::benchmark::Test::Empty;
+                    self.active_test = Some(Box::new(
+                        crate::game::dev_view::benchmark::TestData::start_test(self, test),
+                    ));
+                }
+                Key::Key2 => {
+                    let test = dev_view::benchmark::Test::StandardVillage;
+                    self.active_test = Some(Box::new(
+                        crate::game::dev_view::benchmark::TestData::start_test(self, test),
+                    ));
+                }
+                _ => {}
             }
-            _ => {}
         }
     }
 }

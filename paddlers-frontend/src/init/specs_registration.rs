@@ -3,7 +3,6 @@ use crate::game::{
     town::nests::Nest, town::DefaultShop, town::Town, town_resources::TownResources,
     units::attackers::Visitor, units::hobos::Hobo, units::workers::Worker, visits::attacks::Attack,
 };
-use crate::gui::input::drag::Drag;
 use crate::gui::ui_state::*;
 use crate::prelude::*;
 use crate::view::entry_view;
@@ -40,7 +39,6 @@ pub fn register_global_components(world: &mut World) {
 
 pub fn insert_town_resources(world: &mut World, player_info: PlayerInfo, town: Town) {
     world.insert(DefaultShop::new(&player_info));
-    world.insert(Drag::default());
     world.insert(Now(utc_now()));
     world.insert(TownResources::default());
     world.insert(UiState::new());

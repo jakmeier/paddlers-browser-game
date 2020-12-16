@@ -1,12 +1,10 @@
 use crate::game::Game;
 use crate::gui::utils::colors::DARK_BLUE;
-use crate::gui::z::*;
 use crate::net::NetMsg;
 use crate::prelude::*;
 use div::doc;
-use paddle::quicksilver_compat::{Col, Rectangle, Transform};
 use paddle::Frame;
-use specs::WorldExt;
+use paddle::NutsCheck;
 use web_sys::Node;
 
 pub(crate) struct LeaderboardFrame {
@@ -15,7 +13,8 @@ pub(crate) struct LeaderboardFrame {
 }
 
 impl LeaderboardFrame {
-    pub fn new(area: &Rectangle) -> PadlResult<Self> {
+    pub fn new() -> PadlResult<Self> {
+        let area = Self::area();
         let pane = div::new_styled_pane(
             area.x() as u32,
             area.y() as u32,
@@ -54,47 +53,30 @@ impl LeaderboardFrame {
         Ok(())
     }
 
-    pub fn network_message(&mut self, _state: &mut Game, msg: &NetMsg) -> Result<(), PadlError> {
+    pub fn network_message(&mut self, _state: &mut Game, msg: &NetMsg) {
         match msg {
             NetMsg::Leaderboard(offset, list) => {
-                self.clear()?;
+                self.clear().nuts_check();
                 for (i, (name, karma)) in list.into_iter().enumerate() {
-                    self.insert_row(offset + i, &name, *karma)?;
+                    self.insert_row(offset + i, &name, *karma).nuts_check();
                 }
             }
             _ => {}
         }
-        Ok(())
     }
 }
 
 impl Frame for LeaderboardFrame {
-    type Error = PadlError;
     type State = Game;
-    fn draw(
-        &mut self,
-        state: &mut Self::State,
-        window: &mut paddle::WebGLCanvas,
-        _timestamp: f64,
-    ) -> Result<(), Self::Error> {
-        let ui_state = state.world.read_resource::<ViewState>();
-        let main_area = Rectangle::new(
-            (0, 0),
-            (
-                ui_state.menu_box_area.x(),
-                (window.project() * window.browser_region().size()).y,
-            ),
-        );
-        std::mem::drop(ui_state);
-        window.draw_ex(&main_area, Col(DARK_BLUE), Transform::IDENTITY, Z_TEXTURE);
-        Ok(())
+    const WIDTH: u32 = crate::resolution::MAIN_AREA_W;
+    const HEIGHT: u32 = crate::resolution::MAIN_AREA_H;
+    fn draw(&mut self, _state: &mut Self::State, window: &mut paddle::DisplayArea, _timestamp: f64) {
+        window.fill(DARK_BLUE);
     }
-    fn enter(&mut self, _state: &mut Self::State) -> Result<(), Self::Error> {
-        self.pane.show()?;
-        Ok(())
+    fn enter(&mut self, _state: &mut Self::State) {
+        self.pane.show().nuts_check();
     }
-    fn leave(&mut self, _state: &mut Self::State) -> Result<(), Self::Error> {
-        self.pane.hide()?;
-        Ok(())
+    fn leave(&mut self, _state: &mut Self::State) {
+        self.pane.hide().nuts_check();
     }
 }

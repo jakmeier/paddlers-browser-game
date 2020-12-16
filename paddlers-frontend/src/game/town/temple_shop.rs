@@ -1,6 +1,6 @@
-use crate::game::{
+use crate::{game::{
     buildings::Building, components::UiMenu, game_event_manager::*, player_info::PlayerInfo, Game,
-};
+}, net::game_master_api::RestApiState};
 use crate::gui::sprites::{SingleSprite, SpriteSet};
 use crate::net::state::current_village;
 use crate::prelude::*;
@@ -19,7 +19,7 @@ pub fn purchase_prophet(player_info: &PlayerInfo) -> PadlResult<()> {
     if player_info.prophets_limit() <= player_info.prophets_total() {
         return PadlErrorCode::NotEnoughKarma.usr();
     }
-    nuts::publish(ProphetPurchase {
+    nuts::send_to::<RestApiState, _>(ProphetPurchase {
         village: current_village(),
     });
     Ok(())

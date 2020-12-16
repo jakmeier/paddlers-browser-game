@@ -9,12 +9,9 @@ use crate::net::authentication::keycloak_preferred_name;
 use map_position::*;
 use map_segment::MapSegment;
 use map_tesselation::*;
+use paddle::quicksilver_compat::{Col, Mesh, Rectangle, Transform, Vector};
+use paddle::DisplayArea;
 use paddle::FitStrategy;
-use paddle::WebGLCanvas;
-use paddle::{
-    quicksilver_compat::{Col, Mesh, Rectangle, Transform, Vector},
-    NutsCheck,
-};
 use specs::prelude::*;
 
 pub(crate) use map_frame::MapFrame;
@@ -73,7 +70,7 @@ impl<'a> GlobalMap<'a> {
         (map, shared)
     }
 
-    pub fn render(&mut self, window: &mut WebGLCanvas, sprites: &mut Sprites, area: &Rectangle) {
+    pub fn render(&mut self, window: &mut DisplayArea, sprites: &mut Sprites, area: &Rectangle) {
         window.draw_ex(area, Col(GREEN), Transform::IDENTITY, Z_TEXTURE);
 
         self.apply_scaling(area.size());
@@ -106,15 +103,15 @@ impl<'a> GlobalMap<'a> {
             self.private.loaded.1 = self.private.loaded.1.max(high);
         }
     }
-    fn draw_grid(&mut self, window: &mut WebGLCanvas) {
+    fn draw_grid(&mut self, window: &mut DisplayArea) {
         let mut x = self.shared.x_offset % 1.0;
         if x > 0.0 {
             x -= 1.0
         }
         let t = Transform::translate((x * self.shared.scaling, 0));
-        extend_transformed(window.mesh(), &self.private.grid_mesh, t);
+        window.draw_triangles_ex(&self.private.grid_mesh, t);
     }
-    fn draw_water(&mut self, window: &mut WebGLCanvas, area: &Rectangle) {
+    fn draw_water(&mut self, window: &mut DisplayArea, area: &Rectangle) {
         let visible_frame = Rectangle::new(
             (-self.shared.x_offset, 0),
             area.size() / self.shared.scaling,
@@ -123,11 +120,11 @@ impl<'a> GlobalMap<'a> {
         for segment in self.private.segments.iter_mut() {
             if segment.is_visible(visible_frame) {
                 segment.apply_scaling(self.shared.scaling);
-                extend_transformed(&mut window.mesh(), &segment.water_mesh, t)
+                window.draw_triangles_ex(&segment.water_mesh, t);
             }
         }
     }
-    fn draw_villages(&mut self, window: &mut WebGLCanvas, sprites: &mut Sprites) {
+    fn draw_villages(&mut self, window: &mut DisplayArea, sprites: &mut Sprites) {
         #[cfg(feature = "dev_view")]
         self.visualize_control_points(window);
 
@@ -150,8 +147,7 @@ impl<'a> GlobalMap<'a> {
                 Z_BUILDINGS,
                 FitStrategy::Center,
                 self.view_transform(),
-            )
-            .nuts_check();
+            );
         }
     }
 
@@ -178,7 +174,7 @@ impl<'a> GlobalMap<'a> {
     }
 
     #[cfg(feature = "dev_view")]
-    fn visualize_control_points(&self, window: &mut WebGLCanvas) {
+    fn visualize_control_points(&self, window: &mut DisplayArea) {
         let pt = self.shared.scaling / 5.0;
         for seg in &self.private.segments {
             for s in &seg.streams {

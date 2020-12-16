@@ -40,13 +40,13 @@ impl InteractiveTableArea for UiBox {
     // TODO: margin / padding needs resolution adjustment
     fn draw(
         &mut self,
-        window: &mut WebGLCanvas,
+        window: &mut DisplayArea,
         sprites: &mut Sprites,
         tp: &mut TableTextProvider,
         now: NaiveDateTime,
         area: &Rectangle,
         mouse_pos: Vector,
-    ) -> PadlResult<()> {
+    ) {
         self.area = *area;
         let grid = area.grid(self.columns, self.rows);
         let mut notifications = self.notification_indicator.as_ref().map(|vec| vec.iter());
@@ -71,7 +71,7 @@ impl InteractiveTableArea for UiBox {
                         SpriteIndex::Simple(*bkg),
                         Z_MENU_BOX_BUTTONS - 1,
                         FitStrategy::Center,
-                    )?;
+                    );
                     Some(img)
                 }
                 RenderVariant::ImgWithHoverAlternative(img, hov) => {
@@ -133,7 +133,7 @@ impl InteractiveTableArea for UiBox {
                     img.default(),
                     Z_MENU_BOX_BUTTONS,
                     FitStrategy::Center,
-                )?;
+                );
             }
             if el.overlay.is_some() {
                 el.draw_overlay(window, &draw_area.padded(self.margin), now);
@@ -166,14 +166,12 @@ impl InteractiveTableArea for UiBox {
                 }
             }
         }
-
-        Ok(())
     }
-    fn click(&self, mouse: Vector) -> PadlResult<Option<(ClickOutput, Option<Condition>)>> {
+    fn click(&self, mouse: Vector) -> Option<(ClickOutput, Option<Condition>)> {
         if let Some(el) = self.find_element_under_mouse(mouse) {
             el.click()
         } else {
-            Ok(None)
+            None
         }
     }
     fn remove(&mut self, output: ClickOutput) {
@@ -250,7 +248,7 @@ impl UiBox {
 }
 
 impl UiElement {
-    fn draw_overlay(&self, window: &mut WebGLCanvas, area: &Rectangle, now: NaiveDateTime) {
+    fn draw_overlay(&self, window: &mut DisplayArea, area: &Rectangle, now: NaiveDateTime) {
         if let Some((start, end)) = self.overlay {
             if now > start && now < end {
                 let progress = (now - start).num_microseconds().unwrap() as f32
@@ -292,12 +290,14 @@ impl UiElement {
             }
         }
     }
-    fn click(&self) -> PadlResult<Option<(ClickOutput, Option<Condition>)>> {
-        self.is_active()?;
-        Ok(self
-            .on_click
-            .as_ref()
-            .map(|c| (c.clone().into(), self.condition.clone())))
+    fn click(&self) -> Option<(ClickOutput, Option<Condition>)> {
+        if self.is_active().nuts_check().is_some() {
+            self.on_click
+                .as_ref()
+                .map(|c| (c.clone().into(), self.condition.clone()))
+        } else {
+            None
+        }
     }
     fn is_active(&self) -> PadlResult<()> {
         if let Some((start, end)) = self.overlay {

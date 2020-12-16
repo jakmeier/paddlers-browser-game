@@ -1,11 +1,14 @@
-use crate::game::{
-    components::*,
-    movement::Position,
-    town::{task_factory::NewTaskDescriptor, TileIndex, Town},
-};
 use crate::gui::render::Renderable;
 use crate::gui::z::*;
 use crate::prelude::*;
+use crate::{
+    game::{
+        components::*,
+        movement::Position,
+        town::{task_factory::NewTaskDescriptor, TileIndex, Town},
+    },
+    net::game_master_api::RestApiState,
+};
 use chrono::NaiveDateTime;
 use paddle::quicksilver_compat::*;
 use paddlers_shared_lib::api::tasks::*;
@@ -61,7 +64,7 @@ impl Worker {
             self.try_create_task_list(entity, start, destination, job, &town, containers, mana);
         match msg {
             Ok(task_list) => {
-                nuts::publish(task_list);
+                nuts::send_to::<RestApiState, _>(task_list);
             }
             Err(e) => {
                 nuts::publish(e);

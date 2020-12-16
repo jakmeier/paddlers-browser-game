@@ -80,13 +80,11 @@ impl Animation {
         }
     }
     fn sprite(&self, frame: u32) -> Image {
-        let base = self.sprite_sheet.area();
-
         let n = self.cols * self.rows;
         let i = frame % n;
 
-        let w = base.width() / self.cols as f32;
-        let h = base.height() / self.rows as f32;
+        let w = 1.0 / self.cols as f32;
+        let h = 1.0 / self.rows as f32;
 
         let x = w * (i % self.cols) as f32;
         let y = h * (i / self.cols) as f32;

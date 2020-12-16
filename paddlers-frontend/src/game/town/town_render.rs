@@ -2,7 +2,7 @@ use super::*;
 use paddle::quicksilver_compat::*;
 use paddle::{
     quicksilver_compat::graphics::{Drawable, Mesh},
-    WebGLCanvas,
+    DisplayArea,
 };
 use std::f32::consts::PI;
 
@@ -34,7 +34,7 @@ impl Town {
     }
     pub fn render(
         &self,
-        window: &mut WebGLCanvas,
+        window: &mut DisplayArea,
         sprites: &mut Sprites,
         tick: u32,
         unit_length: f32,
@@ -70,7 +70,7 @@ impl Town {
                         }
                         let grass_top_img =
                             &sprites.index(SpriteIndex::Simple(SingleSprite::GrassTop));
-                        let h = d / grass_top_img.area().width() * grass_top_img.area().height();
+                        let h = d / 200.0 * 30.0;
                         window.draw_ex(
                             &Rectangle::new((d * x as f32, d * y as f32 + d - h), (d, h)),
                             Img(grass_top_img),
@@ -79,7 +79,7 @@ impl Town {
                         );
                         let grass_bot_img =
                             &sprites.index(SpriteIndex::Simple(SingleSprite::GrassBot));
-                        let h = d / grass_bot_img.area().width() * grass_bot_img.area().height();
+                        let h = d / 200.0 * 42.0;
                         window.draw_ex(
                             &Rectangle::new((d * x as f32, d * y as f32), (d, h)),
                             Img(grass_bot_img),
@@ -95,7 +95,7 @@ impl Town {
 
     pub fn shadow_rectified_circle(
         resolution: ScreenResolution,
-        window: &mut WebGLCanvas,
+        window: &mut DisplayArea,
         center: impl Into<Vector>,
         radius: f32,
     ) {
@@ -107,7 +107,7 @@ impl Town {
 
     fn shadow_tile(
         resolution: ScreenResolution,
-        window: &mut WebGLCanvas,
+        window: &mut DisplayArea,
         coordinates: (usize, usize),
     ) {
         let shadow_col = Color {
@@ -126,7 +126,7 @@ impl Town {
 }
 
 /// Draws a simple animation around the border of a specified area
-pub fn draw_shiny_border(window: &mut WebGLCanvas, area: Rectangle, tick: u32) {
+pub fn draw_shiny_border(window: &mut DisplayArea, area: Rectangle, tick: u32) {
     let animation_length = 200;
     let side_length = animation_length / 4;
     let side_progress = (tick % side_length) as f32 / side_length as f32;
@@ -146,7 +146,7 @@ pub fn draw_shiny_border(window: &mut WebGLCanvas, area: Rectangle, tick: u32) {
     }
 }
 
-fn draw_dot(window: &mut WebGLCanvas, p: Vector) {
+fn draw_dot(window: &mut DisplayArea, p: Vector) {
     let dot = Circle::new(p, 3.0);
     let dot_col = Color {
         r: 1.0,

@@ -5,16 +5,18 @@ use crate::game::Game;
 use crate::gui::utils::colors::DARK_BLUE;
 use crate::gui::z::*;
 use crate::prelude::*;
-use paddle::quicksilver_compat::{Col, Rectangle, Transform};
+use paddle::{NutsCheck, quicksilver_compat::{Col, Rectangle, Transform}};
 use paddle::{Frame, JmrRectangle};
 use specs::WorldExt;
 
 pub(crate) struct TownSummaryFrame {
     pane: div::PaneHandle,
+    size: Vector,
 }
 
 impl TownSummaryFrame {
-    pub fn new(area: &Rectangle) -> PadlResult<Self> {
+    pub fn new() -> PadlResult<Self> {
+        let area = Self::area();
         let pane = div::new_styled_pane(
             area.x() as u32,
             area.y() as u32,
@@ -41,26 +43,20 @@ impl TownSummaryFrame {
 
         Ok(TownSummaryFrame {
             pane,
+            size: area.size,
         })
     }
 }
 
 impl Frame for TownSummaryFrame {
-    type Error = PadlError;
     type State = Game;
-    fn draw(
-        &mut self,
-        state: &mut Self::State,
-        window: &mut paddle::WebGLCanvas,
-        _timestamp: f64,
-    ) -> Result<(), Self::Error> {
+    const WIDTH: u32 = crate::resolution::MAIN_AREA_W;
+    const HEIGHT: u32 = crate::resolution::MAIN_AREA_H;
+    fn draw(&mut self, state: &mut Self::State, window: &mut paddle::DisplayArea, _timestamp: f64) {
         let ui_state = state.world.read_resource::<ViewState>();
         let main_area = Rectangle::new(
             (0, 0),
-            (
-                ui_state.menu_box_area.x(),
-                (window.project() * window.browser_region().size()).y,
-            ),
+            self.size,
         );
         std::mem::drop(ui_state);
         window.draw_ex(
@@ -69,14 +65,11 @@ impl Frame for TownSummaryFrame {
             Transform::IDENTITY,
             Z_TEXTURE,
         );
-        Ok(())
     }
-    fn enter(&mut self, _state: &mut Self::State) -> Result<(), Self::Error> {
-        self.pane.show()?;
-        Ok(())
+    fn enter(&mut self, _state: &mut Self::State) {
+        self.pane.show().nuts_check();
     }
-    fn leave(&mut self, _state: &mut Self::State) -> Result<(), Self::Error> {
-        self.pane.hide()?;
-        Ok(())
+    fn leave(&mut self, _state: &mut Self::State) {
+        self.pane.hide().nuts_check();
     }
 }

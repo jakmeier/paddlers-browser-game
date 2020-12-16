@@ -1,4 +1,4 @@
-use crate::game::components::NetObj;
+use crate::{game::components::NetObj, net::game_master_api::RestApiState};
 use crate::game::town::*;
 use crate::net::state::current_village;
 use paddlers_shared_lib::api::attacks::InvitationDescriptor;
@@ -50,7 +50,7 @@ impl Town {
             nest: netid.as_building().expect("building"),
             to: current_village(),
         };
-        nuts::publish(msg);
+        nuts::send_to::<RestApiState, _>(msg);
         crate::game::game_event_manager::game_event(GameEvent::DisplayConfirmation(
             "invitation-sent".into(),
         ));
