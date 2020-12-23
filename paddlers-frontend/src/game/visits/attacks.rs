@@ -1,9 +1,12 @@
 //! For incoming visits (attacks)
 
-use crate::gui::z::*;
 use crate::net::state::current_village;
 use crate::prelude::*;
 use crate::{gui::utils::colors::LIGHT_BLUE, net::game_master_api::RestApiState};
+use crate::{
+    gui::z::*,
+    resolution::{MAIN_AREA_H, MAIN_AREA_W},
+};
 use chrono::NaiveDateTime;
 use div::new_pane;
 use paddle::{
@@ -160,9 +163,7 @@ impl<'a, 'b> Frame for VisitorFrame<'a, 'b> {
         }
     }
     fn draw(&mut self, state: &mut Self::State, window: &mut DisplayArea, _timestamp: f64) {
-        let ui_state = state.world.read_resource::<ViewState>();
-        let main_area = Rectangle::new((0, 0), Self::size());
-        std::mem::drop(ui_state);
+        let main_area = Rectangle::new_sized((MAIN_AREA_W, MAIN_AREA_H));
         window.draw_ex(&main_area, Col(LIGHT_BLUE), Transform::IDENTITY, Z_TEXTURE);
     }
     fn enter(&mut self, _state: &mut Self::State) {

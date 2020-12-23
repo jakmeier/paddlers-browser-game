@@ -1,4 +1,3 @@
-use crate::{game::leaderboard::LeaderboardFrame, resolution::{MENU_AREA_X, MENU_AREA_Y}};
 use crate::game::map::MapFrame;
 use crate::game::town::TownFrame;
 use crate::game::visits::{
@@ -7,6 +6,10 @@ use crate::game::visits::{
 use crate::game::{dialogue::DialogueFrame, town::town_summary::TownSummaryFrame};
 use crate::gui::menu::{MapMenuFrame, MenuBackgroundFrame, TownMenuFrame};
 use crate::prelude::*;
+use crate::{
+    game::leaderboard::LeaderboardFrame,
+    resolution::{MENU_AREA_X, MENU_AREA_Y},
+};
 use paddle::ViewManager;
 
 pub(crate) fn load_viewer(view: UiView) -> ViewManager<UiView> {
@@ -19,7 +22,11 @@ pub(crate) fn load_viewer(view: UiView) -> ViewManager<UiView> {
     town_handler.listen(TownFrame::signal);
 
     let menu = TownMenuFrame::new().expect("Town menu loading");
-    let town_menu_handle = viewer.add_frame(menu, &[UiView::Town, UiView::TownHelp], (0, 0));
+    let town_menu_handle = viewer.add_frame(
+        menu,
+        &[UiView::Town, UiView::TownHelp],
+        (MENU_AREA_X, MENU_AREA_Y),
+    );
     town_menu_handle.listen(TownMenuFrame::new_story_state);
     town_menu_handle.listen(TownMenuFrame::signal);
 
@@ -36,7 +43,7 @@ pub(crate) fn load_viewer(view: UiView) -> ViewManager<UiView> {
             UiView::Visitors(VisitorViewTab::Letters),
             UiView::TownHelp,
         ],
-        (0, 0),
+        (MENU_AREA_X, MENU_AREA_Y),
     );
     menu_bg_handler.listen(MenuBackgroundFrame::network_message);
     menu_bg_handler.listen(MenuBackgroundFrame::signal);

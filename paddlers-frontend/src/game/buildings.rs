@@ -59,7 +59,7 @@ impl Town {
         range: Option<f32>,
         created: NaiveDateTime,
     ) -> Entity {
-        let area = self.resolution.tile_area(tile_index);
+        let area = tiling::tile_area(tile_index);
         let mut builder = lazy
             .create_entity(entities)
             .with(Position::new(area.pos, area.size, Z_BUILDINGS))
@@ -136,6 +136,8 @@ fn new_nest_menu() -> UiMenu {
 }
 
 use crate::net::graphql::buildings_query;
+
+use super::town::tiling;
 impl buildings_query::ResponseData {
     pub(crate) fn village_id(&self) -> VillageKey {
         VillageKey(self.village.id)

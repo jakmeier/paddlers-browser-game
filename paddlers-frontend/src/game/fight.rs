@@ -1,6 +1,5 @@
 // use paddle::quicksilver_compat::*;
 use crate::game::{game_event_manager::GameEvent, movement::Position, town::Town};
-use crate::prelude::ScreenResolution;
 use specs::prelude::*;
 use specs::storage::BTreeStorage;
 use specs::world::Index;
@@ -85,17 +84,14 @@ impl<'a> System<'a> for FightSystem {
         ReadStorage<'a, Aura>,
         ReadStorage<'a, Position>,
         WriteStorage<'a, Health>,
-        Read<'a, ScreenResolution>,
     );
 
-    fn run(&mut self, (entities, aura, position, mut health, resolution): Self::SystemData) {
+    fn run(&mut self, (entities, aura, position, mut health): Self::SystemData) {
         // It's not necessary to recalculate every frame
         self.counter = (self.counter + 1) % 30;
         if self.counter != 1 {
             return;
         }
-
-        let ul = resolution.unit_length();
 
         // This algorithm runs in O(n*m*(log(m)+log(t))
         // n attacker, m defenders, t tiles
@@ -106,7 +102,7 @@ impl<'a> System<'a> for FightSystem {
             // m
             for (hid, p, h) in (&entities, &position, &mut health).join() {
                 // n
-                let tile = Town::find_tile(p.area.pos, ul);
+                let tile = Town::find_tile(p.area.pos);
                 if a.affected_tiles.binary_search(&tile).is_ok() {
                     // log t
                     match h.aura_effects.binary_search(&aid.id()) {

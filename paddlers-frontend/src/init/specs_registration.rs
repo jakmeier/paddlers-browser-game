@@ -4,22 +4,15 @@ use crate::game::{
     units::attackers::Visitor, units::hobos::Hobo, units::workers::Worker, visits::attacks::Attack,
 };
 use crate::gui::ui_state::*;
-use crate::prelude::*;
 use crate::view::entry_view;
 use paddle::utc_now;
 use specs::prelude::*;
 
-pub(super) fn insert_global_resources(
-    world: &mut World,
-    resolution: ScreenResolution,
-    player_info: PlayerInfo,
-) {
+pub(super) fn insert_global_resources(world: &mut World, player_info: PlayerInfo) {
     world.insert(ClockTick(0));
     world.insert(Now(utc_now()));
     world.insert(UiState::new());
-    world.insert(ViewState::new());
     world.insert(player_info);
-    world.insert(resolution);
     let view = entry_view(player_info.story_state());
     world.insert(view);
 }
@@ -42,7 +35,6 @@ pub fn insert_town_resources(world: &mut World, player_info: PlayerInfo, town: T
     world.insert(Now(utc_now()));
     world.insert(TownResources::default());
     world.insert(UiState::new());
-    world.insert(ViewState::new());
     world.insert(player_info);
     world.insert(town);
 }

@@ -1,13 +1,18 @@
 //! A view that display a summary of all available resources, like forest size or nests
 //!
 
-use crate::game::Game;
 use crate::gui::utils::colors::DARK_BLUE;
 use crate::gui::z::*;
 use crate::prelude::*;
-use paddle::{NutsCheck, quicksilver_compat::{Col, Rectangle, Transform}};
+use crate::{
+    game::Game,
+    resolution::{MAIN_AREA_H, MAIN_AREA_W},
+};
+use paddle::{
+    quicksilver_compat::{Col, Rectangle, Transform},
+    NutsCheck,
+};
 use paddle::{Frame, JmrRectangle};
-use specs::WorldExt;
 
 pub(crate) struct TownSummaryFrame {
     pane: div::PaneHandle,
@@ -53,12 +58,7 @@ impl Frame for TownSummaryFrame {
     const WIDTH: u32 = crate::resolution::MAIN_AREA_W;
     const HEIGHT: u32 = crate::resolution::MAIN_AREA_H;
     fn draw(&mut self, state: &mut Self::State, window: &mut paddle::DisplayArea, _timestamp: f64) {
-        let ui_state = state.world.read_resource::<ViewState>();
-        let main_area = Rectangle::new(
-            (0, 0),
-            self.size,
-        );
-        std::mem::drop(ui_state);
+        let main_area = Rectangle::new_sized((MAIN_AREA_W, MAIN_AREA_H));
         window.draw_ex(
             &main_area.padded(50.0),
             Col(DARK_BLUE),

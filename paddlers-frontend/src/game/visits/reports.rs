@@ -1,4 +1,4 @@
-use crate::gui::utils::colors::LIGHT_BLUE;
+use crate::gui::{menu::LEAVES_BORDER_W, utils::colors::LIGHT_BLUE};
 use crate::net::NetMsg;
 use crate::prelude::*;
 use crate::{
@@ -27,7 +27,7 @@ struct Report {
 impl ReportFrame {
     pub fn new() -> PadlResult<Self> {
         let area = Self::area();
-        let right_padding = ScreenResolution::High.leaves_border_w() * 0.75;
+        let right_padding = LEAVES_BORDER_W * 0.75;
         let pane = div::new_pane(
             area.x() as u32,
             area.y() as u32,

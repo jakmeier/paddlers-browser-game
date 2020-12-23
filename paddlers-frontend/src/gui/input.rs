@@ -1,7 +1,7 @@
-use crate::net::state::current_village;
 use crate::prelude::*;
 use crate::{game::fight::*, net::game_master_api::HttpDeleteBuilding};
 use crate::{game::movement::Position, net::game_master_api::RestApiState};
+use crate::{game::town::tiling, net::state::current_village};
 use paddle::quicksilver_compat::Vector;
 /// This module keeps the logic to read input and, in most cases,
 /// redirect it to suitable modules to handle the input
@@ -76,11 +76,9 @@ impl crate::game::Game {
                             std::mem::drop(ui_state);
 
                             let pos_store = town_world.read_storage::<Position>();
-                            let resolution = town_world.read_resource::<ScreenResolution>();
                             let pos = pos_store.get(e).unwrap();
-                            let tile_index = resolution.tile(pos.area.center());
+                            let tile_index = tiling::tile(pos.area.center());
                             std::mem::drop(pos_store);
-                            std::mem::drop(resolution);
 
                             nuts::send_to::<RestApiState, _>(HttpDeleteBuilding {
                                 idx: tile_index,

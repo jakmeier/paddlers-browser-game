@@ -1,5 +1,4 @@
 use crate::game::*;
-use crate::prelude::ScreenResolution;
 use paddle::JmrRectangle;
 use stdweb::unstable::TryInto;
 
@@ -37,10 +36,9 @@ impl Game {
                 let user_agent = navigator
                     .user_agent()
                     .unwrap_or_else(|| "NotAvailable".to_owned());
-                let resolution = *self.world.fetch::<ScreenResolution>();
                 println!(
-                    "{} {} {:?} {} \"{}\" {:?} {}",
-                    date, version, test.kind, device, user_agent, resolution, result
+                    "{} {} {:?} {} \"{}\" {}",
+                    date, version, test.kind, device, user_agent, result
                 );
                 self.active_test = None;
             }

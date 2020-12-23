@@ -8,7 +8,7 @@ use crate::game::{
     components::*,
     movement::*,
     town::nests::Nest,
-    town::{DefaultShop, Town},
+    town::{tiling, DefaultShop, Town},
     town_resources::TownResources,
     units::workers::*,
 };
@@ -81,10 +81,8 @@ impl<'a> System<'a> for TownLeftClickSystem {
                 .join()
                 .get(active_entity, &entities)
                 .expect("Unit has position");
-            let start = town
-                .resolution
-                .next_tile_in_direction(from.area.pos, movement.momentum);
-            let target_tile = town.resolution.tile(mouse_pos);
+            let start = tiling::next_tile_in_direction(from.area.pos, movement.momentum);
+            let target_tile = tiling::tile(mouse_pos);
             let range = AbilityType::from_task(&job.0)
                 .as_ref()
                 .map(AbilityType::range)

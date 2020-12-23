@@ -22,7 +22,6 @@ pub(crate) mod town_resources;
 pub(crate) mod units;
 pub(crate) mod visits;
 
-use crate::gui::{input, sprites::*, ui_state::*};
 use crate::init::loading::GameLoadingData;
 use crate::net::NetMsg;
 use crate::prelude::*;
@@ -30,6 +29,10 @@ use crate::{game::net_receiver::*, net::game_master_api::UpdateRestApi};
 use crate::{
     game::{components::*, player_info::PlayerInfo, town::TownContextManager},
     gui::input::MouseInfo,
+};
+use crate::{
+    gui::{input, sprites::*, ui_state::*},
+    resolution::{MAIN_AREA_H, MAIN_AREA_W},
 };
 use chrono::NaiveDateTime;
 use game_event_manager::GameEvent;
@@ -65,13 +68,12 @@ impl Game {
     pub fn load_game(
         sprites: Sprites,
         locale: TextDb,
-        resolution: ScreenResolution,
         game_data: GameLoadingData,
         net_chan: Receiver<NetMsg>,
     ) -> PadlResult<Self> {
         let player_info = game_data.player_info;
-        let town_context = TownContextManager::new(resolution, player_info.clone());
-        let mut world = crate::init::init_world(resolution, player_info);
+        let town_context = TownContextManager::new(player_info.clone());
+        let mut world = crate::init::init_world(player_info);
         let now = utc_now();
         world.insert::<Now>(Now(now));
 
@@ -113,7 +115,6 @@ impl Game {
         game.load_story_state()?;
         game.update_temple()?;
 
-        game.load_resolution();
         game.init_map();
 
         nuts::publish(NetMsg::Reports(game_data.reports));
@@ -138,27 +139,8 @@ impl Game {
         self.world.maintain();
         Ok(())
     }
-    /// Call this after changing resolution in world
-    pub fn load_resolution(&mut self) {
-        let r = *self.world.fetch::<ScreenResolution>();
-
-        let main_size = Vector::from(r.main_area());
-        let menu_size = Vector::from(r.menu_area());
-        let main_area = Rectangle::new_sized(main_size);
-        let menu_area = Rectangle::new((main_size.x, 0), menu_size);
-
-        let (button_area, inner_area) = crate::gui::menu::menu_box_inner_split(menu_area, r);
-
-        let mut data = self.world.write_resource::<ViewState>();
-        (*data).main_area = main_area;
-        (*data).menu_box_area = menu_area;
-        (*data).inner_menu_box_area = inner_area;
-        (*data).button_area = button_area;
-
-        // TODO: refresh map and town (and make this method callable by user input)
-    }
     pub fn init_map(&mut self) {
-        let main_area = self.world.read_resource::<ViewState>().main_area;
+        let main_area = Rectangle::new_sized((MAIN_AREA_W, MAIN_AREA_H));
         let (private, shared) = GlobalMap::new(main_area.size());
         self.map = Some(private);
         self.world.insert(shared);

@@ -1,51 +1,69 @@
 use crate::gui::sprites::paths::SPRITE_PATHS;
 use crate::gui::sprites::{SpriteSet, WithSprite};
 use crate::prelude::*;
-use div::doc;
-use paddle::quicksilver_compat::Rectangle;
+use div::{doc, DivError};
+use paddle::{quicksilver_compat::Rectangle, DisplayArea};
+use wasm_bindgen::JsCast;
 use web_sys::{Element, HtmlElement, HtmlImageElement};
 
+/// TODO: This component could be a good start to experiment with )Svelte / Mogwai / ...) component integration to paddle
 pub struct ResourcesComponent {
-    pane: div::PaneHandle,
     parent: HtmlElement,
 }
 
 impl ResourcesComponent {
     pub fn new() -> PadlResult<Self> {
-        let pane = div::new_styled_pane(0, 0, 0, 0, "", &["pdl-res-comp"], &[("", "")])?;
-        let parent = pane.parent_element()?;
-        Ok(ResourcesComponent { pane, parent })
+        let window = web_sys::window().ok_or(DivError::MissingWindow)?;
+        let doc = window.document().ok_or(DivError::MissingDocument)?;
+        let node: HtmlElement = doc
+            .create_element("div")?
+            .dyn_into()
+            .map_err(|_| DivError::JsCastError)?;
+        node.set_class_name("pdl-res-comp");
+        node.style().set_property("pointer-events", "None")?;
+        node.style().set_property("position", "absolute")?;
+
+        Ok(ResourcesComponent { parent: node })
     }
-    pub fn hide(&self) -> PadlResult<()> {
-        self.pane.hide()?;
-        Ok(())
+    // Call this once after initialization
+    pub fn attach(&mut self, display: &DisplayArea) {
+        display.add_html(self.parent.clone().into());
     }
-    pub fn show(&self) -> PadlResult<()> {
-        self.pane.show()?;
-        Ok(())
-    }
-    pub fn draw(&mut self, max_area: &Rectangle, resis: &[(ResourceType, i64)]) -> PadlResult<()> {
-        self.complete_redraw(max_area, resis)?;
-        self.pane.show()?;
-        Ok(())
-    }
-    fn complete_redraw(
-        &mut self,
-        max_area: &Rectangle,
-        resis: &[(ResourceType, i64)],
-    ) -> PadlResult<()> {
+    pub fn update(&mut self, resis: &[(ResourceType, i64)]) -> PadlResult<()> {
         // Brute-force delete and redraw everything
-        self.pane.reposition_and_resize(
-            max_area.x() as u32,
-            max_area.y() as u32,
-            max_area.width() as u32,
-            max_area.height() as u32,
-        )?;
-        self.parent.remove_all_children();
+        self.clear();
         for (res, n) in resis {
             let new_node = Self::new_resource_element(*res, *n)?;
-            self.parent.append_child(&new_node)?;
+            self.parent.append_with_node_1(&new_node)?;
         }
+        Ok(())
+    }
+    pub fn clear(&mut self) {
+        self.parent.remove_all_children();
+    }
+    // Call this for setting size and position
+    pub fn draw(&mut self, display: &DisplayArea, max_area: &Rectangle) -> PadlResult<()> {
+        let area = *max_area
+            * display.frame_to_display_coordinates()
+            * display.full().game_to_browser_coordinates();
+        let x = area.x() as u32;
+        let y = area.y() as u32;
+        let w = area.width() as u32;
+        let h = area.height() as u32;
+
+        self.parent
+            .style()
+            .set_property("top", &(x.to_string() + "px"))?;
+        self.parent
+            .style()
+            .set_property("left", &(y.to_string() + "px"))?;
+        self.parent
+            .style()
+            .set_property("width", &(w.to_string() + "px"))?;
+        self.parent
+            .style()
+            .set_property("height", &(h.to_string() + "px"))?;
+
         Ok(())
     }
     fn new_resource_element(res: ResourceType, n: i64) -> PadlResult<Element> {

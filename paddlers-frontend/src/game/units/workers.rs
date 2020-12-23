@@ -100,7 +100,7 @@ impl Worker {
         click: &Vector,
         town: &Town,
     ) -> Option<(TaskType, TileIndex)> {
-        let destination = town.resolution.tile(*click); // TODO: destination is not always where it has been clicked
+        let destination = crate::game::town::tiling::tile(*click); // TODO: destination is not always where it has been clicked
         let job = town
             .available_tasks(destination)
             .into_iter()

@@ -1,8 +1,4 @@
 use crate::game::toplevel::Signal;
-use crate::gui::{
-    input::{left_click::TownLeftClickSystem, MouseState},
-    ui_state::*,
-};
 use crate::prelude::*;
 use crate::{
     game::{
@@ -12,11 +8,20 @@ use crate::{
     },
     gui::input::MouseButton,
 };
+use crate::{
+    gui::{
+        input::{left_click::TownLeftClickSystem, MouseState},
+        ui_state::*,
+    },
+    resolution::TOWN_TILE_S,
+};
 use paddle::quicksilver_compat::graphics::Mesh;
 use paddle::quicksilver_compat::{Shape, Vector};
 use paddle::{DisplayArea, Frame, NutsCheck};
 use specs::prelude::*;
 use std::ops::Deref;
+
+use super::tiling;
 
 pub(crate) struct TownFrame<'a, 'b> {
     left_click_dispatcher: Dispatcher<'a, 'b>,
@@ -41,32 +46,25 @@ impl<'a, 'b> Frame for TownFrame<'a, 'b> {
             // FIXME: This should not be necessary if resources are defined properly
             state.prepare_town_resources();
 
-            let ul = state.world.fetch::<ScreenResolution>().unit_length();
+            let ul = TOWN_TILE_S as f32;
             let tick = state.world.read_resource::<ClockTick>().0;
             let asset = &mut state.sprites;
             let town = state.town_context.town_mut();
             if self.background_cache.is_none() {
                 self.background_cache = Some(Mesh::new());
-                town.render_background(self.background_cache.as_mut().unwrap(), asset, ul);
+                town.render_background(self.background_cache.as_mut().unwrap(), asset, ul)
+                    .nuts_check();
             }
             self.background_cache.as_ref().unwrap().vertices.len();
             window.draw_triangles(self.background_cache.as_ref().unwrap());
-            town.render(window, asset, tick, ul);
+            town.render(window, asset, tick, ul).nuts_check();
         }
         state.draw_town_main(window);
     }
 
     fn left_click(&mut self, state: &mut Self::State, pos: (i32, i32)) {
-        let town_world = state.town_world();
-        let ui_state = town_world.fetch_mut::<ViewState>();
-
-        // This can be removed once the frame positions are checked properly before right_click is called
         let mouse_pos: Vector = pos.into();
-        let in_main_area = mouse_pos.overlaps_rectangle(&(*ui_state).main_area);
-        if !in_main_area {
-            return;
-        }
-        std::mem::drop(ui_state);
+        println!("DEBUG_XXX Left click at town frame {:?}", mouse_pos);
 
         let ms = MouseState(pos.into(), Some(MouseButton::Left));
         state.town_world_mut().insert(ms);
@@ -74,14 +72,7 @@ impl<'a, 'b> Frame for TownFrame<'a, 'b> {
     }
     fn right_click(&mut self, state: &mut Self::State, pos: (i32, i32)) {
         let town_world = state.town_world();
-        let view_state = town_world.fetch_mut::<ViewState>();
-
-        // This can be removed once the frame positions are checked properly before right_click is called
         let mouse_pos: Vector = pos.into();
-        let in_main_area = mouse_pos.overlaps_rectangle(&(*view_state).main_area);
-        if !in_main_area {
-            return;
-        }
 
         // Right click cancels grabbed item (take removes from option)
         let mut ui_state = town_world.fetch_mut::<UiState>();
@@ -107,9 +98,7 @@ impl<'a, 'b> Frame for TownFrame<'a, 'b> {
                 if let Some((job, destination)) = maybe_job {
                     let target = maybe_top_hit.and_then(|e| net_ids.get(e)).map(|n| n.id);
                     let (from, movement) = (&position, &moving).join().get(e, &entities).unwrap();
-                    let start = town
-                        .resolution
-                        .next_tile_in_direction(from.area.pos, movement.momentum);
+                    let start = tiling::next_tile_in_direction(from.area.pos, movement.momentum);
                     let new_job = (job, target);
                     worker.new_order(
                         e,
@@ -175,8 +164,6 @@ impl Game {
     pub(crate) fn prepare_town_resources(&mut self) {
         self.copy_res::<Now>();
         self.copy_res::<ClockTick>();
-        self.copy_res::<ScreenResolution>();
-        self.copy_res::<ViewState>();
         self.copy_res::<UiView>();
     }
     fn copy_res<T: Clone + 'static>(&mut self) {

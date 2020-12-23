@@ -209,7 +209,7 @@ impl UiBox {
         let dx = self.area.width() / self.columns as f32;
         let dy = self.area.height() / self.rows as f32;
         let pos = mouse.into() - self.area.pos;
-        if pos.y < 0.0 || pos.x < 0.0 {
+        if pos.y < 0.0 || pos.x < 0.0 || dx <= 0.0 || dy <= 0.0 {
             return None;
         }
         let i = (pos.y / dy) as usize * self.columns + (pos.x / dx) as usize;
@@ -231,6 +231,7 @@ impl UiBox {
 
     pub fn draw_hover_info(
         &mut self,
+        display: &mut DisplayArea,
         res_comp: &mut ResourcesComponent,
         area: &Rectangle,
         mouse_pos: Vector,
@@ -238,10 +239,10 @@ impl UiBox {
         let mouse = mouse_pos;
         if let Some(el) = self.find_element_under_mouse(mouse) {
             if let Some(Condition::HasResources(cost)) = &el.condition {
-                res_comp.draw(area, &cost.0)?;
+                res_comp.update(&cost.0)?;
             }
         } else {
-            res_comp.hide()?;
+            res_comp.update(&[])?;
         }
         Ok(())
     }

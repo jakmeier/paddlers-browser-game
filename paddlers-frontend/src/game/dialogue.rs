@@ -1,13 +1,16 @@
 //! In the dialogue view, the full screen us used to display text and images.
 //! It is mainly used to display conversations with paddlers to explain the story of Paddland.
 
-use crate::game::story::scene::*;
 use crate::game::Game;
 use crate::gui::{
     decoration::draw_leaf_border, gui_components::*, shapes::PadlShapeIndex, sprites::*,
     ui_state::Now, utils::colors::LIGHT_BLUE, utils::*, z::*,
 };
 use crate::prelude::*;
+use crate::{
+    game::story::scene::*,
+    gui::menu::{LEAVES_BORDER_H, LEAVES_BORDER_W},
+};
 use chrono::NaiveDateTime;
 use lyon::{math::point, path::Path, tessellation::*};
 use paddle::quicksilver_compat::graphics::{Mesh, ShapeRenderer};
@@ -153,11 +156,10 @@ impl DialogueFrame {
         sprites: &mut Sprites,
         window: &mut DisplayArea,
         main_area: Rectangle,
-        resolution: ScreenResolution,
     ) {
         window.draw_ex(&main_area, Col(LIGHT_BLUE), Transform::IDENTITY, Z_TEXTURE);
-        let leaf_w = resolution.leaves_border_w();
-        let leaf_h = resolution.leaves_border_h();
+        let leaf_w = LEAVES_BORDER_W;
+        let leaf_h = LEAVES_BORDER_H;
         let mut leaf_area = main_area.clone();
         let dx = leaf_w / 2.0;
         leaf_area.pos.x += dx;
@@ -211,9 +213,8 @@ impl Frame for DialogueFrame {
     const HEIGHT: u32 = crate::resolution::SCREEN_H;
     fn draw(&mut self, state: &mut Self::State, window: &mut DisplayArea, _timestamp: f64) {
         self.text_provider.reset();
-        let resolution = *state.world.read_resource::<ScreenResolution>();
         let main_area = Rectangle::new_sized(Self::size());
-        self.draw_background(&mut state.sprites, window, main_area, resolution);
+        self.draw_background(&mut state.sprites, window, main_area);
         self.draw_image_with_text_bubble(&mut state.sprites, window, self.image);
         self.draw_active_area(
             &mut state.sprites,

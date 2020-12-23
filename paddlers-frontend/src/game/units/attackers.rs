@@ -3,7 +3,6 @@ mod visitor_maintenance;
 use chrono::NaiveDateTime;
 pub use visitor_maintenance::*;
 
-use crate::game::town::town_defence::AttackingHobo;
 use crate::game::{
     components::NetObj,
     fight::Health,
@@ -16,6 +15,7 @@ use crate::gui::ui_state::Now;
 use crate::gui::{render::Renderable, sprites::*, utils::*, z::Z_VISITOR};
 use crate::net::graphql::query_types::HoboEffect;
 use crate::prelude::*;
+use crate::{game::town::town_defence::AttackingHobo, resolution::TOWN_TILE_S};
 use paddle::quicksilver_compat::Vector;
 use paddlers_shared_lib::game_mechanics::town::*;
 use paddlers_shared_lib::graphql_types::*;
@@ -111,7 +111,7 @@ pub fn build_new_duck_entity<'a>(
 use crate::net::graphql::attacks_query::AttacksQueryVillageAttacks;
 impl AttacksQueryVillageAttacks {
     pub(crate) fn create_entities<'a, 'b>(self, game: &mut Game) -> PadlResult<Vec<Entity>> {
-        let ul = game.world.fetch::<ScreenResolution>().unit_length();
+        let ul = TOWN_TILE_S as f32;
         let birth_time = GqlTimestamp::from_string(&self.arrival)
             .unwrap()
             .to_chrono();

@@ -1,8 +1,8 @@
+use crate::game::toplevel::Signal;
 use crate::game::units::hobos::insert_hobos;
 use crate::game::{
     components::*, units::worker_factory::create_worker_entities, units::workers::Worker,
 };
-use crate::game::toplevel::Signal;
 use crate::net::graphql::query_types::WorkerResponse;
 use crate::net::graphql::query_types::{
     AttacksResponse, BuildingsResponse, HobosQueryResponse, VolatileVillageInfoResponse,
@@ -214,8 +214,7 @@ impl Game {
 pub fn load_workers_from_net_response(ctx: &mut TownContext, response: WorkerResponse) {
     let world = ctx.world_mut();
     let now = world.read_resource::<Now>().0;
-    let resolution = *world.read_resource::<ScreenResolution>();
-    let results = create_worker_entities(&response, world, now, resolution);
+    let results = create_worker_entities(&response, world, now);
     for res in results.into_iter() {
         if let Err(e) = res {
             nuts::publish(e);

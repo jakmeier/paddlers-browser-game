@@ -9,10 +9,9 @@ use crate::gui::{
     utils::*,
 };
 use crate::prelude::*;
-use crate::resolution::ScreenResolution;
 use crate::{game::toplevel::Signal, gui::input::MouseButton};
 use chrono::NaiveDateTime;
-use paddle::quicksilver_compat::{Rectangle, Shape};
+use paddle::quicksilver_compat::Rectangle;
 use paddle::Frame;
 use paddle::*;
 use specs::prelude::*;
@@ -35,14 +34,13 @@ impl<'a, 'b> Frame for TownMenuFrame<'a, 'b> {
         self.text_provider.reset();
         let world = state.town_context.world();
         let mut area = state.inner_menu_area();
-        let resolution = *world.read_resource::<ScreenResolution>();
-        let resources_height = resolution.resources_h();
+        let resources_height = RESOURCES_H;
         let foreign = state.town_context.is_foreign();
         let now = world.fetch::<Now>().0;
         let selected_entity = world.fetch::<UiState>().selected_entity;
 
         if foreign {
-            self.bank_component.hide().nuts_check();
+            self.bank_component.clear();
             let extras_h = area.height() / 3.0;
             let (extras_area, remainder) = area.cut_horizontal(extras_h);
             area = remainder;
@@ -54,12 +52,21 @@ impl<'a, 'b> Frame for TownMenuFrame<'a, 'b> {
                 state.mouse.pos(),
             );
         } else {
+            self.bank_component.attach(window);
             let (resources_area, remainder) = area.cut_horizontal(resources_height);
             area = remainder;
             self.resources_area = resources_area;
-            self.bank_component.show().nuts_check();
+            let resources = &state
+                .town_world()
+                .fetch::<TownResources>()
+                .non_zero_resources();
+            self.bank_component.update(resources).nuts_check();
+            self.bank_component
+                .draw(window, &self.resources_area)
+                .nuts_check();
         }
 
+        self.hover_component.attach(window);
         if let Some(selected_entity) = selected_entity {
             let (img_area, table_area) = menu_selected_entity_spacing(&area);
             draw_entity_img(
@@ -92,20 +99,9 @@ impl<'a, 'b> Frame for TownMenuFrame<'a, 'b> {
     }
     fn leave(&mut self, _state: &mut Self::State) {
         self.text_provider.hide();
-        self.bank_component.hide().nuts_check();
-        self.hover_component.hide().nuts_check();
     }
     fn left_click(&mut self, state: &mut Self::State, pos: (i32, i32)) {
-        let town_world = state.town_world();
-
-        // This can be removed once the frame positions are checked properly before right_click is called
-        let ui_state = town_world.fetch_mut::<ViewState>();
         let mouse_pos: Vector = pos.into();
-        let in_menu_area = mouse_pos.overlaps_rectangle(&(*ui_state).menu_box_area);
-        if !in_menu_area {
-            return;
-        }
-        std::mem::drop(ui_state);
 
         let foreign = state.town_context.is_foreign();
         if foreign {
@@ -129,16 +125,9 @@ impl<'a, 'b> Frame for TownMenuFrame<'a, 'b> {
     }
     fn right_click(&mut self, state: &mut Self::State, pos: (i32, i32)) {
         let town_world = state.town_world();
-
-        // This can be removed once the frame positions are checked properly before right_click is called
-        let view_state = town_world.fetch_mut::<ViewState>();
-        let mouse_pos: Vector = pos.into();
-        let in_menu_area = mouse_pos.overlaps_rectangle(&(*view_state).menu_box_area);
-        if in_menu_area {
-            // Right click cancels grabbed item (take removes from option)
-            let mut ui_state = town_world.fetch_mut::<UiState>();
-            ui_state.take_grabbed_item();
-        }
+        // Right click cancels grabbed item (take removes from option)
+        let mut ui_state = town_world.fetch_mut::<UiState>();
+        ui_state.take_grabbed_item();
     }
 }
 impl TownMenuFrame<'_, '_> {
@@ -154,6 +143,7 @@ impl TownMenuFrame<'_, '_> {
                 .with_background_color(LIGHT_BLUE),
         );
 
+        // TODO: How can I have access to div in initialization? (Requiring an init fn instead of new is gonna make it a pain in the ass to use)
         Ok(TownMenuFrame {
             text_provider: TableTextProvider::new(),
             left_click_dispatcher,
@@ -202,8 +192,7 @@ impl TownMenuFrame<'_, '_> {
         match e {
             Signal::ResourcesUpdated => {
                 self.bank_component
-                    .draw(
-                        &self.resources_area,
+                    .update(
                         &state
                             .town_world()
                             .fetch::<TownResources>()

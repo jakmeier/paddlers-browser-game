@@ -1,3 +1,5 @@
+use crate::resolution::TOWN_TILE_S;
+
 use super::*;
 use paddle::quicksilver_compat::*;
 use paddle::{
@@ -94,22 +96,17 @@ impl Town {
     }
 
     pub fn shadow_rectified_circle(
-        resolution: ScreenResolution,
         window: &mut DisplayArea,
         center: impl Into<Vector>,
         radius: f32,
     ) {
-        let tile = resolution.tile(center);
+        let tile = tiling::tile(center);
         for (x, y) in Town::tiles_in_rectified_circle(tile, radius) {
-            Self::shadow_tile(resolution, window, (x, y));
+            Self::shadow_tile(window, (x, y));
         }
     }
 
-    fn shadow_tile(
-        resolution: ScreenResolution,
-        window: &mut DisplayArea,
-        coordinates: (usize, usize),
-    ) {
+    fn shadow_tile(window: &mut DisplayArea, coordinates: (usize, usize)) {
         let shadow_col = Color {
             r: 1.0,
             g: 1.0,
@@ -117,7 +114,7 @@ impl Town {
             a: 0.3,
         };
         let (x, y) = coordinates;
-        let ul = resolution.unit_length();
+        let ul = TOWN_TILE_S as f32;
         let pos = (x as f32 * ul, y as f32 * ul);
         let size = (ul, ul);
         let area = Rectangle::new(pos, size);

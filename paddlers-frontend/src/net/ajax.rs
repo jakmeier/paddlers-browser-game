@@ -34,7 +34,7 @@ pub fn fetch_json<I: serde::Serialize + ?Sized, O: for<'de> serde::Deserialize<'
             let data: O = json.into_serde()?;
             Ok(data)
         } else {
-            let status_code = resp.status();
+            let _status_code = resp.status();
             PadlErrorCode::RestAPI(JsFuture::from(resp.text()?).await?.as_string().unwrap()).dev()
         }
     }
@@ -65,7 +65,7 @@ pub fn fetch_empty_response<I: serde::Serialize + ?Sized>(
         if resp.ok() {
             Ok(())
         } else {
-            let status_code = resp.status();
+            let _status_code = resp.status();
             PadlErrorCode::RestAPI(JsFuture::from(resp.text()?).await?.as_string().unwrap()).dev()
         }
     }

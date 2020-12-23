@@ -96,11 +96,6 @@ div.dialogue {
     align-items: center;
 }
 
-.pane {
-    /*Can be removed after panes update*/
-    pointer-events: none;
-}
-
 /* MID */
 
 @media screen and (max-width: 1439px) {

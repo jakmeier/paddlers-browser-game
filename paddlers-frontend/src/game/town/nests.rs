@@ -1,6 +1,6 @@
-use crate::{game::components::NetObj, net::game_master_api::RestApiState};
 use crate::game::town::*;
 use crate::net::state::current_village;
+use crate::{game::components::NetObj, net::game_master_api::RestApiState};
 use paddlers_shared_lib::api::attacks::InvitationDescriptor;
 use specs::prelude::*;
 

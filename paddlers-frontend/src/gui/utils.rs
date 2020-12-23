@@ -139,20 +139,3 @@ pub fn scale_mesh(mesh: &mut Mesh, r: f32) {
         }
     }
 }
-
-/// Adds all vertices from one mesh to another mesh after applying a transformation
-pub fn extend_transformed(mesh: &mut Mesh, other: &Mesh, t: Transform) {
-    let n = mesh.vertices.len() as u32;
-    for mut vertex in other.vertices.iter().cloned() {
-        vertex.pos = t * vertex.pos;
-        vertex.tex_pos = vertex.tex_pos.map(|v| t * v);
-        mesh.vertices.push(vertex);
-    }
-    mesh.triangles
-        .extend(other.triangles.iter().cloned().map(|mut t| {
-            t.indices[0] += n;
-            t.indices[1] += n;
-            t.indices[2] += n;
-            t
-        }));
-}

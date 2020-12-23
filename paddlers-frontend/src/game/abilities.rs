@@ -42,12 +42,8 @@ impl AbilitySet {
             last_used,
         })
     }
-    pub fn construct_ui_box(&self, resolution: ScreenResolution) -> UiBox {
-        let (rows, padding, margin) = match resolution {
-            ScreenResolution::High => (1, 15.0, 5.0),
-            ScreenResolution::Mid => (1, 10.0, 4.0),
-            ScreenResolution::Low => (1, 5.0, 2.0),
-        };
+    pub fn construct_ui_box(&self) -> UiBox {
+        let (rows, padding, margin) = (1, 15.0, 5.0);
         let mut ui = UiBox::new(MAX_ABILITIES / rows, rows, padding, margin);
         for i in 0..MAX_ABILITIES {
             let a = self.abilities[i];

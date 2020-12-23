@@ -66,7 +66,8 @@ impl<'a> System<'a> for WorkerSystem {
                 match task.task_type {
                     TaskType::Walk => {
                         let position_now = mov.position(task.start_time);
-                        let position_after = town.resolution.tile_area(task.position).pos;
+                        let position_after =
+                            crate::game::town::tiling::tile_area(task.position).pos;
                         if about_equal(position_now.x, position_after.x)
                             && about_equal(position_now.y, position_after.y)
                         {

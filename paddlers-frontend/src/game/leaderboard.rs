@@ -70,7 +70,12 @@ impl Frame for LeaderboardFrame {
     type State = Game;
     const WIDTH: u32 = crate::resolution::MAIN_AREA_W;
     const HEIGHT: u32 = crate::resolution::MAIN_AREA_H;
-    fn draw(&mut self, _state: &mut Self::State, window: &mut paddle::DisplayArea, _timestamp: f64) {
+    fn draw(
+        &mut self,
+        _state: &mut Self::State,
+        window: &mut paddle::DisplayArea,
+        _timestamp: f64,
+    ) {
         window.fill(DARK_BLUE);
     }
     fn enter(&mut self, _state: &mut Self::State) {

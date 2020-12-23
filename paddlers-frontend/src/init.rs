@@ -12,17 +12,16 @@ mod frame_loading;
 pub mod specs_registration;
 
 use crate::game::player_info::PlayerInfo;
-use crate::prelude::*;
 use specs::prelude::*;
 use specs_registration::{insert_global_resources, register_global_components};
 
-pub(super) fn init_world(resolution: ScreenResolution, player_info: PlayerInfo) -> World {
+pub(super) fn init_world(player_info: PlayerInfo) -> World {
     let mut world = World::new();
 
     // Components
     register_global_components(&mut world);
 
     // Resources
-    insert_global_resources(&mut world, resolution, player_info);
+    insert_global_resources(&mut world, player_info);
     world
 }

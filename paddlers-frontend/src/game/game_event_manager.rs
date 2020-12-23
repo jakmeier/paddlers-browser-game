@@ -52,7 +52,6 @@ impl Game {
         match evt {
             GameEvent::HoboSatisfied(id) => {
                 let now = *self.world.fetch::<Now>();
-                let resolution = *self.world.fetch::<ScreenResolution>();
                 let town_world = self.town_world_mut();
                 let mut rend_store = town_world.write_storage::<Renderable>();
                 if let Some(mut rend) = rend_store.get_mut(id) {
@@ -66,7 +65,7 @@ impl Game {
                         if v_store.get(id).is_none() {
                             // hobo currently stopped (in frontend)
                             // => Set it moving again, assuming it has been released by the game-master
-                            let moving = release_and_move_visitor(hobo, resolution, now);
+                            let moving = release_and_move_visitor(hobo, now);
                             v_store.insert(id, moving)?;
                         }
                         // Tell backend that release might be required

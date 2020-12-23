@@ -29,7 +29,6 @@ pub enum Test {
 
 impl TestData {
     pub fn start_test(game: &mut Game, setting: Test) -> Self {
-        let resolution = *game.world.fetch::<ScreenResolution>();
         match setting {
             Test::Vanilla => { /* NOP */ }
             s => {
@@ -38,10 +37,8 @@ impl TestData {
                 match s {
                     Test::Vanilla => unreachable!(),
                     Test::Empty => { /* NOP */ }
-                    Test::StandardVillage => {
-                        standard_village::insert_hobos(game.town_world_mut(), resolution)
-                            .expect("inserting test hobos")
-                    }
+                    Test::StandardVillage => standard_village::insert_hobos(game.town_world_mut())
+                        .expect("inserting test hobos"),
                 }
                 let mut town = game.town_world().fetch_mut();
                 let entities = game.town_world().entities();

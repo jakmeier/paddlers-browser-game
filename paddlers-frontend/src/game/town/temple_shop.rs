@@ -1,9 +1,13 @@
-use crate::{game::{
-    buildings::Building, components::UiMenu, game_event_manager::*, player_info::PlayerInfo, Game,
-}, net::game_master_api::RestApiState};
 use crate::gui::sprites::{SingleSprite, SpriteSet};
 use crate::net::state::current_village;
 use crate::prelude::*;
+use crate::{
+    game::{
+        buildings::Building, components::UiMenu, game_event_manager::*, player_info::PlayerInfo,
+        Game,
+    },
+    net::game_master_api::RestApiState,
+};
 use paddlers_shared_lib::api::shop::ProphetPurchase;
 use specs::prelude::*;
 

@@ -2,7 +2,10 @@ mod map_menu;
 mod menu_background;
 mod town_menu;
 
-use crate::gui::sprites::Sprites;
+use crate::{
+    gui::sprites::Sprites,
+    resolution::{MENU_AREA_H, MENU_AREA_W},
+};
 pub(crate) use map_menu::MapMenuFrame;
 pub(crate) use menu_background::MenuBackgroundFrame;
 use paddle::*;
@@ -27,69 +30,28 @@ use crate::gui::{
     z::*,
 };
 use crate::prelude::*;
-use crate::resolution::ScreenResolution;
 use paddle::quicksilver_compat::{Col, Rectangle, Transform, Vector};
 use paddle::DisplayArea;
 use specs::prelude::*;
 
-impl ScreenResolution {
-    fn button_h(&self) -> f32 {
-        match self {
-            ScreenResolution::Low => 50.0,
-            ScreenResolution::Mid => 80.0,
-            ScreenResolution::High => 150.0,
-        }
-    }
-    fn resources_h(&self) -> f32 {
-        match self {
-            ScreenResolution::Low => 20.0,
-            ScreenResolution::Mid => 30.0,
-            ScreenResolution::High => 80.0,
-        }
-    }
-    pub fn leaves_border_h(&self) -> f32 {
-        match self {
-            ScreenResolution::Low => 15.0,
-            ScreenResolution::Mid => 40.0,
-            ScreenResolution::High => 100.0,
-        }
-    }
-    pub fn leaves_border_w(&self) -> f32 {
-        match self {
-            ScreenResolution::Low => 12.0,
-            ScreenResolution::Mid => 30.0,
-            ScreenResolution::High => 80.0,
-        }
-    }
-    fn duck_steps_h(&self) -> f32 {
-        match self {
-            ScreenResolution::Low => 10.0,
-            ScreenResolution::Mid => 30.0,
-            ScreenResolution::High => 40.0,
-        }
-    }
-    fn menu_padding(&self) -> f32 {
-        match self {
-            ScreenResolution::Low => 2.0,
-            ScreenResolution::Mid => 5.0,
-            ScreenResolution::High => 10.0,
-        }
-    }
-}
-pub fn menu_box_inner_split(
-    menu_box_area: Rectangle,
-    resolution: ScreenResolution,
-) -> (Rectangle, Rectangle) {
-    let button_height = resolution.button_h();
+const BUTTON_H: f32 = 150.0;
+const RESOURCES_H: f32 = 80.0;
+pub const LEAVES_BORDER_H: f32 = 10.0;
+pub const LEAVES_BORDER_W: f32 = 80.0;
+const DUCK_STEPS_H: f32 = 40.0;
+const MENU_PADDING: f32 = 10.0;
+
+pub fn menu_box_inner_split(menu_box_area: Rectangle) -> (Rectangle, Rectangle) {
+    let button_height = BUTTON_H;
     let mut area = menu_box_area;
     let y0 = menu_box_area.y();
     let h0 = menu_box_area.height();
 
     // Leaves border
-    let leaf_w = resolution.leaves_border_w();
-    let leaf_h = resolution.leaves_border_h();
+    let leaf_w = LEAVES_BORDER_W;
+    let leaf_h = LEAVES_BORDER_H;
 
-    let padding = resolution.menu_padding();
+    let padding = MENU_PADDING;
     area.pos.x += leaf_w * 0.25 + padding * 0.5;
     area.pos.y += leaf_h / 2.0;
     area.size.x -= leaf_w + padding;
@@ -100,7 +62,7 @@ pub fn menu_box_inner_split(
     area.pos.y += button_height;
 
     // Duck steps
-    area.pos.y += resolution.duck_steps_h();
+    area.pos.y += DUCK_STEPS_H;
     area.pos.y += 10.0;
     area.size.y = y0 + h0 - area.pos.y - leaf_h;
 
@@ -129,38 +91,38 @@ pub fn menu_selected_entity_spacing(area: &Rectangle) -> (Rectangle, Rectangle) 
 
 impl Game {
     pub fn button_area(&self) -> Rectangle {
-        let data = self.world.read_resource::<ViewState>();
-        data.button_area.clone()
+        let menu_area = Rectangle::new_sized((MENU_AREA_W, MENU_AREA_H));
+        let (button_area, _inner_area) = crate::gui::menu::menu_box_inner_split(menu_area);
+        button_area
     }
     pub fn menu_box_area(&self) -> Rectangle {
-        let data = self.world.read_resource::<ViewState>();
-        data.menu_box_area.clone()
+        Rectangle::new_sized((MENU_AREA_W, MENU_AREA_H))
     }
     pub fn inner_menu_area(&self) -> Rectangle {
-        let data = self.world.read_resource::<ViewState>();
-        data.inner_menu_box_area.clone()
+        let menu_area = Rectangle::new_sized((MENU_AREA_W, MENU_AREA_H));
+        let (_button_area, inner_area) = crate::gui::menu::menu_box_inner_split(menu_area);
+        inner_area
     }
 
     pub fn draw_menu_background(&mut self, window: &mut DisplayArea) -> PadlResult<()> {
         let mut area = self.menu_box_area();
-        let resolution = *self.world.read_resource::<ScreenResolution>();
 
         // Menu Box Background
         window.draw_ex(&area, Col(LIGHT_GREEN), Transform::IDENTITY, Z_MENU_BOX);
 
         // Leaves border
-        let leaf_w = resolution.leaves_border_w();
-        let leaf_h = resolution.leaves_border_h();
+        let leaf_w = LEAVES_BORDER_W;
+        let leaf_h = LEAVES_BORDER_H;
         draw_leaf_border(window, &mut self.sprites, &area, leaf_w, leaf_h);
 
-        let padding = resolution.menu_padding();
+        let padding = MENU_PADDING;
         area.pos.x += leaf_w * 0.25 + padding * 0.5;
         area.pos.y += leaf_h / 2.0;
         area.size.x -= leaf_w + padding;
         area.size.y -= leaf_h;
 
         // skips space for butttons
-        let button_height = resolution.button_h();
+        let button_height = BUTTON_H;
         area.pos.y += button_height;
 
         draw_duck_step_line(
@@ -168,7 +130,7 @@ impl Game {
             &mut self.sprites,
             Vector::new(area.x() - leaf_w * 0.5, area.pos.y),
             area.x() + area.width() + leaf_w * 0.5,
-            resolution.duck_steps_h(),
+            DUCK_STEPS_H,
         );
 
         Ok(())
@@ -190,7 +152,8 @@ impl Game {
         ));
         table.push(total_aura_details(self.town().ambience()));
         let shop = &mut self.town_context.world().write_resource::<DefaultShop>();
-        Self::draw_shop_prices(&mut area, &mut shop.ui, res_comp, self.mouse.pos()).nuts_check();
+        Self::draw_shop_prices(window, &mut area, &mut shop.ui, res_comp, self.mouse.pos())
+            .nuts_check();
 
         table.push(TableRow::InteractiveArea(&mut shop.ui));
 
@@ -208,6 +171,7 @@ impl Game {
         )
     }
     fn draw_shop_prices(
+        display: &mut DisplayArea,
         area: &mut Rectangle,
         ui: &mut UiBox,
         res_comp: &mut ResourcesComponent,
@@ -216,7 +180,7 @@ impl Game {
         let price_tag_h = 50.0;
         let (shop_area, price_tag_area) = area.cut_horizontal(area.height() - price_tag_h);
         *area = shop_area;
-        ui.draw_hover_info(res_comp, &price_tag_area, mouse_pos)?;
+        ui.draw_hover_info(display, res_comp, &price_tag_area, mouse_pos)?;
         Ok(())
     }
 }
@@ -366,7 +330,7 @@ pub fn draw_town_entity_details_table(
     }
 
     if let Some(ui) = ui_menu.get_mut(e) {
-        Game::draw_shop_prices(&mut area, &mut ui.ui, res_comp, mouse_pos).nuts_check();
+        Game::draw_shop_prices(window, &mut area, &mut ui.ui, res_comp, mouse_pos).nuts_check();
         table.push(TableRow::InteractiveArea(&mut ui.ui));
     }
 

@@ -3,6 +3,7 @@ use crate::game::{
     components::*,
     input::Clickable,
     movement::{Moving, Position},
+    town::tiling,
     units::workers::*,
 };
 use crate::gui::{animation::*, render::Renderable, sprites::*, utils::*, z::Z_UNITS};
@@ -49,13 +50,9 @@ pub fn with_hero<B: Builder>(builder: B) -> B {
     ))
 }
 
-pub fn with_abilities<B: Builder>(
-    builder: B,
-    abilities: AbilitySet,
-    resolution: ScreenResolution,
-) -> B {
+pub fn with_abilities<B: Builder>(builder: B, abilities: AbilitySet) -> B {
     builder.with(UiMenu {
-        ui: abilities.construct_ui_box(resolution),
+        ui: abilities.construct_ui_box(),
     })
 }
 
@@ -91,23 +88,17 @@ pub fn create_worker_entities(
     response: &WorkerResponse,
     world: &mut World,
     now: NaiveDateTime,
-    resolution: ScreenResolution,
 ) -> Vec<PadlResult<Entity>> {
     response
         .iter()
-        .map(|w| w.create_entity(world, now, resolution))
+        .map(|w| w.create_entity(world, now))
         .collect()
 }
 
 use crate::net::graphql::village_units_query::{self, VillageUnitsQueryVillageWorkers};
 impl VillageUnitsQueryVillageWorkers {
-    fn create_entity(
-        &self,
-        world: &mut World,
-        now: NaiveDateTime,
-        resolution: ScreenResolution,
-    ) -> PadlResult<Entity> {
-        let tile_area = resolution.tile_area((self.x as usize, self.y as usize));
+    fn create_entity(&self, world: &mut World, now: NaiveDateTime) -> PadlResult<Entity> {
+        let tile_area = tiling::tile_area((self.x as usize, self.y as usize));
         let speed = unit_speed_to_worker_tiles_per_second(self.speed as f32) * tile_area.width();
         let netid = self.id.parse().unwrap();
 
@@ -143,7 +134,7 @@ impl VillageUnitsQueryVillageWorkers {
             _ => panic!("Unexpected Unit Type"),
         }
         let abilities = AbilitySet::from_gql(&self.abilities)?;
-        builder = with_abilities(builder, abilities, resolution);
+        builder = with_abilities(builder, abilities);
         Ok(builder.build())
     }
 }

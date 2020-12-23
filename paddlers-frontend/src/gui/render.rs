@@ -1,4 +1,3 @@
-use crate::game::story::entity_trigger::EntityTrigger;
 use crate::game::{
     fight::{Health, Range},
     movement::Position,
@@ -12,6 +11,7 @@ use crate::gui::{
     utils::*, z::*,
 };
 use crate::prelude::*;
+use crate::{game::story::entity_trigger::EntityTrigger, resolution::TOWN_TILE_S};
 use paddle::quicksilver_compat::graphics::Color;
 use paddle::quicksilver_compat::*;
 use paddle::FitStrategy;
@@ -54,7 +54,7 @@ impl Game {
         }
         // TODO XXX TODO
         // if let Some(grabbed) = grabbed_item {
-        //     render_grabbed_item(world, window, sprites, &grabbed)?;
+        //     render_grabbed_item(window, sprites, &grabbed)?;
         //     window.set_cursor(MouseCursor::None);
         // } else {
         //     window.set_cursor(MouseCursor::Default);
@@ -117,13 +117,12 @@ pub fn render_hovering(
     let position_store = world.read_storage::<Position>();
     let range_store = world.read_storage::<Range>();
     let health_store = world.read_storage::<Health>();
-    let resolution = world.read_resource::<ScreenResolution>();
 
     if let Some((range, p)) = (&range_store, &position_store)
         .join()
         .get(entity, &world.entities())
     {
-        range.draw(window, &p.area, *resolution);
+        range.draw(window, &p.area).nuts_check();
     }
 
     if let Some((health, p)) = (&health_store, &position_store)
@@ -135,13 +134,12 @@ pub fn render_hovering(
 }
 
 pub fn render_grabbed_item(
-    world: &World,
     window: &mut DisplayArea,
     sprites: &mut Sprites,
     item: &Grabbable,
     mouse: Vector,
 ) {
-    let ul = world.fetch::<ScreenResolution>().unit_length();
+    let ul = TOWN_TILE_S as f32;
     let center = mouse - (ul / 2.0, ul / 2.0).into();
     let max_area = Rectangle::new(center, (ul, ul));
     match item {
@@ -214,14 +212,9 @@ fn render_health(
 }
 
 impl Range {
-    fn draw(
-        &self,
-        window: &mut DisplayArea,
-        area: &Rectangle,
-        resolution: ScreenResolution,
-    ) -> PadlResult<()> {
+    fn draw(&self, window: &mut DisplayArea, area: &Rectangle) -> PadlResult<()> {
         // TODO Check if this aligns 100% with server. Also consider changing interface to TileIndex instead of center
-        Town::shadow_rectified_circle(resolution, window, area.center(), self.range);
+        Town::shadow_rectified_circle(window, area.center(), self.range);
         Ok(())
     }
 }

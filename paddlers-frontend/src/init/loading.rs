@@ -1,12 +1,15 @@
+use crate::game::{
+    game_event_manager::load_game_event_manager, net_receiver::loading_update_net, toplevel::Signal,
+};
+use crate::gui::input::UiView;
 use crate::net::graphql::{
     query_types::{
         AttacksResponse, BuildingsResponse, HobosQueryResponse, VolatileVillageInfoResponse,
     },
     ReportsResponse,
 };
-use crate::{game::game_event_manager::load_game_event_manager, prelude::PadlError};
-use crate::{game::net_receiver::loading_update_net, game::toplevel::Signal};
-use crate::{gui::input::UiView, prelude::PadlErrorCode};
+use crate::prelude::{PadlError, PadlErrorCode};
+use crate::resolution::{SCREEN_H, SCREEN_W};
 use nuts::LifecycleStatus;
 use paddle::{
     graphics::Image, DisplayArea, ErrorMessage, Frame, LoadScheduler, LoadedData, LoadingDone,
@@ -25,7 +28,7 @@ use crate::gui::sprites::{
 use crate::gui::utils::*;
 use crate::net::graphql::query_types::WorkerResponse;
 use crate::net::NetMsg;
-use crate::prelude::{PadlResult, ScreenResolution, TextDb};
+use crate::prelude::{PadlResult, TextDb};
 use paddle::quicksilver_compat::*;
 use paddle::{Domain, FloatingText};
 use std::sync::mpsc::Receiver;
@@ -33,7 +36,6 @@ use std::sync::mpsc::Receiver;
 /// State that is used while loading all data over the network.
 /// It will automatically be removed when loading is done.
 pub(crate) struct LoadingFrame {
-    pub resolution: ScreenResolution,
     preload_float: FloatingText,
     net_chan: Receiver<NetMsg>,
 }
@@ -63,11 +65,7 @@ impl LoadingFrame {
             aid.set_status(LifecycleStatus::Deleted);
         });
     }
-    pub fn start(
-        resolution: ScreenResolution,
-        root_id: &str,
-        net_chan: Receiver<NetMsg>,
-    ) -> PadlResult<()> {
+    pub fn start(root_id: &str, net_chan: Receiver<NetMsg>) -> PadlResult<()> {
         let document = div::doc()?;
         let root = document
             .get_element_by_id(root_id)
@@ -80,18 +78,14 @@ impl LoadingFrame {
             .dyn_into()
             .unwrap();
         root.append_child(&canvas)?;
-        Self::start_with_canvas(resolution, canvas, net_chan);
+        Self::start_with_canvas(canvas, net_chan);
         Ok(())
     }
-    pub fn start_with_canvas(
-        resolution: ScreenResolution,
-        canvas: HtmlCanvasElement,
-        net_chan: Receiver<NetMsg>,
-    ) {
+    pub fn start_with_canvas(canvas: HtmlCanvasElement, net_chan: Receiver<NetMsg>) {
         let texture_config =
             paddle::graphics::TextureConfig::default().with_bilinear_filtering_no_mipmaps();
         let config = paddle::PaddleConfig::default()
-            .with_resolution(resolution.pixels())
+            .with_resolution((SCREEN_W, SCREEN_H))
             .with_canvas(canvas)
             .with_texture_config(texture_config)
             .with_background_color(DARK_GREEN);
@@ -123,7 +117,6 @@ impl LoadingFrame {
         let preload_float = FloatingText::try_default().expect("FloatingText");
 
         LoadingFrame {
-            resolution,
             preload_float,
             net_chan,
         }
@@ -139,10 +132,9 @@ impl LoadingFrame {
         // TODO (optimization): Refactor to make this call event-based
         window.fit_display(20.0);
 
-        let r = self.resolution;
-        let w = r.pixels().0;
-        let y = r.progress_bar_area_y();
-        let ph = r.progress_bar_area_h();
+        let w = SCREEN_W as f32;
+        let y = PROGRESS_BAR_AREA_Y;
+        let ph = PROGRESS_BAR_AREA_H;
         let area = Rectangle::new((w * 0.1, y), (w * 0.8, ph));
 
         draw_progress_bar(window, &mut self.preload_float, area, progress, &msg)?;
@@ -161,14 +153,14 @@ impl LoadingFrame {
             animations.push(maybe_animation?);
         }
 
-        let (resolution, net_chan) = (self.resolution, self.net_chan);
+        let net_chan = self.net_chan;
         let sprites = Sprites::new(images, animations);
 
         let game_data = GameLoadingData::try_from_loaded_data(&mut loaded_data)?;
 
         let leaderboard_data = *loaded_data.extract::<NetMsg>()?;
 
-        match Game::load_game(sprites, catalog, resolution, game_data, net_chan) {
+        match Game::load_game(sprites, catalog, game_data, net_chan) {
             Err(e) => {
                 TextBoard::display_error_message(":(\nLoading game failed".to_owned()).nuts_check(); // TODO: multi-lang errors
                 panic!("Fatal Error: Could not load game {:?}", e);
@@ -227,26 +219,13 @@ async fn start_loading_locale() -> PadlResult<TextDb> {
     Ok(tdb)
 }
 
-impl ScreenResolution {
-    fn progress_bar_area_y(&self) -> f32 {
-        match self {
-            ScreenResolution::Low => 100.0,
-            _ => self.pixels().1 * 0.618,
-        }
-    }
-    fn progress_bar_area_h(&self) -> f32 {
-        match self {
-            ScreenResolution::Low => 100.0,
-            ScreenResolution::Mid => 150.0,
-            ScreenResolution::High => 200.0,
-        }
-    }
-}
+const PROGRESS_BAR_AREA_Y: f32 = 667.4;
+const PROGRESS_BAR_AREA_H: f32 = 200.0;
 
 impl Frame for LoadingFrame {
     type State = Option<LoadScheduler>;
-    const WIDTH: u32 = crate::resolution::SCREEN_W;
-    const HEIGHT: u32 = crate::resolution::SCREEN_H;
+    const WIDTH: u32 = SCREEN_W;
+    const HEIGHT: u32 = SCREEN_H;
 
     fn draw(&mut self, state: &mut Self::State, canvas: &mut DisplayArea, _timestamp: f64) {
         if let Some(lm) = state.as_ref() {

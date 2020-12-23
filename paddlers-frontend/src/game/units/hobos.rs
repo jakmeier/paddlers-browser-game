@@ -1,4 +1,3 @@
-use crate::game::town::nests::Nest;
 use crate::game::town::TownContext;
 use crate::game::{components::NetObj, movement::Position, Game};
 use crate::gui::{render::Renderable, sprites::*, utils::*, z::Z_UNITS};
@@ -6,6 +5,7 @@ use crate::net::graphql::query_types::{
     hobos_query::HobosQueryVillageHobosNest, HobosQueryResponse, HobosQueryUnitColor,
 };
 use crate::prelude::*;
+use crate::{game::town::nests::Nest, resolution::TOWN_TILE_S};
 use paddle::quicksilver_compat::*;
 use paddlers_shared_lib::prelude::*;
 use specs::prelude::*;
@@ -67,7 +67,7 @@ fn new_sitting_hobo(
         .id
         .parse()
         .map_err(|_| PadlError::dev_err(PadlErrorCode::InvalidGraphQLData("BuildingId")))?;
-    let ul = world.fetch::<ScreenResolution>().unit_length();
+    let ul = TOWN_TILE_S as f32;
     let pos = Vector::new(nest.x as f32 * ul, nest.y as f32 * ul);
     let size = (ul, ul);
     let rend = RenderVariant::Img(SpriteSet::Simple(SingleSprite::SittingYellowDuck));

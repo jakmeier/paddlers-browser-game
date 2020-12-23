@@ -39,9 +39,9 @@ pub(crate) fn insert_buildings(town: &mut Town, entities: &EntitiesRes, lazy: &L
     town.insert_new_building(entities, lazy, (7, 5), BuildingType::SawMill);
     town.insert_new_building(entities, lazy, (7, 6), BuildingType::BundlingStation);
 }
-pub(crate) fn insert_hobos(world: &mut World, resolution: ScreenResolution) -> PadlResult<()> {
+pub(crate) fn insert_hobos(world: &mut World) -> PadlResult<()> {
     let now = utc_now();
-    let ul = resolution.unit_length();
+    let ul = TOWN_TILE_S as f32;
 
     let w = TOWN_X as f32 * ul;
     let x = w - ul * 0.6;

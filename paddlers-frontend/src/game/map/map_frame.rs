@@ -1,5 +1,8 @@
 use super::*;
-use crate::{game::Game, resolution::{MAIN_AREA_H, MAIN_AREA_W}};
+use crate::{
+    game::Game,
+    resolution::{MAIN_AREA_H, MAIN_AREA_W},
+};
 use paddle::quicksilver_compat::geom::Shape;
 use paddle::{DisplayArea, Frame};
 
@@ -31,7 +34,7 @@ impl Frame for MapFrame {
         let mut map = state.world.fetch_mut::<GlobalMapSharedState>();
 
         let pos: Vector = pos.into();
-        let main_area = state.world.read_resource::<ViewState>().main_area;
+        let main_area = Rectangle::new_sized((MAIN_AREA_W, MAIN_AREA_H));
         if pos.overlaps_rectangle(&main_area) {
             map.left_click_on_main_area(
                 pos,

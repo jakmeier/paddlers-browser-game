@@ -35,6 +35,7 @@ wasm-bindgen = { version = "0.2.68", features = ["serde-serialize"]  }
 [dependencies.web-sys]
 version = "0.3"
 features = [
+    "CssStyleDeclaration",
     "Document",
     "DomRect",
     "Element",

@@ -7,7 +7,6 @@ use crate::gui::{
 };
 use crate::prelude::*;
 use crate::{game::Game, gui::input::MouseButton};
-use paddle::quicksilver_compat::Shape;
 use paddle::Frame;
 use specs::prelude::*;
 
@@ -57,15 +56,7 @@ impl<'a, 'b> Frame for MapMenuFrame<'a, 'b> {
         self.text_provider.finish_draw();
     }
     fn left_click(&mut self, state: &mut Self::State, pos: (i32, i32)) {
-        // This can be removed once the frame positions are checked properly before right_click is called
-        let ui_state = state.world.fetch::<ViewState>();
         let mouse_pos: Vector = pos.into();
-        let in_menu_area = mouse_pos.overlaps_rectangle(&(*ui_state).menu_box_area);
-        if !in_menu_area {
-            return;
-        }
-        std::mem::drop(ui_state);
-
         let ms = MouseState(mouse_pos, Some(MouseButton::Left));
         state.world.insert(ms);
         self.left_click_dispatcher.dispatch(&state.world);

@@ -21,7 +21,6 @@ mod net;
 mod prelude;
 pub(crate) mod resolution;
 mod view;
-pub(crate) mod window;
 
 use std::sync::mpsc::channel;
 use wasm_bindgen::prelude::wasm_bindgen;
@@ -34,7 +33,6 @@ pub fn main() {
     println!("Debug mode");
 
     crate::logging::init_error_handling();
-    let resolution = crate::window::estimate_screen_size().expect("Reading window size failed");
 
     /* Now load the actual game */
     // Timing is key: network state should be registered in Nuts before rest of the game is loaded.
@@ -42,8 +40,7 @@ pub fn main() {
     let (net_sender, net_receiver) = channel();
     net::init_net(net_sender);
 
-    init::loading::LoadingFrame::start(resolution, "game-root", net_receiver)
-        .expect("Failed loading.");
+    init::loading::LoadingFrame::start("game-root", net_receiver).expect("Failed loading.");
 
     // Now start loading data over the network.
     // To keep things simple, this done at the end, even if that means extra latency.

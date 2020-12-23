@@ -1,5 +1,5 @@
-use crate::gui::{gui_components::*, input::UiView, sprites::*, ui_state::Now, utils::*};
 use crate::game::toplevel::Signal;
+use crate::gui::{gui_components::*, input::UiView, sprites::*, ui_state::Now, utils::*};
 use crate::net::NetMsg;
 use crate::prelude::*;
 use paddle::{DisplayArea, NutsCheck};

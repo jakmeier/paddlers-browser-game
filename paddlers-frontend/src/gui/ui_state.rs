@@ -1,6 +1,5 @@
 use crate::gui::input::*;
 use chrono::NaiveDateTime;
-use paddle::quicksilver_compat::*;
 use specs::prelude::*;
 
 #[derive(Clone)]
@@ -9,16 +8,6 @@ pub struct UiState {
     pub selected_entity: Option<Entity>,
     pub hovered_entity: Option<Entity>,
     grabbed_item: Option<Grabbable>,
-}
-
-#[derive(Clone)]
-/// State for current view, which probably should be removed eventually because it is redundant
-pub struct ViewState {
-    // TODO [0.1.4]: I think these four could go into frames.
-    pub main_area: Rectangle,
-    pub menu_box_area: Rectangle,
-    pub inner_menu_box_area: Rectangle,
-    pub button_area: Rectangle,
 }
 
 #[derive(Default, Copy, Clone)]
@@ -57,15 +46,5 @@ impl UiState {
     #[inline]
     pub fn set_grabbed_item(&mut self, g: Grabbable) {
         self.grabbed_item = Some(g)
-    }
-}
-impl ViewState {
-    pub fn new() -> Self {
-        Self {
-            main_area: Rectangle::default(),
-            menu_box_area: Rectangle::default(),
-            inner_menu_box_area: Rectangle::default(),
-            button_area: Rectangle::default(),
-        }
     }
 }

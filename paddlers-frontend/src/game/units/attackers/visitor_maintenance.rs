@@ -1,9 +1,9 @@
-use crate::game::fight::Health;
 use crate::game::movement::{Moving, Position};
 use crate::game::units::attackers::Visitor;
 use crate::gui::ui_state::Now;
 use crate::gui::{render::Renderable, sprites::*, utils::*};
 use crate::prelude::*;
+use crate::{game::fight::Health, resolution::TOWN_TILE_S};
 use paddle::quicksilver_compat::Vector;
 use paddlers_shared_lib::game_mechanics::town::*;
 use specs::prelude::*;
@@ -27,12 +27,8 @@ pub fn change_duck_sprite_to_happy(r: &mut Renderable) {
 }
 
 /// Set visitor moving again (Without server communication)
-pub fn release_and_move_visitor(
-    visitor: &Visitor,
-    resolution: ScreenResolution,
-    now: Now,
-) -> Moving {
-    let ul = resolution.unit_length();
+pub fn release_and_move_visitor(visitor: &Visitor, now: Now) -> Moving {
+    let ul = TOWN_TILE_S as f32;
     let now = now.0;
     let speed = visitor.speed;
     let momentum = Vector::new(-speed, 0.0);
@@ -52,7 +48,7 @@ impl Game {
         let positions = town_world.read_component::<Position>();
         let entities = town_world.entities();
         let now = self.world.fetch::<Now>().0;
-        let ul = self.world.fetch::<ScreenResolution>().unit_length();
+        let ul = TOWN_TILE_S as f32;
 
         let mut resting_visitors = vec![];
         for (visitor, hp, e, pos) in (&visitors, &hps, &entities, &positions).join() {
@@ -69,11 +65,10 @@ impl Game {
         if to_release > 0 {
             let world = self.town_world();
             let now = *world.fetch::<Now>();
-            let resolution = *world.fetch::<ScreenResolution>();
             let mut mov = world.write_component::<Moving>();
             resting_visitors.sort_by(|a, b| a.0.arrival.partial_cmp(&b.0.arrival).unwrap());
             for (visitor, e) in &resting_visitors[0..to_release] {
-                mov.insert(*e, release_and_move_visitor(visitor, resolution, now))?;
+                mov.insert(*e, release_and_move_visitor(visitor, now))?;
             }
         }
         Ok(())

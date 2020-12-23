@@ -29,7 +29,6 @@ pub type TileState = TileStateEx<specs::Entity>;
 pub struct Town {
     map: TownMap,
     state: TownState<specs::Entity>,
-    pub resolution: ScreenResolution,
     // Could possibly be added to TownState, depends on further developments of the backend.
     pub total_ambience: i64,
     pub idle_prophets: Vec<specs::Entity>,
@@ -40,12 +39,11 @@ pub const X: usize = TOWN_X;
 const Y: usize = TOWN_Y;
 
 impl Town {
-    pub fn new(resolution: ScreenResolution) -> Self {
+    pub fn new() -> Self {
         let map = TownMap::new(TownLayout::Basic);
         Town {
             map: map,
             state: TownState::new(),
-            resolution: resolution,
             total_ambience: 0,
             idle_prophets: vec![],
             faith: 100,
@@ -87,7 +85,7 @@ impl Town {
     }
 
     pub fn get_buildable_tile(&self, pos: impl Into<Vector>) -> Option<TileIndex> {
-        let (x, y) = self.resolution.tile(pos);
+        let (x, y) = tiling::tile(pos);
         if self.is_buildable((x, y)) {
             Some((x, y))
         } else {

@@ -1,7 +1,8 @@
 use paddle::quicksilver_compat::*;
 use specs::prelude::*;
 
-use super::task_factory::NewTaskDescriptor;
+use super::{task_factory::NewTaskDescriptor, tiling};
+use crate::game::toplevel::Signal;
 use crate::game::{
     components::*,
     movement::*,
@@ -13,7 +14,6 @@ use crate::game::{
 use crate::gui::gui_components::{ClickOutput, Condition, InteractiveTableArea};
 use crate::gui::input::{Clickable, Grabbable};
 use crate::gui::ui_state::*;
-use crate::game::toplevel::Signal;
 use crate::net::game_master_api::RestApiState;
 use crate::net::state::current_village;
 use crate::prelude::*;
@@ -52,7 +52,7 @@ impl Town {
                     container.remove_entity(clicked_entity);
                     ui_menu.ui.remove(clicked_entity.into());
                     let container_area = position.get(menu_entity).unwrap().area;
-                    let tile = self.resolution.tile(container_area.pos);
+                    let tile = tiling::tile(container_area.pos);
                     move_worker_out_of_building(
                         self,
                         clicked_entity,
