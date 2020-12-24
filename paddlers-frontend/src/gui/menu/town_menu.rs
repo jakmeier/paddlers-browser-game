@@ -143,7 +143,6 @@ impl TownMenuFrame<'_, '_> {
                 .with_background_color(LIGHT_BLUE),
         );
 
-        // TODO: How can I have access to div in initialization? (Requiring an init fn instead of new is gonna make it a pain in the ass to use)
         Ok(TownMenuFrame {
             text_provider: TableTextProvider::new(),
             left_click_dispatcher,

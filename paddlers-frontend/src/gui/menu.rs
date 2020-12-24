@@ -36,7 +36,7 @@ use specs::prelude::*;
 
 const BUTTON_H: f32 = 150.0;
 const RESOURCES_H: f32 = 80.0;
-pub const LEAVES_BORDER_H: f32 = 10.0;
+pub const LEAVES_BORDER_H: f32 = 100.0;
 pub const LEAVES_BORDER_W: f32 = 80.0;
 const DUCK_STEPS_H: f32 = 40.0;
 const MENU_PADDING: f32 = 10.0;
