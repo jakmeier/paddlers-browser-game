@@ -35,7 +35,7 @@ impl<'a, 'b> Frame for MapMenuFrame<'a, 'b> {
 
     fn draw(&mut self, state: &mut Self::State, window: &mut DisplayArea, _timestamp: f64) {
         self.text_provider.reset();
-        let inner_area = state.inner_menu_area();
+        let inner_area = crate::gui::menu::inner_menu_area();
 
         let selected_entity = state.world.fetch::<UiState>().selected_entity;
         if let Some(e) = selected_entity {

@@ -35,7 +35,7 @@ impl<'a, 'b> Frame for TownMenuFrame<'a, 'b> {
     fn draw(&mut self, state: &mut Self::State, window: &mut DisplayArea, _timestamp: f64) {
         self.text_provider.reset();
         let world = state.town_context.world();
-        let mut area = state.inner_menu_area();
+        let mut area = inner_menu_area();
         let resources_height = RESOURCES_H;
         let foreign = state.town_context.is_foreign();
         let now = world.fetch::<Now>().0;

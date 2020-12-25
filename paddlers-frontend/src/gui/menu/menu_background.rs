@@ -87,7 +87,7 @@ impl Frame for MenuBackgroundFrame {
     fn draw(&mut self, state: &mut Self::State, window: &mut DisplayArea, _timestamp: f64) {
         self.tp.reset();
         state.draw_menu_background(window).nuts_check();
-        let button_area = state.button_area();
+        let button_area = crate::gui::menu::nav_area();
         let (sprites, now) = (&mut state.sprites, state.world.read_resource::<Now>().0);
         self.ui.draw(
             window,
@@ -112,7 +112,7 @@ impl Frame for MenuBackgroundFrame {
 
 impl Game {
     fn draw_menu_background(&mut self, window: &mut DisplayArea) -> PadlResult<()> {
-        let area = self.menu_box_area();
+        let area = crate::gui::menu::menu_box_area();
 
         // Menu Box Background
         window.draw_ex(&area, Col(LIGHT_GREEN), Transform::IDENTITY, Z_MENU_BOX);

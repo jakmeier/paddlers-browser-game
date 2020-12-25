@@ -40,7 +40,7 @@ impl Frame for VisitorMenuFrame {
 
     fn draw(&mut self, state: &mut Self::State, window: &mut DisplayArea, _timestamp: f64) {
         self.text_provider.reset();
-        let inner_area = state.inner_menu_area();
+        let inner_area = crate::gui::menu::inner_menu_area();
         let (sprites, now) = (&mut state.sprites, state.world.read_resource::<Now>().0);
         self.ui.draw(
             window,

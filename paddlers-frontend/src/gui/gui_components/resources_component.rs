@@ -9,6 +9,8 @@ use web_sys::{Element, HtmlElement, HtmlImageElement};
 /// TODO: This component could be a good start to experiment with )Svelte / Mogwai / ...) component integration to paddle
 pub struct ResourcesComponent {
     parent: HtmlElement,
+    currently_displayed: Vec<(ResourceType, i64)>,
+    area: Rectangle,
 }
 
 impl ResourcesComponent {
@@ -23,19 +25,26 @@ impl ResourcesComponent {
         node.style().set_property("pointer-events", "None")?;
         node.style().set_property("position", "absolute")?;
 
-        Ok(ResourcesComponent { parent: node })
+        Ok(ResourcesComponent {
+            parent: node,
+            currently_displayed: vec![],
+            area: Rectangle::default(),
+        })
     }
     // Call this once after initialization
     pub fn attach(&mut self, display: &DisplayArea) {
         display.add_html(self.parent.clone().into());
     }
     pub fn update(&mut self, resis: &[(ResourceType, i64)]) -> PadlResult<()> {
-        // Brute-force delete and redraw everything
-        self.clear();
-        for (res, n) in resis {
-            let new_node = Self::new_resource_element(*res, *n)?;
-            self.parent.append_with_node_1(&new_node)?;
+        if self.currently_displayed != resis {
+            self.clear();
+            for (res, n) in resis {
+                let new_node = Self::new_resource_element(*res, *n)?;
+                self.parent.append_with_node_1(&new_node)?;
+            }
         }
+        self.currently_displayed.clear();
+        self.currently_displayed.extend_from_slice(resis);
         Ok(())
     }
     pub fn clear(&mut self) {
@@ -46,29 +55,33 @@ impl ResourcesComponent {
         let area = *max_area
             * display.frame_to_display_coordinates()
             * display.full().game_to_browser_coordinates();
-        let x = area.x() as u32;
-        let y = area.y() as u32;
-        let w = area.width() as u32;
-        let h = area.height() as u32;
-
-        self.parent
-            .style()
-            .set_property("top", &(x.to_string() + "px"))?;
-        self.parent
-            .style()
-            .set_property("left", &(y.to_string() + "px"))?;
-        self.parent
-            .style()
-            .set_property("width", &(w.to_string() + "px"))?;
-        self.parent
-            .style()
-            .set_property("height", &(h.to_string() + "px"))?;
+        if self.area != area {
+            let x = area.x() as u32;
+            let y = area.y() as u32;
+            let w = area.width() as u32;
+            let h = area.height() as u32;
+            self.parent
+                .style()
+                .set_property("top", &(y.to_string() + "px"))?;
+            self.parent
+                .style()
+                .set_property("left", &(x.to_string() + "px"))?;
+            self.parent
+                .style()
+                .set_property("width", &(w.to_string() + "px"))?;
+            self.parent
+                .style()
+                .set_property("height", &(h.to_string() + "px"))?;
+            self.area = area;
+        }
 
         Ok(())
     }
     fn new_resource_element(res: ResourceType, n: i64) -> PadlResult<Element> {
-        let node = doc().unwrap().create_element("span").unwrap();
-        let number = doc().unwrap().create_text_node(&n.to_string());
+        let node = doc().unwrap().create_element("div").unwrap();
+        node.set_class_name("pdl-res-comp-el");
+        let number = doc().unwrap().create_element("p")?;
+        number.set_inner_html(&n.to_string());
         let img = HtmlImageElement::new().unwrap();
 
         let i = match res.sprite() {

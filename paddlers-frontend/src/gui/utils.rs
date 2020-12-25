@@ -79,27 +79,8 @@ pub fn draw_image(
     transform: Transform,
 ) {
     let img = sprites.index(i);
-    let mut area = *max_area;
-    let img_slope = img.natural_height() as f32 / img.natural_width() as f32;
-    if img_slope < area.height() / area.width() {
-        // high image
-        area.size.y = area.width() * img_slope;
-        match fit_strat {
-            FitStrategy::Center => {
-                area = area.translate((0, (max_area.height() - area.height()) / 2.0));
-            }
-            FitStrategy::TopLeft => {}
-        }
-    } else {
-        area.size.x = area.height() / img_slope;
-        match fit_strat {
-            FitStrategy::Center => {
-                area = area.translate(((max_area.width() - area.width()) / 2.0, 0.0));
-            }
-            FitStrategy::TopLeft => {}
-        }
-    }
-
+    let unfitted_area = Rectangle::new(max_area.pos, img.natural_size());
+    let area = unfitted_area.fit_into_ex(max_area, fit_strat, false);
     window.draw_ex(&area, Img(&img), transform, z);
 }
 pub fn draw_shape(

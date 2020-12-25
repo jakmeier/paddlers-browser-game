@@ -79,13 +79,19 @@ section.leaderboard {
 
 div.pdl-res-comp {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+div.pdl-res-comp-el {
+    display: grid;
+    grid-template-columns: min-content max-content;
+    gap: 5px;
+    align-items: center;
 }
 
 div.pdl-res-comp img {
     max-width: 33%;
     max-height: 80%;
-    float: left;
 }
 
 div.dialogue {

@@ -44,18 +44,6 @@ pub fn menu_selected_entity_spacing(area: &Rectangle) -> (Rectangle, Rectangle) 
     (img_bg_area, text_area)
 }
 
-impl Game {
-    pub fn button_area(&self) -> Rectangle {
-        nav_area()
-    }
-    pub fn menu_box_area(&self) -> Rectangle {
-        Rectangle::new_sized((MENU_AREA_W, MENU_AREA_H))
-    }
-    pub fn inner_menu_area(&self) -> Rectangle {
-        inner_menu_area()
-    }
-}
-
 /// Complete menu box area, without any padding
 pub const fn menu_box_area() -> Rectangle {
     Rectangle {
@@ -94,16 +82,17 @@ pub const fn duck_step_area() -> Rectangle {
         },
     }
 }
+/// Menu are with applied padding and without area for navigatino bar
 pub const fn inner_menu_area() -> Rectangle {
     let duck_steps = duck_step_area();
     let y = duck_steps.pos.y + duck_steps.size.y + AFTER_DUCK_STEPS_PADDING;
     Rectangle {
         pos: Vector {
-            x: duck_steps.pos.x,
+            x: LEAVES_BORDER_W * 0.25 + MENU_PADDING,
             y: y,
         },
         size: Vector {
-            x: duck_steps.size.x,
+            x: MENU_AREA_W as f32 - (LEAVES_BORDER_W + 2.0 * MENU_PADDING),
             y: MENU_AREA_H as f32 - y - LEAVES_BORDER_H / 2.0,
         },
     }

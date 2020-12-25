@@ -90,8 +90,6 @@ impl<'a, 'b> Frame for TownFrame<'a, 'b> {
     }
 
     fn left_click(&mut self, state: &mut Self::State, pos: (i32, i32)) {
-        let mouse_pos: Vector = pos.into();
-
         let ms = MouseState(pos.into(), Some(MouseButton::Left));
         state.town_world_mut().insert(ms);
         self.left_click_dispatcher.dispatch(state.town_world());

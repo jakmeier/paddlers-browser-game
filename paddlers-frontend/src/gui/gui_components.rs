@@ -121,7 +121,6 @@ pub fn draw_table(
 ) {
     let total_rows = row_count(table);
     let row_height = max_row_height.min(max_area.height() / total_rows as f32);
-    let font_h = row_height * 0.9;
     let img_s = row_height * 0.95;
     let margin = 10.0;
     let mut line = Rectangle::new(max_area.pos, (max_area.width(), row_height));
@@ -139,7 +138,7 @@ pub fn draw_table(
         match row {
             TableRow::Text(text) => {
                 let mut text_area = line.clone();
-                text_area.size.y = font_h;
+                text_area.size.y = row_height;
                 floats
                     .allocate()
                     .write(window, &text_area, z, FitStrategy::Center, text)
@@ -152,11 +151,10 @@ pub fn draw_table(
                 let shift_x = img_s + margin;
                 text_area.size.x -= shift_x;
                 text_area.pos.x += shift_x;
-                text_area.size.y = font_h;
-                text_area.pos.y += row_height - font_h; // something is fishy here, should be /2.0 but right now looks better without
+                text_area.size.y = row_height;
                 floats
                     .allocate()
-                    .write(window, &text_area, z, FitStrategy::Center, text)
+                    .write(window, &text_area, z, FitStrategy::LeftCenter, text)
                     .nuts_check();
                 draw_static_image(sprites, window, &symbol, *img, z, FitStrategy::Center);
                 line.pos.y += row_height;
