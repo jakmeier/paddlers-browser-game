@@ -42,8 +42,8 @@ impl<'a, 'b> Frame for MapMenuFrame<'a, 'b> {
             let (img_area, table_area) = menu_selected_entity_spacing(&inner_area);
             let world = &state.world;
             let sprites = &mut state.sprites;
-            draw_entity_img(world, sprites, window, e, &img_area);
-            draw_map_entity_details_table(
+            entity_details::draw_entity_img(world, sprites, window, e, &img_area);
+            entity_details::draw_map_entity_details_table(
                 world,
                 sprites,
                 window,

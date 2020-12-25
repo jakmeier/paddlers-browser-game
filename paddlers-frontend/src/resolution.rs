@@ -1,13 +1,17 @@
 use paddlers_shared_lib::game_mechanics::town::{TOWN_X, TOWN_Y};
 
-// These are game coordinates, which are an abstraction over different resolution.
+// These are all game coordinates, which are an abstraction over different resolution.
+
+// The full area used
 pub const SCREEN_H: u32 = 1080;
 pub const SCREEN_W: u32 = 1920;
 
+// The area on the left showing the actual game (as opposed to UI)
 pub const MAIN_AREA_H: u32 = SCREEN_H;
 pub const TOWN_TILE_S: u32 = MAIN_AREA_H / TOWN_Y as u32;
 pub const MAIN_AREA_W: u32 = TOWN_TILE_S * TOWN_X as u32;
 
+// Right-hand side area with all UI elements
 pub const MENU_AREA_X: u32 = MAIN_AREA_W;
 pub const MENU_AREA_Y: u32 = 0;
 pub const MENU_AREA_W: u32 = SCREEN_W - MAIN_AREA_W;

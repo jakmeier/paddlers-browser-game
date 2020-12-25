@@ -1,9 +1,13 @@
 use crate::game::player_info::PlayerInfo;
-use crate::gui::{gui_components::*, utils::*};
+use crate::gui::{gui_components::*, menu::entity_details::*, ui_state::Now, utils::*, z::*};
 use crate::gui::{input::Grabbable, sprites::WithSprite};
+use crate::prelude::*;
 use paddle::quicksilver_compat::*;
+use paddle::DisplayArea;
+use paddle::*;
 use paddlers_shared_lib::api::shop::*;
 use paddlers_shared_lib::prelude::*;
+use specs::prelude::*;
 
 #[derive(Clone)]
 pub struct DefaultShop {
@@ -29,7 +33,6 @@ impl DefaultShop {
         result
     }
     pub fn reload(world: &mut specs::World) {
-        use specs::WorldExt;
         let player_info = (*world.read_resource::<PlayerInfo>()).clone();
         world.insert(DefaultShop::new(&player_info));
     }
@@ -51,5 +54,55 @@ impl DefaultShop {
         } else {
             None
         }
+    }
+}
+
+impl Game {
+    pub fn render_default_shop(
+        &mut self,
+        window: &mut DisplayArea,
+        area: &Rectangle,
+        text_provider: &mut TableTextProvider,
+        res_comp: &mut ResourcesComponent,
+    ) {
+        let mut table = vec![];
+        let mut area = *area;
+        // table.push(faith_details(self.town().faith));
+        table.push(forest_details(
+            self.town().forest_size(),
+            self.town().forest_usage(),
+        ));
+        table.push(total_aura_details(self.town().ambience()));
+        let shop = &mut self.town_context.world().write_resource::<DefaultShop>();
+        Self::draw_shop_prices(window, &mut area, &mut shop.ui, res_comp, self.mouse.pos())
+            .nuts_check();
+
+        table.push(TableRow::InteractiveArea(&mut shop.ui));
+
+        draw_table(
+            window,
+            &mut self.sprites,
+            &mut table,
+            &area,
+            text_provider,
+            60.0,
+            Z_MENU_TEXT,
+            self.town_context.world().read_resource::<Now>().0,
+            TableVerticalAlignment::Top,
+            self.mouse.pos(),
+        )
+    }
+    pub fn draw_shop_prices(
+        display: &mut DisplayArea,
+        area: &mut Rectangle,
+        ui: &mut UiBox,
+        res_comp: &mut ResourcesComponent,
+        mouse_pos: Vector,
+    ) -> PadlResult<()> {
+        let price_tag_h = 50.0;
+        let (shop_area, price_tag_area) = area.cut_horizontal(area.height() - price_tag_h);
+        *area = shop_area;
+        ui.draw_hover_info(display, res_comp, &price_tag_area, mouse_pos)?;
+        Ok(())
     }
 }

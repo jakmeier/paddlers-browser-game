@@ -1,7 +1,8 @@
-use crate::game::toplevel::Signal;
+use super::*;
 use crate::gui::{gui_components::*, input::UiView, sprites::*, ui_state::Now, utils::*};
 use crate::net::NetMsg;
 use crate::prelude::*;
+use crate::{game::toplevel::Signal, gui::decoration::*};
 use paddle::{DisplayArea, NutsCheck};
 use specs::prelude::*;
 
@@ -106,5 +107,34 @@ impl Frame for MenuBackgroundFrame {
         if let Some(event) = state.check(result).flatten() {
             nuts::publish(event);
         }
+    }
+}
+
+impl Game {
+    fn draw_menu_background(&mut self, window: &mut DisplayArea) -> PadlResult<()> {
+        let area = self.menu_box_area();
+
+        // Menu Box Background
+        window.draw_ex(&area, Col(LIGHT_GREEN), Transform::IDENTITY, Z_MENU_BOX);
+
+        let area = Rectangle::new_sized((MENU_AREA_W, MENU_AREA_H));
+        draw_leaf_border(
+            window,
+            &mut self.sprites,
+            &area,
+            LEAVES_BORDER_W,
+            LEAVES_BORDER_H,
+        );
+
+        let area = duck_step_area();
+        draw_duck_step_line(
+            window,
+            &mut self.sprites,
+            Vector::new(area.x() - LEAVES_BORDER_W * 0.5, area.pos.y),
+            area.x() + area.width() + LEAVES_BORDER_W * 0.5,
+            DUCK_STEPS_H,
+        );
+
+        Ok(())
     }
 }

@@ -16,6 +16,8 @@ use paddle::Frame;
 use paddle::*;
 use specs::prelude::*;
 
+use super::entity_details::*;
+
 pub(crate) struct TownMenuFrame<'a, 'b> {
     text_provider: TableTextProvider,
     bank_component: ResourcesComponent,
