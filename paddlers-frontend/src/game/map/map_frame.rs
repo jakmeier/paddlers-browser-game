@@ -20,7 +20,6 @@ impl Frame for MapFrame {
     const HEIGHT: u32 = MAIN_AREA_H;
 
     fn draw(&mut self, state: &mut Self::State, window: &mut DisplayArea, _timestamp: f64) {
-        let area = Rectangle::new((0, 0), Self::size());
         let (sprites, mut map) = (
             &mut state.sprites,
             GlobalMap::combined(
@@ -28,7 +27,12 @@ impl Frame for MapFrame {
                 state.world.write_resource(),
             ),
         );
-        map.render(window, sprites, &area);
+        window.fill(Col(GREEN));
+
+        // self.apply_scaling(area.size());
+        map.draw_grid(window);
+        map.draw_water(window, &Self::area());
+        map.draw_villages(window, sprites);
     }
     fn left_click(&mut self, state: &mut Self::State, pos: (i32, i32)) {
         let mut map = state.world.fetch_mut::<GlobalMapSharedState>();

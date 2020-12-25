@@ -70,14 +70,6 @@ impl<'a> GlobalMap<'a> {
         (map, shared)
     }
 
-    pub fn render(&mut self, window: &mut DisplayArea, sprites: &mut Sprites, area: &Rectangle) {
-        window.draw_ex(area, Col(GREEN), Transform::IDENTITY, Z_TEXTURE);
-
-        self.apply_scaling(area.size());
-        self.draw_grid(window);
-        self.draw_water(window, area);
-        self.draw_villages(window, sprites);
-    }
     const LOAD_AHEAD: i32 = 10;
     const LOAD_STEP: i32 = 10;
     pub fn update(&mut self) {

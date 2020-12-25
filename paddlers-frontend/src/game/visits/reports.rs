@@ -12,7 +12,7 @@ use paddlers_shared_lib::prelude::VisitReportKey;
 use web_sys::{Element, Node};
 
 pub(crate) struct ReportFrame {
-    pane: div::PaneHandle,
+    pane: div::DivHandle,
     table: Node,
 }
 
@@ -28,7 +28,7 @@ impl ReportFrame {
     pub fn new() -> PadlResult<Self> {
         let area = Self::area();
         let right_padding = LEAVES_BORDER_W * 0.75;
-        let pane = div::new_pane(
+        let pane = div::new(
             area.x() as u32,
             area.y() as u32,
             (area.width() - right_padding) as u32,

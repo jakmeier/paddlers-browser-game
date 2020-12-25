@@ -1,5 +1,7 @@
 use paddlers_shared_lib::game_mechanics::town::{TOWN_X, TOWN_Y};
 
+use crate::gui::menu::inner_menu_area;
+
 // These are all game coordinates, which are an abstraction over different resolution.
 
 // The full area used
@@ -12,10 +14,10 @@ pub const TOWN_TILE_S: u32 = MAIN_AREA_H / TOWN_Y as u32;
 pub const MAIN_AREA_W: u32 = TOWN_TILE_S * TOWN_X as u32;
 
 // Right-hand side area with all UI elements
-pub const MENU_AREA_X: u32 = MAIN_AREA_W;
-pub const MENU_AREA_Y: u32 = 0;
-pub const MENU_AREA_W: u32 = SCREEN_W - MAIN_AREA_W;
-pub const MENU_AREA_H: u32 = SCREEN_H;
+pub const OUTER_MENU_AREA_X: u32 = MAIN_AREA_W;
+pub const OUTER_MENU_AREA_Y: u32 = 0;
+pub const OUTER_MENU_AREA_W: u32 = SCREEN_W - MAIN_AREA_W;
+pub const OUTER_MENU_AREA_H: u32 = SCREEN_H;
 
 // TODO: Make it selectable by user (maybe even move some code to paddle)
 // #[derive(EnumIter, Debug, Clone, Copy, PartialEq, Eq)]

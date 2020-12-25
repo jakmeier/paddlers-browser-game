@@ -35,19 +35,18 @@ impl VisitorMenuFrame {
 
 impl Frame for VisitorMenuFrame {
     type State = Game;
-    const WIDTH: u32 = crate::resolution::MENU_AREA_W;
-    const HEIGHT: u32 = crate::resolution::MENU_AREA_H;
+    const WIDTH: u32 = crate::gui::menu::INNER_MENU_AREA_W as u32;
+    const HEIGHT: u32 = crate::gui::menu::INNER_MENU_AREA_H as u32;
 
     fn draw(&mut self, state: &mut Self::State, window: &mut DisplayArea, _timestamp: f64) {
         self.text_provider.reset();
-        let inner_area = crate::gui::menu::inner_menu_area();
         let (sprites, now) = (&mut state.sprites, state.world.read_resource::<Now>().0);
         self.ui.draw(
             window,
             sprites,
             &mut self.text_provider,
             now,
-            &inner_area,
+            &Self::area(),
             state.mouse.pos(),
         );
         self.text_provider.finish_draw();

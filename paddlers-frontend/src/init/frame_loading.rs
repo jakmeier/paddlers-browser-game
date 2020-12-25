@@ -1,4 +1,3 @@
-use crate::game::map::MapFrame;
 use crate::game::town::TownFrame;
 use crate::game::visits::{
     attacks::VisitorFrame, reports::ReportFrame, visitor_menu::VisitorMenuFrame,
@@ -8,7 +7,11 @@ use crate::gui::menu::{MapMenuFrame, MenuBackgroundFrame, TownMenuFrame};
 use crate::prelude::*;
 use crate::{
     game::leaderboard::LeaderboardFrame,
-    resolution::{MENU_AREA_X, MENU_AREA_Y},
+    gui::menu::{INNER_MENU_AREA_X, INNER_MENU_AREA_Y},
+};
+use crate::{
+    game::map::MapFrame,
+    resolution::{OUTER_MENU_AREA_X, OUTER_MENU_AREA_Y},
 };
 use paddle::ViewManager;
 
@@ -25,13 +28,12 @@ pub(crate) fn load_viewer(view: UiView) -> ViewManager<UiView> {
     let town_menu_handle = viewer.add_frame(
         menu,
         &[UiView::Town, UiView::TownHelp],
-        (MENU_AREA_X, MENU_AREA_Y),
+        (INNER_MENU_AREA_X as u32, INNER_MENU_AREA_Y as u32),
     );
     town_menu_handle.listen(TownMenuFrame::new_story_state);
     town_menu_handle.listen(TownMenuFrame::signal);
 
     /* Menu background and buttons */
-    // Somehow, the town rendering gets messed up if TownFrame is added after this frame...
     let menu = MenuBackgroundFrame::new();
     let menu_bg_handler = viewer.add_frame(
         menu,
@@ -43,7 +45,7 @@ pub(crate) fn load_viewer(view: UiView) -> ViewManager<UiView> {
             UiView::Visitors(VisitorViewTab::Letters),
             UiView::TownHelp,
         ],
-        (MENU_AREA_X, MENU_AREA_Y),
+        (OUTER_MENU_AREA_X, OUTER_MENU_AREA_Y),
     );
     menu_bg_handler.listen(MenuBackgroundFrame::network_message);
     menu_bg_handler.listen(MenuBackgroundFrame::signal);
@@ -54,7 +56,11 @@ pub(crate) fn load_viewer(view: UiView) -> ViewManager<UiView> {
     viewer.add_frame(menu, &[UiView::Map], (0, 0));
 
     let menu = MapMenuFrame::new().expect("Map menu loading");
-    viewer.add_frame(menu, &[UiView::Map], (MENU_AREA_X, MENU_AREA_Y));
+    viewer.add_frame(
+        menu,
+        &[UiView::Map],
+        (INNER_MENU_AREA_X as u32, INNER_MENU_AREA_Y as u32),
+    );
 
     /* Visitors */
 
@@ -65,7 +71,7 @@ pub(crate) fn load_viewer(view: UiView) -> ViewManager<UiView> {
             UiView::Visitors(VisitorViewTab::IncomingAttacks),
             UiView::Visitors(VisitorViewTab::Letters),
         ],
-        (MENU_AREA_X, MENU_AREA_Y),
+        (INNER_MENU_AREA_X as u32, INNER_MENU_AREA_Y as u32),
     );
 
     let menu = VisitorFrame::new(0.0, 0.0).expect("Attacks loading");

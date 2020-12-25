@@ -15,14 +15,14 @@ use paddle::{
 use paddle::{Frame, JmrRectangle};
 
 pub(crate) struct TownSummaryFrame {
-    pane: div::PaneHandle,
+    pane: div::DivHandle,
     size: Vector,
 }
 
 impl TownSummaryFrame {
     pub fn new() -> PadlResult<Self> {
         let area = Self::area();
-        let pane = div::new_styled_pane(
+        let pane = div::new_styled(
             area.x() as u32,
             area.y() as u32,
             area.width() as u32,

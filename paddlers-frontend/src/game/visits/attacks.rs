@@ -8,7 +8,6 @@ use crate::{
     resolution::{MAIN_AREA_H, MAIN_AREA_W},
 };
 use chrono::NaiveDateTime;
-use div::new_pane;
 use paddle::{
     quicksilver_compat::{Col, Rectangle, Transform},
     NutsCheck,
@@ -91,12 +90,12 @@ impl Attack {
 pub(crate) struct VisitorFrame<'a, 'b> {
     incoming_attacks_table: HtmlElement,
     update_dispatcher: Dispatcher<'a, 'b>,
-    pane: div::PaneHandle,
+    pane: div::DivHandle,
 }
 
 impl<'a, 'b> VisitorFrame<'a, 'b> {
     pub fn new(x: f32, y: f32) -> PadlResult<Self> {
-        let pane = new_pane(
+        let pane = div::new(
             x as u32,
             y as u32,
             Self::WIDTH / 2,

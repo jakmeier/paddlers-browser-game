@@ -8,14 +8,14 @@ use paddle::NutsCheck;
 use web_sys::Node;
 
 pub(crate) struct LeaderboardFrame {
-    pane: div::PaneHandle,
+    pane: div::DivHandle,
     table: Node,
 }
 
 impl LeaderboardFrame {
     pub fn new() -> PadlResult<Self> {
         let area = Self::area();
-        let pane = div::new_styled_pane(
+        let pane = div::new_styled(
             area.x() as u32,
             area.y() as u32,
             area.width() as u32,

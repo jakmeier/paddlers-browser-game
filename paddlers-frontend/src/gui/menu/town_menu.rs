@@ -29,13 +29,13 @@ pub(crate) struct TownMenuFrame<'a, 'b> {
 
 impl<'a, 'b> Frame for TownMenuFrame<'a, 'b> {
     type State = Game;
-    const WIDTH: u32 = crate::resolution::MENU_AREA_W;
-    const HEIGHT: u32 = crate::resolution::MENU_AREA_H;
+    const WIDTH: u32 = crate::gui::menu::INNER_MENU_AREA_W as u32;
+    const HEIGHT: u32 = crate::gui::menu::INNER_MENU_AREA_H as u32;
 
     fn draw(&mut self, state: &mut Self::State, window: &mut DisplayArea, _timestamp: f64) {
         self.text_provider.reset();
         let world = state.town_context.world();
-        let mut area = inner_menu_area();
+        let mut area = Self::area();
         let resources_height = RESOURCES_H;
         let foreign = state.town_context.is_foreign();
         let now = world.fetch::<Now>().0;

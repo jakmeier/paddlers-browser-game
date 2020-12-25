@@ -3,10 +3,7 @@ mod map_menu;
 mod menu_background;
 mod town_menu;
 
-use crate::{
-    gui::sprites::Sprites,
-    resolution::{MENU_AREA_H, MENU_AREA_W},
-};
+use crate::{gui::sprites::Sprites, resolution::*};
 pub(crate) use map_menu::MapMenuFrame;
 pub(crate) use menu_background::MenuBackgroundFrame;
 use paddle::*;
@@ -24,6 +21,11 @@ pub const RESOURCES_H: f32 = 80.0;
 pub const LEAVES_BORDER_H: f32 = 100.0;
 pub const LEAVES_BORDER_W: f32 = 80.0;
 pub const DUCK_STEPS_H: f32 = 40.0;
+
+pub const INNER_MENU_AREA_X: f32 = OUTER_MENU_AREA_X as f32 + inner_menu_area().pos.x;
+pub const INNER_MENU_AREA_Y: f32 = OUTER_MENU_AREA_Y as f32 + inner_menu_area().pos.y;
+pub const INNER_MENU_AREA_W: f32 = inner_menu_area().size.x;
+pub const INNER_MENU_AREA_H: f32 = inner_menu_area().size.y;
 
 /// Returns the areas for the menu image and the table below
 pub fn menu_selected_entity_spacing(area: &Rectangle) -> (Rectangle, Rectangle) {
@@ -49,8 +51,8 @@ pub const fn menu_box_area() -> Rectangle {
     Rectangle {
         pos: Vector { x: 0.0, y: 0.0 },
         size: Vector {
-            x: MENU_AREA_W as f32,
-            y: MENU_AREA_H as f32,
+            x: OUTER_MENU_AREA_W as f32,
+            y: OUTER_MENU_AREA_H as f32,
         },
     }
 }
@@ -63,7 +65,7 @@ pub const fn nav_area() -> Rectangle {
             y: LEAVES_BORDER_H / 2.0,
         },
         size: Vector {
-            x: MENU_AREA_W as f32 - (LEAVES_BORDER_W + 2.0 * MENU_PADDING),
+            x: OUTER_MENU_AREA_W as f32 - (LEAVES_BORDER_W + 2.0 * MENU_PADDING),
             y: NAVIGATION_BUTTONS_H,
         },
     }
@@ -77,7 +79,7 @@ pub const fn duck_step_area() -> Rectangle {
             y: nav_area.pos.y + nav_area.size.y,
         },
         size: Vector {
-            x: MENU_AREA_W as f32,
+            x: OUTER_MENU_AREA_W as f32,
             y: DUCK_STEPS_H,
         },
     }
@@ -92,8 +94,8 @@ pub const fn inner_menu_area() -> Rectangle {
             y: y,
         },
         size: Vector {
-            x: MENU_AREA_W as f32 - (LEAVES_BORDER_W + 2.0 * MENU_PADDING),
-            y: MENU_AREA_H as f32 - y - LEAVES_BORDER_H / 2.0,
+            x: OUTER_MENU_AREA_W as f32 - (LEAVES_BORDER_W + 2.0 * MENU_PADDING),
+            y: OUTER_MENU_AREA_H as f32 - y - LEAVES_BORDER_H / 2.0,
         },
     }
 }

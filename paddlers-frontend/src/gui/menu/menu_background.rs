@@ -81,8 +81,8 @@ impl MenuBackgroundFrame {
 
 impl Frame for MenuBackgroundFrame {
     type State = Game;
-    const WIDTH: u32 = crate::resolution::MENU_AREA_W;
-    const HEIGHT: u32 = crate::resolution::MENU_AREA_H;
+    const WIDTH: u32 = crate::resolution::OUTER_MENU_AREA_W;
+    const HEIGHT: u32 = crate::resolution::OUTER_MENU_AREA_H;
 
     fn draw(&mut self, state: &mut Self::State, window: &mut DisplayArea, _timestamp: f64) {
         self.tp.reset();
@@ -117,7 +117,6 @@ impl Game {
         // Menu Box Background
         window.draw_ex(&area, Col(LIGHT_GREEN), Transform::IDENTITY, Z_MENU_BOX);
 
-        let area = Rectangle::new_sized((MENU_AREA_W, MENU_AREA_H));
         draw_leaf_border(
             window,
             &mut self.sprites,

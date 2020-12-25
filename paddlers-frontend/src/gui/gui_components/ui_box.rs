@@ -37,7 +37,6 @@ impl InteractiveTableArea for UiBox {
         2 * self.rows
     }
 
-    // TODO: margin / padding needs resolution adjustment
     fn draw(
         &mut self,
         window: &mut DisplayArea,
