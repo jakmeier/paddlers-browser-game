@@ -1,6 +1,7 @@
 use super::SingleSprite;
 use crate::gui::utils::Direction;
-use paddle::{graphics::Image, quicksilver_compat::*};
+use paddle::graphics::Image;
+use paddle::*;
 
 /// Stores the sprites of an animated object.
 /// Provides functions to render the object in different contexts.

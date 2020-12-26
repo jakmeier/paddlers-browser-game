@@ -10,7 +10,6 @@ use crate::{
     net::game_master_api::RestApiState,
 };
 use chrono::NaiveDateTime;
-use paddle::quicksilver_compat::*;
 use paddlers_shared_lib::api::tasks::*;
 use paddlers_shared_lib::prelude::WorkerKey;
 use specs::prelude::*;

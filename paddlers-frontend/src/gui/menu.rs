@@ -11,8 +11,7 @@ pub(crate) use town_menu::TownMenuFrame;
 
 use crate::game::Game;
 use crate::gui::{gui_components::*, ui_state::Now, z::*};
-use paddle::quicksilver_compat::{Col, Rectangle, Transform, Vector};
-use paddle::DisplayArea;
+use paddle::quicksilver_compat::Col;
 
 pub const MENU_PADDING: f32 = 5.0;
 pub const AFTER_DUCK_STEPS_PADDING: f32 = 10.0;

@@ -6,7 +6,6 @@ use crate::net::graphql::query_types::{
 };
 use crate::prelude::*;
 use crate::{game::town::nests::Nest, resolution::TOWN_TILE_S};
-use paddle::quicksilver_compat::*;
 use paddlers_shared_lib::prelude::*;
 use specs::prelude::*;
 

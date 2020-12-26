@@ -3,7 +3,7 @@ use crate::gui::{utils::*, z::*};
 use ::lyon::{math::point, path::Path, tessellation::*};
 use paddle::quicksilver_compat::graphics::{Drawable, Mesh, ShapeRenderer};
 use paddle::quicksilver_compat::*;
-use paddle::{FitStrategy, JmrRectangle};
+use paddle::*;
 
 impl MapSegment {
     pub fn tesselate_rivers(&mut self) {
@@ -112,7 +112,7 @@ fn stream_path(points: &[Vector]) -> Path {
     builder.build()
 }
 
-fn add_path_to_mesh(mesh: &mut Mesh, path: &Path, thickness: f32, color: Color, z: i32) {
+fn add_path_to_mesh(mesh: &mut Mesh, path: &Path, thickness: f32, color: Color, z: i16) {
     let mut shape = ShapeRenderer::new(mesh, color);
     shape.set_z(z as f32);
     let mut tessellator = StrokeTessellator::new();

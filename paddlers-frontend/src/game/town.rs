@@ -18,7 +18,6 @@ pub(crate) use town_frame::*;
 
 use crate::gui::{sprites::*, z::*};
 use crate::prelude::*;
-use paddle::quicksilver_compat::*;
 pub use paddlers_shared_lib::game_mechanics::town::TileIndex;
 use paddlers_shared_lib::game_mechanics::town::TileState as TileStateEx;
 pub(crate) use paddlers_shared_lib::game_mechanics::town::TownTileType as TileType;

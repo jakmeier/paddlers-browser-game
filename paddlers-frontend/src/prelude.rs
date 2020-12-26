@@ -5,7 +5,7 @@ pub(crate) use crate::i18n::{TextDb, TextKey};
 pub(crate) use crate::init::wasm_setup::PadlINode;
 pub(crate) use crate::logging::error::{PadlError, PadlErrorCode, PadlResult};
 
-pub(crate) use paddle::quicksilver_compat::Vector;
+pub(crate) use paddle::Vector;
 pub(crate) use paddle::{Frame, TextPool};
 
 pub(crate) use paddlers_shared_lib::models::{

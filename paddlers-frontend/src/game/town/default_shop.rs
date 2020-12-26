@@ -2,7 +2,6 @@ use crate::game::player_info::PlayerInfo;
 use crate::gui::{gui_components::*, menu::entity_details::*, ui_state::Now, utils::*, z::*};
 use crate::gui::{input::Grabbable, sprites::WithSprite};
 use crate::prelude::*;
-use paddle::quicksilver_compat::*;
 use paddle::DisplayArea;
 use paddle::*;
 use paddlers_shared_lib::api::shop::*;
@@ -86,7 +85,7 @@ impl Game {
             &area,
             text_provider,
             60.0,
-            Z_MENU_TEXT,
+            Z_UI_MENU,
             self.town_context.world().read_resource::<Now>().0,
             TableVerticalAlignment::Top,
             self.mouse.pos(),

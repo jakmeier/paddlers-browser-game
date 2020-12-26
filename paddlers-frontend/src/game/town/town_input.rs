@@ -164,7 +164,7 @@ impl Town {
         position: &ReadStorage<'a, Position>,
         clickable: &ReadStorage<'a, Clickable>,
     ) -> Option<Entity> {
-        let mut top_hit: Option<(i32, Entity)> = None;
+        let mut top_hit: Option<(i16, Entity)> = None;
         for (e, pos, _) in (entities, position, clickable).join() {
             if mouse_pos.overlaps_rectangle(&pos.area) {
                 if top_hit.is_none() || top_hit.unwrap().0 < pos.z {

@@ -1,5 +1,6 @@
 use crate::gui::{
     gui_components::*, input::UiView, shapes::PadlShapeIndex, sprites::*, ui_state::Now, utils::*,
+    z::Z_UI_MENU,
 };
 use crate::prelude::*;
 use paddle::DisplayArea;
@@ -48,6 +49,7 @@ impl Frame for VisitorMenuFrame {
             now,
             &Self::area(),
             state.mouse.pos(),
+            Z_UI_MENU,
         );
         self.text_provider.finish_draw();
     }

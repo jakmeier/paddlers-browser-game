@@ -26,7 +26,7 @@ struct GameActivity;
 impl Frame for GameActivity {
     type State = Game;
     const WIDTH: u32 = crate::resolution::SCREEN_W;
-    const HEIGHT: u32 = crate::resolution::SCREEN_W;
+    const HEIGHT: u32 = crate::resolution::SCREEN_H;
 
     fn draw(&mut self, game: &mut Self::State, window: &mut DisplayArea, _timestamp: f64) {
         #[cfg(feature = "dev_view")]

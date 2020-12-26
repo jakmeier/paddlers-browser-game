@@ -10,22 +10,17 @@ use crate::{
         story::entity_trigger::EntityTriggerSystem, town::Town, units::worker_system::WorkerSystem,
         units::workers::Worker, Game,
     },
-    gui::input::MouseButton,
+    gui::input::{left_click::TownLeftClickSystem, MouseButton, MouseState},
     prelude::*,
-};
-use crate::{
-    gui::input::{left_click::TownLeftClickSystem, MouseState},
     resolution::TOWN_TILE_S,
 };
+
+use paddle::*;
 use paddle::{
-    quicksilver_compat::{graphics::Mesh, Rectangle},
+    quicksilver_compat::{graphics::Mesh, Color, Shape},
     FitStrategy,
 };
-use paddle::{
-    quicksilver_compat::{Color, Shape, Transform, Vector},
-    JmrRectangle,
-};
-use paddle::{DisplayArea, Frame, NutsCheck};
+
 use specs::prelude::*;
 use std::ops::Deref;
 
@@ -195,8 +190,6 @@ impl Game {
         let res: T = self.world.read_resource::<T>().deref().clone();
         self.town_context.world_mut().insert::<T>(res);
     }
-
-    fn draw_town_main(&mut self, window: &mut DisplayArea) {}
 }
 
 pub fn render_town_entities(world: &World, window: &mut DisplayArea, sprites: &mut Sprites) {
@@ -350,7 +343,7 @@ fn draw_rect(window: &mut DisplayArea, area: &Rectangle, col: Color) {
     draw_rect_z(window, area, col, 0);
 }
 #[inline]
-fn draw_rect_z(window: &mut DisplayArea, area: &Rectangle, col: Color, z_shift: i32) {
+fn draw_rect_z(window: &mut DisplayArea, area: &Rectangle, col: Color, z_shift: i16) {
     window.draw_ex(area, col, Transform::IDENTITY, Z_HP_BAR + z_shift);
 }
 

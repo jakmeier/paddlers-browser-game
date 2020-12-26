@@ -12,7 +12,8 @@ use crate::gui::animation::AnimationState;
 use crate::gui::sprites::*;
 use crate::prelude::*;
 use paddle::quicksilver_compat::*;
-use paddle::{DisplayArea, FitStrategy, JmrRectangle};
+use paddle::*;
+use paddle::{DisplayArea, FitStrategy};
 
 // Improvement: Would be nice to have Copy here (maybe with string interning)
 #[derive(Debug, Clone)]
@@ -43,7 +44,7 @@ pub fn draw_animated_sprite(
     window: &mut DisplayArea,
     max_area: &Rectangle,
     i: SpriteSet,
-    z: i32,
+    z: i16,
     fit_strat: FitStrategy,
     animation_state: &AnimationState,
     frame: u32,
@@ -56,7 +57,7 @@ pub fn draw_static_image(
     window: &mut DisplayArea,
     max_area: &Rectangle,
     i: SpriteIndex,
-    z: i32,
+    z: i16,
     fit_strat: FitStrategy,
 ) {
     draw_image(
@@ -74,7 +75,7 @@ pub fn draw_image(
     window: &mut DisplayArea,
     max_area: &Rectangle,
     i: SpriteIndex,
-    z: i32,
+    z: i16,
     fit_strat: FitStrategy,
     transform: Transform,
 ) {
@@ -89,8 +90,10 @@ pub fn draw_shape(
     draw_area: &Rectangle,
     i: PadlShapeIndex,
     fit_strat: FitStrategy,
+    z: i16,
 ) {
-    let shape = sprites.shape_index(i);
+    let mut shape = sprites.shape_index_mut(i);
+    shape.set_z(z);
     let place = shape.bounding_box.fit_into_ex(&draw_area, fit_strat, true);
     let factor = (
         place.size.x / shape.bounding_box.size.x,

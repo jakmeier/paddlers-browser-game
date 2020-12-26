@@ -9,9 +9,8 @@ use crate::net::authentication::keycloak_preferred_name;
 use map_position::*;
 use map_segment::MapSegment;
 use map_tesselation::*;
-use paddle::quicksilver_compat::{Col, Mesh, Rectangle, Transform, Vector};
-use paddle::DisplayArea;
-use paddle::FitStrategy;
+use paddle::quicksilver_compat::{Col, Mesh};
+use paddle::*;
 use specs::prelude::*;
 
 pub(crate) use map_frame::MapFrame;

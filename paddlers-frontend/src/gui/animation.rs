@@ -1,5 +1,6 @@
 use crate::gui::utils::*;
 use paddle::quicksilver_compat::*;
+use paddle::*;
 use specs::prelude::*;
 use specs::storage::BTreeStorage;
 

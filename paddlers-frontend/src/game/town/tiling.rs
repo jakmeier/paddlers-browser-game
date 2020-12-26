@@ -1,7 +1,7 @@
 use crate::resolution::TOWN_TILE_S;
 
 use super::{TileIndex, TileState, Town};
-use paddle::quicksilver_compat::*;
+use paddle::*;
 
 pub fn tile(pos: impl Into<Vector>) -> (usize, usize) {
     Town::find_tile(pos)

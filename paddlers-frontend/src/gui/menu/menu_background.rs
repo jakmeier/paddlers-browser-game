@@ -96,6 +96,7 @@ impl Frame for MenuBackgroundFrame {
             now,
             &button_area,
             state.mouse.pos(),
+            Z_UI_MENU,
         );
         self.tp.finish_draw();
     }

@@ -4,7 +4,7 @@ use crate::gui::ui_state::Now;
 use crate::gui::{render::Renderable, sprites::*, utils::*};
 use crate::prelude::*;
 use crate::{game::fight::Health, resolution::TOWN_TILE_S};
-use paddle::quicksilver_compat::Vector;
+use paddle::Vector;
 use paddlers_shared_lib::game_mechanics::town::*;
 use specs::prelude::*;
 

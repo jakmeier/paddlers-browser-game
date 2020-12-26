@@ -1,19 +1,18 @@
 // Background [0,99]
-pub const Z_TEXTURE: i32 = 0;
-pub const Z_GRID: i32 = 10;
-pub const Z_RIVER: i32 = 15;
-pub const Z_TILE_SHADOW: i32 = 50;
+pub const Z_TEXTURE: i16 = 0;
+pub const Z_GRID: i16 = 10;
+pub const Z_RIVER: i16 = 15;
+pub const Z_TILE_SHADOW: i16 = 50;
 
 // Units [100,199]
-pub const Z_BUILDINGS: i32 = 100;
-pub const Z_VISITOR: i32 = 110;
-pub const Z_UNITS: i32 = 120;
-pub const Z_UNIT_UI_HINT: i32 = 150;
+pub const Z_BUILDINGS: i16 = 100;
+pub const Z_VISITOR: i16 = 110;
+pub const Z_UNITS: i16 = 120;
+pub const Z_UNIT_UI_HINT: i16 = 150;
 
 // UI [200,400]
-pub const Z_MENU_BOX: i32 = 220;
-pub const Z_UI_BORDERS: i32 = 230;
-pub const Z_HP_BAR: i32 = 250;
-pub const Z_MENU_BOX_BUTTONS: i32 = 280;
-pub const Z_MENU_TEXT: i32 = 286;
-pub const Z_GRABBED_ITEM: i32 = 350;
+pub const Z_MENU_BOX: i16 = 220;
+pub const Z_UI_BORDERS: i16 = 230;
+pub const Z_HP_BAR: i16 = 250;
+pub const Z_UI_MENU: i16 = 280;
+pub const Z_GRABBED_ITEM: i16 = 350;

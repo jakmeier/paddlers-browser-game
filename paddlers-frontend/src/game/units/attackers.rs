@@ -16,7 +16,7 @@ use crate::gui::{render::Renderable, sprites::*, utils::*, z::Z_VISITOR};
 use crate::net::graphql::query_types::HoboEffect;
 use crate::prelude::*;
 use crate::{game::town::town_defence::AttackingHobo, resolution::TOWN_TILE_S};
-use paddle::quicksilver_compat::Vector;
+use paddle::Vector;
 use paddlers_shared_lib::game_mechanics::town::*;
 use paddlers_shared_lib::graphql_types::*;
 use specs::prelude::*;

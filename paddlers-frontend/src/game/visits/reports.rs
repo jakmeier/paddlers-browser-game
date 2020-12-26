@@ -163,7 +163,7 @@ impl Frame for ReportFrame {
     const WIDTH: u32 = MAIN_AREA_W;
     const HEIGHT: u32 = MAIN_AREA_H;
 
-    fn draw(&mut self, state: &mut Self::State, window: &mut DisplayArea, _timestamp: f64) {
+    fn draw(&mut self, _state: &mut Self::State, window: &mut DisplayArea, _timestamp: f64) {
         window.fill(LIGHT_BLUE);
     }
     fn enter(&mut self, _state: &mut Self::State) {

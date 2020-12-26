@@ -39,7 +39,7 @@ use game_event_manager::GameEvent;
 use map::{GlobalMap, GlobalMapPrivateState};
 use movement::*;
 use paddle::quicksilver_compat::*;
-use paddle::{utc_now, TextBoard};
+use paddle::*;
 use shred::{Fetch, FetchMut};
 use specs::prelude::*;
 use std::sync::mpsc::Receiver;

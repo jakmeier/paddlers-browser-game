@@ -2,6 +2,7 @@ use crate::resolution::TOWN_TILE_S;
 
 use super::*;
 use paddle::quicksilver_compat::*;
+use paddle::*;
 use paddle::{
     quicksilver_compat::graphics::{Drawable, Mesh},
     DisplayArea,

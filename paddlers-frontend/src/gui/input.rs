@@ -2,7 +2,7 @@ use crate::prelude::*;
 use crate::{game::fight::*, net::game_master_api::HttpDeleteBuilding};
 use crate::{game::movement::Position, net::game_master_api::RestApiState};
 use crate::{game::town::tiling, net::state::current_village};
-use paddle::quicksilver_compat::Vector;
+use paddle::Vector;
 /// This module keeps the logic to read input and, in most cases,
 /// redirect it to suitable modules to handle the input
 use paddle::quicksilver_compat::*;

@@ -8,11 +8,8 @@ use crate::{
     game::Game,
     resolution::{MAIN_AREA_H, MAIN_AREA_W},
 };
-use paddle::{
-    quicksilver_compat::{Col, Rectangle, Transform},
-    NutsCheck,
-};
-use paddle::{Frame, JmrRectangle};
+use paddle::{quicksilver_compat::Col, NutsCheck};
+use paddle::{Frame, Rectangle, Transform};
 
 pub(crate) struct TownSummaryFrame {
     pane: div::DivHandle,

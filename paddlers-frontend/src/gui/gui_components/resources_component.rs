@@ -2,7 +2,7 @@ use crate::gui::sprites::paths::SPRITE_PATHS;
 use crate::gui::sprites::{SpriteSet, WithSprite};
 use crate::prelude::*;
 use div::{doc, DivError};
-use paddle::{quicksilver_compat::Rectangle, DisplayArea};
+use paddle::{Rectangle, DisplayArea};
 use wasm_bindgen::JsCast;
 use web_sys::{Element, HtmlElement, HtmlImageElement};
 

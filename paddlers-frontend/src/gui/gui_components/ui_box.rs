@@ -1,5 +1,5 @@
 use super::*;
-use crate::gui::{sprites::*, utils::*, z::*};
+use crate::gui::{sprites::*, utils::*};
 use crate::prelude::*;
 use chrono::NaiveDateTime;
 use paddle::quicksilver_compat::*;
@@ -45,10 +45,16 @@ impl InteractiveTableArea for UiBox {
         now: NaiveDateTime,
         area: &Rectangle,
         mouse_pos: Vector,
+        z: i16,
     ) {
         self.area = *area;
         let grid = area.grid(self.columns, self.rows);
         let mut notifications = self.notification_indicator.as_ref().map(|vec| vec.iter());
+        let z_button_background = z;
+        let z_button = z + 1;
+        let z_overlay = z + 2;
+        let z_button_decoration = z + 3;
+        let z_menu_text = z + 5;
 
         for (el, draw_area) in self.elements.iter().zip(grid) {
             let img = match &el.display {
@@ -58,7 +64,7 @@ impl InteractiveTableArea for UiBox {
                         &draw_area.padded(self.margin),
                         Col(*col),
                         Transform::IDENTITY,
-                        Z_MENU_BOX_BUTTONS - 1,
+                        z_button_background,
                     );
                     Some(img)
                 }
@@ -68,7 +74,7 @@ impl InteractiveTableArea for UiBox {
                         window,
                         &draw_area.padded(self.margin),
                         SpriteIndex::Simple(*bkg),
-                        Z_MENU_BOX_BUTTONS - 1,
+                        z_button_background,
                         FitStrategy::Center,
                     );
                     Some(img)
@@ -88,6 +94,7 @@ impl InteractiveTableArea for UiBox {
                             &draw_area.padded(self.margin),
                             *hov,
                             FitStrategy::Center,
+                            z_overlay,
                         );
                     }
                     Some(img)
@@ -99,13 +106,14 @@ impl InteractiveTableArea for UiBox {
                         &draw_area.padded(self.margin),
                         *s,
                         FitStrategy::Center,
+                        z_button_background,
                     );
                     None
                 }
                 RenderVariant::Text(t) => {
                     tp.text_pool
                         .allocate()
-                        .write(window, &draw_area, Z_MENU_TEXT, FitStrategy::Center, &t)
+                        .write(window, &draw_area, z_menu_text, FitStrategy::Center, &t)
                         .nuts_check();
                     None
                 }
@@ -114,11 +122,11 @@ impl InteractiveTableArea for UiBox {
                         &draw_area.padded(self.margin),
                         Col(*col),
                         Transform::IDENTITY,
-                        Z_MENU_BOX_BUTTONS - 1,
+                        z_button_background,
                     );
                     tp.text_pool
                         .allocate()
-                        .write(window, &draw_area, Z_MENU_TEXT, FitStrategy::Center, &t)
+                        .write(window, &draw_area, z_menu_text, FitStrategy::Center, &t)
                         .nuts_check();
                     None
                 }
@@ -130,12 +138,12 @@ impl InteractiveTableArea for UiBox {
                     window,
                     &draw_area.padded(self.padding + self.margin),
                     img.default(),
-                    Z_MENU_BOX_BUTTONS,
+                    z_button,
                     FitStrategy::Center,
                 );
             }
             if el.overlay.is_some() {
-                el.draw_overlay(window, &draw_area.padded(self.margin), now);
+                el.draw_overlay(window, &draw_area.padded(self.margin), now, z_overlay);
             }
             if let Some(indicator) = notifications.as_mut().and_then(|iter| iter.next()) {
                 if *indicator > 0 {
@@ -148,7 +156,7 @@ impl InteractiveTableArea for UiBox {
                         &notification_area,
                         Col(WHITE),
                         Transform::IDENTITY,
-                        Z_MENU_BOX_BUTTONS + 1,
+                        z_button_decoration,
                     );
                     let d = radius * FRAC_1_SQRT_2;
                     let text_area = Rectangle::new_sized((d, d)).with_center(center);
@@ -157,7 +165,7 @@ impl InteractiveTableArea for UiBox {
                         .write(
                             window,
                             &text_area,
-                            Z_MENU_TEXT,
+                            z_menu_text,
                             FitStrategy::Center,
                             &indicator.to_string(),
                         )
@@ -248,7 +256,13 @@ impl UiBox {
 }
 
 impl UiElement {
-    fn draw_overlay(&self, window: &mut DisplayArea, area: &Rectangle, now: NaiveDateTime) {
+    fn draw_overlay(
+        &self,
+        window: &mut DisplayArea,
+        area: &Rectangle,
+        now: NaiveDateTime,
+        z_overlay: i16,
+    ) {
         if let Some((start, end)) = self.overlay {
             if now > start && now < end {
                 let progress = (now - start).num_microseconds().unwrap() as f32
@@ -284,7 +298,7 @@ impl UiElement {
                             a: 0.8,
                         }),
                         Transform::IDENTITY,
-                        Z_MENU_BOX_BUTTONS + 1,
+                        z_overlay,
                     );
                 }
             }

@@ -36,6 +36,7 @@ pub trait InteractiveTableArea {
         now: NaiveDateTime,
         area: &Rectangle,
         mouse_pos: Vector,
+        z: i16,
     );
     /// Check if the mouse hits somthing on the area
     fn click(&self, mouse: Vector) -> Option<(ClickOutput, Option<Condition>)>;
@@ -114,7 +115,7 @@ pub fn draw_table(
     max_area: &Rectangle,
     text_provider: &mut TableTextProvider,
     max_row_height: f32,
-    z: i32,
+    z: i16,
     now: NaiveDateTime,
     alignment: TableVerticalAlignment,
     mouse_pos: Vector,
@@ -162,7 +163,7 @@ pub fn draw_table(
             TableRow::InteractiveArea(ia) => {
                 let mut area = line.clone();
                 area.size.y = area.size.y * ia.rows() as f32;
-                ia.draw(window, sprites, text_provider, now, &area, mouse_pos);
+                ia.draw(window, sprites, text_provider, now, &area, mouse_pos, Z_UI_MENU);
                 line.pos.y += area.size.y;
             }
             TableRow::ProgressBar(bkgcol, col, i, n, label) => {

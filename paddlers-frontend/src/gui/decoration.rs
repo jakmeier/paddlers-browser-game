@@ -8,6 +8,7 @@
 
 use crate::gui::{sprites::*, utils::*, z::*};
 use paddle::graphics::Image;
+use paddle::*;
 use paddle::{quicksilver_compat::*, DisplayArea};
 
 pub fn draw_leaf_border(

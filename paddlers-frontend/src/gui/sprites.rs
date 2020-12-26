@@ -5,7 +5,7 @@ use crate::gui::shapes::*;
 use crate::gui::utils::*;
 use animation::AnimatedObject;
 use paddle::graphics::Image;
-use paddle::quicksilver_compat::*;
+use paddle::*;
 
 /// Manager of all sprites.
 /// Cannot easily be in a component because Image is thread local.
@@ -175,6 +175,9 @@ impl Sprites {
     }
     pub fn shape_index(&self, index: PadlShapeIndex) -> &PadlShape {
         &self.shapes[index as usize]
+    }
+    pub fn shape_index_mut(&mut self, index: PadlShapeIndex) -> &mut PadlShape {
+        &mut self.shapes[index as usize]
     }
     pub fn new_image_node(&self, img: SpriteIndex) -> HtmlImageElement {
         let node = HtmlImageElement::new().unwrap();

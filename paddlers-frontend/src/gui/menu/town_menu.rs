@@ -11,8 +11,6 @@ use crate::gui::{
 use crate::prelude::*;
 use crate::{game::toplevel::Signal, gui::input::MouseButton};
 use chrono::NaiveDateTime;
-use paddle::quicksilver_compat::Rectangle;
-use paddle::Frame;
 use paddle::*;
 use specs::prelude::*;
 
@@ -125,7 +123,7 @@ impl<'a, 'b> Frame for TownMenuFrame<'a, 'b> {
         state.town_world_mut().insert(ms);
         self.left_click_dispatcher.dispatch(state.town_world());
     }
-    fn right_click(&mut self, state: &mut Self::State, pos: (i32, i32)) {
+    fn right_click(&mut self, state: &mut Self::State, _pos: (i32, i32)) {
         let town_world = state.town_world();
         // Right click cancels grabbed item (take removes from option)
         let mut ui_state = town_world.fetch_mut::<UiState>();
@@ -173,7 +171,7 @@ impl TownMenuFrame<'_, '_> {
             area,
             &mut self.text_provider,
             40.0,
-            Z_MENU_TEXT,
+            Z_UI_MENU,
             now,
             TableVerticalAlignment::Top,
             mouse_pos,

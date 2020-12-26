@@ -9,7 +9,7 @@ use crate::game::{
 use crate::gui::{animation::*, render::Renderable, sprites::*, utils::*, z::Z_UNITS};
 use crate::prelude::*;
 use chrono::NaiveDateTime;
-use paddle::quicksilver_compat::Rectangle;
+use paddle::Rectangle;
 use paddlers_shared_lib::game_mechanics::worker::*;
 use specs::prelude::*;
 

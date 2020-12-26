@@ -29,8 +29,7 @@ use crate::gui::utils::*;
 use crate::net::graphql::query_types::WorkerResponse;
 use crate::net::NetMsg;
 use crate::prelude::{PadlResult, TextDb};
-use paddle::quicksilver_compat::*;
-use paddle::{Domain, FloatingText};
+use paddle::*;
 use std::sync::mpsc::Receiver;
 
 /// State that is used while loading all data over the network.

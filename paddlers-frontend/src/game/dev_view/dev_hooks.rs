@@ -1,5 +1,4 @@
 use crate::game::*;
-use paddle::JmrRectangle;
 use stdweb::unstable::TryInto;
 
 impl Game {

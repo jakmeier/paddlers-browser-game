@@ -1,6 +1,7 @@
 use crate::game::Now;
 use chrono::NaiveDateTime;
-use paddle::quicksilver_compat::{about_equal, Rectangle, Vector};
+use paddle::quicksilver_compat::about_equal;
+use paddle::*;
 use specs::prelude::*;
 use specs::storage::BTreeStorage;
 
@@ -9,7 +10,7 @@ use specs::storage::BTreeStorage;
 /// A position on the town view
 pub struct Position {
     pub area: Rectangle,
-    pub z: i32,
+    pub z: i16,
 }
 
 #[derive(Component, Debug)]
@@ -59,7 +60,7 @@ impl<'a> System<'a> for MoveSystem {
 }
 
 impl Position {
-    pub fn new(pos: impl Into<Vector>, size: impl Into<Vector>, z: i32) -> Self {
+    pub fn new(pos: impl Into<Vector>, size: impl Into<Vector>, z: i16) -> Self {
         Position {
             area: Rectangle::new(pos.into(), size.into()),
             z: z,

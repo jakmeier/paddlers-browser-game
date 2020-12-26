@@ -1,40 +1,17 @@
 //! Pre-rendered shapes that can be drawn like sprites
 
-use crate::gui::{utils::*, z::*};
+use crate::gui::utils::*;
 use lyon::lyon_tessellation::{FillOptions, StrokeTessellator};
 use lyon::{math::point, path::Path, tessellation::*};
 use paddle::quicksilver_compat::graphics::{Mesh, ShapeRenderer};
-use paddle::quicksilver_compat::Rectangle;
+use paddle::Rectangle;
 
 /// A single mesh of triangles ready to be drawn
 pub struct PadlShape {
     pub bounding_box: Rectangle,
     pub mesh: Mesh,
+    pub z: i16,
 }
-
-pub fn load_shapes() -> Vec<PadlShape> {
-    let mut shapes = Vec::new();
-    let base = Rectangle::new_sized((200, 100));
-
-    shapes.push(PadlShape {
-        mesh: build_arrow(base, true),
-        bounding_box: base,
-    });
-
-    shapes.push(PadlShape {
-        mesh: build_arrow(base, false),
-        bounding_box: base,
-    });
-
-    let base = Rectangle::new_sized((600, 200));
-    shapes.push(PadlShape {
-        mesh: build_frame(base),
-        bounding_box: base,
-    });
-
-    shapes
-}
-
 #[derive(Debug, Clone, Copy)]
 pub enum PadlShapeIndex {
     LeftArrow = 0,
@@ -42,8 +19,44 @@ pub enum PadlShapeIndex {
     Frame = 2,
 }
 
+pub fn load_shapes() -> Vec<PadlShape> {
+    let z = 0;
+    let mut shapes = Vec::new();
+    let base = Rectangle::new_sized((200, 100));
+
+    shapes.push(PadlShape {
+        mesh: build_arrow(base, true, z),
+        bounding_box: base,
+        z,
+    });
+
+    shapes.push(PadlShape {
+        mesh: build_arrow(base, false, z),
+        bounding_box: base,
+        z,
+    });
+
+    let base = Rectangle::new_sized((600, 200));
+    shapes.push(PadlShape {
+        mesh: build_frame(base, z),
+        bounding_box: base,
+        z,
+    });
+
+    shapes
+}
+
+impl PadlShape {
+    pub fn set_z(&mut self, z: i16) {
+        if self.z != z {
+            self.z = z;
+            self.mesh.set_z(z);
+        }
+    }
+}
+
 /// Shape used as button to go back/forth
-fn build_arrow(total_area: Rectangle, left: bool) -> Mesh {
+fn build_arrow(total_area: Rectangle, left: bool, z: i16) -> Mesh {
     let w = total_area.size.x;
     let h = total_area.size.y;
     let mut x0 = total_area.pos.x;
@@ -86,7 +99,7 @@ fn build_arrow(total_area: Rectangle, left: bool) -> Mesh {
     let mut mesh = Mesh::new();
     let mut tessellator = FillTessellator::new();
     let mut shape = ShapeRenderer::new(&mut mesh, DARK_GREEN);
-    shape.set_z((Z_MENU_BOX_BUTTONS) as f32);
+    shape.set_z(z as f32);
 
     tessellator
         .tessellate_path(path.into_iter(), &FillOptions::default(), &mut shape)
@@ -95,7 +108,7 @@ fn build_arrow(total_area: Rectangle, left: bool) -> Mesh {
     mesh
 }
 
-fn build_frame(area: Rectangle) -> Mesh {
+fn build_frame(area: Rectangle, z: i16) -> Mesh {
     // Create enclosing path
     let mut builder = Path::builder();
     builder.move_to(point(area.x(), area.y()));
@@ -110,7 +123,7 @@ fn build_frame(area: Rectangle) -> Mesh {
     let mut mesh = Mesh::new();
     let mut tessellator = StrokeTessellator::new();
     let mut shape = ShapeRenderer::new(&mut mesh, DARK_GREEN);
-    shape.set_z((Z_MENU_BOX_BUTTONS) as f32);
+    shape.set_z(z as f32);
 
     let thickness = 5.0;
 

@@ -1,7 +1,5 @@
 use paddlers_shared_lib::game_mechanics::town::{TOWN_X, TOWN_Y};
 
-use crate::gui::menu::inner_menu_area;
-
 // These are all game coordinates, which are an abstraction over different resolution.
 
 // The full area used

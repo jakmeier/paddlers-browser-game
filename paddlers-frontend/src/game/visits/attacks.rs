@@ -8,11 +8,8 @@ use crate::{
     resolution::{MAIN_AREA_H, MAIN_AREA_W},
 };
 use chrono::NaiveDateTime;
-use paddle::{
-    quicksilver_compat::{Col, Rectangle, Transform},
-    NutsCheck,
-};
-use paddle::{utc_now, DisplayArea, Frame, TextNode};
+use paddle::*;
+use paddle::{quicksilver_compat::Col, NutsCheck};
 use paddlers_shared_lib::api::attacks::*;
 use specs::prelude::*;
 use wasm_bindgen::JsCast;
@@ -161,7 +158,7 @@ impl<'a, 'b> Frame for VisitorFrame<'a, 'b> {
             }
         }
     }
-    fn draw(&mut self, state: &mut Self::State, window: &mut DisplayArea, _timestamp: f64) {
+    fn draw(&mut self, _state: &mut Self::State, window: &mut DisplayArea, _timestamp: f64) {
         let main_area = Rectangle::new_sized((MAIN_AREA_W, MAIN_AREA_H));
         window.draw_ex(&main_area, Col(LIGHT_BLUE), Transform::IDENTITY, Z_TEXTURE);
     }
