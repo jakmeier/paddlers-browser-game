@@ -23,6 +23,7 @@ pub(crate) struct TownMenuFrame<'a, 'b> {
     resources_area: Rectangle,
     foreign_town_menu: UiBox,
     left_click_dispatcher: Dispatcher<'a, 'b>,
+    mouse: PointerTracker,
 }
 
 impl<'a, 'b> Frame for TownMenuFrame<'a, 'b> {
@@ -49,7 +50,7 @@ impl<'a, 'b> Frame for TownMenuFrame<'a, 'b> {
                 window,
                 &extras_area,
                 now,
-                state.mouse.pos(),
+                self.mouse.pos(),
             );
         } else {
             self.bank_component.attach(window);
@@ -84,7 +85,7 @@ impl<'a, 'b> Frame for TownMenuFrame<'a, 'b> {
                 &table_area,
                 &mut self.text_provider,
                 &mut self.hover_component,
-                state.mouse.pos(),
+                self.mouse.pos(),
             );
         } else if !foreign {
             state.render_default_shop(
@@ -100,34 +101,13 @@ impl<'a, 'b> Frame for TownMenuFrame<'a, 'b> {
     fn leave(&mut self, _state: &mut Self::State) {
         self.text_provider.hide();
     }
-    fn left_click(&mut self, state: &mut Self::State, pos: (i32, i32)) {
-        let mouse_pos: Vector = pos.into();
-
-        let foreign = state.town_context.is_foreign();
-        if foreign {
-            if let Some((click_output, _condition)) = self.foreign_town_menu.click(mouse_pos) {
-                match click_output {
-                    ClickOutput::Event(evt) => {
-                        nuts::publish(evt);
-                    }
-                    _ => {
-                        nuts::publish(ErrorMessage::technical(
-                            "Unexpected ClickOutput in foreign town menu".to_owned(),
-                        ));
-                        return;
-                    }
-                }
-            }
+    fn pointer(&mut self, state: &mut Self::State, event: PointerEvent) {
+        self.mouse.track_pointer_event(&event);
+        match event {
+            PointerEvent(PointerEventType::PrimaryClick, pos) => self.left_click(state, pos),
+            PointerEvent(PointerEventType::SecondaryClick, pos) => self.right_click(state, pos),
+            _ => { /* NOP */ }
         }
-        let ms = MouseState(pos.into(), Some(MouseButton::Left));
-        state.town_world_mut().insert(ms);
-        self.left_click_dispatcher.dispatch(state.town_world());
-    }
-    fn right_click(&mut self, state: &mut Self::State, _pos: (i32, i32)) {
-        let town_world = state.town_world();
-        // Right click cancels grabbed item (take removes from option)
-        let mut ui_state = town_world.fetch_mut::<UiState>();
-        ui_state.take_grabbed_item();
     }
 }
 impl TownMenuFrame<'_, '_> {
@@ -150,7 +130,35 @@ impl TownMenuFrame<'_, '_> {
             bank_component: ResourcesComponent::new()?,
             hover_component: ResourcesComponent::new()?,
             foreign_town_menu,
+            mouse: Default::default(),
         })
+    }
+    fn left_click(&mut self, state: &mut Game, pos: Vector) {
+        let foreign = state.town_context.is_foreign();
+        if foreign {
+            if let Some((click_output, _condition)) = self.foreign_town_menu.click(pos) {
+                match click_output {
+                    ClickOutput::Event(evt) => {
+                        nuts::publish(evt);
+                    }
+                    _ => {
+                        nuts::publish(ErrorMessage::technical(
+                            "Unexpected ClickOutput in foreign town menu".to_owned(),
+                        ));
+                        return;
+                    }
+                }
+            }
+        }
+        let ms = MouseState(pos, Some(MouseButton::Left));
+        state.town_world_mut().insert(ms);
+        self.left_click_dispatcher.dispatch(state.town_world());
+    }
+    fn right_click(&mut self, state: &mut Game, _pos: Vector) {
+        let town_world = state.town_world();
+        // Right click cancels grabbed item (take removes from option)
+        let mut ui_state = town_world.fetch_mut::<UiState>();
+        ui_state.take_grabbed_item();
     }
 
     fn render_foreign_town_extras(
@@ -159,7 +167,7 @@ impl TownMenuFrame<'_, '_> {
         window: &mut DisplayArea,
         area: &Rectangle,
         now: NaiveDateTime,
-        mouse_pos: Vector,
+        mouse_pos: Option<Vector>,
     ) {
         let mut table = vec![];
         table.push(TableRow::InteractiveArea(&mut self.foreign_town_menu));

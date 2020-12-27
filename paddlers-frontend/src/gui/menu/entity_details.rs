@@ -73,7 +73,7 @@ pub fn draw_map_entity_details_table(
     e: Entity,
     area: &Rectangle,
     text_provider: &mut TableTextProvider,
-    mouse_pos: Vector,
+    mouse_pos: Option<Vector>,
 ) {
     let mut table = vec![];
     {
@@ -110,7 +110,7 @@ pub fn draw_town_entity_details_table(
     area: &Rectangle,
     text_provider: &mut TableTextProvider,
     res_comp: &mut ResourcesComponent,
-    mouse_pos: Vector,
+    mouse_pos: Option<Vector>,
 ) {
     let mut area = *area;
     let mut table = vec![];

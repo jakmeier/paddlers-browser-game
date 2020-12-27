@@ -14,6 +14,7 @@ pub(crate) struct MapMenuFrame<'a, 'b> {
     text_provider: TableTextProvider,
     left_click_dispatcher: Dispatcher<'a, 'b>,
     _hover_component: ResourcesComponent,
+    mouse: PointerTracker,
 }
 impl MapMenuFrame<'_, '_> {
     pub fn new() -> PadlResult<Self> {
@@ -25,7 +26,13 @@ impl MapMenuFrame<'_, '_> {
             text_provider: TableTextProvider::new(),
             left_click_dispatcher,
             _hover_component: ResourcesComponent::new()?,
+            mouse: PointerTracker::new(),
         })
+    }
+    fn left_click(&mut self, state: &mut Game, mouse_pos: Vector) {
+        let ms = MouseState(mouse_pos, Some(MouseButton::Left));
+        state.world.insert(ms);
+        self.left_click_dispatcher.dispatch(&state.world);
     }
 }
 impl<'a, 'b> Frame for MapMenuFrame<'a, 'b> {
@@ -50,18 +57,18 @@ impl<'a, 'b> Frame for MapMenuFrame<'a, 'b> {
                 e,
                 &table_area,
                 &mut self.text_provider,
-                state.mouse.pos(),
+                self.mouse.pos(),
             );
         }
         self.text_provider.finish_draw();
     }
-    fn left_click(&mut self, state: &mut Self::State, pos: (i32, i32)) {
-        let mouse_pos: Vector = pos.into();
-        let ms = MouseState(mouse_pos, Some(MouseButton::Left));
-        state.world.insert(ms);
-        self.left_click_dispatcher.dispatch(&state.world);
-    }
     fn leave(&mut self, _state: &mut Self::State) {
         self.text_provider.hide();
+    }
+    fn pointer(&mut self, state: &mut Self::State, event: PointerEvent) {
+        self.mouse.track_pointer_event(&event);
+        if let PointerEvent(PointerEventType::PrimaryClick, pos) = event {
+            self.left_click(state, pos)
+        }
     }
 }

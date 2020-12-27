@@ -2,10 +2,10 @@ use crate::prelude::*;
 use crate::{game::fight::*, net::game_master_api::HttpDeleteBuilding};
 use crate::{game::movement::Position, net::game_master_api::RestApiState};
 use crate::{game::town::tiling, net::state::current_village};
-use paddle::Vector;
 /// This module keeps the logic to read input and, in most cases,
 /// redirect it to suitable modules to handle the input
 use paddle::quicksilver_compat::*;
+use paddle::Vector;
 use paddlers_shared_lib::prelude::*;
 use specs::prelude::*;
 
@@ -13,10 +13,6 @@ pub mod left_click;
 pub use self::left_click::*;
 use crate::gui::ui_state::UiState;
 
-#[derive(Clone, Copy, Debug, Default)]
-pub struct MouseInfo {
-    pub(crate) pos: Vector,
-}
 #[derive(Clone, Copy, Debug)]
 pub enum MouseButton {
     Left,
@@ -125,14 +121,5 @@ impl crate::game::Game {
         #[cfg(feature = "dev_view")]
         self.dev_view_hotkey(key);
         self.world.maintain();
-    }
-}
-
-impl MouseInfo {
-    pub fn pos(&self) -> Vector {
-        self.pos
-    }
-    pub fn set_pos(&mut self, pos: Vector) {
-        self.pos = pos
     }
 }

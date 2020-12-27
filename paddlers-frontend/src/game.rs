@@ -22,14 +22,11 @@ pub(crate) mod town_resources;
 pub(crate) mod units;
 pub(crate) mod visits;
 
+use crate::game::{components::*, player_info::PlayerInfo, town::TownContextManager};
 use crate::init::loading::GameLoadingData;
 use crate::net::NetMsg;
 use crate::prelude::*;
 use crate::{game::net_receiver::*, net::game_master_api::UpdateRestApi};
-use crate::{
-    game::{components::*, player_info::PlayerInfo, town::TownContextManager},
-    gui::input::MouseInfo,
-};
 use crate::{
     gui::{input, sprites::*, ui_state::*},
     resolution::{MAIN_AREA_H, MAIN_AREA_W},
@@ -52,9 +49,7 @@ pub(crate) struct Game {
     pub net: Receiver<NetMsg>,
     pub time_zero: NaiveDateTime,
     pub total_updates: u64,
-    pub mouse: MouseInfo,
-    // TODO: [0.1.4] These would better fit into frame state, however,
-    // there is currently no good solution to share it between main-frame and menu-frame
+    pub mouse: PointerTracker,
     pub map: Option<GlobalMapPrivateState>,
     pub town_context: TownContextManager,
 
@@ -87,7 +82,7 @@ impl Game {
             total_updates: 0,
             map: None,
             town_context,
-            mouse: MouseInfo::default(),
+            mouse: Default::default(),
             #[cfg(feature = "dev_view")]
             palette: false,
             #[cfg(feature = "dev_view")]

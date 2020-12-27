@@ -31,7 +31,7 @@ pub(crate) struct TownFrame<'a, 'b> {
     town_dispatcher: Dispatcher<'a, 'b>,
     // Graphics optimization
     pub background_cache: Option<Mesh>,
-    mouse_pos: Vector,
+    mouse: PointerTracker,
 }
 
 impl<'a, 'b> Frame for TownFrame<'a, 'b> {
@@ -75,23 +75,64 @@ impl<'a, 'b> Frame for TownFrame<'a, 'b> {
             render_hovering(world, window, sprites, entity);
         }
         if let Some(grabbed) = grabbed_item {
-            render_grabbed_item(window, sprites, &grabbed, self.mouse_pos);
-        // window.set_cursor(MouseCursor::None);
+            if let Some(pos) = self.mouse.pos() {
+                render_grabbed_item(window, sprites, &grabbed, pos);
+                // window.set_cursor(MouseCursor::None);
+            }
+        // window.set_cursor(MouseCursor::Default);
         } else {
             // window.set_cursor(MouseCursor::Default);
         }
 
         render_town_entities(world, window, sprites);
     }
+    fn pointer(&mut self, state: &mut Self::State, event: PointerEvent) {
+        self.mouse.track_pointer_event(&event);
+        match event {
+            PointerEvent(PointerEventType::PrimaryClick, pos) => self.left_click(state, pos),
+            PointerEvent(PointerEventType::SecondaryClick, pos) => self.right_click(state, pos),
+            PointerEvent(PointerEventType::Move, pos) => self.mouse_move(state, pos),
+            _ => { /* NOP */ }
+        }
+    }
+}
 
-    fn left_click(&mut self, state: &mut Self::State, pos: (i32, i32)) {
-        let ms = MouseState(pos.into(), Some(MouseButton::Left));
+impl<'a, 'b> TownFrame<'a, 'b> {
+    pub fn new() -> Self {
+        let left_click_dispatcher = DispatcherBuilder::new()
+            .with(TownLeftClickSystem::new(), "", &[])
+            .build();
+
+        let town_dispatcher = DispatcherBuilder::new()
+            .with(WorkerSystem::new(), "work", &[])
+            .with(MoveSystem, "move", &["work"])
+            .with(FightSystem::new(), "fight", &["move"])
+            .with(ForestrySystem, "forest", &[])
+            .with(EntityTriggerSystem::new(), "ets", &[])
+            .build();
+
+        TownFrame {
+            left_click_dispatcher,
+            background_cache: None,
+            town_dispatcher,
+            mouse: Default::default(),
+        }
+    }
+    pub fn signal(&mut self, state: &mut Game, msg: &Signal) {
+        match msg {
+            Signal::PlayerInfoUpdated => {
+                state.update_temple().nuts_check();
+            }
+            _ => {}
+        }
+    }
+    fn left_click(&mut self, state: &mut Game, pos: Vector) {
+        let ms = MouseState(pos, Some(MouseButton::Left));
         state.town_world_mut().insert(ms);
         self.left_click_dispatcher.dispatch(state.town_world());
     }
-    fn right_click(&mut self, state: &mut Self::State, pos: (i32, i32)) {
+    fn right_click(&mut self, state: &mut Game, mouse_pos: Vector) {
         let town_world = state.town_world();
-        let mouse_pos: Vector = pos.into();
 
         // Right click cancels grabbed item (take removes from option)
         let mut ui_state = town_world.fetch_mut::<UiState>();
@@ -132,48 +173,18 @@ impl<'a, 'b> Frame for TownFrame<'a, 'b> {
             }
         }
     }
-    fn mouse_move(&mut self, state: &mut Self::State, mouse_pos: (i32, i32)) {
-        self.mouse_pos = Vector::from(mouse_pos);
+    fn mouse_move(&mut self, state: &mut Game, mouse_pos: Vector) {
         let mut ui_state = state.world.write_resource::<UiState>();
         let position = state.world.read_storage::<Position>();
         let entities = state.world.entities();
         (*ui_state).hovered_entity = None;
         for (e, pos) in (&entities, &position).join() {
-            if self.mouse_pos.overlaps_rectangle(&pos.area) {
-                (*ui_state).hovered_entity = Some(e);
-                break;
+            if let Some(mouse_pos) = self.mouse.pos() {
+                if mouse_pos.overlaps_rectangle(&pos.area) {
+                    (*ui_state).hovered_entity = Some(e);
+                    break;
+                }
             }
-        }
-    }
-}
-
-impl<'a, 'b> TownFrame<'a, 'b> {
-    pub fn new() -> Self {
-        let left_click_dispatcher = DispatcherBuilder::new()
-            .with(TownLeftClickSystem::new(), "", &[])
-            .build();
-
-        let town_dispatcher = DispatcherBuilder::new()
-            .with(WorkerSystem::new(), "work", &[])
-            .with(MoveSystem, "move", &["work"])
-            .with(FightSystem::new(), "fight", &["move"])
-            .with(ForestrySystem, "forest", &[])
-            .with(EntityTriggerSystem::new(), "ets", &[])
-            .build();
-
-        TownFrame {
-            left_click_dispatcher,
-            background_cache: None,
-            town_dispatcher,
-            mouse_pos: Vector::new(0, 0),
-        }
-    }
-    pub fn signal(&mut self, state: &mut Game, msg: &Signal) {
-        match msg {
-            Signal::PlayerInfoUpdated => {
-                state.update_temple().nuts_check();
-            }
-            _ => {}
         }
     }
 }

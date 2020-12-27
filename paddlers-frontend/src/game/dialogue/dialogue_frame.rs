@@ -23,6 +23,7 @@ pub(crate) struct DialogueFrame {
     text_provider: TableTextProvider,
     text_bubble: Mesh,
     current_scene: Option<Scene>,
+    mouse: PointerTracker,
 }
 
 impl DialogueFrame {
@@ -38,6 +39,7 @@ impl DialogueFrame {
             text_provider,
             text_bubble,
             current_scene: None,
+            mouse: PointerTracker::new(),
         };
 
         Ok(dialogue)
@@ -114,7 +116,7 @@ impl DialogueFrame {
         sprites: &mut Sprites,
         now: NaiveDateTime,
         window: &mut DisplayArea,
-        mouse_pos: Vector,
+        mouse_pos: Option<Vector>,
     ) {
         let mut table = Vec::new();
         for s in &self.text_lines {
@@ -174,26 +176,7 @@ impl DialogueFrame {
         state.set_story_state(msg.new_story_state);
         state.load_story_state().nuts_check();
     }
-}
-
-impl Frame for DialogueFrame {
-    type State = Game;
-    const WIDTH: u32 = crate::resolution::SCREEN_W;
-    const HEIGHT: u32 = crate::resolution::SCREEN_H;
-    fn draw(&mut self, state: &mut Self::State, window: &mut DisplayArea, _timestamp: f64) {
-        self.text_provider.reset();
-        let main_area = Rectangle::new_sized(Self::size());
-        self.draw_background(&mut state.sprites, window, main_area);
-        self.draw_image_with_text_bubble(&mut state.sprites, window, self.image);
-        self.draw_active_area(
-            &mut state.sprites,
-            state.world.read_resource::<Now>().0,
-            window,
-            state.mouse.pos(),
-        );
-        self.text_provider.finish_draw();
-    }
-    fn left_click(&mut self, state: &mut Self::State, pos: (i32, i32)) {
+    fn left_click(&mut self, state: &mut Game, pos: Vector) {
         if let Some(output) = self.buttons.click(pos.into()) {
             match output {
                 (ClickOutput::SlideAction(a), None) => {
@@ -217,7 +200,33 @@ impl Frame for DialogueFrame {
             }
         }
     }
+}
+
+impl Frame for DialogueFrame {
+    type State = Game;
+    const WIDTH: u32 = crate::resolution::SCREEN_W;
+    const HEIGHT: u32 = crate::resolution::SCREEN_H;
+    fn draw(&mut self, state: &mut Self::State, window: &mut DisplayArea, _timestamp: f64) {
+        self.text_provider.reset();
+        let main_area = Rectangle::new_sized(Self::size());
+        self.draw_background(&mut state.sprites, window, main_area);
+        self.draw_image_with_text_bubble(&mut state.sprites, window, self.image);
+        self.draw_active_area(
+            &mut state.sprites,
+            state.world.read_resource::<Now>().0,
+            window,
+            self.mouse.pos(),
+        );
+        self.text_provider.finish_draw();
+    }
+
     fn leave(&mut self, _state: &mut Self::State) {
         self.text_provider.hide();
+    }
+    fn pointer(&mut self, state: &mut Self::State, event: PointerEvent) {
+        self.mouse.track_pointer_event(&event);
+        if let PointerEvent(PointerEventType::PrimaryClick, pos) = event {
+            self.left_click(state, pos)
+        }
     }
 }

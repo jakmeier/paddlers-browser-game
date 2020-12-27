@@ -57,6 +57,7 @@ impl DefaultShop {
 }
 
 impl Game {
+    // TODO: Shouldn't this be in town_menu?
     pub fn render_default_shop(
         &mut self,
         window: &mut DisplayArea,
@@ -96,12 +97,14 @@ impl Game {
         area: &mut Rectangle,
         ui: &mut UiBox,
         res_comp: &mut ResourcesComponent,
-        mouse_pos: Vector,
+        mouse_pos: Option<Vector>,
     ) -> PadlResult<()> {
         let price_tag_h = 50.0;
         let (shop_area, price_tag_area) = area.cut_horizontal(area.height() - price_tag_h);
         *area = shop_area;
-        ui.draw_hover_info(display, res_comp, &price_tag_area, mouse_pos)?;
+        if let Some(mouse_pos) = mouse_pos {
+            ui.draw_hover_info(display, res_comp, &price_tag_area, mouse_pos)?;
+        }
         Ok(())
     }
 }

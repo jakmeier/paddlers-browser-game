@@ -3,12 +3,13 @@ use crate::gui::{
     z::Z_UI_MENU,
 };
 use crate::prelude::*;
-use paddle::DisplayArea;
+use paddle::{DisplayArea, PointerEvent, PointerEventType, PointerTracker};
 use specs::WorldExt;
 
 pub(crate) struct VisitorMenuFrame {
     ui: UiBox,
     text_provider: TableTextProvider,
+    mouse: PointerTracker,
 }
 
 impl VisitorMenuFrame {
@@ -30,6 +31,16 @@ impl VisitorMenuFrame {
         VisitorMenuFrame {
             ui: ui_box,
             text_provider: TableTextProvider::new(),
+            mouse: PointerTracker::new(),
+        }
+    }
+    fn left_click(&mut self, state: &mut Game, pos: Vector) {
+        let result = match self.ui.click(pos) {
+            Some((ClickOutput::Event(event), _)) => Ok(Some(event)),
+            _ => Ok(None),
+        };
+        if let Some(event) = state.check(result).flatten() {
+            nuts::publish(event);
         }
     }
 }
@@ -48,18 +59,15 @@ impl Frame for VisitorMenuFrame {
             &mut self.text_provider,
             now,
             &Self::area(),
-            state.mouse.pos(),
+            self.mouse.pos(),
             Z_UI_MENU,
         );
         self.text_provider.finish_draw();
     }
-    fn left_click(&mut self, state: &mut Self::State, pos: (i32, i32)) {
-        let result = match self.ui.click(pos.into()) {
-            Some((ClickOutput::Event(event), _)) => Ok(Some(event)),
-            _ => Ok(None),
-        };
-        if let Some(event) = state.check(result).flatten() {
-            nuts::publish(event);
+    fn pointer(&mut self, state: &mut Self::State, event: PointerEvent) {
+        self.mouse.track_pointer_event(&event);
+        if let PointerEvent(PointerEventType::PrimaryClick, pos) = event {
+            self.left_click(state, pos)
         }
     }
 }

@@ -10,6 +10,7 @@ pub(crate) struct MenuBackgroundFrame {
     ui: UiBox,
     tp: TableTextProvider,
     reports_to_collect: usize,
+    mouse: PointerTracker,
 }
 
 impl MenuBackgroundFrame {
@@ -49,6 +50,7 @@ impl MenuBackgroundFrame {
             ui: ui_box,
             tp,
             reports_to_collect: 0,
+            mouse: PointerTracker::new(),
         }
     }
     fn button_render(normal: SingleSprite, hover: SingleSprite) -> RenderVariant {
@@ -77,6 +79,15 @@ impl MenuBackgroundFrame {
             _ => {}
         }
     }
+    fn left_click(&mut self, state: &mut Game, pos: Vector) {
+        let result = match self.ui.click(pos) {
+            Some((ClickOutput::Event(event), _)) => Ok(Some(event)),
+            _ => Ok(None),
+        };
+        if let Some(event) = state.check(result).flatten() {
+            nuts::publish(event);
+        }
+    }
 }
 
 impl Frame for MenuBackgroundFrame {
@@ -95,18 +106,15 @@ impl Frame for MenuBackgroundFrame {
             &mut self.tp,
             now,
             &button_area,
-            state.mouse.pos(),
+            self.mouse.pos(),
             Z_UI_MENU,
         );
         self.tp.finish_draw();
     }
-    fn left_click(&mut self, state: &mut Self::State, pos: (i32, i32)) {
-        let result = match self.ui.click(pos.into()) {
-            Some((ClickOutput::Event(event), _)) => Ok(Some(event)),
-            _ => Ok(None),
-        };
-        if let Some(event) = state.check(result).flatten() {
-            nuts::publish(event);
+    fn pointer(&mut self, state: &mut Self::State, event: PointerEvent) {
+        self.mouse.track_pointer_event(&event);
+        if let PointerEvent(PointerEventType::PrimaryClick, pos) = event {
+            self.left_click(state, pos)
         }
     }
 }

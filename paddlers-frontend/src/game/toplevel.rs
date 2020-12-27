@@ -70,7 +70,7 @@ impl Frame for GameActivity {
             state.hotkey(key);
         }
     }
-    fn mouse_move(&mut self, state: &mut Self::State, pos: (i32, i32)) {
-        state.mouse.set_pos(pos.into())
+    fn pointer(&mut self, state: &mut Self::State, event: PointerEvent) {
+        state.mouse.track_pointer_event(&event);
     }
 }

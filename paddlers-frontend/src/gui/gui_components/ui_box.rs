@@ -44,7 +44,7 @@ impl InteractiveTableArea for UiBox {
         tp: &mut TableTextProvider,
         now: NaiveDateTime,
         area: &Rectangle,
-        mouse_pos: Vector,
+        mouse_pos: Option<Vector>,
         z: i16,
     ) {
         self.area = *area;
@@ -80,22 +80,28 @@ impl InteractiveTableArea for UiBox {
                     Some(img)
                 }
                 RenderVariant::ImgWithHoverAlternative(img, hov) => {
-                    if mouse_pos.overlaps_rectangle(&draw_area) {
-                        Some(hov)
+                    if let Some(mouse_pos) = mouse_pos {
+                        if mouse_pos.overlaps_rectangle(&draw_area) {
+                            Some(hov)
+                        } else {
+                            Some(img)
+                        }
                     } else {
                         Some(img)
                     }
                 }
                 RenderVariant::ImgWithHoverShape(img, hov) => {
-                    if mouse_pos.overlaps_rectangle(&draw_area) {
-                        draw_shape(
-                            sprites,
-                            window,
-                            &draw_area.padded(self.margin),
-                            *hov,
-                            FitStrategy::Center,
-                            z_overlay,
-                        );
+                    if let Some(mouse_pos) = mouse_pos {
+                        if mouse_pos.overlaps_rectangle(&draw_area) {
+                            draw_shape(
+                                sprites,
+                                window,
+                                &draw_area.padded(self.margin),
+                                *hov,
+                                FitStrategy::Center,
+                                z_overlay,
+                            );
+                        }
                     }
                     Some(img)
                 }
