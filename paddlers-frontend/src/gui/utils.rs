@@ -92,7 +92,7 @@ pub fn draw_shape(
     fit_strat: FitStrategy,
     z: i16,
 ) {
-    let mut shape = sprites.shape_index_mut(i);
+    let shape = sprites.shape_index_mut(i);
     shape.set_z(z);
     let place = shape.bounding_box.fit_into_ex(&draw_area, fit_strat, true);
     let factor = (
@@ -112,14 +112,4 @@ pub fn h_line(start: impl Into<Vector>, len: f32, thickness: f32) -> Rectangle {
 }
 pub fn v_line(start: impl Into<Vector>, len: f32, thickness: f32) -> Rectangle {
     Rectangle::new(start, (thickness, len))
-}
-
-/// Scales all vertices in the mesh by the given factor, taking (0,0) as origin
-pub fn scale_mesh(mesh: &mut Mesh, r: f32) {
-    for p in mesh.vertices.iter_mut() {
-        p.pos *= r;
-        if let Some(mut tp) = p.tex_pos {
-            tp *= r;
-        }
-    }
 }

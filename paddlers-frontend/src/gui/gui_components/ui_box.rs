@@ -244,9 +244,9 @@ impl UiBox {
 
     pub fn draw_hover_info(
         &mut self,
-        display: &mut DisplayArea,
+        _display: &mut DisplayArea,
         res_comp: &mut ResourcesComponent,
-        area: &Rectangle,
+        _area: &Rectangle,
         mouse_pos: Vector,
     ) -> PadlResult<()> {
         let mouse = mouse_pos;

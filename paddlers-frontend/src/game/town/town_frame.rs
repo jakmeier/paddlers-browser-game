@@ -90,8 +90,11 @@ impl<'a, 'b> Frame for TownFrame<'a, 'b> {
         self.mouse.track_pointer_event(&event);
         match event {
             PointerEvent(PointerEventType::PrimaryClick, pos) => self.left_click(state, pos),
-            PointerEvent(PointerEventType::SecondaryClick, pos) => self.right_click(state, pos),
-            PointerEvent(PointerEventType::Move, pos) => self.mouse_move(state, pos),
+            PointerEvent(PointerEventType::SecondaryClick, pos)
+            | PointerEvent(PointerEventType::DoubleClick, pos) => {
+                self.right_click(state, pos);
+            }
+            PointerEvent(PointerEventType::Move, _pos) => self.mouse_move(state),
             _ => { /* NOP */ }
         }
     }
@@ -173,7 +176,7 @@ impl<'a, 'b> TownFrame<'a, 'b> {
             }
         }
     }
-    fn mouse_move(&mut self, state: &mut Game, mouse_pos: Vector) {
+    fn mouse_move(&mut self, state: &mut Game) {
         let mut ui_state = state.world.write_resource::<UiState>();
         let position = state.world.read_storage::<Position>();
         let entities = state.world.entities();

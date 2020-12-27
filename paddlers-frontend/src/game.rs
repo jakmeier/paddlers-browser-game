@@ -135,8 +135,8 @@ impl Game {
         Ok(())
     }
     pub fn init_map(&mut self) {
-        let main_area = Rectangle::new_sized((MAIN_AREA_W, MAIN_AREA_H));
-        let (private, shared) = GlobalMap::new(main_area.size());
+        let size = (MAIN_AREA_W, MAIN_AREA_H).into();
+        let (private, shared) = GlobalMap::new(size);
         self.map = Some(private);
         self.world.insert(shared);
     }

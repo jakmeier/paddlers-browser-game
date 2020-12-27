@@ -3,8 +3,8 @@
 
 mod dialogue_frame;
 mod text_bubble;
-pub use dialogue_frame::*;
-pub use text_bubble::*;
+pub(crate) use dialogue_frame::*;
+pub(crate) use text_bubble::*;
 
 use crate::game::story::scene::*;
 use paddle::*;

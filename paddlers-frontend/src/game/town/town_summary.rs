@@ -54,7 +54,7 @@ impl Frame for TownSummaryFrame {
     type State = Game;
     const WIDTH: u32 = crate::resolution::MAIN_AREA_W;
     const HEIGHT: u32 = crate::resolution::MAIN_AREA_H;
-    fn draw(&mut self, state: &mut Self::State, window: &mut paddle::DisplayArea, _timestamp: f64) {
+    fn draw(&mut self, _state: &mut Self::State, window: &mut paddle::DisplayArea, _timestamp: f64) {
         let main_area = Rectangle::new_sized((MAIN_AREA_W, MAIN_AREA_H));
         window.draw_ex(
             &main_area.padded(50.0),

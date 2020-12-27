@@ -52,7 +52,6 @@ impl Frame for MapFrame {
         );
         window.fill(Col(GREEN));
 
-        // self.apply_scaling(area.size());
         map.draw_grid(window);
         map.draw_water(window, &Self::area());
         map.draw_villages(window, sprites);

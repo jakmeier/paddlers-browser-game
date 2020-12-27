@@ -143,22 +143,14 @@ impl<'a> GlobalMap<'a> {
     }
 
     fn display_shape() -> (i32, i32) {
-        let w = 15; // TODO: determine dynamically what fits the viewport
+        let w = 15;
         let h = paddlers_shared_lib::game_mechanics::map::MAP_H as i32;
         (w, h)
     }
     pub fn calculate_scaling(view_size: Vector) -> f32 {
-        let (w, h) = Self::display_shape();
-        let rx = view_size.x / w as f32;
+        let (_w, h) = Self::display_shape();
         let ry = view_size.y / h as f32;
-        rx.min(ry)
-    }
-    fn apply_scaling(&mut self, size: Vector) {
-        let r = Self::calculate_scaling(size);
-        if self.shared.scaling != r {
-            scale_mesh(&mut self.private.grid_mesh, r / self.shared.scaling);
-            self.shared.scaling = r;
-        }
+        ry
     }
     fn view_transform(&self) -> Transform {
         Transform::translate((self.shared.x_offset * self.shared.scaling, 0))
