@@ -1,12 +1,11 @@
-use crate::gui::{utils::*, z::*};
+use crate::gui::utils::*;
 use lyon::{math::point, path::Path, tessellation::*};
-use paddle::quicksilver_compat::graphics::{Mesh, ShapeRenderer};
 use paddle::*;
 
 /// Creates a shape for tesselation that forms a left-open text bubble.
 /// total_area: Maximum space that text bubble should use
 /// text_area: Minimum space that text should have. Must be a subset of total_area.
-pub fn build_text_bubble(total_area: Rectangle, text_area: Rectangle) -> Mesh {
+pub fn build_text_bubble(total_area: Rectangle, text_area: Rectangle) -> AbstractMesh {
     // Define start point
     let x0 = total_area.pos.x;
     let y0 = total_area.pos.y + total_area.size.y / 2.0;
@@ -39,10 +38,9 @@ pub fn build_text_bubble(total_area: Rectangle, text_area: Rectangle) -> Mesh {
     let path = builder.build();
 
     // Tesselate path to mesh
-    let mut mesh = Mesh::new();
+    let mut mesh = AbstractMesh::new();
     let mut tessellator = FillTessellator::new();
     let mut shape = ShapeRenderer::new(&mut mesh, WHITE);
-    shape.set_z((Z_TEXTURE + 2) as f32);
 
     tessellator
         .tessellate_path(path.into_iter(), &FillOptions::default(), &mut shape)

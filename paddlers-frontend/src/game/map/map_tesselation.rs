@@ -1,7 +1,6 @@
 use crate::game::map::map_segment::MapSegment;
-use crate::gui::{utils::*, z::*};
+use crate::gui::utils::*;
 use ::lyon::{math::point, path::Path, tessellation::*};
-use paddle::quicksilver_compat::graphics::{Drawable, Mesh, ShapeRenderer};
 use paddle::quicksilver_compat::*;
 use paddle::*;
 
@@ -18,13 +17,7 @@ impl MapSegment {
             ((self.w + 1.0) * scaling, scaling),
         );
         let main_path = river_path(main_river_area, 2);
-        add_path_to_mesh(
-            &mut self.water_mesh,
-            &main_path,
-            0.75 * scaling,
-            LIGHT_BLUE,
-            Z_RIVER,
-        );
+        add_path_to_mesh(&mut self.water_mesh, &main_path, 0.75 * scaling, LIGHT_BLUE);
 
         for stream_points in &mut self.streams {
             let mut stream_points: Vec<Vector> =
@@ -35,14 +28,13 @@ impl MapSegment {
                 &stream_path(&stream_points),
                 0.2 * scaling,
                 LIGHT_BLUE,
-                Z_RIVER - 1,
             );
         }
     }
 }
 
-pub fn tesselate_map_background(base_shape: Rectangle, w: i32, h: i32) -> Mesh {
-    let mut mesh = Mesh::new();
+pub fn tesselate_map_background(base_shape: Rectangle, w: i32, h: i32) -> AbstractMesh {
+    let mut mesh = AbstractMesh::new();
 
     let width = base_shape.width();
     let height = base_shape.height();
@@ -53,22 +45,12 @@ pub fn tesselate_map_background(base_shape: Rectangle, w: i32, h: i32) -> Mesh {
     for x in 0..w + 2 {
         let x = dx * x as f32;
         let line = v_line((x, 0), height, thickness);
-        line.draw(
-            &mut mesh,
-            Col(TRANSPARENT_BLACK),
-            Transform::IDENTITY,
-            Z_GRID,
-        );
+        line.tessellate(&mut mesh, Col(TRANSPARENT_BLACK));
     }
     for y in 0..h + 2 {
         let y = dy * y as f32;
         let line = h_line((0, y), width + dx, thickness);
-        line.draw(
-            &mut mesh,
-            Col(TRANSPARENT_BLACK),
-            Transform::IDENTITY,
-            Z_GRID,
-        );
+        line.tessellate(&mut mesh, Col(TRANSPARENT_BLACK));
     }
     mesh
 }
@@ -112,9 +94,8 @@ fn stream_path(points: &[Vector]) -> Path {
     builder.build()
 }
 
-fn add_path_to_mesh(mesh: &mut Mesh, path: &Path, thickness: f32, color: Color, z: i16) {
+fn add_path_to_mesh(mesh: &mut AbstractMesh, path: &Path, thickness: f32, color: Color) {
     let mut shape = ShapeRenderer::new(mesh, color);
-    shape.set_z(z as f32);
     let mut tessellator = StrokeTessellator::new();
     tessellator
         .tessellate_path(

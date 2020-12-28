@@ -7,7 +7,6 @@
 //! (It might become reusable in the future, though!)
 
 use crate::gui::{sprites::*, utils::*, z::*};
-use paddle::graphics::Image;
 use paddle::*;
 use paddle::{quicksilver_compat::*, DisplayArea};
 

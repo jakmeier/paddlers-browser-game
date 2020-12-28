@@ -10,8 +10,7 @@ use crate::{
     gui::menu::{LEAVES_BORDER_H, LEAVES_BORDER_W},
 };
 use chrono::NaiveDateTime;
-use paddle::quicksilver_compat::graphics::Mesh;
-use paddle::quicksilver_compat::Col;
+use paddle::{graphics::AbstractMesh, quicksilver_compat::Col};
 use paddle::Frame;
 use paddle::*;
 use specs::WorldExt;
@@ -21,15 +20,14 @@ pub(crate) struct DialogueFrame {
     buttons: UiBox,
     text_lines: Vec<String>,
     text_provider: TableTextProvider,
-    text_bubble: Mesh,
+    text_bubble: AbstractMesh,
     current_scene: Option<Scene>,
     mouse: PointerTracker,
 }
 
 impl DialogueFrame {
     pub fn new() -> PadlResult<Self> {
-        let mut text_bubble = build_text_bubble(active_area(), text_area());
-        text_bubble.set_z(Z_UI_MENU - 1);
+        let text_bubble = build_text_bubble(active_area(), text_area());
         let text_provider = TableTextProvider::new_styled("dialogue");
 
         let dialogue = DialogueFrame {
@@ -166,7 +164,7 @@ impl DialogueFrame {
             Z_TEXTURE + 1,
             FitStrategy::Center,
         );
-        window.draw_triangles(&self.text_bubble);
+        window.draw_mesh(&self.text_bubble);
     }
 
     pub fn receive_load_scene(&mut self, state: &mut Game, msg: &LoadNewDialogueScene) {

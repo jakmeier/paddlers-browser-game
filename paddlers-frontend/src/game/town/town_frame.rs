@@ -17,7 +17,7 @@ use crate::{
 
 use paddle::*;
 use paddle::{
-    quicksilver_compat::{graphics::Mesh, Color, Shape},
+    quicksilver_compat::{Color, Shape},
     FitStrategy,
 };
 
@@ -30,7 +30,7 @@ pub(crate) struct TownFrame<'a, 'b> {
     left_click_dispatcher: Dispatcher<'a, 'b>,
     town_dispatcher: Dispatcher<'a, 'b>,
     // Graphics optimization
-    pub background_cache: Option<Mesh>,
+    pub background_cache: Option<AbstractMesh>,
     mouse: PointerTracker,
 }
 
@@ -55,12 +55,12 @@ impl<'a, 'b> Frame for TownFrame<'a, 'b> {
             let asset = &mut state.sprites;
             let town = state.town_context.town_mut();
             if self.background_cache.is_none() {
-                self.background_cache = Some(Mesh::new());
+                self.background_cache = Some(AbstractMesh::new());
                 town.render_background(self.background_cache.as_mut().unwrap(), asset, ul)
                     .nuts_check();
             }
             self.background_cache.as_ref().unwrap().vertices.len();
-            window.draw_triangles(self.background_cache.as_ref().unwrap());
+            window.draw_mesh(self.background_cache.as_ref().unwrap());
             town.render(window, asset, tick, ul).nuts_check();
         }
 

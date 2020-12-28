@@ -1,5 +1,4 @@
 pub use super::village_meta::VillageMetaInfo;
-use paddle::quicksilver_compat::*;
 use paddle::*;
 use paddlers_shared_lib::game_mechanics::map::MAP_STREAM_AREA_W;
 
@@ -11,7 +10,7 @@ pub struct MapSegment {
     pub w: f32,
     pub h: f32,
     pub streams: Vec<Vec<(f32, f32)>>,
-    pub water_mesh: Mesh,
+    pub water_mesh: AbstractMesh,
     pub scaling: f32,
 }
 
@@ -24,7 +23,7 @@ impl MapSegment {
             w: w as f32,
             h: h as f32,
             streams,
-            water_mesh: Mesh::new(),
+            water_mesh: AbstractMesh::new(),
             scaling,
         }
     }

@@ -1,6 +1,5 @@
 use super::SingleSprite;
 use crate::gui::utils::Direction;
-use paddle::graphics::Image;
 use paddle::*;
 
 /// Stores the sprites of an animated object.

@@ -12,7 +12,7 @@ use crate::prelude::{PadlError, PadlErrorCode};
 use crate::resolution::{SCREEN_H, SCREEN_W};
 use nuts::LifecycleStatus;
 use paddle::{
-    graphics::Image, DisplayArea, ErrorMessage, Frame, LoadScheduler, LoadedData, LoadingDone,
+    DisplayArea, ErrorMessage, Frame, Image, LoadScheduler, LoadedData, LoadingDone,
     LoadingProgress, NutsCheck, TextBoard, UpdateWorld,
 };
 use wasm_bindgen::JsCast;

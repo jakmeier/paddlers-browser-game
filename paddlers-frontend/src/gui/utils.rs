@@ -92,15 +92,14 @@ pub fn draw_shape(
     fit_strat: FitStrategy,
     z: i16,
 ) {
-    let shape = sprites.shape_index_mut(i);
-    shape.set_z(z);
+    let shape = sprites.shape_index(i);
     let place = shape.bounding_box.fit_into_ex(&draw_area, fit_strat, true);
     let factor = (
         place.size.x / shape.bounding_box.size.x,
         place.size.y / shape.bounding_box.size.y,
     );
     let t = Transform::translate(place.pos) * Transform::scale(factor);
-    window.draw_triangles_ex(&shape.mesh, t);
+    window.draw_mesh_ex(&shape.mesh, t, z);
 }
 
 pub fn horizontal_flip() -> Transform {

@@ -2,17 +2,14 @@ use crate::resolution::TOWN_TILE_S;
 
 use super::*;
 use paddle::quicksilver_compat::*;
+use paddle::DisplayArea;
 use paddle::*;
-use paddle::{
-    quicksilver_compat::graphics::{Drawable, Mesh},
-    DisplayArea,
-};
 use std::f32::consts::PI;
 
 impl Town {
     pub fn render_background(
         &self,
-        mesh: &mut Mesh,
+        mesh: &mut AbstractMesh,
         sprites: &mut Sprites,
         unit_length: f32,
     ) -> PadlResult<()> {
@@ -25,7 +22,7 @@ impl Town {
                         let img = sprites.index(SpriteIndex::Simple(SingleSprite::Grass));
                         let bkg = Img(&img);
                         let rect = Rectangle::new((d * x as f32, d * y as f32), (d, d));
-                        rect.draw(mesh, bkg.into(), Transform::IDENTITY, Z_TEXTURE);
+                        rect.tessellate(mesh, bkg.into());
                     }
                     TileType::LANE => {
                         // Nothing cacheable for lane

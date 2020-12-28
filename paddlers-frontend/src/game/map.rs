@@ -9,7 +9,7 @@ use crate::net::authentication::keycloak_preferred_name;
 use map_position::*;
 use map_segment::MapSegment;
 use map_tesselation::*;
-use paddle::quicksilver_compat::{Col, Mesh};
+use paddle::quicksilver_compat::Col;
 use paddle::*;
 use specs::prelude::*;
 
@@ -28,7 +28,7 @@ pub struct GlobalMap<'a> {
 }
 
 pub struct GlobalMapPrivateState {
-    grid_mesh: Mesh,
+    grid_mesh: AbstractMesh,
     segments: Vec<MapSegment>,
     villages: Vec<VillageMetaInfo>,
     view_width: i32,
@@ -100,7 +100,7 @@ impl<'a> GlobalMap<'a> {
             x -= 1.0
         }
         let t = Transform::translate((x * self.shared.scaling, 0));
-        window.draw_triangles_ex(&self.private.grid_mesh, t);
+        window.draw_mesh_ex(&self.private.grid_mesh, t, Z_GRID);
     }
     fn draw_water(&mut self, window: &mut DisplayArea, area: &Rectangle) {
         let visible_frame = Rectangle::new(
@@ -111,7 +111,7 @@ impl<'a> GlobalMap<'a> {
         for segment in self.private.segments.iter_mut() {
             if segment.is_visible(visible_frame) {
                 segment.apply_scaling(self.shared.scaling);
-                window.draw_triangles_ex(&segment.water_mesh, t);
+                window.draw_mesh_ex(&segment.water_mesh, t, Z_RIVER);
             }
         }
     }
