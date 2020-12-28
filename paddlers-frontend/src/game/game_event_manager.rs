@@ -24,7 +24,7 @@ pub type VillageCoordinate = (i32, i32);
 
 /// Send a GameEvent to the game event manager (replaces endpoints that were copied everywhere before)
 pub fn game_event(ev: GameEvent) {
-    paddle::nuts::publish(ev);
+    paddle::nuts::send_to::<EventManager, _>(ev);
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -41,9 +41,9 @@ pub enum GameEvent {
 
 pub fn load_game_event_manager() {
     let event_manager_activity = nuts::new_domained_activity(EventManager, &Domain::Frame);
-    event_manager_activity.subscribe_domained(|_, domain, event: &GameEvent| {
+    event_manager_activity.private_domained_channel(|_, domain, event: GameEvent| {
         let game: &mut Game = domain.try_get_mut().expect("Forgot to insert game?");
-        game.try_handle_event(event.clone()).nuts_check(); // FIXME: Clone seems expensive
+        game.try_handle_event(event).nuts_check();
     });
 }
 

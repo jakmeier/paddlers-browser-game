@@ -1,7 +1,9 @@
-use crate::net::graphql::query_types::PlayerQueryResponse;
+use crate::{net::graphql::query_types::PlayerQueryResponse, prelude::UiView};
 use paddlers_shared_lib::api::shop::Price;
 use paddlers_shared_lib::game_mechanics::prophets::*;
 use paddlers_shared_lib::story::story_state::StoryState;
+
+use super::story::select_dialogue_scene;
 
 #[derive(Debug, Clone, Copy)]
 pub struct PlayerInfo {

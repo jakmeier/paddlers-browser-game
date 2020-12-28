@@ -104,12 +104,9 @@ impl Game {
         )?;
         game.load_attacking_hobos(game_data.attacking_hobos)?;
         game.load_player_info(game_data.player_info)?;
-        // Make sure all units are loaded properly before story triggers are added
+
         game.world.maintain();
         game.town_world_mut().maintain();
-        game.load_story_state()?;
-        game.update_temple()?;
-
         game.init_map();
 
         nuts::publish(NetMsg::Reports(game_data.reports));
@@ -117,6 +114,16 @@ impl Game {
         crate::net::start_sync();
 
         Ok(game)
+    }
+    /// To be called when game has just been started, after loading finished.
+    /// Some game initialization requires event manager to be active already, this should be guaranteed by this point.
+    pub fn post_load(&mut self) -> PadlResult<()> {
+        // Make sure all units are loaded properly before story triggers are added
+        self.world.maintain();
+        self.town_world_mut().maintain();
+        self.load_story_state()?;
+        self.update_temple()?;
+        Ok(())
     }
 
     pub fn main_update_loop(&mut self) -> PadlResult<()> {

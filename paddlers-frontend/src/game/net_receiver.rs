@@ -196,7 +196,7 @@ impl Game {
         self.world.insert(player_info.clone());
         self.town_world_mut().insert(DefaultShop::new(&player_info));
         self.town_world_mut().insert(player_info);
-        nuts::publish(Signal::PlayerInfoUpdated);
+        paddle::share(Signal::PlayerInfoUpdated);
         Ok(())
     }
     fn maybe_town_context_mut(

@@ -32,6 +32,9 @@ use crate::prelude::{PadlResult, TextDb};
 use paddle::*;
 use std::sync::mpsc::Receiver;
 
+/// Published once the game has been initialized
+pub struct PostInit;
+
 /// State that is used while loading all data over the network.
 /// It will automatically be removed when loading is done.
 pub(crate) struct LoadingFrame {
@@ -179,6 +182,7 @@ impl LoadingFrame {
                     viewer.set_view(view);
                 });
                 load_game_event_manager();
+                paddle::share(PostInit);
 
                 Ok(())
             }

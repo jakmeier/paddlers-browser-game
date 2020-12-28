@@ -1,5 +1,5 @@
 use super::*;
-use crate::game::Game;
+use crate::game::{game_event_manager::game_event, Game};
 use crate::gui::{
     decoration::draw_leaf_border, gui_components::*, shapes::PadlShapeIndex, sprites::*,
     ui_state::Now, utils::colors::LIGHT_BLUE, utils::*, z::*,
@@ -10,9 +10,9 @@ use crate::{
     gui::menu::{LEAVES_BORDER_H, LEAVES_BORDER_W},
 };
 use chrono::NaiveDateTime;
-use paddle::{graphics::AbstractMesh, quicksilver_compat::Col};
 use paddle::Frame;
 use paddle::*;
+use paddle::{graphics::AbstractMesh, quicksilver_compat::Col};
 use specs::WorldExt;
 
 pub(crate) struct DialogueFrame {
@@ -183,11 +183,11 @@ impl DialogueFrame {
                     }
                     if let Some(v) = a.next_view {
                         let evt = GameEvent::SwitchToView(v);
-                        nuts::publish(evt);
+                        game_event(evt);
                     }
                     if a.actions.len() > 0 {
                         let evt = GameEvent::StoryActions(a.actions);
-                        nuts::publish(evt);
+                        game_event(evt);
                     }
                 }
                 _ => {

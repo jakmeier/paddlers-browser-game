@@ -130,7 +130,7 @@ impl Town {
                         resources.spend(&bt.price());
                         self.insert_new_building(&entities, &lazy, pos, bt);
                         let signal = Signal::BuildingBuilt(bt);
-                        nuts::publish(signal);
+                        paddle::share(signal);
                     } else {
                         ui_state.set_grabbed_item(grabbed);
                     }
