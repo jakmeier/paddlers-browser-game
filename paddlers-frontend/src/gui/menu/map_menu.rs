@@ -1,3 +1,4 @@
+use crate::game::Game;
 use crate::gui::{
     gui_components::{ResourcesComponent, TableTextProvider},
     input::left_click::MapLeftClickSystem,
@@ -6,7 +7,6 @@ use crate::gui::{
     ui_state::UiState,
 };
 use crate::prelude::*;
-use crate::{game::Game, gui::input::MouseButton};
 use paddle::Frame;
 use specs::prelude::*;
 
@@ -30,7 +30,7 @@ impl MapMenuFrame<'_, '_> {
         })
     }
     fn left_click(&mut self, state: &mut Game, mouse_pos: Vector) {
-        let ms = MouseState(mouse_pos, Some(MouseButton::Left));
+        let ms = MouseState(mouse_pos);
         state.world.insert(ms);
         self.left_click_dispatcher.dispatch(&state.world);
     }

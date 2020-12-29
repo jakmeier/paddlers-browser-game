@@ -13,14 +13,8 @@ pub mod left_click;
 pub use self::left_click::*;
 use crate::gui::ui_state::UiState;
 
-#[derive(Clone, Copy, Debug)]
-pub enum MouseButton {
-    Left,
-    Right,
-}
-
 #[derive(Default, Clone, Copy)]
-pub struct MouseState(pub Vector, pub Option<MouseButton>);
+pub struct MouseState(pub Vector);
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum UiView {

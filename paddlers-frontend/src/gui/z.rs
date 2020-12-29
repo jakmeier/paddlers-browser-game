@@ -1,8 +1,7 @@
-
 /*
  * Browser z-values (i32)
  */
- // div-rs class sets z-index to 1
+// div-rs class sets z-index to 1
 pub const MENU_BG_Z_LAYER: i32 = 2;
 pub const MENU_Z_LAYER: i32 = 3;
 

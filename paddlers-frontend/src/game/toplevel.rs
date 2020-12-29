@@ -19,7 +19,7 @@ pub enum Signal {
 impl Game {
     pub fn register(self) {
         let fh = paddle::register_frame(GameActivity, self, (0, 0));
-        fh.listen(|_, game, msg: &crate::init::loading::PostInit| {
+        fh.listen(|_, game, _msg: &crate::init::loading::PostInit| {
             game.post_load().nuts_check();
         });
     }

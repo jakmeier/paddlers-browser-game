@@ -1,6 +1,4 @@
-use crate::game::town::DefaultShop;
-use crate::game::town_resources::TownResources;
-use crate::game::Game;
+use crate::game::{toplevel::Signal, town::DefaultShop, town_resources::TownResources, Game};
 use crate::gui::{
     gui_components::{ResourcesComponent, TableTextProvider},
     input::{left_click::TownMenuLeftClickSystem, MouseState},
@@ -9,7 +7,6 @@ use crate::gui::{
     utils::*,
 };
 use crate::prelude::*;
-use crate::{game::toplevel::Signal, gui::input::MouseButton};
 use chrono::NaiveDateTime;
 use paddle::*;
 use specs::prelude::*;
@@ -150,7 +147,7 @@ impl TownMenuFrame<'_, '_> {
                 }
             }
         }
-        let ms = MouseState(pos, Some(MouseButton::Left));
+        let ms = MouseState(pos);
         state.town_world_mut().insert(ms);
         self.left_click_dispatcher.dispatch(state.town_world());
     }

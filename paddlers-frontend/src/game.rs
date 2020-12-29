@@ -22,11 +22,14 @@ pub(crate) mod town_resources;
 pub(crate) mod units;
 pub(crate) mod visits;
 
-use crate::game::{components::*, player_info::PlayerInfo, town::TownContextManager};
 use crate::init::loading::GameLoadingData;
 use crate::net::NetMsg;
 use crate::prelude::*;
 use crate::{game::net_receiver::*, net::game_master_api::UpdateRestApi};
+use crate::{
+    game::{components::*, player_info::PlayerInfo, town::TownContextManager},
+    resolution::{SCREEN_H, SCREEN_W},
+};
 use crate::{
     gui::{input, sprites::*, ui_state::*},
     resolution::{MAIN_AREA_H, MAIN_AREA_W},
@@ -132,12 +135,9 @@ impl Game {
         }
         self.update_time_reference();
         nuts::publish(UpdateRestApi);
-        // TODO: remove dead units
-        // if self.total_updates % 300 == 15 {
-        //     self.reaper(&Rectangle::new_sized(
-        //         window.project() * window.browser_region().size(),
-        //     ));
-        // }
+        if self.total_updates % 300 == 15 {
+            self.reaper();
+        }
         self.world.maintain();
         Ok(())
     }
@@ -167,11 +167,12 @@ impl Game {
         }
     }
     /// Removes entities outside the map
-    pub fn reaper(&mut self, map: &Rectangle) {
+    pub fn reaper(&mut self) {
+        let map = Rectangle::new_sized((SCREEN_W, SCREEN_H));
         let p = self.town_world().read_storage::<Position>();
         let mut dead = vec![];
         for (entity, position) in (&self.town_world().entities(), &p).join() {
-            if !position.area.overlaps_rectangle(map) {
+            if !position.area.overlaps_rectangle(&map) {
                 dead.push(entity);
             }
         }

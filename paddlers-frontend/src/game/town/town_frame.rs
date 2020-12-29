@@ -10,7 +10,7 @@ use crate::{
         story::entity_trigger::EntityTriggerSystem, town::Town, units::worker_system::WorkerSystem,
         units::workers::Worker, Game,
     },
-    gui::input::{left_click::TownLeftClickSystem, MouseButton, MouseState},
+    gui::input::{left_click::TownLeftClickSystem, MouseState},
     prelude::*,
     resolution::TOWN_TILE_S,
 };
@@ -130,7 +130,7 @@ impl<'a, 'b> TownFrame<'a, 'b> {
         }
     }
     fn left_click(&mut self, state: &mut Game, pos: Vector) {
-        let ms = MouseState(pos, Some(MouseButton::Left));
+        let ms = MouseState(pos);
         state.town_world_mut().insert(ms);
         self.left_click_dispatcher.dispatch(state.town_world());
     }

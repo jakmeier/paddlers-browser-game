@@ -60,7 +60,7 @@ impl<'a> System<'a> for TownLeftClickSystem {
         ): Self::SystemData,
     ) {
         let active_entity = ui_state.selected_entity;
-        let MouseState(mouse_pos, _button) = *mouse_state;
+        let MouseState(mouse_pos) = *mouse_state;
 
         let maybe_job = town.left_click(
             mouse_pos,
@@ -146,7 +146,7 @@ impl<'a> System<'a> for TownMenuLeftClickSystem {
             nests,
         ): Self::SystemData,
     ) {
-        let MouseState(mouse_pos, _button) = *mouse_state;
+        let MouseState(mouse_pos) = *mouse_state;
 
         if let Some(entity) = (*ui_state).selected_entity {
             if let Some(ui_menu) = ui_menus.get_mut(entity) {
@@ -186,7 +186,7 @@ impl<'a> System<'a> for MapLeftClickSystem {
     );
 
     fn run(&mut self, (mouse_state, ui_state, mut ui_menus): Self::SystemData) {
-        let MouseState(mouse_pos, _button) = *mouse_state;
+        let MouseState(mouse_pos) = *mouse_state;
         if let Some(entity) = (*ui_state).selected_entity {
             if let Some(ui_menu) = ui_menus.get_mut(entity) {
                 let click_output = ui_menu.ui.click(mouse_pos);

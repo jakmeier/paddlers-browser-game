@@ -102,7 +102,7 @@ impl RestApiState {
     fn http_overwrite_tasks(&mut self, msg: TaskList) {
         let uri = self.game_master_url.clone() + "/worker/overwriteTasks";
         let future = async move {
-            ajax::fetch_json("POST", &uri, &msg).await?;
+            ajax::fetch_empty_response("POST", &uri, &msg).await?;
             crate::net::request_worker_tasks_update(msg.worker_id.num());
             Ok(())
         };
