@@ -1,3 +1,14 @@
+
+/*
+ * Browser z-values (i32)
+ */
+ // div-rs class sets z-index to 1
+pub const MENU_BG_Z_LAYER: i32 = 2;
+pub const MENU_Z_LAYER: i32 = 3;
+
+/*
+ * WebGL z-values (i16)
+ */
 // Background [0,99]
 pub const Z_TEXTURE: i16 = 0;
 pub const Z_GRID: i16 = 10;

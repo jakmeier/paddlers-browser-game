@@ -1,7 +1,10 @@
 use super::*;
-use crate::gui::{gui_components::*, input::UiView, sprites::*, ui_state::Now, utils::*};
 use crate::net::NetMsg;
 use crate::prelude::*;
+use crate::{
+    game::game_event_manager::game_event,
+    gui::{gui_components::*, input::UiView, sprites::*, ui_state::Now, utils::*},
+};
 use crate::{game::toplevel::Signal, gui::decoration::*};
 use paddle::{DisplayArea, NutsCheck};
 use specs::prelude::*;
@@ -85,7 +88,7 @@ impl MenuBackgroundFrame {
             _ => Ok(None),
         };
         if let Some(event) = state.check(result).flatten() {
-            nuts::publish(event);
+            game_event(event);
         }
     }
 }

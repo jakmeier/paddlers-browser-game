@@ -192,7 +192,7 @@ impl<'a> System<'a> for MapLeftClickSystem {
                 let click_output = ui_menu.ui.click(mouse_pos);
                 match click_output {
                     Some((ClickOutput::Event(e), _)) => {
-                        nuts::publish(e);
+                        crate::game::game_event_manager::game_event(e);
                     }
                     Some(_) => nuts::publish(PadlError::dev_err(PadlErrorCode::DevMsg(
                         "Unexpectedly clicked something",

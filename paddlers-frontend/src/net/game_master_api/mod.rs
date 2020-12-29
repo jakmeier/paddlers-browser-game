@@ -52,7 +52,7 @@ impl RestApiState {
         building_type: BuildingType,
         village: VillageKey,
     ) {
-        nuts::publish(HttpPlaceBuilding {
+        nuts::send_to::<RestApiState, _>(HttpPlaceBuilding {
             pos,
             building_type,
             village,
@@ -160,7 +160,7 @@ impl RestApiState {
     }
 
     fn http_update_story_state(&mut self, msg: StoryStateTransition) {
-        let future = ajax::fetch_json(
+        let future = ajax::fetch_empty_response(
             "POST",
             &format!("{}/story/transition", &self.game_master_url),
             &msg,

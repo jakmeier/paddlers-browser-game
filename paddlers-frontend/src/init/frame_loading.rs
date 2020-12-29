@@ -1,4 +1,3 @@
-use crate::game::town::TownFrame;
 use crate::game::visits::{
     attacks::VisitorFrame, reports::ReportFrame, visitor_menu::VisitorMenuFrame,
 };
@@ -13,6 +12,7 @@ use crate::{
     game::map::MapFrame,
     resolution::{OUTER_MENU_AREA_X, OUTER_MENU_AREA_Y},
 };
+use crate::{game::town::TownFrame, gui::z::*};
 use paddle::ViewManager;
 
 pub(crate) fn load_viewer(view: UiView) -> ViewManager<UiView> {
@@ -32,6 +32,7 @@ pub(crate) fn load_viewer(view: UiView) -> ViewManager<UiView> {
     );
     town_menu_handle.listen(TownMenuFrame::new_story_state);
     town_menu_handle.listen(TownMenuFrame::signal);
+    town_menu_handle.set_z(MENU_Z_LAYER);
 
     /* Menu background and buttons */
     let menu = MenuBackgroundFrame::new();
@@ -47,6 +48,7 @@ pub(crate) fn load_viewer(view: UiView) -> ViewManager<UiView> {
         ],
         (OUTER_MENU_AREA_X, OUTER_MENU_AREA_Y),
     );
+    menu_bg_handler.set_z(MENU_BG_Z_LAYER);
     menu_bg_handler.listen(MenuBackgroundFrame::network_message);
     menu_bg_handler.listen(MenuBackgroundFrame::signal);
 
@@ -56,16 +58,17 @@ pub(crate) fn load_viewer(view: UiView) -> ViewManager<UiView> {
     viewer.add_frame(menu, &[UiView::Map], (0, 0));
 
     let menu = MapMenuFrame::new().expect("Map menu loading");
-    viewer.add_frame(
+    let menu_handler = viewer.add_frame(
         menu,
         &[UiView::Map],
         (INNER_MENU_AREA_X as u32, INNER_MENU_AREA_Y as u32),
     );
+    menu_handler.set_z(MENU_Z_LAYER);
 
     /* Visitors */
 
     let menu = VisitorMenuFrame::new();
-    viewer.add_frame(
+    let menu_handler = viewer.add_frame(
         menu,
         &[
             UiView::Visitors(VisitorViewTab::IncomingAttacks),
@@ -73,6 +76,7 @@ pub(crate) fn load_viewer(view: UiView) -> ViewManager<UiView> {
         ],
         (INNER_MENU_AREA_X as u32, INNER_MENU_AREA_Y as u32),
     );
+    menu_handler.set_z(MENU_Z_LAYER);
 
     let menu = VisitorFrame::new(0.0, 0.0).expect("Attacks loading");
     viewer.add_frame(

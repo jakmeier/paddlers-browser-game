@@ -1,6 +1,3 @@
-use crate::game::{
-    game_event_manager::load_game_event_manager, net_receiver::loading_update_net, toplevel::Signal,
-};
 use crate::gui::input::UiView;
 use crate::net::graphql::{
     query_types::{
@@ -10,6 +7,13 @@ use crate::net::graphql::{
 };
 use crate::prelude::{PadlError, PadlErrorCode};
 use crate::resolution::{SCREEN_H, SCREEN_W};
+use crate::{
+    game::{
+        game_event_manager::load_game_event_manager, net_receiver::loading_update_net,
+        toplevel::Signal,
+    },
+    resolution::OUTER_MENU_AREA_W,
+};
 use nuts::LifecycleStatus;
 use paddle::{
     DisplayArea, ErrorMessage, Frame, Image, LoadScheduler, LoadedData, LoadingDone,
@@ -90,6 +94,10 @@ impl LoadingFrame {
             .with_resolution((SCREEN_W, SCREEN_H))
             .with_canvas(canvas)
             .with_texture_config(texture_config)
+            .with_text_board(Rectangle::new(
+                (OUTER_MENU_AREA_W, 20),
+                (OUTER_MENU_AREA_W, SCREEN_H - 40),
+            ))
             .with_background_color(DARK_GREEN);
         paddle::init(config).expect("Failed creating window");
 
