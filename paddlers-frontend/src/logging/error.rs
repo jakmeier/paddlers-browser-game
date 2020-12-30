@@ -91,6 +91,7 @@ pub enum PadlErrorCode {
     UrlParseError(String),
     BrowserError(String),
     DialogueEmpty,
+    #[allow(dead_code)]
     AuthorizationRequired,
     DataForInactiveTownReceived(&'static str),
 }

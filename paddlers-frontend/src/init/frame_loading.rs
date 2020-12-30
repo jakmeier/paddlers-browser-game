@@ -88,7 +88,7 @@ pub(crate) fn load_viewer(view: UiView) -> ViewManager<UiView> {
     let frame = ReportFrame::new().expect("Report frame loading");
     let report_handler =
         viewer.add_frame(frame, &[UiView::Visitors(VisitorViewTab::Letters)], (0, 0));
-    report_handler.listen(ReportFrame::network_message);
+    ReportFrame::init_listeners(report_handler);
 
     /* Leaderboard */
 

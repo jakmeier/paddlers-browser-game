@@ -6,7 +6,7 @@ use paddle::quicksilver_compat::*;
 use paddle::*;
 use paddle::{quicksilver_compat::geom::Triangle, utc_now};
 use paddle::{FitStrategy, NutsCheck};
-use std::f32::consts::FRAC_1_SQRT_2;
+use std::f32::consts::SQRT_2;
 
 #[derive(Clone, Debug)]
 /// A UI element is an individual area for the player to interacts with.
@@ -164,8 +164,11 @@ impl InteractiveTableArea for UiBox {
                         Transform::IDENTITY,
                         z_button_decoration,
                     );
-                    let d = radius * FRAC_1_SQRT_2;
+                    let d = radius * SQRT_2;
                     let text_area = Rectangle::new_sized((d, d)).with_center(center);
+                    // FIXME: This translation is necessary because somehow CSS centering doesn't quite work the way I thought.
+                    // Seems to be only with manjari font but needs investigation.
+                    let text_area = text_area.translate((0.0,5.0));
                     tp.text_pool
                         .allocate()
                         .write(
