@@ -13,8 +13,6 @@ static SENT_PLAYER_CREATION: AtomicBool = AtomicBool::new(false);
 pub struct RestApiState {
     pub game_master_url: String,
 }
-pub struct UpdateRestApi;
-
 pub struct HttpCreatePlayer;
 pub struct HttpDeleteBuilding {
     pub idx: (usize, usize),

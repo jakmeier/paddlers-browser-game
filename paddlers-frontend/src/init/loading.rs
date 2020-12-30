@@ -53,7 +53,6 @@ pub struct GameLoadingData {
     pub hobos_response: HobosQueryResponse,
     pub attacking_hobos: AttacksResponse,
     pub village_info: VolatileVillageInfoResponse,
-    pub reports: ReportsResponse,
 }
 
 impl LoadingFrame {
@@ -120,7 +119,7 @@ impl LoadingFrame {
             .with_manually_reported::<HobosQueryResponse>("Summon non-working Paddlers")
             .with_manually_reported::<AttacksResponse>("Summon visitors")
             .with_manually_reported::<VolatileVillageInfoResponse>("Gather village news")
-            .with_manually_reported::<ReportsResponse>("Gather village news");
+            .with_manually_reported::<ReportsResponse>("Gather letters from mailbox");
 
         load_manager.attach_to_domain();
 
@@ -168,8 +167,6 @@ impl LoadingFrame {
 
         let game_data = GameLoadingData::try_from_loaded_data(&mut loaded_data)?;
 
-        let leaderboard_data = *loaded_data.extract::<NetMsg>()?;
-
         match Game::load_game(sprites, catalog, game_data, net_chan) {
             Err(e) => {
                 TextBoard::display_error_message(":(\nLoading game failed".to_owned()).nuts_check(); // TODO: multi-lang errors
@@ -179,8 +176,13 @@ impl LoadingFrame {
                 game.register();
                 let view = UiView::Town;
                 let viewer = super::frame_loading::load_viewer(view);
+
+                let leaderboard_data = *loaded_data.extract::<NetMsg>()?;
                 paddle::share(leaderboard_data);
                 paddle::share_foreground(Signal::ResourcesUpdated);
+
+                let reports = *loaded_data.extract::<ReportsResponse>()?;
+                paddle::share(NetMsg::Reports(reports));
 
                 let viewer_activity = nuts::new_domained_activity(viewer, &Domain::Frame);
                 viewer_activity.subscribe_domained(|viewer, domain, _: &UpdateWorld| {
@@ -190,6 +192,7 @@ impl LoadingFrame {
                     viewer.set_view(view);
                 });
                 load_game_event_manager();
+                crate::net::start_sync();
                 paddle::share(PostInit);
 
                 Ok(())
@@ -264,7 +267,6 @@ impl GameLoadingData {
             hobos_response: *loaded_data.extract()?,
             attacking_hobos: *loaded_data.extract()?,
             village_info: *loaded_data.extract()?,
-            reports: *loaded_data.extract()?,
         })
     }
 }

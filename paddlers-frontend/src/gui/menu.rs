@@ -40,8 +40,6 @@ pub fn menu_selected_entity_spacing(area: &Rectangle) -> (Rectangle, Rectangle) 
     )
     .padded(20.0);
 
-    // self.draw_entity_details_img(window, e, &img_bg_area)?;
-    // self.draw_entity_details_table(window, e, &text_area, text_provider, hover_res_comp)?;
     (img_bg_area, text_area)
 }
 

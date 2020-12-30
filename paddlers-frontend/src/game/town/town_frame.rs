@@ -177,12 +177,12 @@ impl<'a, 'b> TownFrame<'a, 'b> {
         }
     }
     fn mouse_move(&mut self, state: &mut Game) {
-        let mut ui_state = state.world.write_resource::<UiState>();
-        let position = state.world.read_storage::<Position>();
-        let entities = state.world.entities();
+        let mut ui_state = state.town_world().write_resource::<UiState>();
         (*ui_state).hovered_entity = None;
-        for (e, pos) in (&entities, &position).join() {
-            if let Some(mouse_pos) = self.mouse.pos() {
+        if let Some(mouse_pos) = self.mouse.pos() {
+            let position = state.town_world().read_storage::<Position>();
+            let entities = state.town_world().entities();
+            for (e, pos) in (&entities, &position).join() {
                 if mouse_pos.overlaps_rectangle(&pos.area) {
                     (*ui_state).hovered_entity = Some(e);
                     break;

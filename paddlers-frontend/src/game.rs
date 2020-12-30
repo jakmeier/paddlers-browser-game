@@ -22,10 +22,10 @@ pub(crate) mod town_resources;
 pub(crate) mod units;
 pub(crate) mod visits;
 
+use crate::game::net_receiver::*;
 use crate::init::loading::GameLoadingData;
 use crate::net::NetMsg;
 use crate::prelude::*;
-use crate::{game::net_receiver::*, net::game_master_api::UpdateRestApi};
 use crate::{
     game::{components::*, player_info::PlayerInfo, town::TownContextManager},
     resolution::{SCREEN_H, SCREEN_W},
@@ -112,10 +112,6 @@ impl Game {
         game.town_world_mut().maintain();
         game.init_map();
 
-        nuts::publish(NetMsg::Reports(game_data.reports));
-
-        crate::net::start_sync();
-
         Ok(game)
     }
     /// To be called when game has just been started, after loading finished.
@@ -134,7 +130,6 @@ impl Game {
             self.map_mut().update();
         }
         self.update_time_reference();
-        nuts::publish(UpdateRestApi);
         if self.total_updates % 300 == 15 {
             self.reaper();
         }
