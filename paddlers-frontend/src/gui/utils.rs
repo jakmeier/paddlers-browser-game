@@ -82,7 +82,12 @@ pub fn draw_image(
     let img = sprites.index(i);
     let unfitted_area = Rectangle::new(max_area.pos, img.natural_size());
     let area = unfitted_area.fit_into_ex(max_area, fit_strat, false);
-    window.draw_ex(&area, Background::ImgView(&img, text_transform), Transform::IDENTITY, z);
+    window.draw_ex(
+        &area,
+        Background::ImgView(&img, text_transform),
+        Transform::IDENTITY,
+        z,
+    );
 }
 pub fn draw_shape(
     sprites: &mut Sprites,

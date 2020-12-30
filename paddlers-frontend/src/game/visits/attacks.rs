@@ -8,20 +8,23 @@ use crate::{
     resolution::{MAIN_AREA_H, MAIN_AREA_W},
 };
 use chrono::NaiveDateTime;
+use mogwai::prelude::*;
 use paddle::*;
 use paddle::{quicksilver_compat::Col, NutsCheck};
 use paddlers_shared_lib::api::attacks::*;
+use specs::prelude::Component;
 use specs::prelude::*;
 use wasm_bindgen::JsCast;
-use web_sys::{HtmlElement, Node};
+use web_sys::HtmlElement;
 
-#[derive(Component, Debug)]
+#[derive(Component)]
 #[storage(HashMapStorage)]
 pub struct Attack {
     pub arrival: NaiveDateTime,
     size: u32,
     description: String,
     dom_node: Option<TextNode>,
+    view: Option<Vec<View<HtmlElement>>>,
 }
 
 impl Game {
@@ -49,6 +52,7 @@ impl Attack {
             dom_node: None,
             description,
             size,
+            view: None,
         }
     }
     fn arrival(&self) -> String {
@@ -58,14 +62,6 @@ impl Attack {
         } else {
             "Arrived".to_owned()
         }
-    }
-    fn to_html(&self) -> String {
-        format!(
-            "<div>{}</div><div>{}</div><div>{}</div>",
-            self.description,
-            self.size,
-            self.arrival()
-        )
     }
     fn update_dom(&mut self) -> PadlResult<()> {
         if self.dom_node.is_some() {
@@ -77,10 +73,11 @@ impl Attack {
         PadlErrorCode::InvalidDom("Not initialized").dev()
     }
     // TODO: remove after 60s
-    fn delete(self) {
+    fn delete(mut self) {
         if let Some(node) = self.dom_node {
             node.delete().unwrap();
         }
+        self.view.take();
     }
 }
 
@@ -97,7 +94,7 @@ impl<'a, 'b> VisitorFrame<'a, 'b> {
             y as u32,
             Self::WIDTH / 2,
             Self::HEIGHT,
-            r#"<div class="attack-table"></div>"#,
+            r#"<div class="attack-table"><h2>Incoming Visitors</h2><div>ORIGIN</div><div>PADDLERS</div><div>ARRIVAL</div></div>"#,
         )
         .expect("Pane not set up properly");
         let table = pane
@@ -108,25 +105,27 @@ impl<'a, 'b> VisitorFrame<'a, 'b> {
             .with(UpdateAttackViewSystem::new(), "update_atk", &[])
             .build();
 
-        let mut attack = VisitorFrame {
+        let attack = VisitorFrame {
             incoming_attacks_table: table.dyn_into().unwrap(),
             update_dispatcher,
             pane,
         };
-        attack.add_row("<h2>Incoming Visitors</h2>")?;
         attack.pane.hide()?;
-
         Ok(attack)
     }
-    pub fn add_row(&mut self, html: &str) -> PadlResult<Node> {
-        self.incoming_attacks_table
-            .append_with_str_1(&html)
-            .map_err(|_e| PadlError::dev_err(PadlErrorCode::InvalidDom("Inserting HTML failed")))?;
-        self.incoming_attacks_table
-            .last_child()
-            .ok_or(PadlError::dev_err(PadlErrorCode::InvalidDom(
-                "Child lookup failed",
-            )))
+    #[allow(unused_braces)]
+    pub fn add_row(&mut self, a: &Attack) -> Vec<View<HtmlElement>> {
+        let view = view! (
+            <div>{&a.description}</div>
+            <div>{a.size.to_string()}</div>
+        );
+
+        for node in &view {
+            self.incoming_attacks_table
+                .append_child(&node.dom_ref())
+                .unwrap();
+        }
+        view
     }
 }
 
@@ -140,21 +139,14 @@ impl<'a, 'b> Frame for VisitorFrame<'a, 'b> {
         let mut attack = state.world.write_storage::<Attack>();
         for a in (&mut attack).join() {
             if a.dom_node.is_none() {
-                let html = a.to_html();
-                match self.add_row(&html) {
-                    Ok(node) => {
-                        if let Some(arrival_node) = node.last_child() {
-                            let text_node =
-                                TextNode::new(arrival_node.dyn_into().unwrap(), a.arrival());
-                            a.dom_node = Some(text_node);
-                        } else {
-                            nuts::publish(PadlError::dev_err(PadlErrorCode::InvalidDom(
-                                "Child lookup failed",
-                            )));
-                        }
-                    }
-                    Err(e) => nuts::publish(e),
-                }
+                let view = self.add_row(&a);
+                let arrival_node = div::doc().unwrap().create_element("div").unwrap();
+                self.incoming_attacks_table
+                    .append_child(&arrival_node)
+                    .unwrap();
+                let text_node = TextNode::new(arrival_node.dyn_into().unwrap(), a.arrival());
+                a.dom_node = Some(text_node);
+                a.view = Some(view);
             }
         }
     }

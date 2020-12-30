@@ -1,8 +1,11 @@
-use crate::gui::{
-    gui_components::*, input::UiView, shapes::PadlShapeIndex, sprites::*, ui_state::Now, utils::*,
-    z::Z_UI_MENU,
-};
 use crate::prelude::*;
+use crate::{
+    game::game_event_manager::game_event,
+    gui::{
+        gui_components::*, input::UiView, shapes::PadlShapeIndex, sprites::*, ui_state::Now,
+        utils::*, z::Z_UI_MENU,
+    },
+};
 use paddle::{DisplayArea, PointerEvent, PointerEventType, PointerTracker};
 use specs::WorldExt;
 
@@ -40,7 +43,7 @@ impl VisitorMenuFrame {
             _ => Ok(None),
         };
         if let Some(event) = state.check(result).flatten() {
-            nuts::publish(event);
+            game_event(event);
         }
     }
 }

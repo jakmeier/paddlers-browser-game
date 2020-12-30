@@ -2,7 +2,6 @@ use paddle::quicksilver_compat::*;
 use specs::prelude::*;
 
 use super::{task_factory::NewTaskDescriptor, tiling};
-use crate::game::toplevel::Signal;
 use crate::game::{
     components::*,
     movement::*,
@@ -11,6 +10,7 @@ use crate::game::{
     town_resources::TownResources,
     units::workers::*,
 };
+use crate::game::{game_event_manager::game_event, toplevel::Signal};
 use crate::gui::gui_components::{ClickOutput, Condition, InteractiveTableArea};
 use crate::gui::input::{Clickable, Grabbable};
 use crate::gui::ui_state::*;
@@ -81,7 +81,7 @@ impl Town {
                 // These events COULD be handled here since we have access to most of the game state here
                 // However, if an Evnet is modeled as a GameEvent, then the logic to handle it belongs
                 // into the game event manger and not here.
-                nuts::publish(e);
+                game_event(e);
             }
             Some(_) => nuts::publish(PadlError::dev_err(PadlErrorCode::DevMsg(
                 "Unexpectedly clicked something",

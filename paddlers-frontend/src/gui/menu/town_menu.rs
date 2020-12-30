@@ -1,4 +1,7 @@
-use crate::game::{toplevel::Signal, town::DefaultShop, town_resources::TownResources, Game};
+use crate::game::{
+    game_event_manager::EventManager, toplevel::Signal, town::DefaultShop,
+    town_resources::TownResources, Game,
+};
 use crate::gui::{
     gui_components::{ResourcesComponent, TableTextProvider},
     input::{left_click::TownMenuLeftClickSystem, MouseState},
@@ -136,7 +139,7 @@ impl TownMenuFrame<'_, '_> {
             if let Some((click_output, _condition)) = self.foreign_town_menu.click(pos) {
                 match click_output {
                     ClickOutput::Event(evt) => {
-                        nuts::publish(evt);
+                        nuts::send_to::<EventManager, _>(evt);
                     }
                     _ => {
                         nuts::publish(ErrorMessage::technical(

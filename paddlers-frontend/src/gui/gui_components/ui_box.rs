@@ -168,7 +168,7 @@ impl InteractiveTableArea for UiBox {
                     let text_area = Rectangle::new_sized((d, d)).with_center(center);
                     // FIXME: This translation is necessary because somehow CSS centering doesn't quite work the way I thought.
                     // Seems to be only with manjari font but needs investigation.
-                    let text_area = text_area.translate((0.0,5.0));
+                    let text_area = text_area.translate((0.0, 5.0));
                     tp.text_pool
                         .allocate()
                         .write(

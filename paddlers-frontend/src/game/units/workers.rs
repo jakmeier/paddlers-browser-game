@@ -161,7 +161,7 @@ pub fn move_worker_out_of_building<'a>(
     let http_msg = worker.go_idle(tile);
     match http_msg {
         Ok(task_list) => {
-            nuts::publish(task_list);
+            nuts::send_to::<RestApiState, _>(task_list);
         }
         Err(e) => {
             println!("Failure on moving out of building: {}", e);
