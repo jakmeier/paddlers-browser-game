@@ -96,7 +96,7 @@ impl LoadingFrame {
             .with_texture_config(texture_config)
             .with_text_board(Rectangle::new(
                 (OUTER_MENU_AREA_W, 20),
-                (OUTER_MENU_AREA_W, SCREEN_H - 40),
+                (SCREEN_W - (2 * OUTER_MENU_AREA_W), SCREEN_H - 40),
             ))
             .with_background_color(DARK_GREEN);
         paddle::init(config).expect("Failed creating window");

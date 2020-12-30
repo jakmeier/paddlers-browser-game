@@ -125,7 +125,7 @@ impl<'a> GlobalMap<'a> {
             let (x, y) = (x - 1, y - 1);
             let sprite_area = Rectangle::new(
                 (
-                    x as f32 * self.shared.scaling,
+                    (x as f32 + self.shared.x_offset) * self.shared.scaling,
                     y as f32 * self.shared.scaling,
                 ),
                 (self.shared.scaling, self.shared.scaling),
@@ -137,7 +137,7 @@ impl<'a> GlobalMap<'a> {
                 SpriteIndex::Simple(SingleSprite::Shack),
                 Z_BUILDINGS,
                 FitStrategy::Center,
-                self.view_transform(),
+                Transform::IDENTITY,
             );
         }
     }
@@ -152,8 +152,11 @@ impl<'a> GlobalMap<'a> {
         let ry = view_size.y / h as f32;
         ry
     }
+    fn view_offset(&self) -> Vector {
+        Vector::new(self.shared.x_offset * self.shared.scaling, 0)
+    }
     fn view_transform(&self) -> Transform {
-        Transform::translate((self.shared.x_offset * self.shared.scaling, 0))
+        Transform::translate(self.view_offset())
     }
 
     #[cfg(feature = "dev_view")]
