@@ -21,6 +21,7 @@ use paddle::{
     FitStrategy,
 };
 
+use paddlers_shared_lib::story::story_state::StoryState;
 use specs::prelude::*;
 use std::ops::Deref;
 
@@ -125,6 +126,9 @@ impl<'a, 'b> TownFrame<'a, 'b> {
         match msg {
             Signal::PlayerInfoUpdated => {
                 state.update_temple().nuts_check();
+            }
+            Signal::BuildingBuilt(BuildingType::Temple) => {
+                state.load_story_triggers(&StoryState::TempleBuilt).nuts_check();
             }
             _ => {}
         }

@@ -5,6 +5,7 @@ use super::{task_factory::NewTaskDescriptor, tiling};
 use crate::game::{
     components::*,
     movement::*,
+    player_info::PlayerInfo,
     town::nests::Nest,
     town::{DefaultShop, Town},
     town_resources::TownResources,
@@ -34,15 +35,17 @@ impl Town {
         mut nests: WriteStorage<'a, Nest>,
         lazy: Read<'a, LazyUpdate>,
         resources: &TownResources,
+        player_info: &PlayerInfo,
     ) {
         let click_output = ui_menu.ui.click(mouse_pos);
         if let Some((_, Some(condition))) = &click_output {
-            let err = check_condition(condition, resources);
+            let err = check_condition(condition, resources, player_info);
             if let Err(e) = err {
                 nuts::publish(e);
                 return;
             }
         }
+        // condition fulfilled
         match click_output {
             Some((ClickOutput::Ability(ability), _)) => {
                 ui_state.set_grabbed_item(Grabbable::Ability(ability));
@@ -94,6 +97,7 @@ impl Town {
         mut ui_state: WriteExpect<'a, UiState>,
         shop: ReadExpect<'a, DefaultShop>,
         resources: WriteExpect<'a, TownResources>,
+        player_info: ReadExpect<'a, PlayerInfo>,
     ) -> PadlResult<()> {
         let maybe_grab = shop.click(mouse_pos);
         match maybe_grab {
@@ -102,7 +106,7 @@ impl Town {
                 ui_state.set_grabbed_item(g);
             }
             Some((g, Some(condition))) => {
-                check_condition(&condition, &*resources)?;
+                check_condition(&condition, &*resources, &player_info)?;
                 ui_state.set_grabbed_item(g);
             }
         }
@@ -176,13 +180,24 @@ impl Town {
     }
 }
 
-pub fn check_condition(condition: &Condition, resources: &TownResources) -> PadlResult<()> {
+pub fn check_condition(
+    condition: &Condition,
+    resources: &TownResources,
+    player_info: &PlayerInfo,
+) -> PadlResult<()> {
     match condition {
         Condition::HasResources(price) => {
-            if resources.can_afford(&price) {
+            if resources.can_afford(price) {
                 Ok(())
             } else {
                 PadlErrorCode::NotEnoughResources.usr()
+            }
+        }
+        Condition::HasKarma(required_karma) => {
+            if player_info.karma() >= *required_karma {
+                Ok(())
+            } else {
+                PadlErrorCode::NotEnoughKarma(*required_karma).usr()
             }
         }
     }

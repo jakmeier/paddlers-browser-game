@@ -59,6 +59,7 @@ pub enum ClickOutput {
 /// Represents a checkable condition. Used to check it later when the state is not available inside a system, for example.
 pub enum Condition {
     HasResources(Price),
+    HasKarma(i64),
 }
 
 #[derive(Clone, Debug, Copy)]

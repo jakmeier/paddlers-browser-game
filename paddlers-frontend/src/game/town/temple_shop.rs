@@ -21,7 +21,7 @@ pub fn new_temple_menu(player_info: &PlayerInfo) -> UiMenu {
 
 pub fn purchase_prophet(player_info: &PlayerInfo) -> PadlResult<()> {
     if player_info.prophets_limit() <= player_info.prophets_total() {
-        return PadlErrorCode::NotEnoughKarma.usr();
+        return PadlErrorCode::NotEnoughKarma(player_info.karma_for_next_prophet()).usr();
     }
     nuts::send_to::<RestApiState, _>(ProphetPurchase {
         village: current_village(),

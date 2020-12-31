@@ -45,6 +45,18 @@ impl PlayerInfo {
     pub fn prophets_limit(&self) -> i64 {
         prophets_allowed(self.karma) - self.village_count + 1
     }
+    pub fn karma_for_next_prophet(&self) -> i64 {
+        // FIXME: This could be a single lookup
+        let mut karma = self.karma;
+        let current = prophets_allowed(karma);
+        while prophets_allowed(karma) == current {
+            karma+=50;
+        }
+        while prophets_allowed(karma) != current {
+            karma-=1;
+        }
+        karma + 1
+    }
     #[inline]
     pub fn prophets_total(&self) -> i64 {
         self.prophets + self.village_count - 1

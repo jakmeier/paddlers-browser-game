@@ -372,6 +372,10 @@ impl UiElement {
         self.condition = Some(Condition::HasResources(cost));
         self
     }
+    pub fn with_karma_condition(mut self, minimum_karma: i64) -> Self {
+        self.condition = Some(Condition::HasKarma(minimum_karma));
+        self
+    }
 
     pub fn empty() -> Self {
         UiElement {

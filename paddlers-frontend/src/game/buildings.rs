@@ -129,6 +129,7 @@ fn new_nest_menu() -> UiMenu {
     let mut menu = UiBox::new(1, 1, 1.0, 1.0);
     menu.add(
         UiElement::new(ClickOutput::SendInvitation)
+            .with_karma_condition(5) // TODO: This should be defined in shared lib
             .with_text("Invite".to_owned())
             .with_background_color(LIGHT_BLUE),
     );
