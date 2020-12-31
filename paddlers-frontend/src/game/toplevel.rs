@@ -69,7 +69,7 @@ impl Frame for GameActivity {
         game.end_update();
     }
     fn key(&mut self, state: &mut Self::State, key: KeyEvent) {
-        if let KeyEvent(KeyEventType::KeyPress, key) = key {
+        if let KeyEvent(KeyEventType::KeyDown, key) = key {
             state.hotkey(key);
         }
     }
