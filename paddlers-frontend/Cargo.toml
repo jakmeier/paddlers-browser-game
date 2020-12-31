@@ -1,6 +1,6 @@
 [package]
 name = "paddlers-frontend"
-version = "0.1.3"
+version = "0.2"
 authors = ["Jakob Meier <inbox@jakobmeier.ch>"]
 edition = "2018"
 license = "MIT/Apache-2.0"
@@ -11,9 +11,12 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 paddlers-shared-lib = { path = "../paddlers-shared-lib", features = ["enum_utils", "game_mechanics", "web"] }
-div = {path = "../div-rs" }
-nuts = { path = "../nuts", features = ["web-debug"] }
-paddle = { path = "../paddle", features = ["const_fn"] }
+# div = {path = "../div-rs" }
+div = "0.3"
+# nuts = { path = "../nuts", features = ["web-debug"] }
+nuts = { version = "0.2", features = ["web-debug"] }
+# paddle = { path = "../paddle", features = ["const_fn"] }
+paddle = { path = "../paddle", version = "0.1.0-beta.0", features = ["const_fn"] }
 specs = { version = "0.16.1", default-features = false } # parallel not supported in wasm
 shred = { version = "0.10.2", default-features = false }
 specs-derive = "0.4"

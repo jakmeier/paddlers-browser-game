@@ -128,7 +128,9 @@ impl<'a, 'b> TownFrame<'a, 'b> {
                 state.update_temple().nuts_check();
             }
             Signal::BuildingBuilt(BuildingType::Temple) => {
-                state.load_story_triggers(&StoryState::TempleBuilt).nuts_check();
+                state
+                    .load_story_triggers(&StoryState::TempleBuilt)
+                    .nuts_check();
             }
             _ => {}
         }

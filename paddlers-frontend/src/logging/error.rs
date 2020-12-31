@@ -110,7 +110,9 @@ impl fmt::Display for PadlErrorCode {
             PadlErrorCode::NotEnoughResources => write!(f, "Need more resources."),
             PadlErrorCode::NotEnoughSupply => write!(f, "Requires more supplies."),
             PadlErrorCode::NotEnoughMana => write!(f, "Not enough mana."),
-            PadlErrorCode::NotEnoughKarma(required) => write!(f, "Requires at least {} karma.", required),
+            PadlErrorCode::NotEnoughKarma(required) => {
+                write!(f, "Requires at least {} karma.", required)
+            }
             PadlErrorCode::NotEnoughUnits => write!(f, "Require more units."),
             PadlErrorCode::PathBlocked => write!(f, "The path is blocked."),
             PadlErrorCode::NoNetwork => write!(f, "Connection to server dropped."),

@@ -50,10 +50,10 @@ impl PlayerInfo {
         let mut karma = self.karma;
         let current = prophets_allowed(karma);
         while prophets_allowed(karma) == current {
-            karma+=50;
+            karma += 50;
         }
         while prophets_allowed(karma) != current {
-            karma-=1;
+            karma -= 1;
         }
         karma + 1
     }

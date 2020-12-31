@@ -36,7 +36,7 @@ impl Frame for GameActivity {
         game.start_draw();
 
         // TODO (optimization): Refactor to make this call event-based
-        if game.total_updates % 50 == 0 {
+        if game.total_updates % 31 == 0 {
             window.fit_display(10.0);
         }
 
