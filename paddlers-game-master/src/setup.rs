@@ -39,6 +39,12 @@ impl DB {
             let server = 1;
             run_db_migrations(self.dbconn())?;
             self.init_map(server);
+
+            let output = std::process::Command::new("sh")
+                .arg("-c")
+                .arg("./specification-loader upload-quests specification/quests.0.2.1.ron")
+                .output();
+            println!("Quest loading: {:?}", output);
         }
         if env::var("INSERT_TEST_DATA").is_ok() {
             if let Ok(player) = self.new_player(

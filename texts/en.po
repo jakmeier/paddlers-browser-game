@@ -88,3 +88,23 @@ msgstr ""
 
 msgid "templebuilt-B30"
 msgstr "Back to town"
+
+
+# Quests
+msgid "create-forest"
+msgstr "Forest creation"
+
+msgid "create-forest-description"
+msgstr "Fill this place with life! Start by planting three trees."
+
+msgid "build-bundlig-station"
+msgstr "Build a bundling station"
+
+msgid "build-bundlig-station-description"
+msgstr "Your servant can gather resources from the forest if the right buildings exist. To gather sticks, you need to build a bundling station."
+
+msgid "use-bundlig-station"
+msgstr "Use undling station"
+
+msgid "use-bundlig-station-description"
+msgstr "Send your servant to gather sticks and bundle them. Select the Paddler and then right-click or long-tap on the bundling station."

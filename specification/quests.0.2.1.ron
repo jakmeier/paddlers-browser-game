@@ -1,0 +1,42 @@
+#![enable(implicit_some)]
+[
+    (
+        quest_key: "create-forest",
+        next_story_state: TreePlanted,
+        condition: (
+            buildings: {
+                Tree: 3,
+            }
+        ),
+        reward: (
+            resources: {
+                Feathers: 20,
+            },
+        )
+    ),
+    (
+        quest_key: "build-bundlig-station",
+        next_story_state: StickGatheringStationBuild,
+        condition: (
+            buildings: {
+                BundlingStation: 1,
+            }
+        ),
+        reward: (
+        )
+    ),
+    (
+        quest_key: "use-bundlig-station",
+        next_story_state: GatheringSticks,
+        condition: (
+            workers: {
+                GatherSticks: 1,
+            }
+        ),
+        reward: (
+            resources: {
+                Sticks: 100,
+            },
+        )
+    ),
+]

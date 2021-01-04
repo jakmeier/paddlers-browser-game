@@ -1,0 +1,1 @@
+Game content specification in human-editable files.
