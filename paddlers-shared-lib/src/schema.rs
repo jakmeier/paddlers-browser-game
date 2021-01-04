@@ -96,6 +96,75 @@ table! {
     use diesel::sql_types::*;
     use crate::models::*;
 
+    quest_building_conditions (id) {
+        id -> Int8,
+        quest_id -> Int8,
+        building_type -> Building_type,
+        amount -> Int8,
+    }
+}
+
+table! {
+    use diesel::sql_types::*;
+    use crate::models::*;
+
+    quest_res_conditions (id) {
+        id -> Int8,
+        quest_id -> Int8,
+        resource_type -> Resource_type,
+        amount -> Int8,
+    }
+}
+
+table! {
+    use diesel::sql_types::*;
+    use crate::models::*;
+
+    quest_res_rewards (id) {
+        id -> Int8,
+        quest_id -> Int8,
+        resource_type -> Resource_type,
+        amount -> Int8,
+    }
+}
+
+table! {
+    use diesel::sql_types::*;
+    use crate::models::*;
+
+    quest_to_player (quest_id, player_id) {
+        quest_id -> Int8,
+        player_id -> Int8,
+    }
+}
+
+table! {
+    use diesel::sql_types::*;
+    use crate::models::*;
+
+    quest_worker_conditions (id) {
+        id -> Int8,
+        quest_id -> Int8,
+        task_type -> Task_type,
+        amount -> Int8,
+    }
+}
+
+table! {
+    use diesel::sql_types::*;
+    use crate::models::*;
+
+    quests (id) {
+        id -> Int8,
+        quest_key -> Varchar,
+        next_story_state -> Nullable<Story_state_type>,
+    }
+}
+
+table! {
+    use diesel::sql_types::*;
+    use crate::models::*;
+
     resources (resource_type, village_id) {
         resource_type -> Resource_type,
         amount -> Int8,
@@ -203,6 +272,12 @@ joinable!(buildings -> villages (village_id));
 joinable!(effects -> hobos (hobo_id));
 joinable!(hobos -> buildings (nest));
 joinable!(hobos -> villages (home));
+joinable!(quest_building_conditions -> quests (quest_id));
+joinable!(quest_res_conditions -> quests (quest_id));
+joinable!(quest_res_rewards -> quests (quest_id));
+joinable!(quest_to_player -> players (player_id));
+joinable!(quest_to_player -> quests (quest_id));
+joinable!(quest_worker_conditions -> quests (quest_id));
 joinable!(resources -> villages (village_id));
 joinable!(rewards -> visit_reports (visit_report_id));
 joinable!(tasks -> hobos (target_hobo_id));
@@ -221,6 +296,12 @@ allow_tables_to_appear_in_same_query!(
     effects,
     hobos,
     players,
+    quest_building_conditions,
+    quest_res_conditions,
+    quest_res_rewards,
+    quest_to_player,
+    quest_worker_conditions,
+    quests,
     resources,
     rewards,
     streams,

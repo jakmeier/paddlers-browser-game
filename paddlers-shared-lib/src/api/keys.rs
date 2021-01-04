@@ -57,5 +57,6 @@ object_key!(Hobo, HoboKey);
 object_key!(Player, PlayerKey);
 object_key!(Stream, StreamKey);
 object_key!(Task, TaskKey);
+object_key!(Quest, QuestKey);
 object_key!(VisitReport, VisitReportKey);
 object_key!(Worker, WorkerKey);

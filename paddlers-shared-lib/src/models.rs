@@ -16,8 +16,10 @@ use ::diesel_derive_enum::DbEnum;
 
 #[cfg(feature = "sql_db")]
 use super::schema::{
-    abilities, attacks, attacks_to_hobos, buildings, effects, hobos, players, resources, rewards,
-    streams, tasks, villages, visit_reports, worker_flags, workers,
+    abilities, attacks, attacks_to_hobos, buildings, effects, hobos, players,
+    quest_building_conditions, quest_res_conditions, quest_res_rewards, quest_to_player,
+    quest_worker_conditions, quests, resources, rewards, streams, tasks, villages, visit_reports,
+    worker_flags, workers,
 };
 
 #[derive(Debug, PartialEq, Clone, Copy, Serialize, Deserialize)]
@@ -147,7 +149,7 @@ pub struct AttackToHobo {
     pub released: Option<NaiveDateTime>,
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize, Hash)]
 #[cfg_attr(feature = "enum_utils", derive(EnumIter))]
 #[cfg_attr(feature = "graphql", derive(juniper::GraphQLEnum))]
 #[cfg_attr(feature = "sql_db", derive(DbEnum), DieselType = "Building_type")]
@@ -398,4 +400,98 @@ pub struct NewReward {
     pub visit_report_id: i64,
     pub resource_type: ResourceType,
     pub amount: i64,
+}
+
+#[derive(Debug, Clone, Queryable, Identifiable)]
+#[cfg(feature = "sql_db")]
+pub struct Quest {
+    pub id: i64,
+    pub quest_key: String,
+    pub next_story_state: Option<StoryState>,
+}
+
+#[derive(Insertable, Debug)]
+#[cfg(feature = "sql_db")]
+#[table_name = "quests"]
+pub struct NewQuest {
+    pub quest_key: String,
+    pub next_story_state: Option<StoryState>,
+}
+
+#[derive(Debug, Clone, Copy, Queryable)]
+#[cfg(feature = "sql_db")]
+pub struct QuestResReward {
+    pub id: i64,
+    pub quest_id: i64,
+    pub resource_type: ResourceType,
+    pub amount: i64,
+}
+
+#[derive(Debug, Clone, Insertable)]
+#[cfg(feature = "sql_db")]
+#[table_name = "quest_res_rewards"]
+pub struct NewQuestResReward {
+    pub quest_id: i64,
+    pub resource_type: ResourceType,
+    pub amount: i64,
+}
+
+#[derive(Debug, Clone, Copy, Queryable)]
+#[cfg(feature = "sql_db")]
+pub struct QuestResCondition {
+    pub id: i64,
+    pub quest_id: i64,
+    pub resource_type: ResourceType,
+    pub amount: i64,
+}
+
+#[derive(Debug, Clone, Insertable)]
+#[cfg(feature = "sql_db")]
+#[table_name = "quest_res_conditions"]
+pub struct NewQuestResCondition {
+    pub quest_id: i64,
+    pub resource_type: ResourceType,
+    pub amount: i64,
+}
+#[derive(Debug, Clone, Copy, Queryable)]
+#[cfg(feature = "sql_db")]
+pub struct QuestBuildingCondition {
+    pub id: i64,
+    pub quest_id: i64,
+    pub building_type: BuildingType,
+    pub amount: i64,
+}
+
+#[derive(Debug, Clone, Insertable)]
+#[cfg(feature = "sql_db")]
+#[table_name = "quest_building_conditions"]
+pub struct NewQuestBuildingCondition {
+    pub quest_id: i64,
+    pub building_type: BuildingType,
+    pub amount: i64,
+}
+
+#[derive(Debug, Clone, Copy, Queryable)]
+#[cfg(feature = "sql_db")]
+pub struct QuestWorkerCondition {
+    pub id: i64,
+    pub quest_id: i64,
+    pub task_type: TaskType,
+    pub amount: i64,
+}
+#[derive(Debug, Clone, Insertable)]
+#[cfg(feature = "sql_db")]
+#[table_name = "quest_worker_conditions"]
+pub struct NewQuestWorkerCondition {
+    pub quest_id: i64,
+    pub task_type: TaskType,
+    pub amount: i64,
+}
+
+#[cfg(feature = "sql_db")]
+#[derive(Debug, Queryable, Insertable)]
+#[table_name = "quest_to_player"]
+pub struct QuestToPlayer {
+    pub quest_id: i64,
+    pub player_id: i64,
 }
