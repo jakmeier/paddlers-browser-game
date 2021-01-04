@@ -1,6 +1,6 @@
 {
     "name": "paddlers-browser-game",
-    "version": "0.1.4",
+    "version": "0.2.0",
     "description": "Entry point to the paddlers browser game frontend",
     "main": "paddlers.js",
     "scripts": {
