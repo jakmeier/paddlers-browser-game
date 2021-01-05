@@ -67,7 +67,7 @@ impl GqlAttackReport {
     fn karma(&self) -> i32 {
         self.inner.karma as i32
     }
-    fn resources(&self, res: ResourceType) -> &Resources {
+    fn resources(&self) -> &Resources {
         self.rewards.as_ref().unwrap()
     }
 }

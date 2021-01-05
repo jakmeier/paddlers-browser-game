@@ -1,0 +1,29 @@
+query PlayerQuestsQuery {
+    player {
+        quests {
+            key
+            nextStoryState
+            rewards {
+                feathers
+                sticks
+                logs
+            }
+            conditions {
+                karma
+                resources {
+                    feathers
+                    sticks
+                    logs
+                }	
+                buildings {
+                    buildingType
+                    amount
+                }
+                workers {
+                    taskType
+                    amount
+                }
+            }
+        }
+    }
+}

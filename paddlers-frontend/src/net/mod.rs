@@ -29,6 +29,7 @@ pub enum NetMsg {
     UpdateWorkerTasks(WorkerTasksResponse),
     Workers(WorkerResponse, VillageKey),
     Reports(ReportsResponse),
+    Quests(QuestsResponse),
 }
 
 struct NetState {
@@ -45,6 +46,7 @@ struct RequestPlayerUpdate;
 struct RequestClientStateUpdate;
 struct RequestResourceUpdate;
 struct LoggedIn;
+struct RequestQuests;
 struct RequestMapRead {
     min: i32,
     max: i32,
@@ -117,6 +119,7 @@ impl NetState {
         net_activity.subscribe(NetState::request_map_read);
         net_activity.subscribe(NetState::request_worker_tasks_update);
         net_activity.subscribe(NetState::request_foreign_town);
+        net_activity.subscribe(NetState::request_quests);
         net_activity.subscribe(NetState::update_attack_id);
         net_activity.subscribe(NetState::update_report_id);
     }
@@ -136,6 +139,8 @@ impl NetState {
     }
 
     // Sends all requests out necessary for the client state to display a full game view including the home town
+    // If the player is not logged in, yet, this function queues itself until the player is logged in.
+    // Once logged in, the requests are sent exactly once.
     fn request_client_state(&mut self, _: &RequestClientStateUpdate) {
         // TODO: Instead of forcing a request every time the 10s are too long, use something smarter.
         // E.g.: Once a second check what needs to be updated and then allow this list to be altered from outside
@@ -147,6 +152,7 @@ impl NetState {
             self.transfer_response(self.gql_state.attacks_query());
             self.transfer_response(GraphQlState::resource_query());
             self.transfer_response(self.gql_state.reports_query());
+            self.transfer_response(GraphQlState::quests_query());
             request_player_update();
         } else {
             let mut thread = paddle::web_integration::create_thread(request_client_state);
@@ -181,6 +187,10 @@ impl NetState {
 
     fn request_map_read(&mut self, msg: &RequestMapRead) {
         self.transfer_response(GraphQlState::map_query(msg.min, msg.max));
+    }
+
+    fn request_quests(&mut self, _msg: &RequestQuests) {
+        self.transfer_response(GraphQlState::quests_query());
     }
 
     fn log_in(&mut self, _: &LoggedIn) {
@@ -227,6 +237,7 @@ impl std::fmt::Debug for NetMsg {
             Self::UpdateWorkerTasks(_) => write!(f, "NetMsg: UpdateWorkerTasks"),
             Self::Workers(_, _) => write!(f, "NetMsg: Workers"),
             Self::Reports(_) => write!(f, "NetMsg: Reports"),
+            Self::Quests(_) => write!(f, "NetMsg: Quests"),
         }
     }
 }

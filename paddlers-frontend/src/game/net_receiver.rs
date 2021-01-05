@@ -57,6 +57,9 @@ pub fn loading_update_net(
             NetMsg::Reports(data) => {
                 progress.add_progress(data);
             }
+            NetMsg::Quests(data) => {
+                progress.add_progress(data);
+            }
             other => {
                 println!(
                     "Unexpected network message before complete initialization {:?}",
@@ -156,6 +159,9 @@ impl Game {
                     }
                     NetMsg::Reports(data) => {
                         paddle::share(NetMsg::Reports(data));
+                    }
+                    NetMsg::Quests(data) => {
+                        paddle::share(NetMsg::Quests(data));
                     }
                 }
             }

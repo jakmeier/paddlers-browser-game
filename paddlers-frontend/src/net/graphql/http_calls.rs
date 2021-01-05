@@ -73,6 +73,13 @@ pub(super) async fn http_read_player_info() -> PadlResult<PlayerQueryResponse> {
     let response = raw_response.player;
     Ok(response)
 }
+pub(super) async fn http_read_quests() -> PadlResult<QuestsResponse> {
+    let request_body = PlayerQuestsQuery::build_query(player_quests_query::Variables);
+    let raw_response: QuestsRawResponse =
+        ajax::gql_query(&graphql_url()?, &request_body).await?;
+    let response = raw_response.player;
+    Ok(response)
+}
 
 pub(super) async fn http_read_leaderboard() -> PadlResult<LeaderboardResponse> {
     let request_body = LeaderboardQuery::build_query(leaderboard_query::Variables { offset: 0 });

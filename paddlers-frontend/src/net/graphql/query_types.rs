@@ -176,6 +176,15 @@ pub struct PlayerVillagesQuery;
 pub type PlayerVillagesRawResponse = player_villages_query::ResponseData;
 pub type PlayerVillagesResponse = player_villages_query::PlayerVillagesQueryPlayer;
 
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "api/schema.json",
+    query_path = "api/queries/player_quests_query.graphql"
+)]
+pub struct PlayerQuestsQuery;
+pub type QuestsRawResponse = player_quests_query::ResponseData;
+pub type QuestsResponse = player_quests_query::PlayerQuestsQueryPlayer;
+
 use paddlers_shared_lib::models::TaskType;
 impl Into<TaskType> for &WorkerTaskType {
     fn into(self) -> TaskType {

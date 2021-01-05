@@ -116,6 +116,10 @@ impl GraphQlState {
             Ok(NetMsg::Reports(data))
         }
     }
+    pub async fn quests_query() -> PadlResult<NetMsg> {
+        let response = http_read_quests().await?;
+        Ok(NetMsg::Quests(response.into()))
+    }
 }
 
 pub async fn own_villages_query() -> PadlResult<Vec<VillageKey>> {

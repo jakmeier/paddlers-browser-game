@@ -1,4 +1,3 @@
-use crate::gui::input::UiView;
 use crate::net::graphql::{
     query_types::{
         AttacksResponse, BuildingsResponse, HobosQueryResponse, VolatileVillageInfoResponse,
@@ -14,6 +13,7 @@ use crate::{
     },
     resolution::OUTER_MENU_AREA_W,
 };
+use crate::{gui::input::UiView, net::graphql::QuestsResponse};
 use nuts::LifecycleStatus;
 use paddle::{
     DisplayArea, ErrorMessage, Frame, Image, LoadScheduler, LoadedData, LoadingDone,
@@ -119,7 +119,8 @@ impl LoadingFrame {
             .with_manually_reported::<HobosQueryResponse>("Summon non-working Paddlers")
             .with_manually_reported::<AttacksResponse>("Summon visitors")
             .with_manually_reported::<VolatileVillageInfoResponse>("Gather village news")
-            .with_manually_reported::<ReportsResponse>("Gather letters from mailbox");
+            .with_manually_reported::<ReportsResponse>("Gather letters from mailbox")
+            .with_manually_reported::<QuestsResponse>("Listening to god's voice");
 
         load_manager.attach_to_domain();
 
@@ -183,6 +184,9 @@ impl LoadingFrame {
 
                 let reports = *loaded_data.extract::<ReportsResponse>()?;
                 paddle::share(NetMsg::Reports(reports));
+
+                let quests = *loaded_data.extract::<QuestsResponse>()?;
+                paddle::share(NetMsg::Quests(quests));
 
                 let viewer_activity = nuts::new_domained_activity(viewer, &Domain::Frame);
                 viewer_activity.subscribe_domained(|viewer, domain, _: &UpdateWorld| {
