@@ -375,6 +375,16 @@ pub trait GameDB {
             .expect("Error loading data");
         results
     }
+    fn player_quests(&self, player_id: PlayerKey) -> Vec<Quest> {
+        let results = quest_to_player::table
+            .inner_join(quests::table)
+            .filter(quest_to_player::player_id.eq(player_id.num()))
+            .limit(50)
+            .select(quests::all_columns)
+            .load::<Quest>(self.dbconn())
+            .expect("Error loading data");
+        results
+    }
     fn effects_on_hobo(&self, hobo: HoboKey) -> Vec<Effect> {
         let results = effects::table
             .filter(effects::hobo_id.eq(hobo.num()))
@@ -493,5 +503,37 @@ pub trait GameDB {
             )
             .load::<(ResourceType, i64)>(self.dbconn())
             .expect("Error loading rewards")
+    }
+    fn quest_res_rewards(&self, q: QuestKey) -> Vec<QuestResReward> {
+        quests::table
+            .inner_join(quest_res_rewards::table)
+            .filter(quests::id.eq(q.num()))
+            .select(quest_res_rewards::all_columns)
+            .load::<QuestResReward>(self.dbconn())
+            .expect("Error loading quest resource rewards")
+    }
+    fn quest_building_conditions(&self, q: QuestKey) -> Vec<QuestBuildingCondition> {
+        quests::table
+            .inner_join(quest_building_conditions::table)
+            .filter(quests::id.eq(q.num()))
+            .select(quest_building_conditions::all_columns)
+            .load::<QuestBuildingCondition>(self.dbconn())
+            .expect("Error loading quest conditions")
+    }
+    fn quest_res_conditions(&self, q: QuestKey) -> Vec<QuestResCondition> {
+        quests::table
+            .inner_join(quest_res_conditions::table)
+            .filter(quests::id.eq(q.num()))
+            .select(quest_res_conditions::all_columns)
+            .load::<QuestResCondition>(self.dbconn())
+            .expect("Error loading quest conditions")
+    }
+    fn quest_worker_conditions(&self, q: QuestKey) -> Vec<QuestWorkerCondition> {
+        quests::table
+            .inner_join(quest_worker_conditions::table)
+            .filter(quests::id.eq(q.num()))
+            .select(quest_worker_conditions::all_columns)
+            .load::<QuestWorkerCondition>(self.dbconn())
+            .expect("Error loading quest conditions")
     }
 }

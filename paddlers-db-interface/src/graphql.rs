@@ -10,10 +10,12 @@ use paddlers_shared_lib::user_authentication::PadlUser;
 use std::sync::Arc;
 
 mod gql_err;
+mod gql_helper_types;
 pub mod gql_private;
 mod gql_public;
 
 use gql_err::ReadableInterfaceError;
+pub use gql_helper_types::*;
 use gql_public::*;
 
 pub struct Mutation;

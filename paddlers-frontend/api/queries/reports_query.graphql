@@ -3,9 +3,11 @@ query ReportsQuery($min_report_id: Int, $village_id: Int!) {
     reports(minId: $min_report_id) {
       id
       karma
-      feathers
-      sticks
-      logs
+      resources {
+        feathers
+        sticks
+        logs
+      }
     }
   }
 }

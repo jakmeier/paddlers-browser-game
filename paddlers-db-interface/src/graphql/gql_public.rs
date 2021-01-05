@@ -1,4 +1,4 @@
-//! All GQL objects are defined in this module.
+//! All GQL objects are defined in this module. (With the exception of helper types, which only format data and don't access the database.)
 //! The fields of the public objects are directly defined here, too.
 //! Fields of private objects are in their own module since they
 //! require no further authorization checks.
@@ -38,7 +38,6 @@ pub struct GqlHoboAttackInfo(pub paddlers_shared_lib::models::AttackToHobo);
 pub struct GqlBuilding(pub paddlers_shared_lib::models::Building);
 pub struct GqlPlayer(pub paddlers_shared_lib::models::Player);
 pub struct GqlVillage(pub paddlers_shared_lib::models::Village);
-pub type Rewards = Vec<(ResourceType, i64)>; // Note: This is a bit of a botch and should be considered to change
 
 // Complete list of private objects.
 // Once these are created, all sub-fields are visible!
@@ -49,10 +48,11 @@ pub struct GqlAbility(pub paddlers_shared_lib::models::Ability, PrivacyGuard);
 pub struct GqlAttack(pub paddlers_shared_lib::models::Attack, PrivacyGuard);
 pub struct GqlAttackReport {
     pub inner: paddlers_shared_lib::models::VisitReport,
-    pub rewards: Option<Rewards>,
+    pub rewards: Option<Resources>,
     _priv: PrivacyGuard,
 }
 pub struct GqlEffect(pub paddlers_shared_lib::models::Effect, PrivacyGuard);
+pub struct GqlQuest(pub paddlers_shared_lib::models::Quest, PrivacyGuard);
 pub struct GqlTask(pub paddlers_shared_lib::models::Task, PrivacyGuard);
 pub struct GqlWorker(pub paddlers_shared_lib::models::Worker, PrivacyGuard);
 
@@ -89,6 +89,17 @@ impl GqlPlayer {
     fn story_state(&self, ctx: &Context) -> FieldResult<StoryState> {
         ctx.check_user_key(self.0.key())?;
         Ok(self.0.story_state)
+    }
+    /// Active queries of a player
+    /// Field Visibility: user
+    fn quests(&self, ctx: &Context) -> FieldResult<Vec<GqlQuest>> {
+        ctx.check_user_key(self.0.key())?;
+        Ok(ctx
+            .db()
+            .player_quests(PlayerKey(self.0.id))
+            .into_iter()
+            .map(|t| GqlQuest(t, PrivacyGuard))
+            .collect())
     }
 }
 

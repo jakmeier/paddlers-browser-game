@@ -19,6 +19,7 @@ pub struct QuestDefinition {
     pub next_story_state: Option<StoryState>,
     pub condition: QuestConditions,
     pub reward: QuestRewards,
+    pub karma_condition: Option<i64>,
 }
 
 #[derive(Deserialize)]
@@ -38,6 +39,7 @@ impl QuestDefinition {
         let quest = NewQuest {
             quest_key: self.quest_key,
             next_story_state: self.next_story_state,
+            karma_condition: self.karma_condition,
         };
         let quest = diesel::insert_into(quests::dsl::quests)
             .values(&quest)

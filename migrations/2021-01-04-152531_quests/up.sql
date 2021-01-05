@@ -1,7 +1,8 @@
 CREATE TABLE quests (
     id BIGSERIAL PRIMARY KEY,
     quest_key VARCHAR(64) NOT NULL,
-    next_story_state STORY_STATE_TYPE
+    next_story_state STORY_STATE_TYPE,
+    karma_condition BIGINT
 );
 CREATE UNIQUE INDEX quest_key_idx ON quests (quest_key);
 

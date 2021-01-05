@@ -5,6 +5,7 @@
 use super::*;
 use juniper;
 use juniper::FieldResult;
+use paddlers_shared_lib::story::story_state::StoryState;
 
 #[juniper::object (Context = Context)]
 impl GqlAttack {
@@ -66,31 +67,16 @@ impl GqlAttackReport {
     fn karma(&self) -> i32 {
         self.inner.karma as i32
     }
-    fn feathers(&self) -> i32 {
-        self.resource(ResourceType::Feathers)
-    }
-    fn sticks(&self) -> i32 {
-        self.resource(ResourceType::Sticks)
-    }
-    fn logs(&self) -> i32 {
-        self.resource(ResourceType::Logs)
+    fn resources(&self, res: ResourceType) -> &Resources {
+        self.rewards.as_ref().unwrap()
     }
 }
 impl GqlAttackReport {
     pub fn load_rewards(&mut self, ctx: &Context) {
         if self.rewards.is_none() {
             let db = ctx.db();
-            self.rewards = Some(db.rewards(self.inner.key()))
+            self.rewards = Some(db.rewards(self.inner.key()).into())
         }
-    }
-    fn resource(&self, res: ResourceType) -> i32 {
-        self.rewards
-            .as_ref()
-            .unwrap()
-            .iter()
-            .find(|(rt, _n)| *rt == res)
-            .map(|(_rt, n)| *n as i32)
-            .unwrap_or(0)
     }
 }
 
@@ -195,5 +181,48 @@ impl GqlWorker {
 
     fn experience(&self) -> i32 {
         self.0.exp
+    }
+}
+
+#[juniper::object (Context = Context)]
+impl GqlQuest {
+    pub fn id(&self) -> juniper::ID {
+        self.0.id.to_string().into()
+    }
+    pub fn key(&self) -> &str {
+        &self.0.quest_key
+    }
+    pub fn next_story_state(&self) -> &Option<StoryState> {
+        &self.0.next_story_state
+    }
+    pub fn rewards(&self, ctx: &Context) -> Resources {
+        ctx.db()
+            .quest_res_rewards(QuestKey(self.0.id))
+            .into_iter()
+            .map(|r| (r.resource_type, r.amount))
+            .collect::<Vec<_>>()
+            .into()
+    }
+    pub fn conditions(&self, ctx: &Context) -> QuestConditions {
+        let db = ctx.db();
+        let key = QuestKey(self.0.id);
+        let res = db
+            .quest_res_conditions(key)
+            .into_iter()
+            .map(|r| (r.resource_type, r.amount))
+            .collect::<Vec<_>>()
+            .into();
+        let buildings = db
+            .quest_building_conditions(key)
+            .into_iter()
+            .map(Into::into)
+            .collect();
+        let worker = db
+            .quest_worker_conditions(key)
+            .into_iter()
+            .map(Into::into)
+            .collect();
+        let karma = self.0.karma_condition;
+        QuestConditions::new(res, karma, buildings, worker)
     }
 }

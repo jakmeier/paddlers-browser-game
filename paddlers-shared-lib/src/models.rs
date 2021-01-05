@@ -408,6 +408,7 @@ pub struct Quest {
     pub id: i64,
     pub quest_key: String,
     pub next_story_state: Option<StoryState>,
+    pub karma_condition: Option<i64>,
 }
 
 #[derive(Insertable, Debug)]
@@ -416,6 +417,7 @@ pub struct Quest {
 pub struct NewQuest {
     pub quest_key: String,
     pub next_story_state: Option<StoryState>,
+    pub karma_condition: Option<i64>,
 }
 
 #[derive(Debug, Clone, Copy, Queryable)]

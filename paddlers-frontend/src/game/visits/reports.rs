@@ -92,9 +92,9 @@ impl ReportFrame {
                     self.add_report(Report {
                         id: VisitReportKey(id),
                         karma: r.karma,
-                        feathers: r.feathers,
-                        logs: r.logs,
-                        sticks: r.sticks,
+                        feathers: r.resources.feathers,
+                        logs: r.resources.logs,
+                        sticks: r.resources.sticks,
                         text: self.letter_text(id as usize),
                     })
                     .nuts_check();

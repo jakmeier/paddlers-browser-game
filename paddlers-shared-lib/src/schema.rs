@@ -158,6 +158,7 @@ table! {
         id -> Int8,
         quest_key -> Varchar,
         next_story_state -> Nullable<Story_state_type>,
+        karma_condition -> Nullable<Int8>,
     }
 }
 
