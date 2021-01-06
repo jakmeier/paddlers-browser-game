@@ -21,6 +21,7 @@ impl VisitorMenuFrame {
         let tabs = [
             (VisitorViewTab::Letters, SingleSprite::Letters),
             (VisitorViewTab::IncomingAttacks, SingleSprite::DuckShapes),
+            (VisitorViewTab::Quests, SingleSprite::Karma),
         ];
         for (view, img) in &tabs {
             let rend =

@@ -77,7 +77,7 @@ pub(super) async fn http_read_quests() -> PadlResult<QuestsResponse> {
     let request_body = PlayerQuestsQuery::build_query(player_quests_query::Variables);
     let raw_response: QuestsRawResponse =
         ajax::gql_query(&graphql_url()?, &request_body).await?;
-    let response = raw_response.player;
+    let response = raw_response.player.quests;
     Ok(response)
 }
 

@@ -29,6 +29,7 @@ pub enum UiView {
 pub enum VisitorViewTab {
     IncomingAttacks,
     Letters,
+    Quests,
 }
 
 #[derive(Default, Debug, Component)]

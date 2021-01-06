@@ -183,7 +183,8 @@ pub type PlayerVillagesResponse = player_villages_query::PlayerVillagesQueryPlay
 )]
 pub struct PlayerQuestsQuery;
 pub type QuestsRawResponse = player_quests_query::ResponseData;
-pub type QuestsResponse = player_quests_query::PlayerQuestsQueryPlayer;
+pub type QuestsResponse = Vec<player_quests_query::PlayerQuestsQueryPlayerQuests>;
+pub type PlayerQuest = player_quests_query::PlayerQuestsQueryPlayerQuests;
 
 use paddlers_shared_lib::models::TaskType;
 impl Into<TaskType> for &WorkerTaskType {

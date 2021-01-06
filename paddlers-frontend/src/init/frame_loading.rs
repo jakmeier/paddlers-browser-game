@@ -1,7 +1,8 @@
-use crate::game::visits::{
-    attacks::VisitorFrame, reports::ReportFrame, visitor_menu::VisitorMenuFrame,
-};
 use crate::game::{dialogue::DialogueFrame, town::town_summary::TownSummaryFrame};
+use crate::game::{
+    quests::QuestsFrame,
+    visits::{attacks::VisitorFrame, reports::ReportFrame, visitor_menu::VisitorMenuFrame},
+};
 use crate::gui::menu::{MapMenuFrame, MenuBackgroundFrame, TownMenuFrame};
 use crate::prelude::*;
 use crate::{
@@ -44,6 +45,7 @@ pub(crate) fn load_viewer(view: UiView) -> ViewManager<UiView> {
             UiView::Map,
             UiView::Visitors(VisitorViewTab::IncomingAttacks),
             UiView::Visitors(VisitorViewTab::Letters),
+            UiView::Visitors(VisitorViewTab::Quests),
             UiView::TownHelp,
         ],
         (OUTER_MENU_AREA_X, OUTER_MENU_AREA_Y),
@@ -73,6 +75,7 @@ pub(crate) fn load_viewer(view: UiView) -> ViewManager<UiView> {
         &[
             UiView::Visitors(VisitorViewTab::IncomingAttacks),
             UiView::Visitors(VisitorViewTab::Letters),
+            UiView::Visitors(VisitorViewTab::Quests),
         ],
         (INNER_MENU_AREA_X as u32, INNER_MENU_AREA_Y as u32),
     );
@@ -89,6 +92,11 @@ pub(crate) fn load_viewer(view: UiView) -> ViewManager<UiView> {
     let report_handler =
         viewer.add_frame(frame, &[UiView::Visitors(VisitorViewTab::Letters)], (0, 0));
     ReportFrame::init_listeners(report_handler);
+
+    let frame = QuestsFrame::new();
+    let quests_handler =
+        viewer.add_frame(frame, &[UiView::Visitors(VisitorViewTab::Quests)], (0, 0));
+    QuestsFrame::init_listeners(quests_handler);
 
     /* Leaderboard */
 

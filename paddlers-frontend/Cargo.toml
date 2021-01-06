@@ -34,7 +34,7 @@ lyon = { version = "0.13", features = ["extra"] }
 wasm-bindgen-futures = "0.4.19"
 js-sys = "0.3.46"
 wasm-bindgen = { version = "0.2.69", features = ["serde-serialize"]  }
-mogwai = "0.3.6"
+mogwai = "0.4"
 
 [dependencies.web-sys]
 version = "0.3"

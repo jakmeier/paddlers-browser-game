@@ -1927,9 +1927,9 @@ dependencies = [
 
 [[package]]
 name = "mogwai"
-version = "0.3.6"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "01b9c0322764e01c2504e2be6400bcd767e418f9755950f4eb9b87a4989cea15"
+checksum = "15136b42a21cdea725a5644d64a82a560b224bb56386dac2e30fbee2deb30cbf"
 dependencies = [
  "console_log",
  "js-sys",
