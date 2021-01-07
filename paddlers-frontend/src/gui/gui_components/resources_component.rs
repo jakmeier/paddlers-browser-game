@@ -14,7 +14,7 @@ pub struct ResourcesComponent {
 
 use mogwai::prelude::*;
 #[allow(unused_braces)]
-pub fn mogwai_res_node(n: i64, r: ResourceType) -> ViewBuilder<HtmlElement> {
+pub fn mogwai_res_node(n: impl ToString, r: ResourceType) -> ViewBuilder<HtmlElement> {
     let img = Sprites::new_image_node_builder(r.sprite().default());
     builder!(
         <div class="res">

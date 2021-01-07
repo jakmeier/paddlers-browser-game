@@ -5,7 +5,10 @@ use crate::{
 
 use super::{quest_conditions::*, quest_rewards::ResourceReward, QuestUiTexts};
 use mogwai::prelude::*;
-use paddlers_shared_lib::{api::quests::QuestCollect, prelude::QuestKey};
+use paddlers_shared_lib::{
+    api::quests::QuestCollect,
+    prelude::{QuestKey, ResourceType},
+};
 
 #[derive(Clone)]
 /// A Mogwai component ot display a single quest
@@ -45,6 +48,7 @@ impl QuestComponent {
 pub(super) enum QuestIn {
     CollectMe,
     NewUiTexts(QuestUiTexts),
+    ResourceUpdate(Vec<(ResourceType, i64)>),
 }
 
 impl Component for QuestComponent {
@@ -65,6 +69,11 @@ impl Component for QuestComponent {
             QuestIn::CollectMe => {
                 nuts::send_to::<RestApiState, _>(QuestCollect { quest: self.id });
             }
+            QuestIn::ResourceUpdate(res) => {
+                for child in &self.resource_conditions {
+                    child.update_res(&res);
+                }
+            }
         }
     }
 
@@ -79,8 +88,14 @@ impl Component for QuestComponent {
         <div class="quest">
             <h3> { &self.title } </h3>
             <p> { &self.text } </p>
+            <div class="conditions">
+                <div class="title"> { ("CONDITIONS", rx.branch_map(|uit| uit.conditions.clone())) }":" </div>
+                { self.resource_conditions.get(0).map(ResourceCondition::view_builder) }
+                { self.resource_conditions.get(1).map(ResourceCondition::view_builder) }
+                { self.resource_conditions.get(2).map(ResourceCondition::view_builder) }
+            </div>
             <div class="rewards">
-                <div class="rewards-title"> { ("REWARDS", rx.branch_map(|uit| uit.rewards.clone())) }":" </div>
+                <div class="title"> { ("REWARDS", rx.branch_map(|uit| uit.rewards.clone())) }":" </div>
                 { self.resource_rewards.get(0).cloned().map(ResourceReward::view_builder) }
                 { self.resource_rewards.get(1).cloned().map(ResourceReward::view_builder) }
                 { self.resource_rewards.get(2).cloned().map(ResourceReward::view_builder) }

@@ -1,10 +1,9 @@
-use crate::prelude::TextDb;
-
 use super::{
     quest_component::{QuestComponent, QuestIn},
     QuestUiTexts,
 };
 use mogwai::prelude::*;
+use paddlers_shared_lib::prelude::ResourceType;
 
 /// Parent component to hold all quests
 pub(super) struct QuestList {
@@ -16,16 +15,7 @@ pub(super) enum QuestListIn {
     NewLocale(QuestUiTexts),
     NewQuestComponent(QuestComponent),
     Clear,
-}
-
-impl QuestUiTexts {
-    pub(super) fn new(locale: &TextDb) -> Self {
-        Self {
-            title: locale.gettext("quests").to_owned(),
-            rewards: locale.gettext("reward").to_owned(),
-            conditions: locale.gettext("your-task").to_owned(),
-        }
-    }
+    ResourceUpdate(Vec<(ResourceType, i64)>),
 }
 
 #[derive(Clone)]
@@ -69,6 +59,11 @@ impl Component for QuestList {
                 tx.send(&QuestListOut::NewTitle(ui_texts.title.clone()));
                 for q in &self.quest_components {
                     q.send(&QuestIn::NewUiTexts(ui_texts.clone()));
+                }
+            }
+            QuestListIn::ResourceUpdate(res) => {
+                for q in &self.quest_components {
+                    q.send(&QuestIn::ResourceUpdate(res.clone()));
                 }
             }
         }

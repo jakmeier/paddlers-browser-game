@@ -1,4 +1,4 @@
-use super::{toplevel::Signal, Game};
+use super::{toplevel::Signal, town_resources::TownResources, Game};
 use crate::{
     net::{graphql::PlayerQuest, NetMsg},
     prelude::TextDb,
@@ -32,6 +32,16 @@ struct QuestUiTexts {
     title: String,
     rewards: String,
     conditions: String,
+}
+
+impl QuestUiTexts {
+    fn new(locale: &TextDb) -> Self {
+        Self {
+            title: locale.gettext("quests").to_owned(),
+            rewards: locale.gettext("reward").to_owned(),
+            conditions: locale.gettext("your-task").to_owned(),
+        }
+    }
 }
 
 struct NewParent(HtmlElement);
@@ -77,6 +87,13 @@ impl QuestsFrame {
                 let locale = &state.locale;
                 let ui_texts = QuestUiTexts::new(locale);
                 self.quests_gizmo.send(&QuestListIn::NewLocale(ui_texts));
+            }
+            Signal::ResourcesUpdated => {
+                let res = state
+                    .town_world()
+                    .fetch::<TownResources>()
+                    .non_zero_resources();
+                self.quests_gizmo.send(&QuestListIn::ResourceUpdate(res));
             }
             _ => {}
         }

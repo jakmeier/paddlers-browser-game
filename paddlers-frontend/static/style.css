@@ -123,13 +123,38 @@ div.quest h3 {
     margin: 0;
 }
 
+div.quest .condition {
+    display: grid;
+    grid-template-columns: max-content max-content;
+    font-size: 42px;
+    justify-content: center;
+    align-items: center;
+    grid-template-rows: 80px;
+    gap: 20px;
+    border-width: 5px;
+    border-style: dotted;
+    margin-top: -5px;
+}
+
+div.quest .condition-in-progress {
+    border-color: black;
+}
+div.quest .condition-met {
+    border-color: white;
+    background-color: #0fa100;
+}
+
+div.quest .conditions img {
+    height: 60px;
+}
+
 div.quest .rewards {
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 10px;
 }
-div.quest .rewards-title {
+div.quest .title {
     font-weight: 600;
 }
 
