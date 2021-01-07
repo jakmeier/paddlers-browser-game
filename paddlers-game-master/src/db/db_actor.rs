@@ -1,3 +1,4 @@
+mod collect_quest;
 mod messages;
 use diesel::QueryResult;
 pub use messages::*;

@@ -1,6 +1,6 @@
 use actix::dev::{MessageResponse, ResponseChannel};
 use actix::prelude::*;
-use paddlers_shared_lib::prelude::*;
+use paddlers_shared_lib::{prelude::*, story::story_state::StoryState};
 
 #[derive(Debug)]
 /// Deferred DB requests should not be dependent on the state of the DB
@@ -40,5 +40,16 @@ where
 /// Collect rewards and karma for report
 pub struct CollectReportRewardsMessage(pub VisitReport);
 impl Message for CollectReportRewardsMessage {
+    type Result = ();
+}
+
+/// Delete quest from active quests of player and perform all reward actions
+pub struct CollectQuestMessage {
+    pub player: PlayerKey,
+    pub quest: QuestKey,
+    pub village: VillageKey,
+    pub next_story_state: Option<StoryState>,
+}
+impl Message for CollectQuestMessage {
     type Result = ();
 }

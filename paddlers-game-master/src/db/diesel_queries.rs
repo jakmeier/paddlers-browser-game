@@ -228,4 +228,13 @@ impl DB {
             .execute(self.dbconn())
             .expect("setting released");
     }
+    pub fn delete_player_quest(&self, p: PlayerKey, q: QuestKey) {
+        diesel::delete(
+            quest_to_player::table
+                .filter(quest_to_player::player_id.eq(p.0))
+                .filter(quest_to_player::quest_id.eq(q.0)),
+        )
+        .execute(self.dbconn())
+        .expect("Deleting quest association");
+    }
 }

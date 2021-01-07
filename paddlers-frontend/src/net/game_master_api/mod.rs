@@ -1,4 +1,4 @@
-use super::{ajax, authentication::keycloak_preferred_name, url::*};
+use super::{ajax, authentication::keycloak_preferred_name, url::*, RequestQuests};
 use crate::prelude::*;
 use paddle::{Domain, NutsCheck};
 use paddlers_shared_lib::api::story::StoryStateTransition;
@@ -177,11 +177,12 @@ impl RestApiState {
     }
 
     fn http_collect_quest(&mut self, msg: QuestCollect) {
-        let future = ajax::fetch_json(
-            "POST",
-            &format!("{}/quest/collect", &self.game_master_url),
-            &msg,
-        );
+        let uri = format!("{}/quest/collect", &self.game_master_url);
+        let future = async move {
+            ajax::fetch_empty_response("POST", &uri, &msg).await?;
+            nuts::publish(RequestQuests);
+            Ok(())
+        };
         spawn_future(future);
     }
 }

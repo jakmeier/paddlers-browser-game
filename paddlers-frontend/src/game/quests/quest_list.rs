@@ -63,6 +63,7 @@ impl Component for QuestList {
             }
             QuestListIn::Clear => {
                 self.quest_components.clear();
+                tx.send(&QuestListOut::PatchQuestList(Patch::RemoveAll));
             }
             QuestListIn::NewLocale(ui_texts) => {
                 tx.send(&QuestListOut::NewTitle(ui_texts.title.clone()));
