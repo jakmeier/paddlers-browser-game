@@ -1,6 +1,5 @@
-use paddlers_shared_lib::prelude::*;
-
 use crate::net::graphql::PlayerQuest;
+use paddlers_shared_lib::prelude::*;
 
 #[derive(Clone, Debug)]
 pub struct ResourceCondition {

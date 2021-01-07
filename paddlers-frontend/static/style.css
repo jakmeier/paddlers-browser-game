@@ -19,6 +19,29 @@ body, a {
     max-height: 100%;
 }
 
+.res {
+    display: flex;
+}
+
+.res img {
+    height: 1em;
+    padding: 0 0.5em;
+}
+
+.button {
+    display: inline-block;
+    border: 1px solid rgb(122, 122, 122);
+    cursor: pointer;
+    padding: 0.3em;
+    text-align: center;
+    vertical-align: middle;
+    pointer-events: auto;
+}
+
+.button:hover {
+    color: whitesmoke;
+}
+
 div.attack-table {
     display: grid;
     grid-template-columns: 2fr 1fr 1fr;
@@ -46,29 +69,9 @@ div.letter {
     border-radius: 33px;
 }
 
-div.letter-res {
-    display: flex;
-}
-
-div.letter-res img {
-    height: 1em;
-    padding: 0 0.5em;
-}
-
-div.letter-button {
-    display: inline-block;
-    border: 1px solid rgb(122, 122, 122);
+div.letter .button {
     background-color: #000fa1;
     color: #4099e5;
-    cursor: pointer;
-    padding: 0.3em;
-    text-align: center;
-    vertical-align: middle;
-    pointer-events: auto;
-}
-
-div.letter-button:hover {
-    color: whitesmoke;
 }
 
 section.leaderboard {
@@ -100,6 +103,48 @@ div.dialogue {
     text-align: center;
     justify-content: center;
     align-items: center;
+}
+
+section.quests {
+    padding: 20px;
+    padding-right: 60px;
+    text-align: center;
+}
+
+div.quest {
+    background-color: whitesmoke;
+    padding: 4vh;
+    margin: 10px;
+    border-radius: 33px;
+    text-align: center;
+}
+
+div.quest h3 {
+    margin: 0;
+}
+
+div.quest .rewards {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 10px;
+}
+div.quest .rewards-title {
+    font-weight: 600;
+}
+
+div.quest .reward {
+    padding: 5px;
+    margin: 5px 15px;
+    background-color: #99e540;
+    width: max-content;
+    border-radius: 10px;
+}
+
+div.quest .button {
+    background-color: #0c7f00;
+    color: #99e540;
+    padding: 0.6em;
 }
 
 /* MID */

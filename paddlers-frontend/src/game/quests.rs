@@ -1,4 +1,4 @@
-use super::Game;
+use super::{toplevel::Signal, Game};
 use crate::{
     net::{graphql::PlayerQuest, NetMsg},
     prelude::TextDb,
@@ -13,6 +13,8 @@ mod quest_component;
 mod quest_conditions;
 /// A Mogwai component ot display a list of quests
 mod quest_list;
+/// Effects and rewards receives when finishing a quest.
+mod quest_rewards;
 
 use quest_component::*;
 use quest_list::*;
@@ -22,6 +24,14 @@ pub(crate) struct QuestsFrame {
     quests_gizmo: Gizmo<QuestList>,
     /// For keeping component alive
     quests_view: View<HtmlElement>,
+}
+
+#[derive(Clone, Debug)]
+
+struct QuestUiTexts {
+    title: String,
+    rewards: String,
+    conditions: String,
 }
 
 struct NewParent(HtmlElement);
@@ -45,6 +55,7 @@ impl QuestsFrame {
     pub fn init_listeners(frame_handle: FrameHandle<Self>) {
         frame_handle.listen(Self::network_message);
         frame_handle.listen(Self::attach_to_parent);
+        frame_handle.listen(Self::signal);
         let div = frame_handle.div();
         paddle::share(NewParent(div.parent_element().unwrap()))
     }
@@ -56,6 +67,16 @@ impl QuestsFrame {
                 for quest in data {
                     self.add_quest(quest, &state.locale);
                 }
+            }
+            _ => {}
+        }
+    }
+    fn signal(&mut self, state: &mut Game, msg: &Signal) {
+        match msg {
+            Signal::LocaleUpdated => {
+                let locale = &state.locale;
+                let ui_texts = QuestUiTexts::new(locale);
+                self.quests_gizmo.send(&QuestListIn::NewLocale(ui_texts));
             }
             _ => {}
         }

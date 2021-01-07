@@ -1,5 +1,4 @@
-use crate::gui::sprites::paths::SPRITE_PATHS;
-use crate::gui::sprites::{SpriteSet, WithSprite};
+use crate::gui::sprites::{paths::SPRITE_PATHS, Sprites, *};
 use crate::prelude::*;
 use div::{doc, DivError};
 use paddle::{DisplayArea, Rectangle};
@@ -11,6 +10,28 @@ pub struct ResourcesComponent {
     parent: HtmlElement,
     currently_displayed: Vec<(ResourceType, i64)>,
     area: Rectangle,
+}
+
+use mogwai::prelude::*;
+#[allow(unused_braces)]
+pub fn mogwai_res_node(n: i64, r: ResourceType) -> ViewBuilder<HtmlElement> {
+    let img = Sprites::new_image_node_builder(r.sprite().default());
+    builder!(
+        <div class="res">
+            <div> { n.to_string() } </div>
+            { img }
+        </div>
+    )
+}
+#[allow(unused_braces)]
+pub fn mogwai_karma_res_node(n: i64) -> ViewBuilder<HtmlElement> {
+    let img = Sprites::new_image_node_builder(SpriteIndex::Simple(SingleSprite::Karma));
+    builder!(
+        <div class="res">
+            <div> { n.to_string() } </div>
+            { img }
+        </div>
+    )
 }
 
 impl ResourcesComponent {

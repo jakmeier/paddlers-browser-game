@@ -1,12 +1,8 @@
-use crate::{
-    game::{level::SpriteIndex, status_effects::SingleSprite},
-    gui::sprites::Sprites,
-    net::game_master_api::RestApiState,
-};
+use crate::{gui::gui_components::*, net::game_master_api::RestApiState};
 
 use super::{RemoveReport, Report};
 use mogwai::prelude::*;
-use paddlers_shared_lib::api::reports::ReportCollect;
+use paddlers_shared_lib::{api::reports::ReportCollect, prelude::ResourceType};
 
 #[derive(Clone)]
 pub enum ReportIn {
@@ -47,16 +43,16 @@ impl Component for Report {
 
         let mut nodes: Vec<ViewBuilder<HtmlElement>> = vec![];
         if self.karma > 0 {
-            nodes.push(new_res_node(self.karma, SingleSprite::Karma));
+            nodes.push(mogwai_karma_res_node(self.karma));
         }
         if self.feathers > 0 {
-            nodes.push(new_res_node(self.feathers, SingleSprite::Feathers));
+            nodes.push(mogwai_res_node(self.feathers, ResourceType::Feathers));
         }
         if self.sticks > 0 {
-            nodes.push(new_res_node(self.sticks, SingleSprite::Sticks));
+            nodes.push(mogwai_res_node(self.sticks, ResourceType::Sticks));
         }
         if self.logs > 0 {
-            nodes.push(new_res_node(self.logs, SingleSprite::Logs));
+            nodes.push(mogwai_res_node(self.logs, ResourceType::Logs));
         }
         let builder = builder!(
             <div class="letter">
@@ -67,22 +63,11 @@ impl Component for Report {
                 { nodes.get(3).cloned() }
                 { nodes.get(4).cloned() }
                 { nodes.get(5).cloned() }
-                <div on:click=tx_event class="letter-button">
+                <div on:click=tx_event class="button">
                     "Collect"
                 </div>
             </div>
         );
         builder
     }
-}
-
-#[allow(unused_braces)]
-fn new_res_node(n: i64, s: SingleSprite) -> ViewBuilder<HtmlElement> {
-    let img = Sprites::new_image_node_builder(SpriteIndex::Simple(s));
-    builder!(
-        <div class="letter-res">
-            <div> { n.to_string() } </div>
-            { img }
-        </div>
-    )
 }

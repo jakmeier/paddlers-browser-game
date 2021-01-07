@@ -1,4 +1,9 @@
-use super::quest_component::QuestComponent;
+use crate::prelude::TextDb;
+
+use super::{
+    quest_component::{QuestComponent, QuestIn},
+    QuestUiTexts,
+};
 use mogwai::prelude::*;
 
 /// Parent component to hold all quests
@@ -8,13 +13,25 @@ pub(super) struct QuestList {
 
 #[derive(Clone)]
 pub(super) enum QuestListIn {
+    NewLocale(QuestUiTexts),
     NewQuestComponent(QuestComponent),
     Clear,
+}
+
+impl QuestUiTexts {
+    pub(super) fn new(locale: &TextDb) -> Self {
+        Self {
+            title: locale.gettext("quests").to_owned(),
+            rewards: locale.gettext("reward").to_owned(),
+            conditions: locale.gettext("your-task").to_owned(),
+        }
+    }
 }
 
 #[derive(Clone)]
 pub(super) enum QuestListOut {
     PatchQuestList(Patch<View<HtmlElement>>),
+    NewTitle(String),
 }
 impl QuestList {
     pub fn new() -> Self {
@@ -47,19 +64,42 @@ impl Component for QuestList {
             QuestListIn::Clear => {
                 self.quest_components.clear();
             }
+            QuestListIn::NewLocale(ui_texts) => {
+                tx.send(&QuestListOut::NewTitle(ui_texts.title.clone()));
+                for q in &self.quest_components {
+                    q.send(&QuestIn::NewUiTexts(ui_texts.clone()));
+                }
+            }
         }
     }
 
+    #[allow(unused_braces)]
     fn view(
         &self,
         _tx: &Transmitter<QuestListIn>,
         rx: &Receiver<QuestListOut>,
     ) -> ViewBuilder<HtmlElement> {
         builder! {
-            <section>
-                <h2>"Duties"</h2>
-                <div patch:children=rx.branch_map(|QuestListOut::PatchQuestList(patch)| patch.clone())></div>
+            <section class="quests">
+                <h2>
+                    { ("Quests", rx.branch_filter_map(filter_title)) }
+                </h2>
+                <div patch:children=rx.branch_filter_map(filter_path_quest)> </div>
             </section>
         }
+    }
+}
+
+fn filter_title(msg: &QuestListOut) -> Option<String> {
+    match msg {
+        QuestListOut::NewTitle(title) => Some(title.clone()),
+        _ => None,
+    }
+}
+fn filter_path_quest(msg: &QuestListOut) -> Option<Patch<View<HtmlElement>>> {
+    if let QuestListOut::PatchQuestList(patch) = msg {
+        Some(patch.clone())
+    } else {
+        None
     }
 }

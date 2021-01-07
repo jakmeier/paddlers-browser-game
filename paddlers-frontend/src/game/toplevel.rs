@@ -12,6 +12,7 @@ use crate::specs::WorldExt;
 pub enum Signal {
     ResourcesUpdated,            // Notification
     PlayerInfoUpdated,           // Notification
+    LocaleUpdated,               // Notification
     BuildingBuilt(BuildingType), // Signal
     NewReportCount(usize),       // Notification
 }

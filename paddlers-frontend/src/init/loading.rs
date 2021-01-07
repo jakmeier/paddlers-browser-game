@@ -180,14 +180,13 @@ impl LoadingFrame {
 
                 let leaderboard_data = *loaded_data.extract::<NetMsg>()?;
                 paddle::share(leaderboard_data);
-                paddle::share_foreground(Signal::ResourcesUpdated);
-
+                
                 let reports = *loaded_data.extract::<ReportsResponse>()?;
                 paddle::share(NetMsg::Reports(reports));
-
+                
                 let quests = *loaded_data.extract::<QuestsResponse>()?;
                 paddle::share(NetMsg::Quests(quests));
-
+                
                 let viewer_activity = nuts::new_domained_activity(viewer, &Domain::Frame);
                 viewer_activity.subscribe_domained(|viewer, domain, _: &UpdateWorld| {
                     let game: &mut Game = domain.try_get_mut().expect("Forgot to insert Game?");
@@ -196,6 +195,10 @@ impl LoadingFrame {
                     viewer.set_view(view);
                 });
                 load_game_event_manager();
+
+                paddle::share_foreground(Signal::ResourcesUpdated);
+                paddle::share(Signal::LocaleUpdated);
+
                 crate::net::start_sync();
                 paddle::share(PostInit);
 

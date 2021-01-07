@@ -1,9 +1,10 @@
-use crate::game::{components::*, map::VillageMetaInfo};
 use crate::{
     game::{
+        components::*,
         components::{EntityContainer, ForestComponent, Level, StatusEffects, UiMenu},
         fight::{Aura, Health},
-        mana::Mana,
+        mana::{Mana, RenderVariant, TableTextProvider},
+        map::VillageMetaInfo,
         player_info::PlayerInfo,
     },
     gui::{gui_components::*, menu::*, sprites::*, ui_state::Now, utils::*, z::*},
@@ -12,14 +13,6 @@ use paddle::*;
 use paddle::{quicksilver_compat::*, DisplayArea, FitStrategy};
 use paddlers_shared_lib::prelude::*;
 use specs::prelude::*;
-
-use crate::{
-    game::{
-        level::SpriteIndex,
-        mana::{RenderVariant, TableTextProvider},
-    },
-    gui::{sprites::Sprites, z::Z_MENU_BOX},
-};
 
 pub fn draw_entity_img(
     world: &World,
