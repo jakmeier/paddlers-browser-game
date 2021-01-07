@@ -186,6 +186,39 @@ pub type QuestsRawResponse = player_quests_query::ResponseData;
 pub type QuestsResponse = Vec<player_quests_query::PlayerQuestsQueryPlayerQuests>;
 pub type PlayerQuest = player_quests_query::PlayerQuestsQueryPlayerQuests;
 
+use paddlers_shared_lib::models::BuildingType;
+impl Into<BuildingType> for &player_quests_query::BuildingType {
+    fn into(self) -> BuildingType {
+        match self {
+            player_quests_query::BuildingType::RED_FLOWERS => BuildingType::RedFlowers,
+            player_quests_query::BuildingType::BLUE_FLOWERS => BuildingType::BlueFlowers,
+            player_quests_query::BuildingType::TREE => BuildingType::Tree,
+            player_quests_query::BuildingType::BUNDLING_STATION => BuildingType::BundlingStation,
+            player_quests_query::BuildingType::SAW_MILL => BuildingType::SawMill,
+            player_quests_query::BuildingType::PRESENT_A => BuildingType::PresentA,
+            player_quests_query::BuildingType::PRESENT_B => BuildingType::PresentB,
+            player_quests_query::BuildingType::TEMPLE => BuildingType::Temple,
+            player_quests_query::BuildingType::SINGLE_NEST => BuildingType::SingleNest,
+            player_quests_query::BuildingType::TRIPLE_NEST => BuildingType::TripleNest,
+            player_quests_query::BuildingType::Other(_) => panic!("Unexpected BuildingType"),
+        }
+    }
+}
+impl Into<TaskType> for &player_quests_query::TaskType {
+    fn into(self) -> TaskType {
+        match self {
+            player_quests_query::TaskType::IDLE => TaskType::Idle,
+            player_quests_query::TaskType::WALK => TaskType::Walk,
+            player_quests_query::TaskType::GATHER_STICKS => TaskType::GatherSticks,
+            player_quests_query::TaskType::CHOP_TREE => TaskType::ChopTree,
+            player_quests_query::TaskType::DEFEND => TaskType::Defend,
+            player_quests_query::TaskType::WELCOME_ABILITY => TaskType::WelcomeAbility,
+            player_quests_query::TaskType::COLLECT_REWARD => TaskType::CollectReward,
+            player_quests_query::TaskType::Other(_) => panic!("Unexpected task type"),
+        }
+    }
+}
+
 use paddlers_shared_lib::models::TaskType;
 impl Into<TaskType> for &WorkerTaskType {
     fn into(self) -> TaskType {
