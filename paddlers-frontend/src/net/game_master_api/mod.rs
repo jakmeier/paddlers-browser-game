@@ -1,11 +1,11 @@
 use super::{ajax, authentication::keycloak_preferred_name, url::*};
 use crate::prelude::*;
 use paddle::{Domain, NutsCheck};
-use paddlers_shared_lib::api::reports::ReportCollect;
 use paddlers_shared_lib::api::story::StoryStateTransition;
 use paddlers_shared_lib::api::{
     attacks::*, keys::*, shop::*, statistics::*, tasks::TaskList, PlayerInitData,
 };
+use paddlers_shared_lib::api::{quests::QuestCollect, reports::ReportCollect};
 use std::sync::atomic::AtomicBool;
 
 static SENT_PLAYER_CREATION: AtomicBool = AtomicBool::new(false);
@@ -35,6 +35,7 @@ impl RestApiState {
         let rest_activity = nuts::new_domained_activity(rest, &Domain::Network);
         rest_activity.private_channel(Self::http_buy_prophet);
         rest_activity.private_channel(Self::http_collect_reward);
+        rest_activity.private_channel(Self::http_collect_quest);
         rest_activity.private_channel(Self::http_create_player);
         rest_activity.private_channel(Self::http_delete_building);
         rest_activity.private_channel(Self::http_invite);
@@ -170,6 +171,15 @@ impl RestApiState {
         let future = ajax::fetch_json(
             "POST",
             &format!("{}/report/collect", &self.game_master_url),
+            &msg,
+        );
+        spawn_future(future);
+    }
+
+    fn http_collect_quest(&mut self, msg: QuestCollect) {
+        let future = ajax::fetch_json(
+            "POST",
+            &format!("{}/quest/collect", &self.game_master_url),
             &msg,
         );
         spawn_future(future);

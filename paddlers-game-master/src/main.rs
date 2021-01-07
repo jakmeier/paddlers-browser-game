@@ -22,7 +22,8 @@ use game_master::{
     town_worker::TownWorker, GameMaster,
 };
 use paddlers_shared_lib::api::{
-    attacks::InvitationDescriptor, reports::ReportCollect, story::StoryStateTransition,
+    attacks::InvitationDescriptor, quests::QuestCollect, reports::ReportCollect,
+    story::StoryStateTransition,
 };
 use paddlers_shared_lib::prelude::HoboKey;
 use paddlers_shared_lib::{
@@ -148,6 +149,11 @@ fn main() {
                 web::resource("/stats")
                     .data(web::Json::<FrontendRuntimeStatistics>)
                     .route(web::post().to(statistics::new_frontend_info)),
+            )
+            .service(
+                web::resource("/quest/collect")
+                    .data(web::Json::<QuestCollect>)
+                    .route(web::post().to_async(api::collect_quest)),
             )
     })
     .disable_signals()

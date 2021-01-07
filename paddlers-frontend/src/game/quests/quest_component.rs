@@ -1,8 +1,11 @@
-use crate::{net::graphql::PlayerQuest, prelude::TextDb};
+use crate::{
+    net::{game_master_api::RestApiState, graphql::PlayerQuest},
+    prelude::TextDb,
+};
 
-use super::{quest_conditions::*, QuestUiTexts, quest_rewards::ResourceReward};
+use super::{quest_conditions::*, quest_rewards::ResourceReward, QuestUiTexts};
 use mogwai::prelude::*;
-use paddlers_shared_lib::prelude::QuestKey;
+use paddlers_shared_lib::{api::quests::QuestCollect, prelude::QuestKey};
 
 #[derive(Clone)]
 /// A Mogwai component ot display a single quest
@@ -60,8 +63,7 @@ impl Component for QuestComponent {
                 tx_view.send(uit);
             }
             QuestIn::CollectMe => {
-                // TODO: Send request to backend
-                println!("Quest reward collecting not implemented");
+                nuts::send_to::<RestApiState, _>(QuestCollect { quest: self.id });
             }
         }
     }
