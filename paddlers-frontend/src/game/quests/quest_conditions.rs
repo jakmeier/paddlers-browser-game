@@ -1,11 +1,16 @@
 use crate::{
     game::town::Town,
-    gui::sprites::{SpriteIndex, Sprites, WithSprite},
+    gui::sprites::{SingleSprite, SpriteIndex, Sprites, WithSprite},
 };
 use crate::{game::town_resources::TownResources, net::graphql::PlayerQuest};
 use mogwai::prelude::*;
 use paddlers_shared_lib::prelude::*;
 
+#[derive(Clone)]
+pub struct KarmaCondition {
+    amount: i64,
+    gizmo: Gizmo<QuestConditionComponent>,
+}
 #[derive(Clone)]
 pub struct ResourceCondition {
     t: ResourceType,
@@ -26,6 +31,26 @@ pub struct WorkerCondition {
     amount: i64,
     cached_current: i64,
     gizmo: Gizmo<QuestConditionComponent>,
+}
+
+impl KarmaCondition {
+    pub fn new(karma_goal: i64, karma_now: i64) -> Self {
+        let component = QuestConditionComponent::new(
+            SpriteIndex::Simple(SingleSprite::Karma),
+            karma_goal,
+            karma_now,
+        );
+        Self {
+            amount: karma_goal,
+            gizmo: Gizmo::from(component),
+        }
+    }
+    pub fn view_builder(&self) -> ViewBuilder<HtmlElement> {
+        self.gizmo.view_builder()
+    }
+    pub fn update_karma(&self, karma: i64) {
+        self.gizmo.send(&NewCurrentValue(karma));
+    }
 }
 
 impl ResourceCondition {

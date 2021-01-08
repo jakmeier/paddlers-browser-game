@@ -1,4 +1,6 @@
-use super::{toplevel::Signal, town::Town, town_resources::TownResources, Game};
+use super::{
+    player_info::PlayerInfo, toplevel::Signal, town::Town, town_resources::TownResources, Game,
+};
 use crate::{
     net::{graphql::PlayerQuest, NetMsg},
     prelude::TextDb,
@@ -80,6 +82,7 @@ impl QuestsFrame {
                         &state.locale,
                         &state.town(),
                         &state.town_world().fetch::<TownResources>(),
+                        &state.player(),
                     );
                 }
             }
@@ -107,7 +110,7 @@ impl QuestsFrame {
                 self.quests_gizmo.send(&QuestListIn::BuildingChange(*b, -1));
             }
             Signal::PlayerInfoUpdated => {
-                // TODO: karma
+                self.quests_gizmo.send(&QuestListIn::PlayerInfo(*state.player().clone()))
             }
             Signal::NewWorker(t) => {
                 self.quests_gizmo.send(&QuestListIn::WorkerChange(*t, 1));
@@ -130,10 +133,15 @@ impl QuestsFrame {
         locale: &TextDb,
         town: &Town,
         bank: &TownResources,
+        player_info: &PlayerInfo,
     ) {
         self.quests_gizmo
             .send(&QuestListIn::NewQuestComponent(QuestComponent::new(
-                quest, locale, town, bank,
+                quest,
+                locale,
+                town,
+                bank,
+                player_info,
             )))
     }
 }

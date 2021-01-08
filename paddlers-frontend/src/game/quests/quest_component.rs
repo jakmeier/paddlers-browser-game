@@ -1,5 +1,5 @@
 use crate::{
-    game::{town::Town, town_resources::TownResources},
+    game::{player_info::PlayerInfo, town::Town, town_resources::TownResources},
     net::{game_master_api::RestApiState, graphql::PlayerQuest},
     prelude::TextDb,
 };
@@ -18,10 +18,10 @@ pub(super) struct QuestComponent {
     title: String,
     text: String,
     // conditions
+    karma_condition: Option<KarmaCondition>,
     building_conditions: Vec<BuildingCondition>,
     worker_conditions: Vec<WorkerCondition>,
     resource_conditions: Vec<ResourceCondition>,
-    karma_condition: Option<i64>,
     // rewards
     resource_rewards: Vec<ResourceReward>,
 }
@@ -32,19 +32,24 @@ impl QuestComponent {
         locale: &TextDb,
         town: &Town,
         bank: &TownResources,
+        player: &PlayerInfo,
     ) -> Self {
         let id = quest.id.parse().unwrap();
         let key = &quest.key;
+        let karma_condition = quest
+            .conditions
+            .karma
+            .map(|karma_goal| KarmaCondition::new(karma_goal, player.karma()));
         Self {
             id: QuestKey(id),
             title: locale.gettext(key).to_owned(),
             text: locale
                 .gettext(&(key.to_owned() + "-description"))
                 .to_owned(),
+            karma_condition,
             building_conditions: BuildingCondition::from_quest_ref(quest, town),
             worker_conditions: WorkerCondition::from_quest_ref(quest, town),
             resource_conditions: ResourceCondition::from_quest_ref(quest, bank),
-            karma_condition: quest.conditions.karma,
             resource_rewards: ResourceReward::from_quest_ref(quest),
         }
     }
@@ -57,6 +62,7 @@ pub(super) enum QuestIn {
     ResourceUpdate(Vec<(ResourceType, i64)>),
     BuildingChange(BuildingType, i64),
     WorkerChange(TaskType, i64),
+    Karma(i64),
 }
 
 impl Component for QuestComponent {
@@ -92,6 +98,11 @@ impl Component for QuestComponent {
                     child.worker_change(*task, *n);
                 }
             }
+            QuestIn::Karma(karma) => {
+                if let Some(child) = &self.karma_condition {
+                    child.update_karma(*karma);
+                }
+            }
         }
     }
 
@@ -110,6 +121,7 @@ impl Component for QuestComponent {
             <p> { &self.text } </p>
             <div class="conditions">
                 <div class="title"> { ("CONDITIONS", rx.branch_map(|uit| uit.conditions.clone())) }":" </div>
+                { self.karma_condition.as_ref().map(KarmaCondition::view_builder) }
                 { self.building_conditions.get(0).map(BuildingCondition::view_builder) }
                 { self.building_conditions.get(1).map(BuildingCondition::view_builder) }
                 { self.building_conditions.get(2).map(BuildingCondition::view_builder) }

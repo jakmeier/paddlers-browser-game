@@ -1,3 +1,5 @@
+use crate::game::player_info::PlayerInfo;
+
 use super::{
     quest_component::{QuestComponent, QuestIn},
     QuestUiTexts,
@@ -17,6 +19,7 @@ pub(super) enum QuestListIn {
     Clear,
     ResourceUpdate(Vec<(ResourceType, i64)>),
     BuildingChange(BuildingType, i64),
+    PlayerInfo(PlayerInfo),
     WorkerChange(TaskType, i64),
 }
 
@@ -76,6 +79,12 @@ impl Component for QuestList {
             QuestListIn::WorkerChange(task, n) => {
                 for q in &self.quest_components {
                     q.send(&QuestIn::WorkerChange(*task, *n));
+                }
+            }
+            QuestListIn::PlayerInfo(p) => {
+                let karma = p.karma();
+                for q in &self.quest_components {
+                    q.send(&QuestIn::Karma(karma));
                 }
             }
         }
