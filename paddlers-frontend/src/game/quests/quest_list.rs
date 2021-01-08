@@ -28,6 +28,10 @@ pub(super) enum QuestListOut {
     PatchQuestList(Patch<View<HtmlElement>>),
     NewTitle(String),
 }
+#[derive(Clone)]
+pub enum QuestChildMessage {
+    ProgressChange(i64),
+}
 impl QuestList {
     pub fn new() -> Self {
         Self {

@@ -6,27 +6,29 @@ use crate::{game::town_resources::TownResources, net::graphql::PlayerQuest};
 use mogwai::prelude::*;
 use paddlers_shared_lib::prelude::*;
 
+use super::{quest_component::QuestIn, quest_list::QuestChildMessage};
+
 #[derive(Clone)]
 pub struct KarmaCondition {
     amount: i64,
     gizmo: Gizmo<QuestConditionComponent>,
 }
 #[derive(Clone)]
-pub struct ResourceCondition {
+pub(super) struct ResourceCondition {
     t: ResourceType,
     amount: i64,
     gizmo: Gizmo<QuestConditionComponent>,
 }
 
 #[derive(Clone)]
-pub struct BuildingCondition {
+pub(super) struct BuildingCondition {
     t: BuildingType,
     amount: i64,
     cached_current: i64,
     gizmo: Gizmo<QuestConditionComponent>,
 }
 #[derive(Clone)]
-pub struct WorkerCondition {
+pub(super) struct WorkerCondition {
     t: TaskType,
     amount: i64,
     cached_current: i64,
@@ -40,9 +42,10 @@ impl KarmaCondition {
             karma_goal,
             karma_now,
         );
+        let gizmo = Gizmo::from(component);
         Self {
             amount: karma_goal,
-            gizmo: Gizmo::from(component),
+            gizmo,
         }
     }
     pub fn view_builder(&self) -> ViewBuilder<HtmlElement> {
@@ -54,27 +57,36 @@ impl KarmaCondition {
 }
 
 impl ResourceCondition {
-    pub fn from_quest_ref(quest: &PlayerQuest, bank: &TownResources) -> Vec<Self> {
+    pub fn from_quest_ref(quest: &PlayerQuest, bank: &TownResources) -> (Vec<Self>, usize) {
         let mut out = vec![];
+        let mut completed = 0;
         let rcs = &quest.conditions.resources;
 
-        if let Some(c) = Self::new(ResourceType::Feathers, rcs.feathers, bank) {
+        if let Some(c) = Self::new(ResourceType::Feathers, rcs.feathers, bank, &mut completed) {
             out.push(c);
         }
-        if let Some(c) = Self::new(ResourceType::Sticks, rcs.sticks, bank) {
+        if let Some(c) = Self::new(ResourceType::Sticks, rcs.sticks, bank, &mut completed) {
             out.push(c);
         }
-        if let Some(c) = Self::new(ResourceType::Logs, rcs.logs, bank) {
+        if let Some(c) = Self::new(ResourceType::Logs, rcs.logs, bank, &mut completed) {
             out.push(c);
         }
-        out
+        (out, completed)
     }
-    fn new(t: ResourceType, amount: i64, bank: &TownResources) -> Option<Self> {
+    fn new(
+        t: ResourceType,
+        amount: i64,
+        bank: &TownResources,
+        completed_counter: &mut usize,
+    ) -> Option<Self> {
         if amount <= 0 {
             return None;
         }
         let current = bank.read(t);
         let component = QuestConditionComponent::new(t.sprite().default(), amount, current);
+        if amount <= current {
+            *completed_counter += 1;
+        }
         Some(Self {
             t,
             amount,
@@ -121,6 +133,15 @@ impl BuildingCondition {
             self.gizmo.send(&NewCurrentValue(self.cached_current));
         }
     }
+    pub fn is_complete(&self) -> bool {
+        self.amount <= self.cached_current
+    }
+    pub fn subscriber(&mut self, sub: &Subscriber<QuestIn>) {
+        sub.subscribe_filter_map(&self.gizmo.recv, |msg| match msg {
+            QuestConditionViewUpdate::ToParent(msg) => Some(QuestIn::ChildMessage(msg.clone())),
+            _ => None,
+        });
+    }
 }
 
 impl WorkerCondition {
@@ -153,9 +174,12 @@ impl WorkerCondition {
             self.gizmo.send(&NewCurrentValue(self.cached_current));
         }
     }
+    pub fn is_complete(&self) -> bool {
+        self.amount <= self.cached_current
+    }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 /// A Mogwai component that shows something like this:
 ///
 ///          X / Y [IMAGE]
@@ -171,10 +195,11 @@ pub(super) struct QuestConditionComponent {
 #[derive(Clone, Debug)]
 pub(super) struct NewCurrentValue(i64);
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub(super) enum QuestConditionViewUpdate {
     UpdateProgress(i64),
     MarkComplete,
+    ToParent(QuestChildMessage),
 }
 
 impl QuestConditionComponent {
@@ -214,11 +239,22 @@ impl Component for QuestConditionComponent {
         tx_view: &Transmitter<QuestConditionViewUpdate>,
         _subscriber: &Subscriber<NewCurrentValue>,
     ) {
+        let before = self.goal <= self.current;
         if self.goal <= msg.0 {
             tx_view.send(&QuestConditionViewUpdate::UpdateProgress(self.goal));
             tx_view.send(&QuestConditionViewUpdate::MarkComplete);
+            if !before {
+                tx_view.send(&QuestConditionViewUpdate::ToParent(
+                    QuestChildMessage::ProgressChange(1),
+                ));
+            }
         } else {
             tx_view.send(&QuestConditionViewUpdate::UpdateProgress(msg.0));
+            if before {
+                tx_view.send(&QuestConditionViewUpdate::ToParent(
+                    QuestChildMessage::ProgressChange(-1),
+                ));
+            }
         }
     }
 }

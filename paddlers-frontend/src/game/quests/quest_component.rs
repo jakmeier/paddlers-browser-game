@@ -4,7 +4,9 @@ use crate::{
     prelude::TextDb,
 };
 
-use super::{quest_conditions::*, quest_rewards::ResourceReward, QuestUiTexts};
+use super::{
+    quest_conditions::*, quest_list::QuestChildMessage, quest_rewards::ResourceReward, QuestUiTexts,
+};
 use mogwai::prelude::*;
 use paddlers_shared_lib::{
     api::quests::QuestCollect,
@@ -17,6 +19,7 @@ pub(super) struct QuestComponent {
     id: QuestKey,
     title: String,
     text: String,
+    init: bool,
     // conditions
     karma_condition: Option<KarmaCondition>,
     building_conditions: Vec<BuildingCondition>,
@@ -24,6 +27,9 @@ pub(super) struct QuestComponent {
     resource_conditions: Vec<ResourceCondition>,
     // rewards
     resource_rewards: Vec<ResourceReward>,
+    // progress tracking
+    total_conditions: usize,
+    completed_conditions: usize,
 }
 
 impl QuestComponent {
@@ -40,6 +46,24 @@ impl QuestComponent {
             .conditions
             .karma
             .map(|karma_goal| KarmaCondition::new(karma_goal, player.karma()));
+
+        let building_conditions = BuildingCondition::from_quest_ref(quest, town);
+        let worker_conditions = WorkerCondition::from_quest_ref(quest, town);
+        let (resource_conditions, res_completed) =
+            ResourceCondition::from_quest_ref(quest, bank);
+        let resource_rewards = ResourceReward::from_quest_ref(quest);
+
+        let buildings_completed = building_conditions
+            .iter()
+            .filter(|c| c.is_complete())
+            .count();
+        let worker_completed = worker_conditions.iter().filter(|c| c.is_complete()).count();
+        let completed_conditions = res_completed + buildings_completed + worker_completed;
+        let total_conditions = karma_condition.iter().count()
+            + building_conditions.len()
+            + worker_conditions.len()
+            + resource_conditions.len();
+
         Self {
             id: QuestKey(id),
             title: locale.gettext(key).to_owned(),
@@ -47,11 +71,20 @@ impl QuestComponent {
                 .gettext(&(key.to_owned() + "-description"))
                 .to_owned(),
             karma_condition,
-            building_conditions: BuildingCondition::from_quest_ref(quest, town),
-            worker_conditions: WorkerCondition::from_quest_ref(quest, town),
-            resource_conditions: ResourceCondition::from_quest_ref(quest, bank),
-            resource_rewards: ResourceReward::from_quest_ref(quest),
+            building_conditions,
+            worker_conditions,
+            resource_conditions,
+            resource_rewards,
+            completed_conditions,
+            total_conditions,
+            init: false,
         }
+    }
+    fn subscribe_conditions(&mut self, sub: &Subscriber<QuestIn>) {
+        for child in &mut self.building_conditions {
+            child.subscriber(sub);
+        }
+        // TODO: other conditions
     }
 }
 
@@ -63,22 +96,34 @@ pub(super) enum QuestIn {
     BuildingChange(BuildingType, i64),
     WorkerChange(TaskType, i64),
     Karma(i64),
+    ChildMessage(QuestChildMessage),
+}
+
+#[derive(Clone)]
+pub(super) enum QuestViewMessage {
+    QuestUiTexts(QuestUiTexts),
+    ReadyToCollect(bool),
 }
 
 impl Component for QuestComponent {
     type ModelMsg = QuestIn;
-    type ViewMsg = QuestUiTexts;
+    type ViewMsg = QuestViewMessage;
     type DomNode = HtmlElement;
 
     fn update(
         &mut self,
         msg: &QuestIn,
         tx_view: &Transmitter<Self::ViewMsg>,
-        _subscriber: &Subscriber<QuestIn>,
+        subscriber: &Subscriber<QuestIn>,
     ) {
+        if !self.init {
+            self.subscribe_conditions(subscriber);
+            self.init = true;
+        }
+
         match msg {
             QuestIn::NewUiTexts(uit) => {
-                tx_view.send(uit);
+                tx_view.send(&QuestViewMessage::QuestUiTexts(uit.clone()));
             }
             QuestIn::CollectMe => {
                 nuts::send_to::<RestApiState, _>(QuestCollect { quest: self.id });
@@ -103,6 +148,12 @@ impl Component for QuestComponent {
                     child.update_karma(*karma);
                 }
             }
+            QuestIn::ChildMessage(QuestChildMessage::ProgressChange(diff)) => {
+                self.completed_conditions += *diff as usize;
+                tx_view.send(&QuestViewMessage::ReadyToCollect(
+                    self.completed_conditions == self.total_conditions,
+                ));
+            }
         }
     }
 
@@ -110,9 +161,19 @@ impl Component for QuestComponent {
     fn view(
         &self,
         tx: &Transmitter<QuestIn>,
-        rx: &Receiver<QuestUiTexts>,
+        rx: &Receiver<QuestViewMessage>,
     ) -> ViewBuilder<HtmlElement> {
         let tx_event = tx.contra_map(|_: &Event| QuestIn::CollectMe);
+
+        let ready_now = self.completed_conditions == self.total_conditions;
+        let ui_texts_rx = rx.branch_filter_map(ui_texts_filter);
+
+        let button_toggle = (
+            visibility(ready_now), // initial config
+            rx.branch_filter_map(completed_filter)
+                .branch_map(|ready| visibility(*ready)), // config later
+        );
+
         // Note: Until I learn a better way to display vectors of nodes  in RSX,
         // I'll just assume a max number and use get() to optionally display each element.
         builder!(
@@ -120,7 +181,7 @@ impl Component for QuestComponent {
             <h3> { &self.title } </h3>
             <p> { &self.text } </p>
             <div class="conditions">
-                <div class="title"> { ("CONDITIONS", rx.branch_map(|uit| uit.conditions.clone())) }":" </div>
+                <div class="title"> { ("CONDITIONS", ui_texts_rx.branch_map(|uit| uit.conditions.clone())) }":" </div>
                 { self.karma_condition.as_ref().map(KarmaCondition::view_builder) }
                 { self.building_conditions.get(0).map(BuildingCondition::view_builder) }
                 { self.building_conditions.get(1).map(BuildingCondition::view_builder) }
@@ -135,15 +196,33 @@ impl Component for QuestComponent {
                 { self.resource_conditions.get(2).map(ResourceCondition::view_builder) }
             </div>
             <div class="rewards">
-                <div class="title"> { ("REWARDS", rx.branch_map(|uit| uit.rewards.clone())) }":" </div>
+                <div class="title"> { ("REWARDS", ui_texts_rx.branch_map(|uit| uit.rewards.clone())) }":" </div>
                 { self.resource_rewards.get(0).cloned().map(ResourceReward::view_builder) }
                 { self.resource_rewards.get(1).cloned().map(ResourceReward::view_builder) }
                 { self.resource_rewards.get(2).cloned().map(ResourceReward::view_builder) }
             </div>
-            <div on:click=tx_event class="button">
+            <div on:click=tx_event class="button" style:visibility={button_toggle}>
                 "Collect"
             </div>
         </div>
         )
     }
+}
+
+fn ui_texts_filter(msg: &QuestViewMessage) -> Option<QuestUiTexts> {
+    if let QuestViewMessage::QuestUiTexts(uit) = msg {
+        Some(uit.clone())
+    } else {
+        None
+    }
+}
+fn completed_filter(msg: &QuestViewMessage) -> Option<bool> {
+    if let QuestViewMessage::ReadyToCollect(ready) = msg {
+        Some(*ready)
+    } else {
+        None
+    }
+}
+fn visibility(show: bool) -> String {
+    if show { "visible" } else { "hidden" }.to_string()
 }

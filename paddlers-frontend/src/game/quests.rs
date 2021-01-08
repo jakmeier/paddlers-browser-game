@@ -109,9 +109,9 @@ impl QuestsFrame {
             Signal::BuildingRemoved(b) => {
                 self.quests_gizmo.send(&QuestListIn::BuildingChange(*b, -1));
             }
-            Signal::PlayerInfoUpdated => {
-                self.quests_gizmo.send(&QuestListIn::PlayerInfo(*state.player().clone()))
-            }
+            Signal::PlayerInfoUpdated => self
+                .quests_gizmo
+                .send(&QuestListIn::PlayerInfo(*state.player().clone())),
             Signal::NewWorker(t) => {
                 self.quests_gizmo.send(&QuestListIn::WorkerChange(*t, 1));
             }
