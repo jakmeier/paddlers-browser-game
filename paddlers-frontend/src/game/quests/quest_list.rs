@@ -3,7 +3,7 @@ use super::{
     QuestUiTexts,
 };
 use mogwai::prelude::*;
-use paddlers_shared_lib::prelude::{BuildingType, ResourceType};
+use paddlers_shared_lib::prelude::{BuildingType, ResourceType, TaskType};
 
 /// Parent component to hold all quests
 pub(super) struct QuestList {
@@ -16,7 +16,8 @@ pub(super) enum QuestListIn {
     NewQuestComponent(QuestComponent),
     Clear,
     ResourceUpdate(Vec<(ResourceType, i64)>),
-    BuildingBuilt(BuildingType),
+    BuildingChange(BuildingType, i64),
+    WorkerChange(TaskType, i64),
 }
 
 #[derive(Clone)]
@@ -67,9 +68,14 @@ impl Component for QuestList {
                     q.send(&QuestIn::ResourceUpdate(res.clone()));
                 }
             }
-            QuestListIn::BuildingBuilt(b) => {
+            QuestListIn::BuildingChange(b, n) => {
                 for q in &self.quest_components {
-                    q.send(&QuestIn::AddBuilding(*b));
+                    q.send(&QuestIn::BuildingChange(*b, *n));
+                }
+            }
+            QuestListIn::WorkerChange(task, n) => {
+                for q in &self.quest_components {
+                    q.send(&QuestIn::WorkerChange(*task, *n));
                 }
             }
         }

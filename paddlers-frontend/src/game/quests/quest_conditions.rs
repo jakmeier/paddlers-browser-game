@@ -1,8 +1,8 @@
-use crate::net::graphql::PlayerQuest;
 use crate::{
     game::town::Town,
     gui::sprites::{SpriteIndex, Sprites, WithSprite},
 };
+use crate::{game::town_resources::TownResources, net::graphql::PlayerQuest};
 use mogwai::prelude::*;
 use paddlers_shared_lib::prelude::*;
 
@@ -24,30 +24,32 @@ pub struct BuildingCondition {
 pub struct WorkerCondition {
     t: TaskType,
     amount: i64,
-    // gizmo: Gizmo<QuestConditionComponent>,
+    cached_current: i64,
+    gizmo: Gizmo<QuestConditionComponent>,
 }
 
 impl ResourceCondition {
-    pub fn from_quest_ref(quest: &PlayerQuest) -> Vec<Self> {
+    pub fn from_quest_ref(quest: &PlayerQuest, bank: &TownResources) -> Vec<Self> {
         let mut out = vec![];
         let rcs = &quest.conditions.resources;
 
-        if let Some(c) = Self::new(ResourceType::Feathers, rcs.feathers) {
+        if let Some(c) = Self::new(ResourceType::Feathers, rcs.feathers, bank) {
             out.push(c);
         }
-        if let Some(c) = Self::new(ResourceType::Sticks, rcs.sticks) {
+        if let Some(c) = Self::new(ResourceType::Sticks, rcs.sticks, bank) {
             out.push(c);
         }
-        if let Some(c) = Self::new(ResourceType::Logs, rcs.logs) {
+        if let Some(c) = Self::new(ResourceType::Logs, rcs.logs, bank) {
             out.push(c);
         }
         out
     }
-    fn new(t: ResourceType, amount: i64) -> Option<Self> {
+    fn new(t: ResourceType, amount: i64, bank: &TownResources) -> Option<Self> {
         if amount <= 0 {
             return None;
         }
-        let component = QuestConditionComponent::new(t.sprite().default(), amount, 0);
+        let current = bank.read(t);
+        let component = QuestConditionComponent::new(t.sprite().default(), amount, current);
         Some(Self {
             t,
             amount,
@@ -88,9 +90,9 @@ impl BuildingCondition {
     pub fn view_builder(&self) -> ViewBuilder<HtmlElement> {
         self.gizmo.view_builder()
     }
-    pub fn add_building(&mut self, bt: BuildingType) {
+    pub fn building_change(&mut self, bt: BuildingType, n: i64) {
         if self.t == bt {
-            self.cached_current += 1;
+            self.cached_current += n;
             self.gizmo.send(&NewCurrentValue(self.cached_current));
         }
     }
@@ -100,16 +102,32 @@ impl WorkerCondition {
     pub fn from_quest_ref(quest: &PlayerQuest, town: &Town) -> Vec<Self> {
         let mut out = vec![];
         for c in &quest.conditions.workers {
+            let t: TaskType = (&c.task_type).into();
+            let amount = c.amount;
+            let cached_current = town.count_workers(t) as i64;
+            let gizmo = Gizmo::new(QuestConditionComponent::new(
+                t.sprite().default(),
+                amount,
+                cached_current,
+            ));
             out.push(WorkerCondition {
-                t: (&c.task_type).into(),
-                amount: c.amount,
+                t,
+                amount,
+                gizmo,
+                cached_current,
             })
         }
         out
     }
-    // pub fn view_builder(&self) -> ViewBuilder<HtmlElement> {
-    //     self.gizmo.view_builder()
-    // }
+    pub fn view_builder(&self) -> ViewBuilder<HtmlElement> {
+        self.gizmo.view_builder()
+    }
+    pub fn worker_change(&mut self, t: TaskType, n: i64) {
+        if self.t == t {
+            self.cached_current += n;
+            self.gizmo.send(&NewCurrentValue(self.cached_current));
+        }
+    }
 }
 
 #[derive(Clone, Debug)]

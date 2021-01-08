@@ -86,4 +86,11 @@ impl BuildingType {
             BuildingType::TripleNest => false, // false for now, to avoid problems with associated hobos
         }
     }
+    pub fn worker_task(&self) -> TaskType {
+        match self {
+            BuildingType::BundlingStation => TaskType::GatherSticks,
+            BuildingType::SawMill => TaskType::ChopTree,
+            _ => TaskType::Idle,
+        }
+    }
 }

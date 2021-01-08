@@ -10,11 +10,14 @@ use crate::specs::WorldExt;
 #[derive(Clone, Debug)]
 /// Signals are a way to broadcast events for event listeners across views.
 pub enum Signal {
-    ResourcesUpdated,            // Notification
-    PlayerInfoUpdated,           // Notification
-    LocaleUpdated,               // Notification
-    BuildingBuilt(BuildingType), // Signal
-    NewReportCount(usize),       // Notification
+    ResourcesUpdated,
+    PlayerInfoUpdated,
+    LocaleUpdated,
+    BuildingBuilt(BuildingType),
+    BuildingRemoved(BuildingType),
+    NewReportCount(usize),
+    NewWorker(TaskType),
+    WorkerStopped(TaskType),
 }
 
 impl Game {

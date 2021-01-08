@@ -1,10 +1,14 @@
-use crate::{game::town::Town, net::{game_master_api::RestApiState, graphql::PlayerQuest}, prelude::TextDb};
+use crate::{
+    game::{town::Town, town_resources::TownResources},
+    net::{game_master_api::RestApiState, graphql::PlayerQuest},
+    prelude::TextDb,
+};
 
 use super::{quest_conditions::*, quest_rewards::ResourceReward, QuestUiTexts};
 use mogwai::prelude::*;
 use paddlers_shared_lib::{
     api::quests::QuestCollect,
-    prelude::{BuildingType, QuestKey, ResourceType},
+    prelude::{BuildingType, QuestKey, ResourceType, TaskType},
 };
 
 #[derive(Clone)]
@@ -23,7 +27,12 @@ pub(super) struct QuestComponent {
 }
 
 impl QuestComponent {
-    pub(super) fn new(quest: &PlayerQuest, locale: &TextDb, town: &Town) -> Self {
+    pub(super) fn new(
+        quest: &PlayerQuest,
+        locale: &TextDb,
+        town: &Town,
+        bank: &TownResources,
+    ) -> Self {
         let id = quest.id.parse().unwrap();
         let key = &quest.key;
         Self {
@@ -34,7 +43,7 @@ impl QuestComponent {
                 .to_owned(),
             building_conditions: BuildingCondition::from_quest_ref(quest, town),
             worker_conditions: WorkerCondition::from_quest_ref(quest, town),
-            resource_conditions: ResourceCondition::from_quest_ref(quest),
+            resource_conditions: ResourceCondition::from_quest_ref(quest, bank),
             karma_condition: quest.conditions.karma,
             resource_rewards: ResourceReward::from_quest_ref(quest),
         }
@@ -46,7 +55,8 @@ pub(super) enum QuestIn {
     CollectMe,
     NewUiTexts(QuestUiTexts),
     ResourceUpdate(Vec<(ResourceType, i64)>),
-    AddBuilding(BuildingType),
+    BuildingChange(BuildingType, i64),
+    WorkerChange(TaskType, i64),
 }
 
 impl Component for QuestComponent {
@@ -72,9 +82,14 @@ impl Component for QuestComponent {
                     child.update_res(&res);
                 }
             }
-            QuestIn::AddBuilding(b) => {
+            QuestIn::BuildingChange(b, n) => {
                 for child in &mut self.building_conditions {
-                    child.add_building(*b);
+                    child.building_change(*b, *n);
+                }
+            }
+            QuestIn::WorkerChange(task, n) => {
+                for child in &mut self.worker_conditions {
+                    child.worker_change(*task, *n);
                 }
             }
         }
@@ -100,6 +115,9 @@ impl Component for QuestComponent {
                 { self.building_conditions.get(2).map(BuildingCondition::view_builder) }
                 { self.building_conditions.get(3).map(BuildingCondition::view_builder) }
                 { self.building_conditions.get(4).map(BuildingCondition::view_builder) }
+                { self.worker_conditions.get(0).map(WorkerCondition::view_builder) }
+                { self.worker_conditions.get(1).map(WorkerCondition::view_builder) }
+                { self.worker_conditions.get(2).map(WorkerCondition::view_builder) }
                 { self.resource_conditions.get(0).map(ResourceCondition::view_builder) }
                 { self.resource_conditions.get(1).map(ResourceCondition::view_builder) }
                 { self.resource_conditions.get(2).map(ResourceCondition::view_builder) }

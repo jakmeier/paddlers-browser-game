@@ -250,3 +250,18 @@ impl WithSprite for AbilityType {
         }
     }
 }
+
+use paddlers_shared_lib::prelude::TaskType;
+impl WithSprite for TaskType {
+    fn sprite(&self) -> SpriteSet {
+        match self {
+            TaskType::Idle => SpriteSet::Simple(SingleSprite::Roger),
+            TaskType::Walk => SpriteSet::Simple(SingleSprite::NewOrder),
+            TaskType::Defend => SpriteSet::Simple(SingleSprite::NewOrder),
+            TaskType::GatherSticks => SpriteSet::Simple(SingleSprite::BundlingStation),
+            TaskType::ChopTree => SpriteSet::Simple(SingleSprite::SawMill),
+            TaskType::WelcomeAbility => SpriteSet::Simple(SingleSprite::WelcomeAbility),
+            TaskType::CollectReward => SpriteSet::Simple(SingleSprite::PresentA),
+        }
+    }
+}

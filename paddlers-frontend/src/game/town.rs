@@ -23,6 +23,8 @@ use paddlers_shared_lib::game_mechanics::town::TileState as TileStateEx;
 pub(crate) use paddlers_shared_lib::game_mechanics::town::TownTileType as TileType;
 use paddlers_shared_lib::game_mechanics::town::*;
 use paddlers_shared_lib::prelude::*;
+
+use super::toplevel::Signal;
 pub type TileState = TileStateEx<specs::Entity>;
 
 pub struct Town {
@@ -132,9 +134,12 @@ impl Town {
         self.state.insert(i, state);
     }
     pub fn remove_building(&mut self, i: TileIndex) -> specs::Entity {
+        let building_type = self.building_type(i).unwrap();
         let tile = self.map.tile_type_mut(i);
         *tile.unwrap() = TileType::EMPTY;
-        self.state.remove(&i).entity
+        let entity = self.state.remove(&i).entity;
+        paddle::share(Signal::BuildingRemoved(building_type));
+        entity
     }
     pub fn building_type(&self, i: TileIndex) -> PadlResult<BuildingType> {
         match self.map.tile_type(i) {
@@ -147,16 +152,32 @@ impl Town {
     pub fn add_entity_to_building(&mut self, i: &TileIndex) -> PadlResult<()> {
         match self.state.get_mut(i) {
             None => PadlErrorCode::NoStateForTile(*i).dev(),
-            Some(s) => s.try_add_entity().map_err(PadlError::from),
+            Some(s) => {
+                s.try_add_entity().map_err(PadlError::from)?;
+                let task_type = self.building_type(*i)?.worker_task();
+                paddle::share(Signal::NewWorker(task_type));
+                Ok(())
+            }
         }
     }
     pub fn remove_entity_from_building(&mut self, i: &TileIndex) -> PadlResult<()> {
         match self.state.get_mut(i) {
             None => PadlErrorCode::NoStateForTile(*i).dev(),
-            Some(s) => s.try_remove_entity().map_err(PadlError::from),
+            Some(s) => {
+                s.try_remove_entity().map_err(PadlError::from)?;
+                let task_type = self.building_type(*i)?.worker_task();
+                paddle::share(Signal::WorkerStopped(task_type));
+                Ok(())
+            }
         }
     }
     pub fn count_building(&self, t: BuildingType) -> usize {
         self.map.count_tile_type(TownTileType::BUILDING(t))
+    }
+    pub fn count_workers(&self, t: TaskType) -> usize {
+        self.map
+            .tiles_with_task(t)
+            .iter()
+            .fold(0, |acc, index| acc + self.state.count_workers_at(index))
     }
 }

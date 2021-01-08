@@ -75,7 +75,12 @@ impl QuestsFrame {
             NetMsg::Quests(data) => {
                 self.reset_quests();
                 for quest in data {
-                    self.add_quest(quest, &state.locale, &state.town());
+                    self.add_quest(
+                        quest,
+                        &state.locale,
+                        &state.town(),
+                        &state.town_world().fetch::<TownResources>(),
+                    );
                 }
             }
             _ => {}
@@ -96,10 +101,19 @@ impl QuestsFrame {
                 self.quests_gizmo.send(&QuestListIn::ResourceUpdate(res));
             }
             Signal::BuildingBuilt(b) => {
-                self.quests_gizmo.send(&QuestListIn::BuildingBuilt(*b));
+                self.quests_gizmo.send(&QuestListIn::BuildingChange(*b, 1));
+            }
+            Signal::BuildingRemoved(b) => {
+                self.quests_gizmo.send(&QuestListIn::BuildingChange(*b, -1));
             }
             Signal::PlayerInfoUpdated => {
                 // TODO: karma
+            }
+            Signal::NewWorker(t) => {
+                self.quests_gizmo.send(&QuestListIn::WorkerChange(*t, 1));
+            }
+            Signal::WorkerStopped(t) => {
+                self.quests_gizmo.send(&QuestListIn::WorkerChange(*t, -1));
             }
             _ => {}
         }
@@ -110,10 +124,16 @@ impl QuestsFrame {
     fn reset_quests(&mut self) {
         self.quests_gizmo.send(&QuestListIn::Clear);
     }
-    fn add_quest(&mut self, quest: &PlayerQuest, locale: &TextDb, town: &Town) {
+    fn add_quest(
+        &mut self,
+        quest: &PlayerQuest,
+        locale: &TextDb,
+        town: &Town,
+        bank: &TownResources,
+    ) {
         self.quests_gizmo
             .send(&QuestListIn::NewQuestComponent(QuestComponent::new(
-                quest, locale, town,
+                quest, locale, town, bank,
             )))
     }
 }
