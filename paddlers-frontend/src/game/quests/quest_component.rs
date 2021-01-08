@@ -1,13 +1,10 @@
-use crate::{
-    net::{game_master_api::RestApiState, graphql::PlayerQuest},
-    prelude::TextDb,
-};
+use crate::{game::town::Town, net::{game_master_api::RestApiState, graphql::PlayerQuest}, prelude::TextDb};
 
 use super::{quest_conditions::*, quest_rewards::ResourceReward, QuestUiTexts};
 use mogwai::prelude::*;
 use paddlers_shared_lib::{
     api::quests::QuestCollect,
-    prelude::{QuestKey, ResourceType},
+    prelude::{BuildingType, QuestKey, ResourceType},
 };
 
 #[derive(Clone)]
@@ -26,7 +23,7 @@ pub(super) struct QuestComponent {
 }
 
 impl QuestComponent {
-    pub(super) fn new(quest: &PlayerQuest, locale: &TextDb) -> Self {
+    pub(super) fn new(quest: &PlayerQuest, locale: &TextDb, town: &Town) -> Self {
         let id = quest.id.parse().unwrap();
         let key = &quest.key;
         Self {
@@ -35,8 +32,8 @@ impl QuestComponent {
             text: locale
                 .gettext(&(key.to_owned() + "-description"))
                 .to_owned(),
-            building_conditions: BuildingCondition::from_quest_ref(quest),
-            worker_conditions: WorkerCondition::from_quest_ref(quest),
+            building_conditions: BuildingCondition::from_quest_ref(quest, town),
+            worker_conditions: WorkerCondition::from_quest_ref(quest, town),
             resource_conditions: ResourceCondition::from_quest_ref(quest),
             karma_condition: quest.conditions.karma,
             resource_rewards: ResourceReward::from_quest_ref(quest),
@@ -49,6 +46,7 @@ pub(super) enum QuestIn {
     CollectMe,
     NewUiTexts(QuestUiTexts),
     ResourceUpdate(Vec<(ResourceType, i64)>),
+    AddBuilding(BuildingType),
 }
 
 impl Component for QuestComponent {
@@ -74,6 +72,11 @@ impl Component for QuestComponent {
                     child.update_res(&res);
                 }
             }
+            QuestIn::AddBuilding(b) => {
+                for child in &mut self.building_conditions {
+                    child.add_building(*b);
+                }
+            }
         }
     }
 
@@ -84,12 +87,19 @@ impl Component for QuestComponent {
         rx: &Receiver<QuestUiTexts>,
     ) -> ViewBuilder<HtmlElement> {
         let tx_event = tx.contra_map(|_: &Event| QuestIn::CollectMe);
+        // Note: Until I learn a better way to display vectors of nodes  in RSX,
+        // I'll just assume a max number and use get() to optionally display each element.
         builder!(
         <div class="quest">
             <h3> { &self.title } </h3>
             <p> { &self.text } </p>
             <div class="conditions">
                 <div class="title"> { ("CONDITIONS", rx.branch_map(|uit| uit.conditions.clone())) }":" </div>
+                { self.building_conditions.get(0).map(BuildingCondition::view_builder) }
+                { self.building_conditions.get(1).map(BuildingCondition::view_builder) }
+                { self.building_conditions.get(2).map(BuildingCondition::view_builder) }
+                { self.building_conditions.get(3).map(BuildingCondition::view_builder) }
+                { self.building_conditions.get(4).map(BuildingCondition::view_builder) }
                 { self.resource_conditions.get(0).map(ResourceCondition::view_builder) }
                 { self.resource_conditions.get(1).map(ResourceCondition::view_builder) }
                 { self.resource_conditions.get(2).map(ResourceCondition::view_builder) }

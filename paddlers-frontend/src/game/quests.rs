@@ -1,4 +1,4 @@
-use super::{toplevel::Signal, town_resources::TownResources, Game};
+use super::{toplevel::Signal, town::Town, town_resources::TownResources, Game};
 use crate::{
     net::{graphql::PlayerQuest, NetMsg},
     prelude::TextDb,
@@ -75,7 +75,7 @@ impl QuestsFrame {
             NetMsg::Quests(data) => {
                 self.reset_quests();
                 for quest in data {
-                    self.add_quest(quest, &state.locale);
+                    self.add_quest(quest, &state.locale, &state.town());
                 }
             }
             _ => {}
@@ -95,6 +95,12 @@ impl QuestsFrame {
                     .non_zero_resources();
                 self.quests_gizmo.send(&QuestListIn::ResourceUpdate(res));
             }
+            Signal::BuildingBuilt(b) => {
+                self.quests_gizmo.send(&QuestListIn::BuildingBuilt(*b));
+            }
+            Signal::PlayerInfoUpdated => {
+                // TODO: karma
+            }
             _ => {}
         }
     }
@@ -104,10 +110,10 @@ impl QuestsFrame {
     fn reset_quests(&mut self) {
         self.quests_gizmo.send(&QuestListIn::Clear);
     }
-    fn add_quest(&mut self, quest: &PlayerQuest, locale: &TextDb) {
+    fn add_quest(&mut self, quest: &PlayerQuest, locale: &TextDb, town: &Town) {
         self.quests_gizmo
             .send(&QuestListIn::NewQuestComponent(QuestComponent::new(
-                quest, locale,
+                quest, locale, town,
             )))
     }
 }

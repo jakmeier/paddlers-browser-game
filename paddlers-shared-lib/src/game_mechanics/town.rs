@@ -81,6 +81,13 @@ impl TownMap {
     pub fn tile_type_mut(&mut self, index: TileIndex) -> Option<&mut TownTileType> {
         self.0.get_mut(index.0).and_then(|m| m.get_mut(index.1))
     }
+    pub fn count_tile_type(&self, tile_type: TownTileType) -> usize {
+        self.0
+            .iter()
+            .flat_map(|slice| slice.into_iter())
+            .filter(|t| **t == tile_type)
+            .count()
+    }
 }
 
 impl TownTileType {

@@ -190,7 +190,6 @@ impl LoadingFrame {
                 let viewer_activity = nuts::new_domained_activity(viewer, &Domain::Frame);
                 viewer_activity.subscribe_domained(|viewer, domain, _: &UpdateWorld| {
                     let game: &mut Game = domain.try_get_mut().expect("Forgot to insert Game?");
-                    // FIXME; really need to be set every frame?
                     let view: UiView = *game.world.fetch();
                     viewer.set_view(view);
                 });

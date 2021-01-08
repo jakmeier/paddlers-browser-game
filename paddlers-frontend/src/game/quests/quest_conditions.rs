@@ -1,5 +1,8 @@
-use crate::gui::sprites::{SpriteIndex, Sprites, WithSprite};
 use crate::net::graphql::PlayerQuest;
+use crate::{
+    game::town::Town,
+    gui::sprites::{SpriteIndex, Sprites, WithSprite},
+};
 use mogwai::prelude::*;
 use paddlers_shared_lib::prelude::*;
 
@@ -10,15 +13,18 @@ pub struct ResourceCondition {
     gizmo: Gizmo<QuestConditionComponent>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct BuildingCondition {
     t: BuildingType,
     amount: i64,
+    cached_current: i64,
+    gizmo: Gizmo<QuestConditionComponent>,
 }
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct WorkerCondition {
     t: TaskType,
     amount: i64,
+    // gizmo: Gizmo<QuestConditionComponent>,
 }
 
 impl ResourceCondition {
@@ -41,7 +47,7 @@ impl ResourceCondition {
         if amount <= 0 {
             return None;
         }
-        let component = QuestConditionComponent::new(t.sprite().default(), amount);
+        let component = QuestConditionComponent::new(t.sprite().default(), amount, 0);
         Some(Self {
             t,
             amount,
@@ -59,20 +65,39 @@ impl ResourceCondition {
 }
 
 impl BuildingCondition {
-    pub fn from_quest_ref(quest: &PlayerQuest) -> Vec<Self> {
+    pub fn from_quest_ref(quest: &PlayerQuest, town: &Town) -> Vec<Self> {
         let mut out = vec![];
         for c in &quest.conditions.buildings {
+            let t: BuildingType = (&c.building_type).into();
+            let amount = c.amount;
+            let cached_current = town.count_building(t) as i64;
+            let gizmo = Gizmo::new(QuestConditionComponent::new(
+                t.sprite().default(),
+                amount,
+                cached_current,
+            ));
             out.push(BuildingCondition {
-                t: (&c.building_type).into(),
-                amount: c.amount,
+                t,
+                amount,
+                gizmo,
+                cached_current,
             })
         }
         out
     }
+    pub fn view_builder(&self) -> ViewBuilder<HtmlElement> {
+        self.gizmo.view_builder()
+    }
+    pub fn add_building(&mut self, bt: BuildingType) {
+        if self.t == bt {
+            self.cached_current += 1;
+            self.gizmo.send(&NewCurrentValue(self.cached_current));
+        }
+    }
 }
 
 impl WorkerCondition {
-    pub fn from_quest_ref(quest: &PlayerQuest) -> Vec<Self> {
+    pub fn from_quest_ref(quest: &PlayerQuest, town: &Town) -> Vec<Self> {
         let mut out = vec![];
         for c in &quest.conditions.workers {
             out.push(WorkerCondition {
@@ -82,9 +107,18 @@ impl WorkerCondition {
         }
         out
     }
+    // pub fn view_builder(&self) -> ViewBuilder<HtmlElement> {
+    //     self.gizmo.view_builder()
+    // }
 }
 
 #[derive(Clone, Debug)]
+/// A Mogwai component that shows something like this:
+///
+///          X / Y [IMAGE]
+///
+/// Y and the IMAGE are fixed upon creation.
+/// X can be updated. Its displayed value will be capped at Y (showing Y / Y if a value X greater than Y is set)
 pub(super) struct QuestConditionComponent {
     sprite: SpriteIndex,
     goal: i64,
@@ -101,11 +135,11 @@ pub(super) enum QuestConditionViewUpdate {
 }
 
 impl QuestConditionComponent {
-    pub fn new(sprite: SpriteIndex, goal: i64) -> Self {
+    pub fn new(sprite: SpriteIndex, goal: i64, current: i64) -> Self {
         Self {
             sprite,
             goal,
-            current: 0,
+            current,
         }
     }
 }
@@ -122,9 +156,10 @@ impl Component for QuestConditionComponent {
         rx: &Receiver<QuestConditionViewUpdate>,
     ) -> ViewBuilder<HtmlElement> {
         let img = Sprites::new_image_node_builder(self.sprite);
+        let current = self.current.min(self.goal);
         builder!(
-            <div class={("condition condition-in-progress".to_string(), rx.branch_map(css_class))}>
-                <div> { (self.current.to_string(), rx.branch_filter_map(filter_progress_update)) } "/" {self.goal.to_string()} </div>
+            <div class={( if current < self.goal { "condition condition-in-progress".to_string() } else  { "condition condition-met".to_owned() } , rx.branch_map(css_class))}>
+                <div> { (current.to_string(), rx.branch_filter_map(filter_progress_update)) } "/" {self.goal.to_string()} </div>
                 { img }
             </div>
         )

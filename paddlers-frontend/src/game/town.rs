@@ -156,4 +156,7 @@ impl Town {
             Some(s) => s.try_remove_entity().map_err(PadlError::from),
         }
     }
+    pub fn count_building(&self, t: BuildingType) -> usize {
+        self.map.count_tile_type(TownTileType::BUILDING(t))
+    }
 }
