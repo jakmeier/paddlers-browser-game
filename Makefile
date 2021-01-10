@@ -83,3 +83,8 @@ translations: paddlers-frontend/static/locale/en.mo paddlers-frontend/static/loc
 .PHONY: images
 images:
 	$(MAKE) -C paddlers-frontend images
+
+# Code generation
+.PHONY: shared-lib-generated-code
+shared-lib-generated-code:
+	cd specification-loader; cargo +nightly run -- generate ../paddlers-shared-lib/src/generated

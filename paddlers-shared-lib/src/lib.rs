@@ -18,6 +18,7 @@ pub mod macros;
 pub mod api;
 pub mod config;
 pub mod display;
+pub mod generated;
 pub mod graphql_types;
 pub mod models;
 pub mod prelude;

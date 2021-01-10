@@ -101,6 +101,12 @@ msgstr "Back to town"
 
 
 # Quests
+msgid "hello-world"
+msgstr "Spread the word"
+
+msgid "hello-world-description"
+msgstr "Look at the sad visitor. Go and cheer the Paddler up and then you might receive a thank you letter afterwards!"
+
 msgid "create-forest"
 msgstr "Forest creation"
 

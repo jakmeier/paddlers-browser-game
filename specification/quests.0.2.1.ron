@@ -1,6 +1,17 @@
 #![enable(implicit_some)]
 [
     (
+        quest_key: "hello-world",
+        next_story_state: FirstVisitorWelcomed,
+        condition: (
+            karma: 1,
+        ),
+        reward: (
+            resources: {
+            },
+        )
+    ),
+    (
         quest_key: "create-forest",
         next_story_state: TreePlanted,
         condition: (
