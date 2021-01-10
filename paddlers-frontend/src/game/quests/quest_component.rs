@@ -81,7 +81,15 @@ impl QuestComponent {
         for child in &mut self.building_conditions {
             child.subscriber(sub);
         }
-        // TODO: other conditions
+        for child in &mut self.worker_conditions {
+            child.subscriber(sub);
+        }
+        for child in &mut self.resource_conditions {
+            child.subscriber(sub);
+        }
+        for child in &mut self.karma_condition {
+            child.subscriber(sub);
+        }
     }
 }
 

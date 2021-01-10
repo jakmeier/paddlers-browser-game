@@ -9,7 +9,7 @@ use paddlers_shared_lib::prelude::*;
 use super::quest_component::QuestIn;
 
 #[derive(Clone)]
-pub struct KarmaCondition {
+pub(super) struct KarmaCondition {
     amount: i64,
     gizmo: Gizmo<QuestConditionComponent>,
 }
@@ -53,6 +53,9 @@ impl KarmaCondition {
     }
     pub fn update_karma(&self, karma: i64) {
         self.gizmo.send(&NewCurrentValue(karma));
+    }
+    pub fn subscriber(&mut self, sub: &Subscriber<QuestIn>) {
+        sub.subscribe_map(&self.gizmo.recv, |msg| QuestIn::ChildMessage(msg.clone()));
     }
 }
 
@@ -100,6 +103,9 @@ impl ResourceCondition {
         if let Some((_, n)) = res.iter().find(|(t, _)| *t == self.t) {
             self.gizmo.send(&NewCurrentValue(*n));
         }
+    }
+    pub fn subscriber(&mut self, sub: &Subscriber<QuestIn>) {
+        sub.subscribe_map(&self.gizmo.recv, |msg| QuestIn::ChildMessage(msg.clone()));
     }
 }
 
@@ -173,6 +179,9 @@ impl WorkerCondition {
     }
     pub fn is_complete(&self) -> bool {
         self.amount <= self.cached_current
+    }
+    pub fn subscriber(&mut self, sub: &Subscriber<QuestIn>) {
+        sub.subscribe_map(&self.gizmo.recv, |msg| QuestIn::ChildMessage(msg.clone()));
     }
 }
 
