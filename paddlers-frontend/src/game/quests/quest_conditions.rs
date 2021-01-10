@@ -6,7 +6,7 @@ use crate::{game::town_resources::TownResources, net::graphql::PlayerQuest};
 use mogwai::prelude::*;
 use paddlers_shared_lib::prelude::*;
 
-use super::{quest_component::QuestIn, quest_list::QuestChildMessage};
+use super::quest_component::QuestIn;
 
 #[derive(Clone)]
 pub struct KarmaCondition {
@@ -137,10 +137,7 @@ impl BuildingCondition {
         self.amount <= self.cached_current
     }
     pub fn subscriber(&mut self, sub: &Subscriber<QuestIn>) {
-        sub.subscribe_filter_map(&self.gizmo.recv, |msg| match msg {
-            QuestConditionViewUpdate::ToParent(msg) => Some(QuestIn::ChildMessage(msg.clone())),
-            _ => None,
-        });
+        sub.subscribe_map(&self.gizmo.recv, |msg| QuestIn::ChildMessage(msg.clone()));
     }
 }
 
@@ -199,7 +196,7 @@ pub(super) struct NewCurrentValue(i64);
 pub(super) enum QuestConditionViewUpdate {
     UpdateProgress(i64),
     MarkComplete,
-    ToParent(QuestChildMessage),
+    MarkIncomplete,
 }
 
 impl QuestConditionComponent {
@@ -240,20 +237,16 @@ impl Component for QuestConditionComponent {
         _subscriber: &Subscriber<NewCurrentValue>,
     ) {
         let before = self.goal <= self.current;
-        if self.goal <= msg.0 {
+        self.current = msg.0;
+        if self.goal <= self.current {
             tx_view.send(&QuestConditionViewUpdate::UpdateProgress(self.goal));
-            tx_view.send(&QuestConditionViewUpdate::MarkComplete);
             if !before {
-                tx_view.send(&QuestConditionViewUpdate::ToParent(
-                    QuestChildMessage::ProgressChange(1),
-                ));
+                tx_view.send(&QuestConditionViewUpdate::MarkComplete);
             }
         } else {
-            tx_view.send(&QuestConditionViewUpdate::UpdateProgress(msg.0));
+            tx_view.send(&QuestConditionViewUpdate::UpdateProgress(self.current));
             if before {
-                tx_view.send(&QuestConditionViewUpdate::ToParent(
-                    QuestChildMessage::ProgressChange(-1),
-                ));
+                tx_view.send(&QuestConditionViewUpdate::MarkIncomplete);
             }
         }
     }

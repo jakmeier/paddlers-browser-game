@@ -4,9 +4,7 @@ use crate::{
     prelude::TextDb,
 };
 
-use super::{
-    quest_conditions::*, quest_list::QuestChildMessage, quest_rewards::ResourceReward, QuestUiTexts,
-};
+use super::{quest_conditions::*, quest_rewards::ResourceReward, QuestUiTexts};
 use mogwai::prelude::*;
 use paddlers_shared_lib::{
     api::quests::QuestCollect,
@@ -49,8 +47,7 @@ impl QuestComponent {
 
         let building_conditions = BuildingCondition::from_quest_ref(quest, town);
         let worker_conditions = WorkerCondition::from_quest_ref(quest, town);
-        let (resource_conditions, res_completed) =
-            ResourceCondition::from_quest_ref(quest, bank);
+        let (resource_conditions, res_completed) = ResourceCondition::from_quest_ref(quest, bank);
         let resource_rewards = ResourceReward::from_quest_ref(quest);
 
         let buildings_completed = building_conditions
@@ -96,7 +93,7 @@ pub(super) enum QuestIn {
     BuildingChange(BuildingType, i64),
     WorkerChange(TaskType, i64),
     Karma(i64),
-    ChildMessage(QuestChildMessage),
+    ChildMessage(QuestConditionViewUpdate),
 }
 
 #[derive(Clone)]
@@ -148,8 +145,16 @@ impl Component for QuestComponent {
                     child.update_karma(*karma);
                 }
             }
-            QuestIn::ChildMessage(QuestChildMessage::ProgressChange(diff)) => {
-                self.completed_conditions += *diff as usize;
+            QuestIn::ChildMessage(child_msg) => {
+                match child_msg {
+                    QuestConditionViewUpdate::MarkComplete => {
+                        self.completed_conditions += 1;
+                    }
+                    QuestConditionViewUpdate::MarkIncomplete => {
+                        self.completed_conditions -= 1;
+                    }
+                    _ => {}
+                }
                 tx_view.send(&QuestViewMessage::ReadyToCollect(
                     self.completed_conditions == self.total_conditions,
                 ));
@@ -168,11 +173,10 @@ impl Component for QuestComponent {
         let ready_now = self.completed_conditions == self.total_conditions;
         let ui_texts_rx = rx.branch_filter_map(ui_texts_filter);
 
-        let button_toggle = (
-            visibility(ready_now), // initial config
-            rx.branch_filter_map(completed_filter)
-                .branch_map(|ready| visibility(*ready)), // config later
-        );
+        let visible_now = visibility(&ready_now);
+        let visible_receiver = rx
+            .branch_filter_map(completed_filter)
+            .branch_map(visibility);
 
         // Note: Until I learn a better way to display vectors of nodes  in RSX,
         // I'll just assume a max number and use get() to optionally display each element.
@@ -201,7 +205,7 @@ impl Component for QuestComponent {
                 { self.resource_rewards.get(1).cloned().map(ResourceReward::view_builder) }
                 { self.resource_rewards.get(2).cloned().map(ResourceReward::view_builder) }
             </div>
-            <div on:click=tx_event class="button" style:visibility={button_toggle}>
+            <div on:click=tx_event class="button" style:visibility={(visible_now,visible_receiver)}>
                 "Collect"
             </div>
         </div>
@@ -223,6 +227,6 @@ fn completed_filter(msg: &QuestViewMessage) -> Option<bool> {
         None
     }
 }
-fn visibility(show: bool) -> String {
-    if show { "visible" } else { "hidden" }.to_string()
+fn visibility(show: &bool) -> String {
+    if *show { "visible" } else { "hidden" }.to_string()
 }
