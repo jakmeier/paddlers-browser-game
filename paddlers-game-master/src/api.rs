@@ -69,21 +69,14 @@ pub(crate) fn purchase_building(
     if let Err(err) = check_owns_village(&db, &auth, body.village) {
         return err;
     }
-    if !db.player_allowed_to_build(
-        building,
-        body.village,
-        &auth.player_object(&db).expect("no player"),
-    ) {
+    let player = auth.player_object(&db).expect("no player");
+    if !db.player_allowed_to_build(building, body.village, player) {
         return HttpResponse::BadRequest()
             .body("Player not allowed to build")
             .into();
     }
 
-    db.try_buy_building(building, (body.x, body.y), body.village)
-        .and_then(|_| {
-            let player = auth.player_key(&db)?;
-            db.building_insertion_triggers(building, player, addr)
-        })
+    db.try_buy_building(building, (body.x, body.y), body.village, player, addr)
         .map_or_else(|e| HttpResponse::from(&e), |_| HttpResponse::Ok().into())
 }
 

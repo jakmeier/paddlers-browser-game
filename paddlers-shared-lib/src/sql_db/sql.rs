@@ -1,5 +1,5 @@
-use crate::prelude::*;
 use crate::schema::*;
+use crate::{generated::QuestName, prelude::*};
 use diesel::prelude::*;
 
 pub trait GameDB {
@@ -384,6 +384,13 @@ pub trait GameDB {
             .load::<Quest>(self.dbconn())
             .expect("Error loading data");
         results
+    }
+    fn quest_by_name(&self, q: QuestName) -> QueryResult<Quest> {
+        let quest_key = q.unique_string();
+        quests::table
+            .filter(quests::quest_key.eq(quest_key))
+            .select(quests::all_columns)
+            .get_result(self.dbconn())
     }
     fn effects_on_hobo(&self, hobo: HoboKey) -> Vec<Effect> {
         let results = effects::table

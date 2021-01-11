@@ -121,8 +121,7 @@ impl Game {
             }
             StoryAction::StoryProgress(new_story_state) => {
                 let t = StoryStateTransition {
-                    before: self.story_state(),
-                    after: new_story_state,
+                    now: self.story_state(),
                 };
                 nuts::send_to::<RestApiState, _>(t);
                 paddle::share(crate::game::dialogue::NewStoryState { new_story_state });

@@ -1,13 +1,13 @@
 //! This module has been auto-generate using specification loader.
 #[derive(Clone,Copy,Debug)]
-pub enum Quest {
+pub enum QuestName {
     HelloWorld,
     CreateForest,
     BuildBundligStation,
     UseBundligStation,
 }
-impl Quest {
-    pub fn key(&self) -> &'static str {
+impl QuestName {
+    pub fn unique_string(&self) -> &'static str {
         match self {
             Self::HelloWorld => "hello-world",
             Self::CreateForest => "create-forest",

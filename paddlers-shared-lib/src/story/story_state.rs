@@ -3,7 +3,7 @@
 //! The StoryState values are stored in the database per player and provided as PlayerInfo to the frontend.
 //! Transitions are performed in the game-master when a StoryTrigger happens, following the FSM definied in `fn transition`.
 //! In each transition, a set of StoryActions is also performed in the game-master and/or frontend.
-use crate::generated::Quest;
+use crate::generated::QuestName;
 use crate::prelude::BuildingType;
 use crate::story::story_action::StoryAction;
 use crate::story::story_trigger::StoryTrigger;
@@ -46,21 +46,24 @@ impl StoryState {
                 next_state = Self::VisitorArrived;
             }
             (Self::VisitorArrived, DialogueStoryTrigger) => {
-                action = Some(StoryAction::StartQuest(Quest::HelloWorld));
+                action = Some(StoryAction::StartQuest(QuestName::HelloWorld));
             }
-            (Self::VisitorArrived, StoryTrigger::FinishedQuest(Quest::HelloWorld)) => {
-                action = Some(StoryAction::StartQuest(Quest::CreateForest));
+            (Self::VisitorArrived, StoryTrigger::FinishedQuest(QuestName::HelloWorld)) => {
+                action = Some(StoryAction::StartQuest(QuestName::CreateForest));
                 next_state = Self::FirstVisitorWelcomed;
             }
-            (Self::FirstVisitorWelcomed, StoryTrigger::FinishedQuest(Quest::CreateForest)) => {
-                action = Some(StoryAction::StartQuest(Quest::BuildBundligStation));
+            (Self::FirstVisitorWelcomed, StoryTrigger::FinishedQuest(QuestName::CreateForest)) => {
+                action = Some(StoryAction::StartQuest(QuestName::CreateForest));
                 next_state = Self::TreePlanted;
             }
-            (Self::TreePlanted, StoryTrigger::FinishedQuest(Quest::BuildBundligStation)) => {
-                action = Some(StoryAction::StartQuest(Quest::UseBundligStation));
+            (Self::TreePlanted, StoryTrigger::FinishedQuest(QuestName::BuildBundligStation)) => {
+                action = Some(StoryAction::StartQuest(QuestName::UseBundligStation));
                 next_state = Self::StickGatheringStationBuild;
             }
-            (Self::StickGatheringStationBuild, StoryTrigger::FinishedQuest(Quest::UseBundligStation)) => {
+            (
+                Self::StickGatheringStationBuild,
+                StoryTrigger::FinishedQuest(QuestName::UseBundligStation),
+            ) => {
                 next_state = Self::GatheringSticks;
             }
             (Self::GatheringSticks, _) => {}

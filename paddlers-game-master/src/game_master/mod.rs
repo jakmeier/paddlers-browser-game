@@ -3,6 +3,7 @@ pub(super) mod attack_spawn;
 pub(super) mod economy_worker;
 pub(super) mod event;
 mod event_queue;
+pub(super) mod story_worker;
 mod town_defence;
 pub(super) mod town_worker;
 

@@ -1,6 +1,6 @@
 use actix::dev::{MessageResponse, ResponseChannel};
 use actix::prelude::*;
-use paddlers_shared_lib::{prelude::*, story::story_state::StoryState};
+use paddlers_shared_lib::{generated::QuestName, prelude::*, story::story_state::StoryState};
 
 #[derive(Debug)]
 /// Deferred DB requests should not be dependent on the state of the DB
@@ -9,6 +9,8 @@ use paddlers_shared_lib::{prelude::*, story::story_state::StoryState};
 pub enum DeferredDbStatement {
     NewProphet(VillageKey),
     NewAttack(ScheduledAttack),
+    AssignQuest(PlayerKey, QuestName),
+    PlayerUpdate(PlayerKey, StoryState),
 }
 impl Message for DeferredDbStatement {
     type Result = ();
@@ -52,4 +54,23 @@ pub struct CollectQuestMessage {
 }
 impl Message for CollectQuestMessage {
     type Result = ();
+}
+/// Get the/a village from a player
+pub struct PlayerHomeLookup {
+    pub player: PlayerKey,
+}
+pub struct PlayerHome(pub VillageKey);
+impl Message for PlayerHomeLookup {
+    type Result = PlayerHome;
+}
+impl<A, M> MessageResponse<A, M> for PlayerHome
+where
+    A: Actor,
+    M: Message<Result = PlayerHome>,
+{
+    fn handle<R: ResponseChannel<M>>(self, _: &mut A::Context, tx: Option<R>) {
+        if let Some(tx) = tx {
+            tx.send(self);
+        }
+    }
 }

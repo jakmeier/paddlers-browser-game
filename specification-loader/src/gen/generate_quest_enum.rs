@@ -13,7 +13,7 @@ pub fn generate_quest_enum(out: &mut impl std::io::Write) -> std::io::Result<()>
 
 fn generate_type(out: &mut impl std::io::Write) -> std::io::Result<()> {
     writeln!(out, "#[derive(Clone,Copy,Debug)]")?;
-    writeln!(out, "pub enum Quest {{")?;
+    writeln!(out, "pub enum QuestName {{")?;
     let indent = "    ";
     for quest in all_quests() {
         writeln!(out, "{}{},", indent, quest.quest_key.to_camel_case())?;
@@ -22,9 +22,9 @@ fn generate_type(out: &mut impl std::io::Write) -> std::io::Result<()> {
     Ok(())
 }
 fn generate_impl_key(out: &mut impl std::io::Write) -> std::io::Result<()> {
-    writeln!(out, "impl Quest {{")?;
+    writeln!(out, "impl QuestName {{")?;
     let indent = "    ";
-    writeln!(out, "{}pub fn key(&self) -> &'static str {{", indent)?;
+    writeln!(out, "{}pub fn unique_string(&self) -> &'static str {{", indent)?;
     {
         let indent = "        ";
         writeln!(out, "{}match self {{", indent)?;

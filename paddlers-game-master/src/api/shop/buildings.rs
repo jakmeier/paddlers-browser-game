@@ -1,7 +1,7 @@
-use crate::buildings::BuildingFactory;
 use crate::db::DB;
 use crate::StringErr;
-use paddlers_shared_lib::story::story_state::StoryState;
+use crate::{buildings::BuildingFactory, game_master::story_worker::StoryWorkerMessage};
+use paddlers_shared_lib::story::story_trigger::StoryTrigger;
 use paddlers_shared_lib::{api::shop::*, game_mechanics::attributes::Attributes, prelude::*};
 
 impl DB {
@@ -10,30 +10,21 @@ impl DB {
         typ: BuildingType,
         pos: (usize, usize),
         village: VillageKey,
+        player: &Player,
+        addr: actix_web::web::Data<crate::ActorAddresses>,
     ) -> StringErr {
         self.building_has_space(typ, pos, village)
             .map(|_| self.try_spend(&typ.price(), village))
             .map(|_| {
                 self.insert_building(&BuildingFactory::new(typ, pos, village));
             })
-    }
-    /// Check for events to be executed upon inserting new buildings
-    pub fn building_insertion_triggers(
-        &self,
-        typ: BuildingType,
-        player: PlayerKey,
-        addr: actix_web::web::Data<crate::ActorAddresses>,
-    ) -> StringErr {
-        // Improvement: Would be nice if this comes from a central specification
-        match typ {
-            BuildingType::Temple => {
-                // Inserting a temple means story progress
-                self.update_story_state(player, StoryState::TempleBuilt, addr)
-                    .map_err(|e| format!("Updating story state failed: {}", e))?;
-            }
-            _ => {}
-        }
-        Ok(())
+            .map(|_| {
+                addr.story_worker.do_send(StoryWorkerMessage::new_verified(
+                    player.key(),
+                    player.story_state,
+                    StoryTrigger::BuildingBuilt(typ),
+                ))
+            })
     }
 
     fn building_has_space(

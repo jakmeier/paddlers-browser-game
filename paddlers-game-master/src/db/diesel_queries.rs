@@ -228,6 +228,15 @@ impl DB {
             .execute(self.dbconn())
             .expect("setting released");
     }
+    pub fn assign_player_quest(&self, p: PlayerKey, q: QuestKey) -> QueryResult<usize> {
+        let qtp = QuestToPlayer {
+            player_id: p.num(),
+            quest_id: q.num(),
+        };
+        diesel::insert_into(quest_to_player::dsl::quest_to_player)
+            .values(qtp)
+            .execute(self.dbconn())
+    }
     pub fn delete_player_quest(&self, p: PlayerKey, q: QuestKey) {
         diesel::delete(
             quest_to_player::table

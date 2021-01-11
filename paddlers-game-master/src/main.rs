@@ -19,7 +19,7 @@ use actix_web::{http::header, web, App, HttpServer};
 use db::*;
 use game_master::{
     attack_funnel::AttackFunnel, attack_spawn::AttackSpawner, economy_worker::EconomyWorker,
-    town_worker::TownWorker, GameMaster,
+    story_worker::StoryWorker, town_worker::TownWorker, GameMaster,
 };
 use paddlers_shared_lib::api::{
     attacks::InvitationDescriptor, quests::QuestCollect, reports::ReportCollect,
@@ -45,6 +45,7 @@ struct ActorAddresses {
     _attack_worker: Addr<AttackSpawner>,
     db_actor: Addr<DbActor>,
     attack_funnel: Addr<AttackFunnel>,
+    story_worker: Addr<StoryWorker>,
 }
 
 fn main() {
@@ -75,6 +76,7 @@ fn main() {
         AttackSpawner::new(dbpool.clone(), db_actor.clone(), attack_funnel.clone()).start();
     let gm_actor = GameMaster::new(dbpool.clone(), &attack_worker).start();
     let econ_worker = EconomyWorker::new(dbpool.clone()).start();
+    let story_worker = StoryWorker::new(db_actor.clone(), attack_worker.clone()).start();
 
     // Also spawn the HTTP server on the same runtime
     HttpServer::new(move || {
@@ -95,6 +97,7 @@ fn main() {
                 _attack_worker: attack_worker.clone(),
                 db_actor: db_actor.clone(),
                 attack_funnel: attack_funnel.clone(),
+                story_worker: story_worker.clone(),
             })
             .data(config.clone())
             .data(dbpool.clone())

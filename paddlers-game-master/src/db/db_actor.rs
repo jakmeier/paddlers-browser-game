@@ -32,7 +32,35 @@ impl Handler<DeferredDbStatement> for DbActor {
                     self.db().insert_attack_to_hobo(&atu);
                 }
             }
+            DeferredDbStatement::AssignQuest(player, quest_name) => {
+                let db = self.db();
+                // Potential for optimazion: Keep quest assignment cached in memory (probably in a separate actor)
+                if let Err(e) = db
+                    .quest_by_name(quest_name)
+                    .and_then(|quest| db.assign_player_quest(player, quest.key()))
+                {
+                    eprintln!("Player update failed: {}", e);
+                }
+            }
+            DeferredDbStatement::PlayerUpdate(player, new_story_state) => {
+                if let Err(e) = self.db().set_story_state(player, new_story_state) {
+                    eprintln!("Player update failed: {}", e);
+                }
+            }
         }
+    }
+}
+
+impl Handler<PlayerHomeLookup> for DbActor {
+    type Result = PlayerHome;
+    fn handle(&mut self, msg: PlayerHomeLookup, _ctx: &mut SyncContext<Self>) -> Self::Result {
+        PlayerHome(
+            self.db()
+                .player_villages(msg.player)
+                .pop()
+                .expect("player must have at least one village")
+                .key(),
+        )
     }
 }
 
