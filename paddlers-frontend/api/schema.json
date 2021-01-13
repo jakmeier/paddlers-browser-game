@@ -234,6 +234,12 @@
               "description": null,
               "isDeprecated": false,
               "name": "TRIPLE_NEST"
+            },
+            {
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
+              "name": "WATERGATE"
             }
           ],
           "fields": null,

@@ -53,6 +53,7 @@ impl BuildingType {
             BuildingType::Tree => karma >= 1,
             BuildingType::SingleNest => false,
             BuildingType::TripleNest => false,
+            BuildingType::Watergate => true,
         }
     }
     /// Buildings that may be available at the default shop, regardless of player restrictions
@@ -68,6 +69,7 @@ impl BuildingType {
             BuildingType::Temple,
             BuildingType::SingleNest,
             BuildingType::TripleNest,
+            BuildingType::Watergate,
         ]
         .iter()
     }
@@ -84,6 +86,7 @@ impl BuildingType {
             BuildingType::Tree => true,
             BuildingType::SingleNest => false, // false for now, to avoid problems with associated hobos
             BuildingType::TripleNest => false, // false for now, to avoid problems with associated hobos
+            BuildingType::Watergate => false,
         }
     }
     pub fn worker_task(&self) -> TaskType {

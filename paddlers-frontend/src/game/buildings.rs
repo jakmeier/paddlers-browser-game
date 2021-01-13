@@ -168,6 +168,7 @@ impl buildings_query::BuildingsQueryVillageBuildings {
             buildings_query::BuildingType::TEMPLE => BuildingType::Temple,
             buildings_query::BuildingType::SINGLE_NEST => BuildingType::SingleNest,
             buildings_query::BuildingType::TRIPLE_NEST => BuildingType::TripleNest,
+            buildings_query::BuildingType::WATERGATE => BuildingType::Watergate,
             buildings_query::BuildingType::Other(_) => panic!("Unexpected BuildingType"),
         };
         let created = GqlTimestamp::from_string(&self.creation)

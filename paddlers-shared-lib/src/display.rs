@@ -14,6 +14,7 @@ impl Display for BuildingType {
             BuildingType::Temple => write!(f, "Temple"),
             BuildingType::SingleNest => write!(f, "SingleNest"),
             BuildingType::TripleNest => write!(f, "TripleNest"),
+            BuildingType::Watergate => write!(f, "Watergate"),
         }
     }
 }

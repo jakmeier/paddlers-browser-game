@@ -143,6 +143,8 @@ pub enum SingleSprite {
     SingleNest,
     TripleNest,
     SittingYellowDuck,
+    Stone1,
+    Stone2,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -218,6 +220,7 @@ impl WithSprite for BuildingType {
             BuildingType::Temple => SpriteSet::Simple(SingleSprite::Temple),
             BuildingType::SingleNest => SpriteSet::Simple(SingleSprite::SingleNest),
             BuildingType::TripleNest => SpriteSet::Simple(SingleSprite::TripleNest),
+            BuildingType::Watergate => SpriteSet::Simple(SingleSprite::Stone1),
         }
     }
 }

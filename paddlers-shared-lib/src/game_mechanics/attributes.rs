@@ -34,6 +34,7 @@ impl Attributes for BuildingType {
             BuildingType::Temple => None,
             BuildingType::SingleNest => None,
             BuildingType::TripleNest => None,
+            BuildingType::Watergate => None,
         }
     }
     fn size(&self) -> (usize, usize) {

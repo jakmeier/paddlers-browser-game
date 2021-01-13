@@ -164,6 +164,7 @@ pub enum BuildingType {
     Temple,
     SingleNest,
     TripleNest,
+    Watergate,
 }
 
 #[cfg(feature = "sql_db")]

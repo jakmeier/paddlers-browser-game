@@ -30,6 +30,9 @@ impl Cost for BuildingType {
             BuildingType::TripleNest => {
                 vec![(ResourceType::Feathers, 60), (ResourceType::Sticks, 60)]
             }
+            BuildingType::Watergate => {
+                vec![]
+            }
         }
     }
 }

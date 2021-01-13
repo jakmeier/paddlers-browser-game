@@ -200,6 +200,7 @@ impl Into<BuildingType> for &player_quests_query::BuildingType {
             player_quests_query::BuildingType::TEMPLE => BuildingType::Temple,
             player_quests_query::BuildingType::SINGLE_NEST => BuildingType::SingleNest,
             player_quests_query::BuildingType::TRIPLE_NEST => BuildingType::TripleNest,
+            player_quests_query::BuildingType::WATERGATE => BuildingType::Watergate,
             player_quests_query::BuildingType::Other(_) => panic!("Unexpected BuildingType"),
         }
     }
