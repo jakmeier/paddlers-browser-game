@@ -85,13 +85,28 @@ impl Town {
         self.state.register_task_end(task).map_err(PadlError::from)
     }
 
-    pub fn get_buildable_tile(&self, pos: impl Into<Vector>) -> Option<TileIndex> {
+    pub fn get_buildable_tile(
+        &self,
+        pos: impl Into<Vector>,
+        bt: BuildingType,
+    ) -> Option<TileIndex> {
         let (x, y) = tiling::tile(pos);
-        if self.is_buildable((x, y)) {
+        if self.is_buildable((x, y), bt) {
             Some((x, y))
         } else {
             None
         }
+    }
+    pub fn allowed_tiles_for_new_building(&self, bt: BuildingType) -> Vec<TileIndex> {
+        let mut tiles = vec![];
+        for x in 0..TOWN_X {
+            for y in 0..TOWN_Y {
+                if self.is_buildable((x, y), bt) {
+                    tiles.push((x, y));
+                }
+            }
+        }
+        tiles
     }
     fn tiles_in_rectified_circle(tile: TileIndex, radius: f32) -> Vec<TileIndex> {
         let r = radius.ceil() as usize;
@@ -125,7 +140,7 @@ impl Town {
     }
 
     pub fn place_building(&mut self, i: TileIndex, bt: BuildingType, id: specs::Entity) {
-        debug_assert!(self.is_buildable(i), "Cannot build here");
+        debug_assert!(self.is_buildable(i, bt), "Cannot build {} here", bt);
         let tile = self.map.tile_type_mut(i);
 
         debug_assert!(tile.is_some(), "Tile is outside of map");

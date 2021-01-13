@@ -76,11 +76,7 @@ impl<'a, 'b> Frame for TownFrame<'a, 'b> {
             render_hovering(world, window, sprites, entity);
         }
         if let Some(grabbed) = grabbed_item {
-            if let Some(pos) = self.mouse.pos() {
-                render_grabbed_item(window, sprites, &grabbed, pos);
-                // window.set_cursor(MouseCursor::None);
-            }
-        // window.set_cursor(MouseCursor::Default);
+            self.render_grabbed_item(&state.town_context.town(), window, sprites, &grabbed);
         } else {
             // window.set_cursor(MouseCursor::Default);
         }
@@ -196,6 +192,51 @@ impl<'a, 'b> TownFrame<'a, 'b> {
             }
         }
     }
+    pub fn render_grabbed_item(
+        &self,
+        town: &Town,
+        window: &mut DisplayArea,
+        sprites: &mut Sprites,
+        item: &Grabbable,
+    ) {
+        if self.mouse.pos().is_none() {
+            return;
+        }
+        let mouse = self.mouse.pos().unwrap();
+
+        let ul = TOWN_TILE_S as f32;
+        let center = mouse - (ul / 2.0, ul / 2.0).into();
+        let max_area = Rectangle::new(center, (ul, ul));
+        match item {
+            Grabbable::NewBuilding(building_type) => {
+                let possible_tiles = town.allowed_tiles_for_new_building(*building_type);
+                let shadow_col = Color {
+                    r: 1.0,
+                    g: 1.0,
+                    b: 1.0,
+                    a: 0.15,
+                };
+                Town::shadow_tiles(window, &possible_tiles, shadow_col);
+
+                draw_static_image(
+                    sprites,
+                    window,
+                    &max_area,
+                    building_type.sprite().default(),
+                    Z_GRABBED_ITEM,
+                    FitStrategy::TopLeft,
+                )
+            }
+            Grabbable::Ability(ability) => draw_static_image(
+                sprites,
+                window,
+                &max_area.shrink_to_center(0.375),
+                ability.sprite().default(),
+                Z_GRABBED_ITEM,
+                FitStrategy::TopLeft,
+            ),
+        }
+    }
 }
 impl Game {
     /// Copy over Resources from global world to town world
@@ -278,35 +319,6 @@ pub fn render_hovering(
         .get(entity, &world.entities())
     {
         render_health(&health, sprites, window, &p.area);
-    }
-}
-
-pub fn render_grabbed_item(
-    window: &mut DisplayArea,
-    sprites: &mut Sprites,
-    item: &Grabbable,
-    mouse: Vector,
-) {
-    let ul = TOWN_TILE_S as f32;
-    let center = mouse - (ul / 2.0, ul / 2.0).into();
-    let max_area = Rectangle::new(center, (ul, ul));
-    match item {
-        Grabbable::NewBuilding(building_type) => draw_static_image(
-            sprites,
-            window,
-            &max_area,
-            building_type.sprite().default(),
-            Z_GRABBED_ITEM,
-            FitStrategy::TopLeft,
-        ),
-        Grabbable::Ability(ability) => draw_static_image(
-            sprites,
-            window,
-            &max_area.shrink_to_center(0.375),
-            ability.sprite().default(),
-            Z_GRABBED_ITEM,
-            FitStrategy::TopLeft,
-        ),
     }
 }
 

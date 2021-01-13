@@ -97,10 +97,16 @@ impl TownMap {
 }
 
 impl TownTileType {
-    pub fn is_buildable(&self) -> bool {
-        match self {
-            TownTileType::EMPTY => true,
-            TownTileType::BUILDING(_) | TownTileType::LANE => false,
+    pub fn is_buildable(&self, bt: BuildingType, index: TileIndex) -> bool {
+        match bt {
+            BuildingType::Watergate => match self {
+                TownTileType::LANE => index.0 == 0 || index.0 == (TOWN_X - 1),
+                _ => false,
+            },
+            _ => match self {
+                TownTileType::EMPTY => true,
+                TownTileType::BUILDING(_) | TownTileType::LANE => false,
+            },
         }
     }
     pub fn is_walkable(&self) -> bool {

@@ -129,7 +129,7 @@ impl Town {
         if let Some(grabbed) = ui_state.take_grabbed_item() {
             match grabbed {
                 Grabbable::NewBuilding(bt) => {
-                    if let Some(pos) = self.get_buildable_tile(mouse_pos) {
+                    if let Some(pos) = self.get_buildable_tile(mouse_pos, bt) {
                         RestApiState::http_place_building(pos, bt, current_village());
                         resources.spend(&bt.price());
                         self.insert_new_building(&entities, &lazy, pos, bt);

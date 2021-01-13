@@ -98,25 +98,25 @@ impl Town {
         center: impl Into<Vector>,
         radius: f32,
     ) {
-        let tile = tiling::tile(center);
-        for (x, y) in Town::tiles_in_rectified_circle(tile, radius) {
-            Self::shadow_tile(window, (x, y));
-        }
-    }
-
-    fn shadow_tile(window: &mut DisplayArea, coordinates: (usize, usize)) {
+        let center_tile = tiling::tile(center);
+        let tiles = Town::tiles_in_rectified_circle(center_tile, radius);
         let shadow_col = Color {
             r: 1.0,
             g: 1.0,
             b: 0.5,
             a: 0.3,
         };
-        let (x, y) = coordinates;
+        Self::shadow_tiles(window, &tiles, shadow_col);
+    }
+
+    pub fn shadow_tiles(window: &mut DisplayArea, tiles: &[TileIndex], shadow_col: Color) {
         let ul = TOWN_TILE_S as f32;
-        let pos = (x as f32 * ul, y as f32 * ul);
         let size = (ul, ul);
-        let area = Rectangle::new(pos, size);
-        window.draw_ex(&area, Col(shadow_col), Transform::IDENTITY, Z_TILE_SHADOW);
+        let mut area = Rectangle::new_sized(size);
+        for (x, y) in tiles {
+            area.pos = (*x as f32 * ul, *y as f32 * ul).into();
+            window.draw_ex(&area, shadow_col, Transform::IDENTITY, Z_TILE_SHADOW);
+        }
     }
 }
 

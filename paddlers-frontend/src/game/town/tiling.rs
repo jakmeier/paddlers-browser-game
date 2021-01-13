@@ -2,6 +2,7 @@ use crate::resolution::TOWN_TILE_S;
 
 use super::{TileIndex, TileState, Town};
 use paddle::*;
+use paddlers_shared_lib::prelude::BuildingType;
 
 pub fn tile(pos: impl Into<Vector>) -> (usize, usize) {
     Town::find_tile(pos)
@@ -43,12 +44,12 @@ impl Town {
         dx * dx + dy * dy <= range * range
     }
 
-    pub(super) fn is_buildable(&self, index: TileIndex) -> bool {
+    pub(super) fn is_buildable(&self, index: TileIndex, bt: BuildingType) -> bool {
         let maybe_tile = self.map.tile_type(index);
         if maybe_tile.is_none() {
             return false;
         }
-        maybe_tile.unwrap().is_buildable()
+        maybe_tile.unwrap().is_buildable(bt, index)
     }
     pub(super) fn is_walkable(&self, index: TileIndex) -> bool {
         let maybe_tile = self.map.tile_type(index);
