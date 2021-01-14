@@ -137,6 +137,10 @@ impl InteractiveTableArea for UiBox {
                     None
                 }
                 RenderVariant::Hide => None,
+                RenderVariant::ImgCollection(collection) => {
+                    draw_image_collection(sprites, window, &draw_area.padded(self.padding + self.margin), collection, z_button, FitStrategy::Center);
+                    collection.background().as_ref()
+                }
             };
             if let Some(img) = img {
                 draw_static_image(

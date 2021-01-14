@@ -64,7 +64,7 @@ impl Town {
             .create_entity(entities)
             .with(Position::new(area.pos, area.size, Z_BUILDINGS))
             .with(Renderable::new_transformed(
-                RenderVariant::ImgWithImgBackground(bt.sprite(), SingleSprite::Grass),
+                bt.render_variant(),
                 building_ingame_scaling(bt),
             ))
             .with(Building { built: created, bt })

@@ -54,6 +54,26 @@ pub fn draw_entity_img(
                     FitStrategy::Center,
                 );
             }
+            RenderVariant::ImgCollection(ref c) => {
+                if let Some(img) = c.background() {
+                    draw_static_image(
+                        sprites,
+                        window,
+                        &area,
+                        img.default(),
+                        Z_MENU_BOX + 1,
+                        FitStrategy::Center,
+                    );
+                }
+                draw_image_collection(
+                    sprites,
+                    window,
+                    &area,
+                    &c,
+                    Z_MENU_BOX + 2,
+                    FitStrategy::Center,
+                );
+            }
             _ => panic!("Not implemented"),
         }
     }

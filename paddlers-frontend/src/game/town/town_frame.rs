@@ -30,8 +30,6 @@ use super::{tiling, town_render::draw_shiny_border};
 pub(crate) struct TownFrame<'a, 'b> {
     left_click_dispatcher: Dispatcher<'a, 'b>,
     town_dispatcher: Dispatcher<'a, 'b>,
-    // Graphics optimization
-    pub background_cache: Option<AbstractMesh>,
     mouse: PointerTracker,
 }
 
@@ -51,18 +49,10 @@ impl<'a, 'b> Frame for TownFrame<'a, 'b> {
             // FIXME: This should not be necessary if resources are defined properly
             state.prepare_town_resources();
 
-            let ul = TOWN_TILE_S as f32;
             let tick = state.world.read_resource::<ClockTick>().0;
             let asset = &mut state.sprites;
             let town = state.town_context.town_mut();
-            if self.background_cache.is_none() {
-                self.background_cache = Some(AbstractMesh::new());
-                town.render_background(self.background_cache.as_mut().unwrap(), asset, ul)
-                    .nuts_check();
-            }
-            self.background_cache.as_ref().unwrap().vertices.len();
-            window.draw_mesh(self.background_cache.as_ref().unwrap());
-            town.render(window, asset, tick, ul).nuts_check();
+            town.render(window, asset, tick).nuts_check();
         }
 
         let world = state.town_context.world();
@@ -113,7 +103,6 @@ impl<'a, 'b> TownFrame<'a, 'b> {
 
         TownFrame {
             left_click_dispatcher,
-            background_cache: None,
             town_dispatcher,
             mouse: Default::default(),
         }
@@ -289,6 +278,10 @@ pub fn render_town_entities(world: &World, window: &mut DisplayArea, sprites: &m
                     );
                 }
             }
+            RenderVariant::ImgCollection(ref c) => {
+                draw_image_collection(sprites, window, &area, &c, pos.z, FitStrategy::TopLeft);
+            }
+
             _ => panic!("Not implemented"),
         }
         if triggers.get(e).is_some() {

@@ -148,6 +148,7 @@ impl EntityContainer {
             }
             RenderVariant::Hide => RenderVariant::Hide,
             RenderVariant::Shape(s) => RenderVariant::Shape(*s),
+            RenderVariant::ImgCollection(vec) => RenderVariant::ImgCollection(vec.clone()),
         };
         ui.ui.add(UiElement::new(e).with_render_variant(style));
     }

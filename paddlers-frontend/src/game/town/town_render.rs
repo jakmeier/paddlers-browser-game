@@ -7,86 +7,54 @@ use paddle::*;
 use std::f32::consts::PI;
 
 impl Town {
-    pub fn render_background(
-        &self,
-        mesh: &mut AbstractMesh,
-        sprites: &mut Sprites,
-        unit_length: f32,
-    ) -> PadlResult<()> {
-        let d = unit_length;
-
-        for (x, col) in self.map.0.iter().enumerate() {
-            for (y, tile) in col.iter().enumerate() {
-                match tile {
-                    TileType::EMPTY | TileType::BUILDING(_) => {
-                        let img = sprites.index(SpriteIndex::Simple(SingleSprite::Grass));
-                        let bkg = Img(&img);
-                        let rect = Rectangle::new((d * x as f32, d * y as f32), (d, d));
-                        rect.tessellate(mesh, bkg.into());
-                    }
-                    TileType::LANE => {
-                        // Nothing cacheable for lane
-                    }
-                }
-            }
-        }
-        Ok(())
-    }
     pub fn render(
         &self,
         window: &mut DisplayArea,
         sprites: &mut Sprites,
         tick: u32,
-        unit_length: f32,
     ) -> PadlResult<()> {
-        let d = unit_length;
+        let d = TOWN_TILE_S as f32;
 
         for (x, col) in self.map.0.iter().enumerate() {
-            for (y, tile) in col.iter().enumerate() {
-                match tile {
-                    TileType::EMPTY | TileType::BUILDING(_) => {
-                        // Already drawn in background
-                    }
-
-                    TileType::LANE => {
-                        // println!("Lane {} {}", x, y);
-                        let shifted = ((tick / 10) % (d as u32)) as i32;
-                        let t = Transform::translate((shifted, 0));
+            for (y, _tile) in col.iter().enumerate() {
+                if y == TOWN_LANE_Y {
+                    let shifted = ((tick / 10) % (d as u32)) as i32;
+                    let t = Transform::translate((shifted, 0));
+                    window.draw_ex(
+                        &Rectangle::new((d * x as f32, d * y as f32), (d, d)),
+                        Img(&sprites.index(SpriteIndex::Simple(SingleSprite::Water))),
+                        t,
+                        Z_TEXTURE,
+                    );
+                    if x == 0 {
+                        let x = -1;
                         window.draw_ex(
                             &Rectangle::new((d * x as f32, d * y as f32), (d, d)),
                             Img(&sprites.index(SpriteIndex::Simple(SingleSprite::Water))),
                             t,
                             Z_TEXTURE,
                         );
-                        // XXX: Hack only works for basic map
-                        if x == 0 {
-                            let x = -1;
-                            window.draw_ex(
-                                &Rectangle::new((d * x as f32, d * y as f32), (d, d)),
-                                Img(&sprites.index(SpriteIndex::Simple(SingleSprite::Water))),
-                                t,
-                                Z_TEXTURE,
-                            );
-                        }
-                        let grass_top_img =
-                            &sprites.index(SpriteIndex::Simple(SingleSprite::GrassTop));
-                        let h = d / 200.0 * 30.0;
-                        window.draw_ex(
-                            &Rectangle::new((d * x as f32, d * y as f32 + d - h), (d, h)),
-                            Img(grass_top_img),
-                            Transform::IDENTITY,
-                            Z_VISITOR + 1, // This should be above visitors
-                        );
-                        let grass_bot_img =
-                            &sprites.index(SpriteIndex::Simple(SingleSprite::GrassBot));
-                        let h = d / 200.0 * 42.0;
-                        window.draw_ex(
-                            &Rectangle::new((d * x as f32, d * y as f32), (d, h)),
-                            Img(grass_bot_img),
-                            Transform::IDENTITY,
-                            Z_TEXTURE + 1,
-                        );
                     }
+                    let grass_top_img = &sprites.index(SpriteIndex::Simple(SingleSprite::GrassTop));
+                    let h = d / 200.0 * 30.0;
+                    window.draw_ex(
+                        &Rectangle::new((d * x as f32, d * y as f32 + d - h), (d, h)),
+                        Img(grass_top_img),
+                        Transform::IDENTITY,
+                        Z_VISITOR + 1, // This should be above visitors
+                    );
+                    let grass_bot_img = &sprites.index(SpriteIndex::Simple(SingleSprite::GrassBot));
+                    let h = d / 200.0 * 42.0;
+                    window.draw_ex(
+                        &Rectangle::new((d * x as f32, d * y as f32), (d, h)),
+                        Img(grass_bot_img),
+                        Transform::IDENTITY,
+                        Z_TEXTURE + 1,
+                    );
+                } else {
+                    let img = sprites.index(SpriteIndex::Simple(SingleSprite::Grass));
+                    let rect = Rectangle::new((d * x as f32, d * y as f32), (d, d));
+                    window.draw(&rect, &img);
                 }
             }
         }

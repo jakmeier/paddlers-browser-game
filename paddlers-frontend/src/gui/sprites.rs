@@ -202,11 +202,34 @@ impl Sprites {
     }
 }
 
+/// Single sprite representation of an object
 pub trait WithSprite {
     fn sprite(&self) -> SpriteSet;
 }
+/// Fully rendered represenation of an object
+pub trait WithRenderVariant {
+    fn render_variant(&self) -> RenderVariant;
+}
 
 use paddlers_shared_lib::models::BuildingType;
+impl WithRenderVariant for BuildingType {
+    fn render_variant(&self) -> RenderVariant {
+        match self {
+            BuildingType::Watergate => RenderVariant::ImgCollection(
+                ImageCollection::new(
+                    (1.0, 1.0),
+                    vec![
+                        SubImg::new(SingleSprite::Stone1, (0.25, 0), (0.25, 0.25), 0),
+                        SubImg::new(SingleSprite::Stone2, (0.25, 0.75), (0.25, 0.25), 1),
+                    ],
+                )
+                .with_background(SingleSprite::Water),
+            ),
+            _ => RenderVariant::ImgWithImgBackground(self.sprite(), SingleSprite::Grass),
+        }
+    }
+}
+
 impl WithSprite for BuildingType {
     fn sprite(&self) -> SpriteSet {
         match self {

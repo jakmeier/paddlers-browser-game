@@ -24,12 +24,12 @@ pub enum RenderVariant {
     ImgWithColBackground(SpriteSet, Color),
     ImgWithHoverAlternative(SpriteSet, SpriteSet),
     ImgWithHoverShape(SpriteSet, PadlShapeIndex),
+    ImgCollection(ImageCollection),
     Text(String),
     TextWithColBackground(String, Color),
     Shape(PadlShapeIndex),
     Hide,
 }
-
 #[derive(Debug, Clone, Copy)]
 pub enum Direction {
     Undirected,
@@ -107,6 +107,32 @@ pub fn draw_shape(
     window.draw_mesh_ex(&shape.mesh, t, z);
 }
 
+pub fn draw_image_collection(
+    sprites: &mut Sprites,
+    window: &mut DisplayArea,
+    max_area: &Rectangle,
+    collection: &ImageCollection,
+    z: i16,
+    fit_strat: FitStrategy,
+) {
+    let unfitted_area = Rectangle::new(max_area.pos, collection.size);
+    let fitted_area = unfitted_area.fit_into_ex(max_area, fit_strat, true);
+    let xs = fitted_area.width() / unfitted_area.width();
+    let ys = fitted_area.height() / unfitted_area.height();
+    for img in &collection.images {
+        let sub_area = Rectangle::new(
+            fitted_area.pos + img.pos.pos.times((xs, ys)),
+            img.pos.size.times((xs, ys)),
+        );
+        window.draw_ex(
+            &sub_area,
+            Background::ImgView(&sprites.index(img.img), Transform::IDENTITY),
+            Transform::IDENTITY,
+            z + img.z_offset,
+        );
+    }
+}
+
 pub fn horizontal_flip() -> Transform {
     Transform::from_array([[-1f32, 0f32, 0f32], [0f32, 1f32, 0f32], [0f32, 0f32, 1f32]])
 }
@@ -116,4 +142,49 @@ pub fn h_line(start: impl Into<Vector>, len: f32, thickness: f32) -> Rectangle {
 }
 pub fn v_line(start: impl Into<Vector>, len: f32, thickness: f32) -> Rectangle {
     Rectangle::new(start, (thickness, len))
+}
+
+#[derive(Debug, Clone)]
+pub struct ImageCollection {
+    size: Vector,
+    images: Vec<SubImg>,
+    background: Option<SpriteSet>,
+}
+
+#[derive(Debug, Clone)]
+pub struct SubImg {
+    pos: Rectangle,
+    z_offset: i16,
+    img: SpriteIndex,
+}
+
+impl ImageCollection {
+    pub fn new(size: impl Into<Vector>, images: Vec<SubImg>) -> Self {
+        Self {
+            size: size.into(),
+            images,
+            background: None,
+        }
+    }
+    pub fn background(&self) -> &Option<SpriteSet> {
+        &self.background
+    }
+    pub fn with_background(mut self, bkg: SingleSprite) -> Self {
+        self.background = Some(SpriteSet::Simple(bkg));
+        self
+    }
+}
+impl SubImg {
+    pub fn new(
+        img: SingleSprite,
+        offset: impl Into<Vector>,
+        size: impl Into<Vector>,
+        z_offset: i16,
+    ) -> Self {
+        Self {
+            pos: Rectangle::new(offset, size),
+            img: SpriteIndex::Simple(img),
+            z_offset,
+        }
+    }
 }
