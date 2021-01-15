@@ -10,6 +10,12 @@ pub struct AnimationState {
     pub direction: Direction,
 }
 
+impl AnimationState {
+    pub fn new(direction: Direction) -> Self {
+        Self { direction }
+    }
+}
+
 impl Direction {
     pub fn from_vector(vec: &Vector) -> Self {
         if about_equal(vec.x, vec.y) {

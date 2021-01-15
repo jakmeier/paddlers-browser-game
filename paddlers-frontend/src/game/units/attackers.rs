@@ -4,7 +4,7 @@ use chrono::NaiveDateTime;
 pub use visitor_maintenance::*;
 
 use crate::game::{
-    components::NetObj,
+    components::{AnimationState, NetObj},
     fight::Health,
     input::Clickable,
     movement::{Moving, Position, TargetPosition},
@@ -78,13 +78,16 @@ pub fn build_new_duck_entity<'a>(
     arrival: NaiveDateTime,
     speed: f32,
     hp: Health,
-    ul: f32,
     netid: i64,
     effects: &[HoboEffect],
     hurried: bool,
     rank_offset: usize,
 ) -> PadlResult<specs::EntityBuilder<'a>> {
-    let size: Vector = Vector::new(ATTACKER_SIZE_FACTOR_X * ul, ATTACKER_SIZE_FACTOR_Y * ul).into();
+    let size: Vector = Vector::new(
+        ATTACKER_SIZE_FACTOR_X * TOWN_TILE_S as f32,
+        ATTACKER_SIZE_FACTOR_Y * TOWN_TILE_S as f32,
+    )
+    .into();
     let status_effects = StatusEffects::from_gql_query(effects)?;
     let mut renderable = Renderable::new(hobo_sprite_sad(color));
     if hp.hp == 0 {
@@ -97,6 +100,9 @@ pub fn build_new_duck_entity<'a>(
         .with(Clickable)
         .with(status_effects)
         .with(NetObj::hobo(netid))
+        .with(AnimationState::new(Direction::from_vector(&Vector::new(
+            speed, 0,
+        ))))
         .with(Visitor {
             hurried,
             speed,
@@ -111,7 +117,6 @@ pub fn build_new_duck_entity<'a>(
 use crate::net::graphql::attacks_query::AttacksQueryVillageAttacks;
 impl AttacksQueryVillageAttacks {
     pub(crate) fn create_entities<'a, 'b>(self, game: &mut Game) -> PadlResult<Vec<Entity>> {
-        let ul = TOWN_TILE_S as f32;
         let birth_time = GqlTimestamp::from_string(&self.arrival)
             .unwrap()
             .to_chrono();
@@ -135,7 +140,6 @@ impl AttacksQueryVillageAttacks {
                 now,
                 birth_time,
                 i,
-                ul,
                 effects,
             )?;
             out.push(builder.build());
@@ -146,6 +150,32 @@ impl AttacksQueryVillageAttacks {
         Ok(out)
     }
 }
+#[derive(Clone, Copy)]
+pub enum AttackerDirection {
+    LeftToRight,
+    RightToLeft,
+}
+impl AttackerDirection {
+    pub fn adjust_movement(self, v: Vector) -> Vector {
+        match self {
+            AttackerDirection::LeftToRight => v,
+            AttackerDirection::RightToLeft => -v,
+        }
+    }
+    pub fn origin_position(self) -> Vector {
+        let y = TOWN_LANE_Y as f32 * TOWN_TILE_S as f32;
+        let x;
+        match self {
+            AttackerDirection::LeftToRight => {
+                x = 0.0;
+            }
+            AttackerDirection::RightToLeft => {
+                x = TOWN_X as f32 * TOWN_TILE_S as f32;
+            }
+        }
+        (x, y).into()
+    }
+}
 impl<'a> AttackingHobo<'a> {
     fn create_entity(
         &self,
@@ -153,14 +183,12 @@ impl<'a> AttackingHobo<'a> {
         now: NaiveDateTime,
         birth: NaiveDateTime,
         pos_rank: usize,
-        ul: f32,
         auras: Vec<(<Game as IDefendingTown>::AuraId, i32)>,
     ) -> PadlResult<specs::EntityBuilder<'a>> {
+        let direction = AttackerDirection::LeftToRight;
+        let ul = TOWN_TILE_S as f32;
         let v = self.unit.hobo.speed as f32 * ul;
-        let w = TOWN_X as f32 * ul;
-        let x = w - ul * ATTACKER_SIZE_FACTOR_X;
-        let y = TOWN_LANE_Y as f32 * ul;
-        let mut pos = Vector::new(x, y) + attacker_position_rank_offset(pos_rank, ul);
+        let mut pos = direction.origin_position() + attacker_position_rank_offset(pos_rank, ul);
         let mut t0 = birth;
         let hp = self.unit.hobo.hp;
         let netid = self.unit.hobo.id.parse().expect("Parsing id");
@@ -192,7 +220,12 @@ impl<'a> AttackingHobo<'a> {
         let can_rest = !self.unit.hobo.hurried && self.unit.info.released.is_none();
         let resting = can_rest && birth + time_until_resting <= now;
         if !resting {
-            builder = builder.with(Moving::new(t0, pos, Vector::new(-v, 0.0), v));
+            builder = builder.with(Moving::new(
+                t0,
+                pos,
+                direction.adjust_movement(Vector::new(v, 0.0)),
+                v,
+            ));
             if can_rest {
                 let final_pos = Vector::new(TOWN_RESTING_X as f32 * ul, pos.y);
                 builder = builder.with(TargetPosition::new(final_pos));
@@ -208,7 +241,6 @@ impl<'a> AttackingHobo<'a> {
             birth,
             v,
             health,
-            ul,
             netid,
             &self.unit.hobo.effects,
             self.unit.hobo.hurried,
