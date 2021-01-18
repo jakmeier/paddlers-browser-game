@@ -8,7 +8,7 @@ use crate::{
     game::Game,
     resolution::{MAIN_AREA_H, MAIN_AREA_W},
 };
-use paddle::{quicksilver_compat::Col, NutsCheck};
+use paddle::NutsCheck;
 use paddle::{Frame, Rectangle, Transform};
 
 pub(crate) struct TownSummaryFrame {
@@ -59,7 +59,7 @@ impl Frame for TownSummaryFrame {
         let main_area = Rectangle::new_sized((MAIN_AREA_W, MAIN_AREA_H));
         window.draw_ex(
             &main_area.padded(50.0),
-            Col(DARK_BLUE),
+            DARK_BLUE,
             Transform::IDENTITY,
             Z_TEXTURE,
         );

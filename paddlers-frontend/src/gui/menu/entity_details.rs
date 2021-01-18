@@ -10,7 +10,7 @@ use crate::{
     gui::{gui_components::*, menu::*, sprites::*, ui_state::Now, utils::*, z::*},
 };
 use paddle::*;
-use paddle::{quicksilver_compat::*, DisplayArea, FitStrategy};
+use paddle::{DisplayArea, FitStrategy};
 use paddlers_shared_lib::prelude::*;
 use specs::prelude::*;
 
@@ -44,7 +44,7 @@ pub fn draw_entity_img(
                 );
             }
             RenderVariant::ImgWithColBackground(main, col) => {
-                window.draw_ex(area, Col(col), Transform::IDENTITY, Z_MENU_BOX + 1);
+                window.draw_ex(area, col, Transform::IDENTITY, Z_MENU_BOX + 1);
                 draw_static_image(
                     sprites,
                     window,

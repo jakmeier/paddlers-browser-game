@@ -22,7 +22,7 @@ impl Town {
                     let t = Transform::translate((shifted, 0));
                     window.draw_ex(
                         &Rectangle::new((d * x as f32, d * y as f32), (d, d)),
-                        Img(&sprites.index(SpriteIndex::Simple(SingleSprite::Water))),
+                        &sprites.index(SpriteIndex::Simple(SingleSprite::Water)),
                         t,
                         Z_TEXTURE,
                     );
@@ -30,7 +30,7 @@ impl Town {
                         let x = -1;
                         window.draw_ex(
                             &Rectangle::new((d * x as f32, d * y as f32), (d, d)),
-                            Img(&sprites.index(SpriteIndex::Simple(SingleSprite::Water))),
+                            &sprites.index(SpriteIndex::Simple(SingleSprite::Water)),
                             t,
                             Z_TEXTURE,
                         );
@@ -39,7 +39,7 @@ impl Town {
                     let h = d / 200.0 * 30.0;
                     window.draw_ex(
                         &Rectangle::new((d * x as f32, d * y as f32 + d - h), (d, h)),
-                        Img(grass_top_img),
+                        grass_top_img,
                         Transform::IDENTITY,
                         Z_VISITOR + 1, // This should be above visitors
                     );
@@ -47,7 +47,7 @@ impl Town {
                     let h = d / 200.0 * 42.0;
                     window.draw_ex(
                         &Rectangle::new((d * x as f32, d * y as f32), (d, h)),
-                        Img(grass_bot_img),
+                        grass_bot_img,
                         Transform::IDENTITY,
                         Z_TEXTURE + 1,
                     );

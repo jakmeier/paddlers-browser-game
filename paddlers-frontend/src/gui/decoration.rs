@@ -66,15 +66,15 @@ fn draw_column_texture(
     let mut stamp = Rectangle::new(start, top.natural_size());
     let factor = w / stamp.width();
     stamp.size = stamp.size * factor;
-    window.draw_ex(&stamp, Img(top), Transform::IDENTITY, Z_UI_BORDERS);
+    window.draw_ex(&stamp, top, Transform::IDENTITY, Z_UI_BORDERS);
     stamp.pos.y += stamp.height();
     stamp.size = mid.natural_size() * factor;
     while stamp.y() + stamp.height() < end {
-        window.draw_ex(&stamp, Img(mid), Transform::IDENTITY, Z_UI_BORDERS);
+        window.draw_ex(&stamp, mid, Transform::IDENTITY, Z_UI_BORDERS);
         stamp.pos.y += stamp.height();
     }
     stamp.size = bot.natural_size() * factor;
-    window.draw_ex(&stamp, Img(bot), Transform::IDENTITY, Z_UI_BORDERS);
+    window.draw_ex(&stamp, bot, Transform::IDENTITY, Z_UI_BORDERS);
 }
 
 fn fill_row_with_img(window: &mut DisplayArea, img: &Image, start: Vector, end: f32, h: f32) {
@@ -82,7 +82,7 @@ fn fill_row_with_img(window: &mut DisplayArea, img: &Image, start: Vector, end: 
     let factor = h / stamp.height();
     stamp.size = stamp.size * factor;
     while stamp.x() < end {
-        window.draw_ex(&stamp, Img(img), Transform::IDENTITY, Z_UI_BORDERS - 1);
+        window.draw_ex(&stamp, img, Transform::IDENTITY, Z_UI_BORDERS - 1);
         stamp.pos.x += stamp.width() * 0.9;
     }
 }

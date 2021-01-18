@@ -62,7 +62,7 @@ impl InteractiveTableArea for UiBox {
                 RenderVariant::ImgWithColBackground(img, col) => {
                     window.draw_ex(
                         &draw_area.padded(self.margin),
-                        Col(*col),
+                        *col,
                         Transform::IDENTITY,
                         z_button_background,
                     );
@@ -126,7 +126,7 @@ impl InteractiveTableArea for UiBox {
                 RenderVariant::TextWithColBackground(t, col) => {
                     window.draw_ex(
                         &draw_area.padded(self.margin),
-                        Col(*col),
+                        *col,
                         Transform::IDENTITY,
                         z_button_background,
                     );
@@ -138,7 +138,14 @@ impl InteractiveTableArea for UiBox {
                 }
                 RenderVariant::Hide => None,
                 RenderVariant::ImgCollection(collection) => {
-                    draw_image_collection(sprites, window, &draw_area.padded(self.padding + self.margin), collection, z_button, FitStrategy::Center);
+                    draw_image_collection(
+                        sprites,
+                        window,
+                        &draw_area.padded(self.padding + self.margin),
+                        collection,
+                        z_button,
+                        FitStrategy::Center,
+                    );
                     collection.background().as_ref()
                 }
             };
@@ -164,7 +171,7 @@ impl InteractiveTableArea for UiBox {
                     let notification_area = Circle::new(center, radius);
                     window.draw_ex(
                         &notification_area,
-                        Col(WHITE),
+                        WHITE,
                         Transform::IDENTITY,
                         z_button_decoration,
                     );
@@ -304,12 +311,12 @@ impl UiElement {
                     );
                     window.draw_ex(
                         &t,
-                        Col(Color {
+                        Color {
                             r: 1.0,
                             g: 1.0,
                             b: 1.0,
                             a: 0.8,
-                        }),
+                        },
                         Transform::IDENTITY,
                         z_overlay,
                     );

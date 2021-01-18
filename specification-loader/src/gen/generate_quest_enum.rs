@@ -24,7 +24,11 @@ fn generate_type(out: &mut impl std::io::Write) -> std::io::Result<()> {
 fn generate_impl_key(out: &mut impl std::io::Write) -> std::io::Result<()> {
     writeln!(out, "impl QuestName {{")?;
     let indent = "    ";
-    writeln!(out, "{}pub fn unique_string(&self) -> &'static str {{", indent)?;
+    writeln!(
+        out,
+        "{}pub fn unique_string(&self) -> &'static str {{",
+        indent
+    )?;
     {
         let indent = "        ";
         writeln!(out, "{}match self {{", indent)?;
