@@ -22,9 +22,14 @@ impl Game {
                     actions: vec![StoryAction::OpenScene(SceneIndex::Entrance, 0)],
                 })?;
             }
+            StoryState::WatergateBuilt => {
+                self.add_trigger_to_hero(EntityTrigger {
+                    actions: vec![StoryAction::OpenScene(SceneIndex::WelcomeVisitor, 0)],
+                })?;
+            }
             StoryState::TempleBuilt => {
                 self.add_trigger_to_hero(EntityTrigger {
-                    actions: vec![StoryAction::OpenScene(SceneIndex::TempleBuilt, 0)],
+                    actions: vec![StoryAction::OpenScene(SceneIndex::BuildWatergate, 0)],
                 })?;
             }
             StoryState::VisitorArrived
@@ -33,8 +38,16 @@ impl Game {
             | StoryState::MoreHappyVisitors
             | StoryState::TreePlanted
             | StoryState::StickGatheringStationBuild
-            | StoryState::GatheringSticks => {}
-            StoryState::ServantAccepted => {}
+            | StoryState::GatheringSticks
+            | StoryState::ServantAccepted
+            | StoryState::BuildingWatergate
+            | StoryState::PickingPrimaryCivBonus
+            | StoryState::SolvingPrimaryCivQuestPartA
+            | StoryState::SolvingPrimaryCivQuestPartB
+            | StoryState::PickingSecondaryCivBonus
+            | StoryState::SolvingSecondaryQuestPartA
+            | StoryState::SolvingSecondaryQuestPartB
+            | StoryState::AllDone => {}
         }
         Ok(())
     }

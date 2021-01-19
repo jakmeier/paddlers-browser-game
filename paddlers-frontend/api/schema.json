@@ -1734,6 +1734,18 @@
               "deprecationReason": null,
               "description": null,
               "isDeprecated": false,
+              "name": "BUILDING_WATERGATE"
+            },
+            {
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
+              "name": "WATERGATE_BUILT"
+            },
+            {
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
               "name": "VISITOR_ARRIVED"
             },
             {
@@ -1771,6 +1783,48 @@
               "description": null,
               "isDeprecated": false,
               "name": "GATHERING_STICKS"
+            },
+            {
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
+              "name": "PICKING_PRIMARY_CIV_BONUS"
+            },
+            {
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
+              "name": "SOLVING_PRIMARY_CIV_QUEST_PART_A"
+            },
+            {
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
+              "name": "SOLVING_PRIMARY_CIV_QUEST_PART_B"
+            },
+            {
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
+              "name": "PICKING_SECONDARY_CIV_BONUS"
+            },
+            {
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
+              "name": "SOLVING_SECONDARY_QUEST_PART_A"
+            },
+            {
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
+              "name": "SOLVING_SECONDARY_QUEST_PART_B"
+            },
+            {
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
+              "name": "ALL_DONE"
             }
           ],
           "fields": null,

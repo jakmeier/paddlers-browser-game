@@ -1,6 +1,7 @@
 pub mod animation;
 pub mod paths;
 
+use super::z::*;
 use crate::gui::shapes::*;
 use crate::gui::utils::*;
 use animation::AnimatedObject;
@@ -220,7 +221,12 @@ impl WithRenderVariant for BuildingType {
                     (1.0, 1.0),
                     vec![
                         SubImg::new(SingleSprite::Stone1, (0.25, 0), (0.25, 0.25), 0),
-                        SubImg::new(SingleSprite::Stone2, (0.25, 0.75), (0.25, 0.25), 1),
+                        SubImg::new(
+                            SingleSprite::Stone2,
+                            (0.25, 0.75),
+                            (0.25, 0.25),
+                            Z_VISITOR - Z_BUILDINGS + 1,
+                        ),
                     ],
                 )
                 .with_background(SingleSprite::Water),
@@ -278,6 +284,7 @@ impl WithSprite for AbilityType {
 }
 
 use paddlers_shared_lib::prelude::TaskType;
+
 impl WithSprite for TaskType {
     fn sprite(&self) -> SpriteSet {
         match self {

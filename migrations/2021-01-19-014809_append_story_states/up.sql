@@ -1,0 +1,9 @@
+ALTER TYPE STORY_STATE_TYPE ADD VALUE 'all_done';
+ALTER TYPE STORY_STATE_TYPE ADD VALUE 'building_watergate';
+ALTER TYPE STORY_STATE_TYPE ADD VALUE 'picking_primary_civ_bonus';
+ALTER TYPE STORY_STATE_TYPE ADD VALUE 'picking_secondary_civ_bonus';
+ALTER TYPE STORY_STATE_TYPE ADD VALUE 'solving_primary_civ_quest_part_a';
+ALTER TYPE STORY_STATE_TYPE ADD VALUE 'solving_primary_civ_quest_part_b';
+ALTER TYPE STORY_STATE_TYPE ADD VALUE 'solving_secondary_quest_part_a';
+ALTER TYPE STORY_STATE_TYPE ADD VALUE 'solving_secondary_quest_part_b';
+ALTER TYPE STORY_STATE_TYPE ADD VALUE 'watergate_built';

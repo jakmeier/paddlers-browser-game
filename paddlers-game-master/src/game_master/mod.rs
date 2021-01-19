@@ -123,12 +123,21 @@ fn repetitive_attack_strength(player: &Player) -> Option<HoboLevel> {
         StoryState::Initialized
         | StoryState::ServantAccepted
         | StoryState::TempleBuilt
-        | StoryState::VisitorArrived => None,
-        StoryState::FirstVisitorWelcomed | StoryState::FlowerPlanted => Some(HoboLevel::zero()),
-        StoryState::MoreHappyVisitors
+        | StoryState::WatergateBuilt
+        | StoryState::BuildingWatergate
+        | StoryState::MoreHappyVisitors
         | StoryState::TreePlanted
         | StoryState::StickGatheringStationBuild
-        | StoryState::GatheringSticks => Some(HoboLevel::anarchist(player.karma)),
+        | StoryState::PickingPrimaryCivBonus
+        | StoryState::SolvingPrimaryCivQuestPartA
+        | StoryState::SolvingPrimaryCivQuestPartB
+        | StoryState::PickingSecondaryCivBonus
+        | StoryState::SolvingSecondaryQuestPartA
+        | StoryState::SolvingSecondaryQuestPartB
+        | StoryState::GatheringSticks
+        | StoryState::VisitorArrived => None,
+        StoryState::FirstVisitorWelcomed | StoryState::FlowerPlanted => Some(HoboLevel::zero()),
+        StoryState::AllDone => Some(HoboLevel::anarchist(player.karma)),
     }
 }
 

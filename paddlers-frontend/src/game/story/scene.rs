@@ -70,7 +70,8 @@ impl Scene {
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum SceneIndex {
     Entrance,
-    TempleBuilt,
+    BuildWatergate,
+    WelcomeVisitor,
 }
 
 impl SceneIndex {
@@ -78,7 +79,8 @@ impl SceneIndex {
     pub fn load_scene(&self, slide: SlideIndex) -> Scene {
         match self {
             Self::Entrance => load_entry_scene(slide),
-            Self::TempleBuilt => load_scene_two(slide),
+            Self::BuildWatergate => load_build_watergate_scene(slide),
+            Self::WelcomeVisitor => load_scene_two(slide),
         }
     }
 }
@@ -186,7 +188,7 @@ fn load_scene_two(active_slide: SlideIndex) -> Scene {
 
     // 0
     slides.push(Slide {
-        text_key: "templebuilt-A0".into(),
+        text_key: "gatebuilt-A0".into(),
         buttons: vec![],
         sprite: SpriteIndex::Simple(SingleSprite::RogerLarge),
         back_button: false,
@@ -194,7 +196,7 @@ fn load_scene_two(active_slide: SlideIndex) -> Scene {
     });
     // 1
     slides.push(Slide {
-        text_key: "templebuilt-A10".into(),
+        text_key: "gatebuilt-A10".into(),
         buttons: vec![],
         sprite: SpriteIndex::Simple(SingleSprite::Duck),
         back_button: true,
@@ -202,7 +204,7 @@ fn load_scene_two(active_slide: SlideIndex) -> Scene {
     });
     // 2
     slides.push(Slide {
-        text_key: "templebuilt-A20".into(),
+        text_key: "gatebuilt-A20".into(),
         buttons: vec![],
         sprite: SpriteIndex::Simple(SingleSprite::RogerLarge),
         back_button: true,
@@ -210,15 +212,55 @@ fn load_scene_two(active_slide: SlideIndex) -> Scene {
     });
     // 3
     let button = SlideButton {
-        text_key: "templebuilt-B30".into(),
+        text_key: "button-back-to-town".into(),
         action: SlideButtonAction::default()
             .with_action(StoryAction::StoryProgress(StoryState::VisitorArrived))
             .with_view_change(UiView::Town),
     };
     slides.push(Slide {
-        text_key: "templebuilt-H30".into(),
+        text_key: "gatebuilt-H30".into(),
         buttons: vec![button],
         sprite: SpriteIndex::Simple(SingleSprite::WelcomeAbility),
+        back_button: true,
+        next_button: false,
+    });
+    Scene {
+        slides,
+        active_slide,
+    }
+}
+
+fn load_build_watergate_scene(active_slide: SlideIndex) -> Scene {
+    let mut slides = Vec::new();
+
+    // 0
+    slides.push(Slide {
+        text_key: "templebuilt-A0".into(),
+        buttons: vec![],
+        sprite: SpriteIndex::Simple(SingleSprite::Temple),
+        back_button: false,
+        next_button: true,
+    });
+    // 1
+    slides.push(Slide {
+        text_key: "templebuilt-A10".into(),
+        buttons: vec![],
+        sprite: SpriteIndex::Simple(SingleSprite::RogerLarge),
+        back_button: true,
+        next_button: true,
+    });
+    // 2
+    let button = SlideButton {
+        text_key: "button-back-to-town".into(),
+        action: SlideButtonAction::default()
+            .with_action(StoryAction::StoryProgress(StoryState::BuildingWatergate))
+            .with_action(StoryAction::TownSelectEntity(None))
+            .with_view_change(UiView::Town),
+    };
+    slides.push(Slide {
+        text_key: "templebuilt-H20".into(),
+        buttons: vec![button],
+        sprite: SpriteIndex::Simple(SingleSprite::Stone2),
         back_button: true,
         next_button: false,
     });

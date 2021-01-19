@@ -20,6 +20,8 @@ pub enum StoryState {
     Initialized,
     ServantAccepted,
     TempleBuilt,
+    BuildingWatergate,
+    WatergateBuilt,
     VisitorArrived,
     FirstVisitorWelcomed,
     FlowerPlanted,
@@ -27,6 +29,13 @@ pub enum StoryState {
     TreePlanted,
     StickGatheringStationBuild,
     GatheringSticks,
+    PickingPrimaryCivBonus,
+    SolvingPrimaryCivQuestPartA,
+    SolvingPrimaryCivQuestPartB,
+    PickingSecondaryCivBonus,
+    SolvingSecondaryQuestPartA,
+    SolvingSecondaryQuestPartB,
+    AllDone,
 }
 
 use StoryTrigger::*;
@@ -40,11 +49,18 @@ impl StoryState {
             }
             (Self::ServantAccepted, BuildingBuilt(BuildingType::Temple)) => {
                 next_state = Self::TempleBuilt;
-                action = Some(StoryAction::SendHobo);
             }
             (Self::TempleBuilt, DialogueStoryTrigger) => {
-                next_state = Self::VisitorArrived;
+                next_state = Self::BuildingWatergate;
             }
+            (Self::BuildingWatergate, BuildingBuilt(BuildingType::Watergate)) => {
+                next_state = Self::WatergateBuilt;
+            }
+            (Self::WatergateBuilt, DialogueStoryTrigger) => {
+                next_state = Self::VisitorArrived;
+                action = Some(StoryAction::SendHobo);
+            }
+            // TODO: Something is missing here. Something that introduces quests and something for letters. Maybe more.
             (Self::VisitorArrived, DialogueStoryTrigger) => {
                 action = Some(StoryAction::StartQuest(QuestName::HelloWorld));
             }

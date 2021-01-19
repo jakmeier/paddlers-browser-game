@@ -118,6 +118,9 @@ impl<'a, 'b> TownFrame<'a, 'b> {
                     .nuts_check();
             }
             Signal::BuildingBuilt(BuildingType::Watergate) => {
+                state
+                    .load_story_triggers(&StoryState::WatergateBuilt)
+                    .nuts_check();
                 state.town_mut().refresh_attacker_direction();
             }
             _ => {}

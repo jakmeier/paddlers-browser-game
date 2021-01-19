@@ -35,13 +35,22 @@ impl Game {
 pub fn select_dialogue_scene(story_state: StoryState) -> Option<(SceneIndex, SlideIndex)> {
     match story_state {
         StoryState::Initialized
-        | StoryState::TempleBuilt
         | StoryState::VisitorArrived
         | StoryState::FirstVisitorWelcomed
         | StoryState::FlowerPlanted
         | StoryState::MoreHappyVisitors
         | StoryState::TreePlanted
         | StoryState::StickGatheringStationBuild
+        | StoryState::BuildingWatergate
+        | StoryState::WatergateBuilt
+        | StoryState::PickingPrimaryCivBonus
+        | StoryState::SolvingPrimaryCivQuestPartA
+        | StoryState::SolvingPrimaryCivQuestPartB
+        | StoryState::PickingSecondaryCivBonus
+        | StoryState::SolvingSecondaryQuestPartA
+        | StoryState::SolvingSecondaryQuestPartB
+        | StoryState::AllDone
+        | StoryState::TempleBuilt
         | StoryState::GatheringSticks => None,
         StoryState::ServantAccepted => Some((SceneIndex::Entrance, 5)),
     }

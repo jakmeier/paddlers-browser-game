@@ -53,7 +53,7 @@ impl BuildingType {
             BuildingType::Tree => karma >= 1,
             BuildingType::SingleNest => false,
             BuildingType::TripleNest => false,
-            BuildingType::Watergate => true,
+            BuildingType::Watergate => story_state == StoryState::BuildingWatergate,
         }
     }
     /// Buildings that may be available at the default shop, regardless of player restrictions

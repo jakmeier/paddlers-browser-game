@@ -71,23 +71,42 @@ msgstr "Build me a temple"
 ## Temple built scene
 msgid "templebuilt-A0"
 msgstr ""
+"I built the temple!\n"
+"Look how awesome it is!"
+
+msgid "templebuilt-A10"
+msgstr ""
+"We should invite everyone!\n"
+"I can tell them about your glory\n"
+"and they can worship you at temple"
+
+msgid "templebuilt-H20"
+msgstr ""
+"Place a set of stones\n"
+"on one side of the town.\n"
+"Visitors will know to\n"
+"enter from there."
+
+## Watergate built scene
+msgid "gatebuilt-A0"
+msgstr ""
 "See there!\n"
 "A visitor comes to see\n"
 "your temple."
 
-msgid "templebuilt-A10"
+msgid "gatebuilt-A10"
 msgstr ""
 "Look at that sad\n"
 "Paddler.\n"
 "Why is it so depressed\n"
 "on such a sunny day?"
 
-msgid "templebuilt-A20"
+msgid "gatebuilt-A20"
 msgstr ""
 "Let me go and give\n"
 "it warm welcome."
 
-msgid "templebuilt-H30"
+msgid "gatebuilt-H30"
 msgstr ""
 "Hint:\n"
 "Select your follower\n"
@@ -96,7 +115,7 @@ msgstr ""
 "Then click on the\n"
 "visting Paddler."
 
-msgid "templebuilt-B30"
+msgid "button-back-to-town"
 msgstr "Back to town"
 
 

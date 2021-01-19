@@ -287,6 +287,8 @@ impl Into<StoryState> for &PlayerStoryState {
         match self {
             PlayerStoryState::INITIALIZED => StoryState::Initialized,
             PlayerStoryState::SERVANT_ACCEPTED => StoryState::ServantAccepted,
+            PlayerStoryState::WATERGATE_BUILT => StoryState::WatergateBuilt,
+            PlayerStoryState::BUILDING_WATERGATE => StoryState::BuildingWatergate,
             PlayerStoryState::TEMPLE_BUILT => StoryState::TempleBuilt,
             PlayerStoryState::VISITOR_ARRIVED => StoryState::VisitorArrived,
             PlayerStoryState::FIRST_VISITOR_WELCOMED => StoryState::FirstVisitorWelcomed,
@@ -297,6 +299,21 @@ impl Into<StoryState> for &PlayerStoryState {
                 StoryState::StickGatheringStationBuild
             }
             PlayerStoryState::GATHERING_STICKS => StoryState::GatheringSticks,
+            PlayerStoryState::PICKING_PRIMARY_CIV_BONUS => StoryState::PickingPrimaryCivBonus,
+            PlayerStoryState::SOLVING_PRIMARY_CIV_QUEST_PART_A => {
+                StoryState::SolvingPrimaryCivQuestPartA
+            }
+            PlayerStoryState::SOLVING_PRIMARY_CIV_QUEST_PART_B => {
+                StoryState::SolvingPrimaryCivQuestPartB
+            }
+            PlayerStoryState::PICKING_SECONDARY_CIV_BONUS => StoryState::PickingSecondaryCivBonus,
+            PlayerStoryState::SOLVING_SECONDARY_QUEST_PART_A => {
+                StoryState::SolvingSecondaryQuestPartA
+            }
+            PlayerStoryState::SOLVING_SECONDARY_QUEST_PART_B => {
+                StoryState::SolvingSecondaryQuestPartB
+            }
+            PlayerStoryState::ALL_DONE => StoryState::AllDone,
             PlayerStoryState::Other(_) => panic!("Unexpected story state"),
         }
     }

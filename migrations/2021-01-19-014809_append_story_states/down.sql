@@ -1,0 +1,9 @@
+DELETE FROM pg_enum WHERE pg_enum.enumtypid = 'story_state_type'::regtype::oid AND pg_enum.enumlabel = 'watergate_built';
+DELETE FROM pg_enum WHERE pg_enum.enumtypid = 'story_state_type'::regtype::oid AND pg_enum.enumlabel = 'solving_secondary_quest_part_b';
+DELETE FROM pg_enum WHERE pg_enum.enumtypid = 'story_state_type'::regtype::oid AND pg_enum.enumlabel = 'solving_secondary_quest_part_a';
+DELETE FROM pg_enum WHERE pg_enum.enumtypid = 'story_state_type'::regtype::oid AND pg_enum.enumlabel = 'solving_primary_civ_quest_part_b';
+DELETE FROM pg_enum WHERE pg_enum.enumtypid = 'story_state_type'::regtype::oid AND pg_enum.enumlabel = 'solving_primary_civ_quest_part_a';
+DELETE FROM pg_enum WHERE pg_enum.enumtypid = 'story_state_type'::regtype::oid AND pg_enum.enumlabel = 'picking_secondary_civ_bonus';
+DELETE FROM pg_enum WHERE pg_enum.enumtypid = 'story_state_type'::regtype::oid AND pg_enum.enumlabel = 'picking_primary_civ_bonus';
+DELETE FROM pg_enum WHERE pg_enum.enumtypid = 'story_state_type'::regtype::oid AND pg_enum.enumlabel = 'building_watergate';
+DELETE FROM pg_enum WHERE pg_enum.enumtypid = 'story_state_type'::regtype::oid AND pg_enum.enumlabel = 'all_done';
