@@ -48,8 +48,7 @@ const fn left_area() -> Rectangle {
         },
     }
 }
-
-const fn active_area() -> Rectangle {
+const fn right_area() -> Rectangle {
     let area = inner_frame_area();
 
     Rectangle {
@@ -62,6 +61,10 @@ const fn active_area() -> Rectangle {
             y: area.size.y,
         },
     }
+}
+
+const fn active_area() -> Rectangle {
+    right_area()
 }
 
 const fn text_area() -> Rectangle {

@@ -1,62 +1,70 @@
 use crate::game::map::map_segment::MapSegment;
 use crate::gui::utils::*;
 use ::lyon::{math::point, path::Path, tessellation::*};
-use paddle::quicksilver_compat::*;
 use paddle::*;
+use paddlers_shared_lib::game_mechanics::map::MAP_H;
 
 impl MapSegment {
     pub fn tesselate_rivers(&mut self) {
-        let area = self.scaled_base_shape();
         self.water_mesh.clear();
-        let norm_area = self.base_shape();
-        let total_area = norm_area.fit_into(&area, FitStrategy::Center);
-        let scaling = total_area.width() / norm_area.width();
-
-        let main_river_area = Rectangle::new(
-            (area.x() - 0.5 * scaling, (self.h / 2.0).floor() * scaling),
-            ((self.w + 1.0) * scaling, scaling),
-        );
+        // Natural size of mesh is not a square but for AbstractMesh to draw properly in its current (unfortunate) state, the mesh needs to be in exactly this area
+        let area = Rectangle::new((-1, -1), (2, 2));
+        let stretch = self.base_shape().project(&area);
+        let d = area.height() / MAP_H as f32;
+        let main_river_area = Rectangle::new((area.x() - 0.5 * d, -0.5 * d), (area.width() + d, d));
         let main_path = river_path(main_river_area, 2);
-        add_path_to_mesh(&mut self.water_mesh, &main_path, 0.75 * scaling, LIGHT_BLUE);
+        add_path_to_mesh(&mut self.water_mesh, &main_path, 0.75 * d);
 
         for stream_points in &mut self.streams {
-            let mut stream_points: Vec<Vector> =
-                stream_points.iter().map(|tup| (*tup).into()).collect();
-            scale_vec(&mut stream_points, scaling);
-            add_path_to_mesh(
-                &mut self.water_mesh,
-                &stream_path(&stream_points),
-                0.2 * scaling,
-                LIGHT_BLUE,
-            );
+            let stream_points: Vec<Vector> = stream_points
+                .iter()
+                .map(|(x, y)| stretch * Vector::new(*x, *y))
+                .collect();
+            add_path_to_mesh(&mut self.water_mesh, &stream_path(&stream_points), 0.2 * d);
         }
     }
 }
 
-pub fn tesselate_map_background(base_shape: Rectangle, w: i32, h: i32) -> AbstractMesh {
+pub fn tesselate_grid_net(w: i32, h: i32) -> AbstractMesh {
     let mut mesh = AbstractMesh::new();
 
-    let width = base_shape.width();
-    let height = base_shape.height();
-    let dx = width / w as f32;
-    let dy = height / h as f32;
-    let thickness = 1.5;
+    let width = 2.0;
+    let height = 2.0;
+    let dx = 0.02 * width / w as f32;
+    let dy = 0.02 * height / h as f32;
 
+    let rect_triangles = vec![[0, 1, 2], [2, 3, 0]];
     for x in 0..w + 2 {
-        let x = dx * x as f32;
-        let line = v_line((x, 0), height, thickness);
-        line.tessellate(&mut mesh, Col(TRANSPARENT_BLACK));
+        let x = width * x as f32 / w as f32 - 1.0;
+        let line = v_line((x, -1.0), height, dx);
+        // FIXME: tesselation to meshes
+        // This essentially ignores any parameters of the lines (line: Rectangle) right now! It would just fills the normalized area...
+        // line.tessellate(&mut mesh);
+        mesh.add_triangles(
+            &vec![
+                line.top_left(),
+                line.top_left() + Vector::X * line.width(),
+                line.bottom_right(),
+                line.top_left() + Vector::Y * line.height(),
+            ],
+            &rect_triangles,
+        );
     }
     for y in 0..h + 2 {
-        let y = dy * y as f32;
-        let line = h_line((0, y), width + dx, thickness);
-        line.tessellate(&mut mesh, Col(TRANSPARENT_BLACK));
+        let y = width * y as f32 / h as f32 - 1.0;
+        let line = h_line((-1.0, y), width + dx, dy);
+        // line.tessellate(&mut mesh);
+        mesh.add_triangles(
+            &vec![
+                line.top_left(),
+                line.top_left() + Vector::X * line.width(),
+                line.bottom_right(),
+                line.top_left() + Vector::Y * line.height(),
+            ],
+            &rect_triangles,
+        );
     }
     mesh
-}
-
-fn scale_vec(points: &mut Vec<Vector>, scaling: f32) {
-    points.iter_mut().for_each(|p| *p *= scaling);
 }
 
 fn river_path(area: Rectangle, windings: usize) -> Path {
@@ -66,13 +74,14 @@ fn river_path(area: Rectangle, windings: usize) -> Path {
     let y0 = area.y() + dy;
 
     let mut builder = Path::builder();
-    builder.move_to(point(x0, y0));
+    builder.begin(point(x0, y0));
 
     for i in 0..windings {
         let x = x0 + 4.0 * dx * i as f32;
         builder.quadratic_bezier_to(point(x + dx, y0 + dy), point(x + 2.0 * dx, y0));
         builder.quadratic_bezier_to(point(x + 3.0 * dx, y0 - dy), point(x + 4.0 * dx, y0));
     }
+    builder.end(false);
 
     builder.build()
 }
@@ -80,7 +89,7 @@ fn river_path(area: Rectangle, windings: usize) -> Path {
 fn stream_path(points: &[Vector]) -> Path {
     let mut builder = Path::builder();
     let p0 = points[0];
-    builder.move_to(point(p0.x, p0.y));
+    builder.begin(point(p0.x, p0.y));
     for slice in points[1..].windows(2) {
         match slice {
             &[p, q] => {
@@ -90,17 +99,19 @@ fn stream_path(points: &[Vector]) -> Path {
             _ => panic!(),
         }
     }
+    builder.end(false);
 
     builder.build()
 }
 
-fn add_path_to_mesh(mesh: &mut AbstractMesh, path: &Path, thickness: f32, color: Color) {
-    let mut shape = ShapeRenderer::new(mesh, color);
+fn add_path_to_mesh(mesh: &mut AbstractMesh, path: &Path, thickness: f32) {
+    let mut shape = ShapeRenderer::new(mesh);
     let mut tessellator = StrokeTessellator::new();
     tessellator
         .tessellate_path(
             path,
             &StrokeOptions::default()
+                .with_tolerance(1.0 / 2048.0)
                 .with_line_width(thickness)
                 .with_line_cap(LineCap::Round),
             &mut shape,

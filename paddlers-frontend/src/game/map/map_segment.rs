@@ -11,12 +11,10 @@ pub struct MapSegment {
     pub h: f32,
     pub streams: Vec<Vec<(f32, f32)>>,
     pub water_mesh: AbstractMesh,
-    pub scaling: f32,
 }
 
 impl MapSegment {
     pub fn new(x: i32, y: i32, w: i32, h: i32, streams: Vec<Vec<(f32, f32)>>) -> Self {
-        let scaling = 1.0;
         MapSegment {
             x: x as f32,
             y: y as f32,
@@ -24,27 +22,20 @@ impl MapSegment {
             h: h as f32,
             streams,
             water_mesh: AbstractMesh::new(),
-            scaling,
         }
     }
     pub fn base_shape(&self) -> Rectangle {
         Rectangle::new((self.x, self.y), (self.w, self.h))
     }
     pub fn scaled_base_shape(&self) -> Rectangle {
-        let scaling = self.scaling;
+        let scaling = super::GlobalMap::unit_length();
         Rectangle::new(
             (self.x as f32 * scaling, self.y as f32 * scaling),
             (self.w as f32 * scaling, self.h as f32 * scaling),
         )
     }
-    pub fn apply_scaling(&mut self, r: f32) {
-        if self.scaling != r {
-            self.scaling = r;
-            self.tesselate_rivers();
-        }
-    }
     pub fn is_visible(&self, view: Rectangle) -> bool {
-        let overlap = MAP_STREAM_AREA_W * self.scaling;
+        let overlap = MAP_STREAM_AREA_W * super::GlobalMap::unit_length();
         self.x <= view.x() + view.width() + overlap && self.x + self.w + overlap >= view.x()
     }
 }

@@ -50,7 +50,7 @@ impl Frame for MapFrame {
                 state.world.write_resource(),
             ),
         );
-        window.fill(Col(GREEN));
+        window.fill(GREEN);
 
         map.draw_grid(window);
         map.draw_water(window, &Self::area());

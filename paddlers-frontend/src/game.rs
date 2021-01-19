@@ -24,16 +24,13 @@ pub(crate) mod units;
 pub(crate) mod visits;
 
 use crate::game::net_receiver::*;
+use crate::gui::{input, sprites::*, ui_state::*};
 use crate::init::loading::GameLoadingData;
 use crate::net::NetMsg;
 use crate::prelude::*;
 use crate::{
     game::{components::*, player_info::PlayerInfo, town::TownContextManager},
     resolution::{SCREEN_H, SCREEN_W},
-};
-use crate::{
-    gui::{input, sprites::*, ui_state::*},
-    resolution::{MAIN_AREA_H, MAIN_AREA_W},
 };
 use chrono::NaiveDateTime;
 use game_event_manager::GameEvent;
@@ -138,8 +135,7 @@ impl Game {
         Ok(())
     }
     pub fn init_map(&mut self) {
-        let size = (MAIN_AREA_W, MAIN_AREA_H).into();
-        let (private, shared) = GlobalMap::new(size);
+        let (private, shared) = GlobalMap::new();
         self.map = Some(private);
         self.world.insert(shared);
     }

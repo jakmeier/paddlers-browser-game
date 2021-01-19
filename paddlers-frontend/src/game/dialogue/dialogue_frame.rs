@@ -12,7 +12,7 @@ use crate::{
 use chrono::NaiveDateTime;
 use paddle::Frame;
 use paddle::*;
-use paddle::{graphics::AbstractMesh, quicksilver_compat::Col};
+use paddle::{graphics::AbstractMesh, quicksilver_compat::Color};
 use specs::WorldExt;
 
 pub(crate) struct DialogueFrame {
@@ -27,7 +27,10 @@ pub(crate) struct DialogueFrame {
 
 impl DialogueFrame {
     pub fn new() -> PadlResult<Self> {
-        let text_bubble = build_text_bubble(active_area(), text_area());
+        let text_bubble = build_text_bubble(
+            right_area().const_translate(-right_area().pos),
+            text_area().const_translate(-right_area().pos),
+        );
         let text_provider = TableTextProvider::new_styled("dialogue");
 
         let dialogue = DialogueFrame {
@@ -140,7 +143,7 @@ impl DialogueFrame {
         window: &mut DisplayArea,
         main_area: Rectangle,
     ) {
-        window.draw_ex(&main_area, Col(LIGHT_BLUE), Transform::IDENTITY, Z_TEXTURE);
+        window.draw_ex(&main_area, LIGHT_BLUE, Transform::IDENTITY, Z_TEXTURE);
         let leaf_w = LEAVES_BORDER_W;
         let leaf_h = LEAVES_BORDER_H;
         let mut leaf_area = main_area.clone();
@@ -164,7 +167,7 @@ impl DialogueFrame {
             Z_TEXTURE + 1,
             FitStrategy::Center,
         );
-        window.draw_mesh(&self.text_bubble);
+        window.draw_mesh(&self.text_bubble, right_area(), Color::WHITE);
     }
 
     pub fn receive_load_scene(&mut self, state: &mut Game, msg: &LoadNewDialogueScene) {

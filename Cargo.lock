@@ -401,15 +401,6 @@ dependencies = [
 
 [[package]]
 name = "arrayvec"
-version = "0.4.12"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cd9fd44efafa8690358b7408d253adf110036b88f55672a933f01d616ad9b1b9"
-dependencies = [
- "nodrop",
-]
-
-[[package]]
-name = "arrayvec"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "23b62fc65de8e4e7f52534fb52b0f3ed04746ae267519eef2a83941e8085068b"
@@ -627,7 +618,7 @@ checksum = "670ad68c9088c2a963aaa298cb369688cf3f9465ce5e2d4ca10e6e0098a1ce73"
 dependencies = [
  "libc",
  "num-integer",
- "num-traits 0.2.14",
+ "num-traits",
  "serde",
  "time",
  "winapi 0.3.9",
@@ -1048,23 +1039,11 @@ dependencies = [
 
 [[package]]
 name = "euclid"
-version = "0.19.9"
+version = "0.22.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "596b99621b9477e7a5f94d2d8dd13a9c5c302ac358b822c67a42b6f1054450e1"
+checksum = "5337024b8293bdce5265dc9570ef6e608a34bfacbbc87fe1a5dcb5f1dac2f4e2"
 dependencies = [
- "euclid_macros",
- "num-traits 0.2.14",
-]
-
-[[package]]
-name = "euclid_macros"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fdcb84c18ea5037a1c5a23039b4ff29403abce2e0d6b1daa11cf0bde2b30be15"
-dependencies = [
- "proc-macro2 0.4.30",
- "quote 0.6.13",
- "syn 0.15.44",
+ "num-traits",
 ]
 
 [[package]]
@@ -1125,6 +1104,12 @@ dependencies = [
  "miniz-sys",
  "miniz_oxide",
 ]
+
+[[package]]
+name = "float-cmp"
+version = "0.5.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "75224bec9bfe1a65e2d34132933f2de7fe79900c96a0174307554244ece8150e"
 
 [[package]]
 name = "fnv"
@@ -1722,9 +1707,9 @@ dependencies = [
 
 [[package]]
 name = "lyon"
-version = "0.13.5"
+version = "0.17.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fcbe51099b21e92413cd1f692ba6f0140007d1b01ca07e703172d88d45096c9a"
+checksum = "a90be95ae04a3fa64777a0de244acf55fdde882eba6a23d4c2cd4f60f34ddf09"
 dependencies = [
  "lyon_algorithms",
  "lyon_extra",
@@ -1733,9 +1718,9 @@ dependencies = [
 
 [[package]]
 name = "lyon_algorithms"
-version = "0.13.4"
+version = "0.17.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5acff42f708e6d2d4126c7aee8c4711c08e9be6143f0d6050498fafb7f4a0287"
+checksum = "ac507017460ad0b92198503945cb164e71465cdfd84063f5eed9af9356ccd093"
 dependencies = [
  "lyon_path",
  "sid",
@@ -1743,9 +1728,9 @@ dependencies = [
 
 [[package]]
 name = "lyon_extra"
-version = "0.13.0"
+version = "0.17.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a09f14f34e2d503611ea72f81f4aee99f7d9bc1573740a93e472ca07e6e7372b"
+checksum = "a0729bc681ea3d88df18cbe65cf6495790424c78d361bf8c517898a11081c882"
 dependencies = [
  "lyon_path",
  "lyon_svg",
@@ -1753,40 +1738,41 @@ dependencies = [
 
 [[package]]
 name = "lyon_geom"
-version = "0.12.7"
+version = "0.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bdb9bf1f1d43be9a9cc2343a7a096dc113cc25337a13e8f99721b01d1d548b60"
+checksum = "edb987cd391542608ca8d43c0cd5ec44ebe4a0957eb89769a316c99d7fe14537"
 dependencies = [
- "arrayvec 0.4.12",
+ "arrayvec",
  "euclid",
- "num-traits 0.2.14",
+ "num-traits",
 ]
 
 [[package]]
 name = "lyon_path"
-version = "0.13.2"
+version = "0.17.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bd492548d32f7e8de10509953ed56d11dbc7103c36d56f32f3b74bf72b04cf29"
+checksum = "23d64beb93be63439bc744041d132d62fdec831181eeb474f675e5f6a81f5ac1"
 dependencies = [
  "lyon_geom",
 ]
 
 [[package]]
 name = "lyon_svg"
-version = "0.13.0"
+version = "0.17.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6628cc5a8168c9c3bb2a0f2b0f31c7e8bf3c71bc62aed9b3d2ade29c0d175eee"
+checksum = "b2df4e974ee362e67be881e68d6c853d9a11193490950aa8ca3754c0ff1cf919"
 dependencies = [
  "lyon_path",
- "svgparser",
+ "svgtypes",
 ]
 
 [[package]]
 name = "lyon_tessellation"
-version = "0.13.5"
+version = "0.17.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "228f5eedeb6795b57d22fa91f6c215643f2c2aae758f9432585c8d99b7be9143"
+checksum = "2133ee881f9c08ffae9bf866ef56204ab6da4ccb2b2b37963c14b028d798fd41"
 dependencies = [
+ "arrayvec",
  "lyon_path",
  "sid",
 ]
@@ -1970,12 +1956,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "nodrop"
-version = "0.1.14"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "72ef4a56884ca558e5ddb05a1d1e7e1bfd9a68d9ed024c21704cc98872dae1bb"
-
-[[package]]
 name = "nom"
 version = "5.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2014,7 +1994,7 @@ dependencies = [
  "num-integer",
  "num-iter",
  "num-rational",
- "num-traits 0.2.14",
+ "num-traits",
 ]
 
 [[package]]
@@ -2025,7 +2005,7 @@ checksum = "090c7f9998ee0ff65aa5b723e4009f7b217707f1fb5ea551329cc4d6231fb304"
 dependencies = [
  "autocfg 1.0.1",
  "num-integer",
- "num-traits 0.2.14",
+ "num-traits",
 ]
 
 [[package]]
@@ -2035,7 +2015,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b6b19411a9719e753aff12e5187b74d60d3dc449ec3f4dc21e3989c3f554bc95"
 dependencies = [
  "autocfg 1.0.1",
- "num-traits 0.2.14",
+ "num-traits",
 ]
 
 [[package]]
@@ -2045,7 +2025,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d2cc698a63b549a70bc047073d2949cce27cd1c7b0a4a862d08a8031bc2801db"
 dependencies = [
  "autocfg 1.0.1",
- "num-traits 0.2.14",
+ "num-traits",
 ]
 
 [[package]]
@@ -2056,7 +2036,7 @@ checksum = "b2021c8337a54d21aca0d59a92577a029af9431cb59b909b03252b9c164fad59"
 dependencies = [
  "autocfg 1.0.1",
  "num-integer",
- "num-traits 0.2.14",
+ "num-traits",
 ]
 
 [[package]]
@@ -2068,16 +2048,7 @@ dependencies = [
  "autocfg 1.0.1",
  "num-bigint",
  "num-integer",
- "num-traits 0.2.14",
-]
-
-[[package]]
-name = "num-traits"
-version = "0.1.43"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "92e5113e9fd4cc14ded8e499429f396a20f98c772a47cc8622a736e1ec843c31"
-dependencies = [
- "num-traits 0.2.14",
+ "num-traits",
 ]
 
 [[package]]
@@ -2147,27 +2118,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "paddle"
-version = "0.1.0-beta.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "78de5b0be57e07223e99374a67e4406800358c5f1a53b82100b9c05fa039392b"
-dependencies = [
- "chrono",
- "console_error_panic_hook",
- "div",
- "js-sys",
- "lyon",
- "nuts",
- "rand 0.7.3",
- "serde",
- "strum 0.20.0",
- "strum_macros 0.20.1",
- "wasm-bindgen",
- "wasm-bindgen-futures",
- "web-sys",
-]
-
-[[package]]
 name = "paddlers-db-interface"
 version = "0.2.0"
 dependencies = [
@@ -2198,7 +2148,7 @@ dependencies = [
  "lyon",
  "mogwai",
  "nuts",
- "paddle 0.1.0-beta.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "paddle",
  "paddlers-shared-lib",
  "pathfinding",
  "serde",
@@ -2342,7 +2292,7 @@ dependencies = [
  "fixedbitset",
  "indexmap",
  "itertools",
- "num-traits 0.2.14",
+ "num-traits",
 ]
 
 [[package]]
@@ -2378,24 +2328,6 @@ name = "percent-encoding"
 version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d4fd5641d01c8f18a23da7b6fe29298ff4b55afcccdf78973b24cf3175fee32e"
-
-[[package]]
-name = "phf"
-version = "0.7.24"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b3da44b85f8e8dfaec21adae67f95d93244b2ecf6ad2a692320598dcc8e6dd18"
-dependencies = [
- "phf_shared",
-]
-
-[[package]]
-name = "phf_shared"
-version = "0.7.24"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "234f71a15de2288bcb7e3b6515828d22af7ec8598ee6d24c3b526fa0a80b67a0"
-dependencies = [
- "siphasher",
-]
 
 [[package]]
 name = "polyval"
@@ -2928,7 +2860,7 @@ version = "0.10.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c5f08237e667ac94ad20f8878b5943d91a93ccb231428446c57c21c57779016d"
 dependencies = [
- "arrayvec 0.5.2",
+ "arrayvec",
  "hashbrown 0.7.2",
  "mopa",
  "smallvec 1.4.2",
@@ -2943,11 +2875,11 @@ checksum = "b5752e017e03af9d735b4b069f53b7a7fd90fefafa04d8bd0c25581b0bff437f"
 
 [[package]]
 name = "sid"
-version = "0.5.2"
+version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "29e0a6006cf04d568a49363baca3dabddbbe46538f7c76692d405f5f5d140ecd"
+checksum = "bd5ac56c121948b4879bba9e519852c211bcdd8f014efff766441deff0b91bdb"
 dependencies = [
- "num-traits 0.1.43",
+ "num-traits",
 ]
 
 [[package]]
@@ -3115,15 +3047,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "343f3f510c2915908f155e94f17220b19ccfacf2a64a2a5d8004f2c3e311e7fd"
 
 [[package]]
-name = "svgparser"
-version = "0.8.1"
+name = "svgtypes"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2c46f352b102fc1b4e06e02f309f329bdf37d604e3fb23930dc0c69290ec85f1"
+checksum = "9c536faaff1a10837cfe373142583f6e27d81e96beba339147e77b67c9f260ff"
 dependencies = [
- "failure",
- "log 0.4.11",
- "phf",
- "xmlparser",
+ "float-cmp",
+ "siphasher",
 ]
 
 [[package]]
@@ -3803,16 +3733,6 @@ checksum = "d59cefebd0c892fa2dd6de581e937301d8552cb44489cdff035c6187cb63fa5e"
 dependencies = [
  "winapi 0.2.8",
  "winapi-build",
-]
-
-[[package]]
-name = "xmlparser"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "94c0b99363a7114a47e94870afe9cf5695b365c24e7d102b63f945080c833834"
-dependencies = [
- "failure",
- "log 0.4.11",
 ]
 
 [[package]]

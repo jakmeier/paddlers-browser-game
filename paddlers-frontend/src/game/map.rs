@@ -4,13 +4,16 @@ mod map_segment;
 mod map_tesselation;
 mod village_meta;
 
-use crate::gui::{input::Clickable, render::Renderable, sprites::*, ui_state::*, utils::*, z::*};
 use crate::net::authentication::keycloak_preferred_name;
+use crate::{
+    gui::{input::Clickable, render::Renderable, sprites::*, ui_state::*, utils::*, z::*},
+    resolution::MAIN_AREA_H,
+};
 use map_position::*;
 use map_segment::MapSegment;
 use map_tesselation::*;
-use paddle::quicksilver_compat::Col;
 use paddle::*;
+use paddlers_shared_lib::game_mechanics::map::MAP_H;
 use specs::prelude::*;
 
 pub(crate) use map_frame::MapFrame;
@@ -39,7 +42,6 @@ pub struct GlobalMapPrivateState {
 pub struct GlobalMapSharedState {
     /// Offset in map coordinates (1.0 = one village width)
     x_offset: f32,
-    scaling: f32,
 }
 
 impl<'a> GlobalMap<'a> {
@@ -49,11 +51,9 @@ impl<'a> GlobalMap<'a> {
     ) -> GlobalMap<'b> {
         GlobalMap::<'b> { private, shared }
     }
-    pub fn new(view_size: Vector) -> (GlobalMapPrivateState, GlobalMapSharedState) {
-        let scaling = Self::calculate_scaling(view_size);
+    pub fn new() -> (GlobalMapPrivateState, GlobalMapSharedState) {
         let (w, h) = Self::display_shape();
-        let view_port = Rectangle::new((0, 0), Vector::new(w, h) * scaling);
-        let grid_mesh = tesselate_map_background(view_port, w, h);
+        let grid_mesh = tesselate_grid_net(w, h);
 
         let map = GlobalMapPrivateState {
             grid_mesh,
@@ -62,10 +62,7 @@ impl<'a> GlobalMap<'a> {
             view_width: w,
             loaded: (0, -1),
         };
-        let shared = GlobalMapSharedState {
-            x_offset: 0.0,
-            scaling,
-        };
+        let shared = GlobalMapSharedState { x_offset: 0.0 };
         (map, shared)
     }
 
@@ -99,19 +96,30 @@ impl<'a> GlobalMap<'a> {
         if x > 0.0 {
             x -= 1.0
         }
-        let t = Transform::translate((x * self.shared.scaling, 0));
-        window.draw_mesh_ex(&self.private.grid_mesh, t, Z_GRID);
+        let t = Transform::translate((x * Self::unit_length(), 0));
+        window.draw_mesh_ex(
+            &self.private.grid_mesh,
+            Rectangle::new_sized(window.size() + Vector::X * Self::unit_length()),
+            TRANSPARENT_BLACK,
+            t,
+            Z_GRID,
+        );
     }
     fn draw_water(&mut self, window: &mut DisplayArea, area: &Rectangle) {
         let visible_frame = Rectangle::new(
             (-self.shared.x_offset, 0),
-            area.size() / self.shared.scaling,
+            area.size() / Self::unit_length(),
         );
         let t = self.view_transform();
         for segment in self.private.segments.iter_mut() {
             if segment.is_visible(visible_frame) {
-                segment.apply_scaling(self.shared.scaling);
-                window.draw_mesh_ex(&segment.water_mesh, t, Z_RIVER);
+                window.draw_mesh_ex(
+                    &segment.water_mesh,
+                    segment.scaled_base_shape(),
+                    BLUE,
+                    t,
+                    Z_RIVER,
+                );
             }
         }
     }
@@ -125,10 +133,10 @@ impl<'a> GlobalMap<'a> {
             let (x, y) = (x - 1, y - 1);
             let sprite_area = Rectangle::new(
                 (
-                    (x as f32 + self.shared.x_offset) * self.shared.scaling,
-                    y as f32 * self.shared.scaling,
+                    (x as f32 + self.shared.x_offset) * Self::unit_length(),
+                    y as f32 * Self::unit_length(),
                 ),
-                (self.shared.scaling, self.shared.scaling),
+                (Self::unit_length(), Self::unit_length()),
             );
             draw_image(
                 sprites,
@@ -141,19 +149,16 @@ impl<'a> GlobalMap<'a> {
             );
         }
     }
-
-    fn display_shape() -> (i32, i32) {
+    const fn display_shape() -> (i32, i32) {
         let w = 15;
-        let h = paddlers_shared_lib::game_mechanics::map::MAP_H as i32;
+        let h = MAP_H as i32;
         (w, h)
     }
-    pub fn calculate_scaling(view_size: Vector) -> f32 {
-        let (_w, h) = Self::display_shape();
-        let ry = view_size.y / h as f32;
-        ry
+    const fn unit_length() -> f32 {
+        MAIN_AREA_H as f32 / MAP_H as f32
     }
     fn view_offset(&self) -> Vector {
-        Vector::new(self.shared.x_offset * self.shared.scaling, 0)
+        Vector::new(self.shared.x_offset * Self::unit_length(), 0)
     }
     fn view_transform(&self) -> Transform {
         Transform::translate(self.view_offset())
@@ -172,7 +177,7 @@ impl<'a> GlobalMap<'a> {
                         ),
                         (pt, pt),
                     );
-                    window.draw_ex(&area, Col(WHITE), Transform::rotate(45), 1000);
+                    window.draw_ex(&area, WHITE, Transform::rotate(45), 1000);
                 }
             }
         }
@@ -189,7 +194,7 @@ impl GlobalMapPrivateState {
         max_x: i32,
     ) {
         let w = max_x - min_x;
-        let h = paddlers_shared_lib::game_mechanics::map::MAP_H as i32;
+        let h = MAP_H as i32;
         let mut segment = MapSegment::new(min_x, 0, w, h, streams);
         segment.tesselate_rivers();
         self.segments.push(segment);
@@ -227,7 +232,7 @@ impl GlobalMapSharedState {
         position: ReadStorage<'a, MapPosition>,
         clickable: ReadStorage<'a, Clickable>,
     ) {
-        let r = self.scaling;
+        let r = GlobalMap::unit_length();
         let map_coordinates = Vector::new(mouse_pos.x / r - self.x_offset, mouse_pos.y / r);
 
         ui_state.selected_entity =

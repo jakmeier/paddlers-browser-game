@@ -3,11 +3,12 @@
 use crate::gui::utils::*;
 use lyon::lyon_tessellation::{FillOptions, StrokeTessellator};
 use lyon::{math::point, path::Path, tessellation::*};
-use paddle::{AbstractMesh, Rectangle, ShapeRenderer};
+use paddle::{AbstractMesh, Paint, Rectangle, ShapeRenderer};
 
 /// A single mesh of triangles ready to be drawn
 pub struct PadlShape {
     pub bounding_box: Rectangle,
+    pub paint: Paint<'static>,
     pub mesh: AbstractMesh,
 }
 #[derive(Debug, Clone, Copy)]
@@ -24,17 +25,20 @@ pub fn load_shapes() -> Vec<PadlShape> {
     shapes.push(PadlShape {
         mesh: build_arrow(base, true),
         bounding_box: base,
+        paint: DARK_GREEN.into(),
     });
 
     shapes.push(PadlShape {
         mesh: build_arrow(base, false),
         bounding_box: base,
+        paint: DARK_GREEN.into(),
     });
 
     let base = Rectangle::new_sized((600, 200));
     shapes.push(PadlShape {
         mesh: build_frame(base),
         bounding_box: base,
+        paint: DARK_GREEN.into(),
     });
 
     shapes
@@ -68,14 +72,13 @@ fn build_arrow(total_area: Rectangle, left: bool) -> AbstractMesh {
 
     // Create enclosing path
     let mut builder = Path::builder();
-    builder.move_to(point(x0, y2));
+    builder.begin(point(x0, y2));
     builder.line_to(point(x1, y0));
     builder.line_to(point(x1, y1));
     builder.line_to(point(x2, y1));
     builder.line_to(point(x2, y3));
     builder.line_to(point(x1, y3));
     builder.line_to(point(x1, y4));
-    builder.line_to(point(x0, y2));
     builder.close();
 
     let path = builder.build();
@@ -83,19 +86,19 @@ fn build_arrow(total_area: Rectangle, left: bool) -> AbstractMesh {
     // Tesselate path to mesh
     let mut mesh = AbstractMesh::new();
     let mut tessellator = FillTessellator::new();
-    let mut shape = ShapeRenderer::new(&mut mesh, DARK_GREEN);
+    let mut shape = ShapeRenderer::new(&mut mesh);
 
     tessellator
-        .tessellate_path(path.into_iter(), &FillOptions::default(), &mut shape)
+        .tessellate_path(&path, &FillOptions::default(), &mut shape)
         .unwrap();
-
+    mesh.normalize();
     mesh
 }
 
 fn build_frame(area: Rectangle) -> AbstractMesh {
     // Create enclosing path
     let mut builder = Path::builder();
-    builder.move_to(point(area.x(), area.y()));
+    builder.begin(point(area.x(), area.y()));
     builder.line_to(point(area.x() + area.width(), area.y()));
     builder.line_to(point(area.x() + area.width(), area.y() + area.height()));
     builder.line_to(point(area.x(), area.y() + area.height()));
@@ -106,17 +109,17 @@ fn build_frame(area: Rectangle) -> AbstractMesh {
     // Tesselate path to mesh
     let mut mesh = AbstractMesh::new();
     let mut tessellator = StrokeTessellator::new();
-    let mut shape = ShapeRenderer::new(&mut mesh, DARK_GREEN);
+    let mut shape = ShapeRenderer::new(&mut mesh);
 
     let thickness = 5.0;
 
     tessellator
         .tessellate_path(
-            path.into_iter(),
+            &path,
             &StrokeOptions::default().with_line_width(thickness),
             &mut shape,
         )
         .unwrap();
-
+    mesh.normalize();
     mesh
 }

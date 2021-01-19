@@ -77,17 +77,12 @@ pub fn draw_image(
     i: SpriteIndex,
     z: i16,
     fit_strat: FitStrategy,
-    text_transform: Transform,
+    texture_transform: Transform,
 ) {
     let img = sprites.index(i);
     let unfitted_area = Rectangle::new(max_area.pos, img.natural_size());
     let area = unfitted_area.fit_into_ex(max_area, fit_strat, false);
-    window.draw_ex(
-        &area,
-        Background::ImgView(&img, text_transform),
-        Transform::IDENTITY,
-        z,
-    );
+    window.draw_ex(&area, &img, texture_transform, z);
 }
 pub fn draw_shape(
     sprites: &mut Sprites,
@@ -99,12 +94,7 @@ pub fn draw_shape(
 ) {
     let shape = sprites.shape_index(i);
     let place = shape.bounding_box.fit_into_ex(&draw_area, fit_strat, true);
-    let factor = (
-        place.size.x / shape.bounding_box.size.x,
-        place.size.y / shape.bounding_box.size.y,
-    );
-    let t = Transform::translate(place.pos) * Transform::scale(factor);
-    window.draw_mesh_ex(&shape.mesh, t, z);
+    window.draw_mesh_ex(&shape.mesh, place, shape.paint, Transform::IDENTITY, z);
 }
 
 pub fn draw_image_collection(
@@ -126,7 +116,7 @@ pub fn draw_image_collection(
         );
         window.draw_ex(
             &sub_area,
-            Background::ImgView(&sprites.index(img.img), Transform::IDENTITY),
+            &sprites.index(img.img),
             Transform::IDENTITY,
             z + img.z_offset,
         );

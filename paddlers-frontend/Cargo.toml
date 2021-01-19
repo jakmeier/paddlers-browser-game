@@ -15,8 +15,8 @@ paddlers-shared-lib = { path = "../paddlers-shared-lib", features = ["enum_utils
 div = "0.3"
 # nuts = { path = "../nuts", features = ["web-debug"] }
 nuts = { version = "0.2", features = ["web-debug"] }
-# paddle = { path = "../paddle", features = ["const_fn"] }
-paddle = { version = "0.1.0-beta.0", features = ["const_fn"] }
+paddle = { path = "../paddle", features = ["const_fn"] }
+# paddle = { version = "0.1.0-beta.0", features = ["const_fn"] }
 specs = { version = "0.16.1", default-features = false } # parallel not supported in wasm
 shred = { version = "0.10.2", default-features = false }
 specs-derive = "0.4"
@@ -30,7 +30,7 @@ pathfinding = "2.0.4"
 url = "2.1.1"
 statistical = { version = "1.0", optional = true }
 gettext = "0.4"
-lyon = { version = "0.13", features = ["extra"] }
+lyon = { version = "0.17", features = ["extra"] }
 wasm-bindgen-futures = "0.4.19"
 js-sys = "0.3.46"
 wasm-bindgen = { version = "0.2.69", features = ["serde-serialize"]  }

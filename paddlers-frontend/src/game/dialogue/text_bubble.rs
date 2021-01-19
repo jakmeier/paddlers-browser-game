@@ -1,4 +1,3 @@
-use crate::gui::utils::*;
 use lyon::{math::point, path::Path, tessellation::*};
 use paddle::*;
 
@@ -26,7 +25,7 @@ pub fn build_text_bubble(total_area: Rectangle, text_area: Rectangle) -> Abstrac
 
     // Create enclosing path
     let mut builder = Path::builder();
-    builder.move_to(point(x0, y0));
+    builder.begin(point(x0, y0));
 
     builder.quadratic_bezier_to(point(ctrl_x0, ctrl_y0), point(left, top));
     builder.quadratic_bezier_to(point(ctrl_x1, ctrl_y1), point(right, top));
@@ -40,11 +39,12 @@ pub fn build_text_bubble(total_area: Rectangle, text_area: Rectangle) -> Abstrac
     // Tesselate path to mesh
     let mut mesh = AbstractMesh::new();
     let mut tessellator = FillTessellator::new();
-    let mut shape = ShapeRenderer::new(&mut mesh, WHITE);
+    let mut shape = ShapeRenderer::new(&mut mesh);
 
     tessellator
-        .tessellate_path(path.into_iter(), &FillOptions::default(), &mut shape)
+        .tessellate_path(&path, &FillOptions::default(), &mut shape)
         .unwrap();
+    mesh.normalize();
 
     mesh
 }

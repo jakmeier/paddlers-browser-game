@@ -73,9 +73,7 @@ impl ResourcesComponent {
     }
     // Call this for setting size and position
     pub fn draw(&mut self, display: &DisplayArea, max_area: &Rectangle) -> PadlResult<()> {
-        let area = *max_area
-            * display.frame_to_display_coordinates()
-            * display.full().game_to_browser_coordinates();
+        let area = display.frame_to_browser_area(*max_area);
         if self.area != area {
             let x = area.x() as u32;
             let y = area.y() as u32;
