@@ -24,7 +24,7 @@ pub(crate) use paddlers_shared_lib::game_mechanics::town::TownTileType as TileTy
 use paddlers_shared_lib::game_mechanics::town::*;
 use paddlers_shared_lib::prelude::*;
 
-use super::toplevel::Signal;
+use super::{toplevel::Signal, units::attackers::AttackerDirection};
 pub type TileState = TileStateEx<specs::Entity>;
 
 pub struct Town {
@@ -34,6 +34,7 @@ pub struct Town {
     pub total_ambience: i64,
     pub idle_prophets: Vec<specs::Entity>,
     pub faith: u8,
+    pub attacker_direction: AttackerDirection,
 }
 
 pub const X: usize = TOWN_X;
@@ -48,6 +49,7 @@ impl Town {
             total_ambience: 0,
             idle_prophets: vec![],
             faith: 100,
+            attacker_direction: AttackerDirection::RightToLeft,
         }
     }
 
@@ -70,6 +72,15 @@ impl Town {
         self.map.distance_to_lane(i)
     }
 
+    pub fn refresh_attacker_direction(&mut self) {
+        self.attacker_direction = if let Some(TileType::BUILDING(BuildingType::Watergate)) =
+            self.map.tile_type((0, TOWN_LANE_Y))
+        {
+            AttackerDirection::LeftToRight
+        } else {
+            AttackerDirection::RightToLeft
+        }
+    }
     #[allow(dead_code)]
     pub fn grow_forest(&mut self, add_score: usize) {
         self.state.forest_size += add_score;

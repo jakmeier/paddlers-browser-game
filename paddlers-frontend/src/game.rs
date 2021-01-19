@@ -92,6 +92,8 @@ impl Game {
         game.prepare_town_resources();
         game.load_village_info(game_data.village_info)?;
         game.load_buildings_from_net_response(game_data.buildings_response)?;
+        game.town_mut().refresh_attacker_direction();
+
         // Make sure buildings are loaded properly before inserting any types of units
         game.world.maintain();
         game.town_world_mut().maintain();

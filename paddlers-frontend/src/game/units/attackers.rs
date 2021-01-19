@@ -100,9 +100,6 @@ pub fn build_new_duck_entity<'a>(
         .with(Clickable)
         .with(status_effects)
         .with(NetObj::hobo(netid))
-        .with(AnimationState::new(Direction::from_vector(&Vector::new(
-            speed, 0,
-        ))))
         .with(Visitor {
             hurried,
             speed,
@@ -135,12 +132,14 @@ impl AttacksQueryVillageAttacks {
         for (i, unit) in self.units.into_iter().enumerate() {
             let unit_rep = AttackingHobo { unit, attack: &atk };
             let effects = game.touched_auras(&unit_rep, now.into());
+            let direction = game.town().attacker_direction;
             let builder = unit_rep.create_entity(
                 game.town_context.home_world_mut().create_entity(),
                 now,
                 birth_time,
                 i,
                 effects,
+                direction,
             )?;
             out.push(builder.build());
         }
@@ -184,8 +183,8 @@ impl<'a> AttackingHobo<'a> {
         birth: NaiveDateTime,
         pos_rank: usize,
         auras: Vec<(<Game as IDefendingTown>::AuraId, i32)>,
+        direction: AttackerDirection,
     ) -> PadlResult<specs::EntityBuilder<'a>> {
-        let direction = AttackerDirection::LeftToRight;
         let ul = TOWN_TILE_S as f32;
         let v = self.unit.hobo.speed as f32 * ul;
         let mut pos = direction.origin_position() + attacker_position_rank_offset(pos_rank, ul);
@@ -219,13 +218,9 @@ impl<'a> AttackingHobo<'a> {
         // Insert components for movement (unless visitor is currently resting)
         let can_rest = !self.unit.hobo.hurried && self.unit.info.released.is_none();
         let resting = can_rest && birth + time_until_resting <= now;
+        let movement = direction.adjust_movement(Vector::new(v, 0.0));
         if !resting {
-            builder = builder.with(Moving::new(
-                t0,
-                pos,
-                direction.adjust_movement(Vector::new(v, 0.0)),
-                v,
-            ));
+            builder = builder.with(Moving::new(t0, pos, movement, v));
             if can_rest {
                 let final_pos = Vector::new(TOWN_RESTING_X as f32 * ul, pos.y);
                 builder = builder.with(TargetPosition::new(final_pos));
@@ -233,6 +228,7 @@ impl<'a> AttackingHobo<'a> {
         } else {
             pos.x = TOWN_RESTING_X as f32 * ul;
         }
+        let builder = builder.with(AnimationState::new(Direction::from_vector(&movement)));
 
         build_new_duck_entity(
             builder,

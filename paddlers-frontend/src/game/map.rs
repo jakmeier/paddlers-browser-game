@@ -116,7 +116,7 @@ impl<'a> GlobalMap<'a> {
                 window.draw_mesh_ex(
                     &segment.water_mesh,
                     segment.scaled_base_shape(),
-                    BLUE,
+                    LIGHT_BLUE,
                     t,
                     Z_RIVER,
                 );
