@@ -9,7 +9,7 @@
 //! # How Attacks Work
 //! An attacker group contains several hobos and is created at a certain time. (`departure`)
 //! The arrival timestamp is computed when departing. The travel time depends on distance.
-//! Hobos associated with an attack can have different speeds. For the travel time, this does not matter. 
+//! Hobos associated with an attack can have different speeds. For the travel time, this does not matter.
 //!
 //! After arriving at the destination time, they are not entering it immediately.
 //! Player input is required to let them in. Until then they are queued up in the watergate queue.
@@ -167,8 +167,8 @@ impl<'a> IAttackingHobo for AttackingHobo<'a> {
     fn hurried(&self) -> bool {
         self.hobo.hurried
     }
-    fn arrival(&self) -> Timestamp {
-        self.attack.arrival.into()
+    fn start_of_fight(&self) -> Option<Timestamp> {
+        self.attack.entered_destination.map(From::from)
     }
     fn released(&self) -> Option<Timestamp> {
         self.attack_to_hobo.released.map(|t| t.into())

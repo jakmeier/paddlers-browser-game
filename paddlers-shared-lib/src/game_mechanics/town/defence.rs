@@ -13,7 +13,7 @@ pub trait IAttackingHobo {
     fn max_hp(&self) -> u32;
     fn speed(&self) -> f32;
     fn hurried(&self) -> bool;
-    fn arrival(&self) -> Timestamp;
+    fn start_of_fight(&self) -> Option<Timestamp>;
     fn released(&self) -> Option<Timestamp>;
     fn effects_strength(&self) -> i32;
 
@@ -45,8 +45,11 @@ pub trait IDefendingTown: ITownLayout {
     }
 
     fn hobo_left_town<HOBO: IAttackingHobo>(&self, attacker: &HOBO, now: Timestamp) -> bool {
+        if attacker.start_of_fight().is_none() {
+            return false;
+        }
         if attacker.hurried() {
-            let time_since_arrival = now - attacker.arrival();
+            let time_since_arrival = now - attacker.start_of_fight().unwrap();
             // +1 for swimming out of sight
             let distance = self.path_straight_through().len() + 1;
             time_since_arrival.seconds_float() >= distance as f32 / attacker.speed()
@@ -79,7 +82,7 @@ pub trait IDefendingTown: ITownLayout {
         if attacker.hurried() {
             let tiles = self.path_straight_through();
             auras.append(&mut self.touched_auras_on_path(
-                attacker.arrival(),
+                attacker.start_of_fight().unwrap(),
                 now,
                 attacker,
                 &tiles,
@@ -87,7 +90,7 @@ pub trait IDefendingTown: ITownLayout {
         } else {
             let tiles = self.path_to_rest_place();
             auras.append(&mut self.touched_auras_on_path(
-                attacker.arrival(),
+                attacker.start_of_fight().unwrap(),
                 now,
                 attacker,
                 &tiles,
@@ -124,10 +127,13 @@ pub trait IDefendingTown: ITownLayout {
     }
     /// The timestamp when the resting place was left by a non-hurried hobo. May differ from hobo.released
     fn left_rest_place<HOBO: IAttackingHobo>(&self, attacker: &HOBO) -> Option<Timestamp> {
+        if attacker.start_of_fight().is_none() {
+            return None;
+        }
         attacker.released().map(|released| {
             let f = self.path_to_rest_place().len() as f32 / attacker.speed();
             let t = Timestamp::from_float_seconds(f);
-            let started_resting = attacker.arrival() + t;
+            let started_resting = attacker.start_of_fight().unwrap() + t;
             if released > started_resting {
                 released
             } else {
