@@ -22,7 +22,9 @@ use game_master::{
     story_worker::StoryWorker, town_worker::TownWorker, GameMaster,
 };
 use paddlers_shared_lib::api::{
-    attacks::InvitationDescriptor, quests::QuestCollect, reports::ReportCollect,
+    attacks::{InvitationDescriptor, StartFightRequest},
+    quests::QuestCollect,
+    reports::ReportCollect,
     story::StoryStateTransition,
 };
 use paddlers_shared_lib::prelude::HoboKey;
@@ -127,6 +129,11 @@ fn main() {
                 web::resource("/attacks/create")
                     .data(web::Json::<AttackDescriptor>)
                     .route(web::post().to_async(api::create_attack)),
+            )
+            .service(
+                web::resource("/attacks/startFight")
+                    .data(web::Json::<StartFightRequest>)
+                    .route(web::post().to(api::welcome_visitor)),
             )
             .service(
                 web::resource("/attacks/invite")

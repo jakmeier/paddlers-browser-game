@@ -13,3 +13,9 @@ pub struct InvitationDescriptor {
     pub to: VillageKey,
     pub nest: BuildingKey,
 }
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct StartFightRequest {
+    pub destination: VillageKey,
+    pub attack: AttackKey,
+}

@@ -22,8 +22,8 @@ impl<'a> IAttackingHobo for AttackingHobo<'a> {
     fn hurried(&self) -> bool {
         self.unit.hobo.hurried
     }
-    fn arrival(&self) -> Timestamp {
-        self.attack.arrival.into()
+    fn start_of_fight(&self) -> Option<Timestamp> {
+        Some(self.attack.arrival.into())
     }
     fn released(&self) -> Option<Timestamp> {
         self.unit

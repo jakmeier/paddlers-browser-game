@@ -26,7 +26,23 @@ impl DB {
             }
         }
     }
-
+    /// Releases a queued attack from the watergate. The village filter can be used to ensure no foreign attacks a released.
+    pub fn start_fight(&self, atk: AttackKey, village_filter: Option<VillageKey>) {
+        let query = diesel::update(attacks::table)
+            .filter(attacks::id.eq(atk.num()))
+            .set(attacks::entered_destination.eq(diesel::dsl::now.at_time_zone("UTC").nullable()));
+        let result;
+        if let Some(VillageKey(vid)) = village_filter {
+            result = query
+                .filter(attacks::destination_village_id.eq(vid))
+                .execute(self.dbconn())
+        } else {
+            result = query.execute(self.dbconn())
+        };
+        if result.is_err() {
+            println!("Couldn't start fight {:?}", atk);
+        }
+    }
     pub fn delete_attack(&self, atk: &Attack) {
         let result = diesel::delete(atk).execute(self.dbconn());
         if result.is_err() {

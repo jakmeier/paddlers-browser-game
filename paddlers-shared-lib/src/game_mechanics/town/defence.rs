@@ -79,29 +79,31 @@ pub trait IDefendingTown: ITownLayout {
     ) -> Vec<(Self::AuraId, i32)> {
         let mut auras = vec![];
 
-        if attacker.hurried() {
-            let tiles = self.path_straight_through();
-            auras.append(&mut self.touched_auras_on_path(
-                attacker.start_of_fight().unwrap(),
-                now,
-                attacker,
-                &tiles,
-            ));
-        } else {
-            let tiles = self.path_to_rest_place();
-            auras.append(&mut self.touched_auras_on_path(
-                attacker.start_of_fight().unwrap(),
-                now,
-                attacker,
-                &tiles,
-            ));
-            if let Some(released) = self.left_rest_place(attacker) {
-                let tiles = self.path_from_rest_place();
-                auras.append(&mut self.touched_auras_on_path(released, now, attacker, &tiles));
+        if let Some(start_of_fight) = attacker.start_of_fight() {
+            if attacker.hurried() {
+                let tiles = self.path_straight_through();
+                auras.append(&mut self.touched_auras_on_path(
+                    start_of_fight,
+                    now,
+                    attacker,
+                    &tiles,
+                ));
+            } else {
+                let tiles = self.path_to_rest_place();
+                auras.append(&mut self.touched_auras_on_path(
+                    start_of_fight,
+                    now,
+                    attacker,
+                    &tiles,
+                ));
+                if let Some(released) = self.left_rest_place(attacker) {
+                    let tiles = self.path_from_rest_place();
+                    auras.append(&mut self.touched_auras_on_path(released, now, attacker, &tiles));
+                }
             }
+            auras.sort();
+            auras.dedup();
         }
-        auras.sort();
-        auras.dedup();
         auras
     }
     fn touched_auras_on_path<HOBO: IAttackingHobo>(

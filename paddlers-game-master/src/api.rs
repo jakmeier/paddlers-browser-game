@@ -4,21 +4,20 @@ mod reports;
 mod shop;
 mod story;
 
-pub(crate) use attacks::{new_invitation, visitor_satisfied_notification};
+pub(crate) use attacks::{
+    create_attack, new_invitation, visitor_satisfied_notification, welcome_visitor,
+};
 pub(crate) use quests::collect_quest;
 pub(crate) use reports::collect_report_rewards;
 pub(crate) use story::story_transition;
 
 use crate::authentication::Authentication;
-use crate::game_master::attack_funnel::PlannedAttack;
 use crate::setup::initialize_new_player_account;
 use crate::StringErr;
 use actix_web::error::BlockingError;
 use actix_web::{web, HttpResponse, Responder};
-use futures::future::join_all;
 use futures::Future;
 use paddlers_shared_lib::api::{
-    attacks::AttackDescriptor,
     keys::{VillageKey, WorkerKey},
     shop::{BuildingDeletion, BuildingPurchase, ProphetPurchase},
     tasks::TaskList,
@@ -149,81 +148,6 @@ pub(super) fn new_player(
     } else {
         HttpResponse::Ok().into()
     }
-}
-pub(crate) fn create_attack(
-    pool: web::Data<crate::db::Pool>,
-    actors: web::Data<crate::ActorAddresses>,
-    body: web::Json<AttackDescriptor>,
-    auth: Authentication,
-) -> impl Future<Item = HttpResponse, Error = actix_web::Error> {
-    let pool0 = pool.clone();
-    let pool1 = pool.clone();
-    let attack = body.0;
-    let (x, y) = attack.to;
-    let from_key = attack.from;
-    let home_id = from_key.num();
-    let attack_funnel = actors.attack_funnel.clone();
-
-    let future_hobos = attack
-        .units
-        .into_iter()
-        .map(move |hobo_key| {
-            let db: crate::db::DB = pool.clone().get_ref().into();
-            web::block(move || match db.hobo(hobo_key) {
-                Some(hobo) => Ok(hobo),
-                None => Err("Invalid hobo"),
-            })
-            .map_err(|e: BlockingError<_>| match e {
-                BlockingError::Error(msg) => HttpResponse::Forbidden().body(msg).into(),
-                BlockingError::Canceled => internal_server_error("Canceled"),
-            })
-            .and_then(move |hobo| {
-                if hobo.home != home_id {
-                    Err(HttpResponse::Forbidden()
-                        .body("Hobo not from this village")
-                        .into())
-                } else {
-                    Ok(hobo)
-                }
-            })
-        })
-        .collect::<Vec<_>>();
-    let future_hobos = join_all(future_hobos);
-
-    let future_villages = web::block(move || {
-        let db: crate::db::DB = pool0.get_ref().into();
-        check_owns_village0(&db, &auth, from_key)?;
-        let destination = db.village_at(x as f32, y as f32);
-        if destination.is_none() {
-            Err("Invalid target village".to_owned())
-        } else {
-            Ok(destination.unwrap())
-        }
-    })
-    .map_err(|e: BlockingError<std::string::String>| match e {
-        BlockingError::Error(msg) => HttpResponse::Forbidden().body(msg).into(),
-        BlockingError::Canceled => internal_server_error("Canceled"),
-    })
-    .and_then(move |target_village| {
-        let db: crate::db::DB = pool1.get_ref().into();
-        if let Some(origin_village) = db.village(from_key) {
-            Ok((origin_village, target_village))
-        } else {
-            Err(internal_server_error("Owned village doesn't exist"))
-        }
-    });
-    let joined = future_hobos.join(future_villages);
-    joined
-        .map(
-            |(hobos, (origin_village, destination_village))| PlannedAttack {
-                origin_village: Some(origin_village),
-                destination_village,
-                hobos,
-                no_delay: false,
-            },
-        )
-        .and_then(move |pa| attack_funnel.try_send(pa).map_err(internal_server_error))
-        .map(|()| HttpResponse::Ok().into())
 }
 
 fn check_owns_worker(

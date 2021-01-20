@@ -1,3 +1,4 @@
+use super::{check_owns_village0, internal_server_error};
 use crate::authentication::Authentication;
 use crate::game_master::attack_funnel::PlannedAttack;
 use crate::game_master::event::Event;
@@ -6,9 +7,102 @@ use actix::prelude::*;
 use actix_web::error::BlockingError;
 use actix_web::Responder;
 use actix_web::{web, HttpResponse};
-use paddlers_shared_lib::api::attacks::InvitationDescriptor;
+use futures::future::join_all;
+use paddlers_shared_lib::api::attacks::{
+    AttackDescriptor, InvitationDescriptor, StartFightRequest,
+};
 use paddlers_shared_lib::prelude::*;
 
+pub(crate) fn create_attack(
+    pool: web::Data<crate::db::Pool>,
+    actors: web::Data<crate::ActorAddresses>,
+    body: web::Json<AttackDescriptor>,
+    auth: Authentication,
+) -> impl Future<Item = HttpResponse, Error = actix_web::Error> {
+    let pool0 = pool.clone();
+    let pool1 = pool.clone();
+    let attack = body.0;
+    let (x, y) = attack.to;
+    let from_key = attack.from;
+    let home_id = from_key.num();
+    let attack_funnel = actors.attack_funnel.clone();
+
+    let future_hobos = attack
+        .units
+        .into_iter()
+        .map(move |hobo_key| {
+            let db: crate::db::DB = pool.clone().get_ref().into();
+            web::block(move || match db.hobo(hobo_key) {
+                Some(hobo) => Ok(hobo),
+                None => Err("Invalid hobo"),
+            })
+            .map_err(|e: BlockingError<_>| match e {
+                BlockingError::Error(msg) => HttpResponse::Forbidden().body(msg).into(),
+                BlockingError::Canceled => internal_server_error("Canceled"),
+            })
+            .and_then(move |hobo| {
+                if hobo.home != home_id {
+                    Err(HttpResponse::Forbidden()
+                        .body("Hobo not from this village")
+                        .into())
+                } else {
+                    Ok(hobo)
+                }
+            })
+        })
+        .collect::<Vec<_>>();
+    let future_hobos = join_all(future_hobos);
+
+    let future_villages = web::block(move || {
+        let db: crate::db::DB = pool0.get_ref().into();
+        check_owns_village0(&db, &auth, from_key)?;
+        let destination = db.village_at(x as f32, y as f32);
+        if destination.is_none() {
+            Err("Invalid target village".to_owned())
+        } else {
+            Ok(destination.unwrap())
+        }
+    })
+    .map_err(|e: BlockingError<std::string::String>| match e {
+        BlockingError::Error(msg) => HttpResponse::Forbidden().body(msg).into(),
+        BlockingError::Canceled => internal_server_error("Canceled"),
+    })
+    .and_then(move |target_village| {
+        let db: crate::db::DB = pool1.get_ref().into();
+        if let Some(origin_village) = db.village(from_key) {
+            Ok((origin_village, target_village))
+        } else {
+            Err(internal_server_error("Owned village doesn't exist"))
+        }
+    });
+    let joined = future_hobos.join(future_villages);
+    joined
+        .map(
+            |(hobos, (origin_village, destination_village))| PlannedAttack {
+                origin_village: Some(origin_village),
+                destination_village,
+                hobos,
+                no_delay: false,
+            },
+        )
+        .and_then(move |pa| attack_funnel.try_send(pa).map_err(internal_server_error))
+        .map(|()| HttpResponse::Ok().into())
+}
+
+pub(crate) fn welcome_visitor(
+    pool: web::Data<crate::db::Pool>,
+    body: web::Json<StartFightRequest>,
+    auth: Authentication,
+) -> HttpResponse {
+    let db: crate::db::DB = pool.get_ref().into();
+    let destination_village = body.destination;
+    let attack = body.attack;
+    if !db.village_owned_by(destination_village, auth.user.uuid) {
+        return HttpResponse::Forbidden().body("Village not owned by player");
+    }
+    db.start_fight(attack, Some(destination_village));
+    HttpResponse::Ok().into()
+}
 pub(crate) fn visitor_satisfied_notification(
     body: web::Json<HoboKey>,
     addr: web::Data<crate::ActorAddresses>,

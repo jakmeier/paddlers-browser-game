@@ -39,6 +39,7 @@ impl RestApiState {
         rest_activity.private_channel(Self::http_create_player);
         rest_activity.private_channel(Self::http_delete_building);
         rest_activity.private_channel(Self::http_invite);
+        rest_activity.private_channel(Self::http_let_visitor_in);
         rest_activity.private_channel(Self::http_notify_visitor_satisfied);
         rest_activity.private_channel(Self::http_overwrite_tasks);
         rest_activity.private_channel(Self::http_place_building_0);
@@ -141,6 +142,15 @@ impl RestApiState {
         let future = ajax::fetch_json(
             "POST",
             &format!("{}/attacks/invite", self.game_master_url),
+            &msg,
+        );
+        spawn_future(future);
+    }
+
+    fn http_let_visitor_in(&mut self, msg: StartFightRequest) {
+        let future = ajax::fetch_empty_response(
+            "POST",
+            &format!("{}/attacks/startFight", self.game_master_url),
             &msg,
         );
         spawn_future(future);
