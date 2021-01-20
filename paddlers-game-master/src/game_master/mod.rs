@@ -141,14 +141,15 @@ fn repetitive_attack_strength(player: &Player) -> Option<HoboLevel> {
     }
 }
 
-// TODO: Efficiently check only required attacks
 fn check_attacks(db: &DB) {
     for village in db.all_player_villages() {
-        let attacks = db.attacks(village.key(), None);
+        let attacks = db.attacks_that_entered(village.key(), None);
         let now = chrono::Utc::now().naive_utc();
         for atk in attacks.iter() {
-            if atk.arrival + chrono::Duration::seconds(2 * TOWN_X as i64) < now {
-                db.maybe_evaluate_attack(atk, now);
+            if let Some(fight_start) = atk.entered_destination {
+                if fight_start + chrono::Duration::seconds(2 * TOWN_X as i64) < now {
+                    db.maybe_evaluate_attack(atk, now);
+                }
             }
         }
     }

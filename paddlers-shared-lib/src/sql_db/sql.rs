@@ -111,6 +111,19 @@ pub trait GameDB {
             .expect("Error loading data");
         results
     }
+    fn attacks_that_entered(&self, village: VillageKey, min_id: Option<i64>) -> Vec<Attack> {
+        let results = attacks::table
+            .filter(attacks::destination_village_id.eq(village.num()))
+            .filter(attacks::id.ge(min_id.unwrap_or(0)))
+            .filter(
+                attacks::entered_destination.ge(diesel::dsl::now.at_time_zone("UTC").nullable()),
+            )
+            .order_by(attacks::entered_destination)
+            .limit(500)
+            .load::<Attack>(self.dbconn())
+            .expect("Error loading data");
+        results
+    }
     fn attacks_count(&self, village: VillageKey, min_id: Option<i64>) -> usize {
         let results = attacks::table
             .filter(attacks::destination_village_id.eq(village.num()))
@@ -175,9 +188,11 @@ pub trait GameDB {
             // condition for "resting"
             .filter(hobos::hurried.eq(false))
             .filter(attacks_to_hobos::satisfied.is_null())
-            .filter(attacks::arrival.le(diesel::dsl::now.at_time_zone("UTC")))
+            .filter(
+                attacks::entered_destination.le(diesel::dsl::now.at_time_zone("UTC").nullable()),
+            )
             //
-            .order_by(attacks::arrival.asc())
+            .order_by(attacks::entered_destination.asc())
             .select((hobos::all_columns, attacks::id))
             .limit(500)
             .load::<(Hobo, i64)>(self.dbconn())

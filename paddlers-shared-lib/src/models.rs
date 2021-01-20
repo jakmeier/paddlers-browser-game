@@ -124,6 +124,7 @@ pub struct Attack {
     pub arrival: NaiveDateTime,
     pub origin_village_id: Option<i64>,
     pub destination_village_id: i64,
+    pub entered_destination: Option<NaiveDateTime>,
 }
 
 #[derive(Debug)]
@@ -135,6 +136,7 @@ pub struct NewAttack {
     pub arrival: NaiveDateTime,
     pub origin_village_id: Option<i64>,
     pub destination_village_id: i64,
+    // DEFAULT NULL: pub entered_destination: bool,
 }
 
 #[cfg(feature = "sql_db")]

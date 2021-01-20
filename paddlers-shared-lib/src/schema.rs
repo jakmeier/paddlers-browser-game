@@ -19,6 +19,7 @@ table! {
         arrival -> Timestamp,
         origin_village_id -> Nullable<Int8>,
         destination_village_id -> Int8,
+        entered_destination -> Nullable<Timestamp>,
     }
 }
 

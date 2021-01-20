@@ -1,5 +1,24 @@
 //! This module deals with visitor groups (attacks) leaving towns again and calculating the outcome of the visit.
 //!
+//! # Attack Lifecycle
+//! 1. Created                  -> TRAVELLING
+//! 2. Arrival time is reached  -> ARRIVED
+//! 3. Fight starts             -> ENTERED_TOWN
+//! 4. Fight ends               -> REMOVED
+//!
+//! # How Attacks Work
+//! An attacker group contains several hobos and is created at a certain time. (`departure`)
+//! The arrival timestamp is computed when departing. The travel time depends on distance.
+//! Hobos associated with an attack can have different speeds. For the travel time, this does not matter. 
+//!
+//! After arriving at the destination time, they are not entering it immediately.
+//! Player input is required to let them in. Until then they are queued up in the watergate queue.
+//! If the watergate queue is full and more attackers arrive, they will pop the first in the queue to make space for themselves.
+//!
+//! Inside he town, there is a second queue, sometimes called the resting queue. This one is for (non-hurried) hobos.
+//! Units in that queue will swim to the center of the town and stay there until satisfied or pushed by another unit that takes its place.
+//! Hurried visitors just go through, without interaction with the resting queue.
+//!
 //! A fight report is generated as soon as all visitors have left or have been satisfied.
 //! Usually, the satisfaction of each visitor is only computed when time is up for an attack to be finished.
 //! But there are two exceptions.
