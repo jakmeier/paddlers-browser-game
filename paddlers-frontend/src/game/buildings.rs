@@ -106,6 +106,9 @@ impl Town {
                 builder = builder.with(Nest::new(3));
                 builder = builder.with(new_nest_menu());
             }
+            BuildingType::Watergate => {
+                builder = builder.with(UiMenu::new_gate_menu());
+            }
             _ => {}
         }
 
@@ -113,6 +116,16 @@ impl Town {
 
         let entity = builder.build();
         entity
+    }
+    pub fn find_building(world: &World, bt: BuildingType) -> Option<Entity> {
+        let buildings = world.read_component::<Building>();
+        let entities = world.entities();
+        for (b, e) in (&buildings, &entities).join() {
+            if b.bt == bt {
+                return Some(e);
+            }
+        }
+        None
     }
 }
 

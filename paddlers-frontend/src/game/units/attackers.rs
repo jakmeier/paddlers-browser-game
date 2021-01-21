@@ -9,6 +9,7 @@ use crate::game::{
     input::Clickable,
     movement::{Moving, Position, TargetPosition},
     status_effects::StatusEffects,
+    town::visitor_gate::{GraphqlVisitingHobo, WaitingAttack},
     visits::attacks::Attack,
 };
 use crate::gui::ui_state::Now;
@@ -17,8 +18,8 @@ use crate::net::graphql::query_types::HoboEffect;
 use crate::prelude::*;
 use crate::{game::town::town_defence::AttackingHobo, resolution::TOWN_TILE_S};
 use paddle::Vector;
-use paddlers_shared_lib::game_mechanics::town::*;
 use paddlers_shared_lib::graphql_types::*;
+use paddlers_shared_lib::{game_mechanics::town::*, prelude::AttackKey};
 use specs::prelude::*;
 
 const ATTACKER_SIZE_FACTOR_X: f32 = 0.6;
@@ -26,11 +27,11 @@ const ATTACKER_SIZE_FACTOR_Y: f32 = 0.4;
 
 #[derive(Debug, Component)]
 #[storage(HashMapStorage)]
-/// A visitor is an attacking hobo
+/// A visitor is an attacking hobo that has entered the village
 pub struct Visitor {
     pub hurried: bool,
     pub speed: f32,
-    pub arrival: NaiveDateTime,
+    pub entered_village: NaiveDateTime,
     pub rank_offset: usize,
 }
 
@@ -75,7 +76,7 @@ pub fn build_new_duck_entity<'a>(
     builder: specs::EntityBuilder<'a>,
     pos: impl Into<Vector>,
     color: UnitColor,
-    arrival: NaiveDateTime,
+    entered_village: NaiveDateTime,
     speed: f32,
     hp: Health,
     netid: i64,
@@ -89,7 +90,10 @@ pub fn build_new_duck_entity<'a>(
     )
     .into();
     let status_effects = StatusEffects::from_gql_query(effects)?;
-    let mut renderable = Renderable::new(hobo_sprite_sad(color));
+    let mut renderable = Renderable::new(RenderVariant::ImgWithImgBackground(
+        SpriteSet::Simple(hobo_sprite_sad(color)),
+        SingleSprite::Water,
+    ));
     if hp.hp == 0 {
         change_duck_sprite_to_happy(&mut renderable);
     }
@@ -103,7 +107,7 @@ pub fn build_new_duck_entity<'a>(
         .with(Visitor {
             hurried,
             speed,
-            arrival,
+            entered_village,
             rank_offset,
         })
         .with(hp);
@@ -114,10 +118,9 @@ pub fn build_new_duck_entity<'a>(
 use crate::net::graphql::attacks_query::AttacksQueryVillageAttacks;
 impl AttacksQueryVillageAttacks {
     pub(crate) fn create_entities<'a, 'b>(self, game: &mut Game) -> PadlResult<Vec<Entity>> {
-        let birth_time = GqlTimestamp::from_string(&self.arrival)
+        let arrival = GqlTimestamp::from_string(&self.arrival)
             .unwrap()
             .to_chrono();
-        let now = game.world.fetch::<Now>().0;
 
         let description = self
             .attacker
@@ -126,22 +129,19 @@ impl AttacksQueryVillageAttacks {
             .map(|player| format!("From {}", player))
             .unwrap_or("Anarchists".to_owned());
         let size = self.units.len() as u32;
-        let atk = Attack::new(birth_time, description, size);
+        let atk = Attack::new(arrival, description, size);
 
-        let mut out = vec![];
-        for (i, unit) in self.units.into_iter().enumerate() {
-            let unit_rep = AttackingHobo { unit, attack: &atk };
-            let effects = game.touched_auras(&unit_rep, now.into());
-            let direction = game.town().attacker_direction;
-            let builder = unit_rep.create_entity(
-                game.town_context.home_world_mut().create_entity(),
-                now,
-                birth_time,
-                i,
-                effects,
-                direction,
-            )?;
-            out.push(builder.build());
+        let out;
+
+        // Either create active attackers (AttackingHobo) and insert them as entities, or create a queued attack and store it in the visitor gate
+        if let Some(entered) = self.entered_village {
+            let birth_time = GqlTimestamp::from_string(&entered).unwrap().to_chrono();
+            out = game.insert_visitors_from_active_attack(self.units, birth_time)?;
+        } else {
+            let waiting_attack = WaitingAttack::new(arrival, self.units);
+            let key = AttackKey(self.id.parse().expect("Parsing id"));
+            game.queue_attack(waiting_attack, key);
+            out = vec![];
         }
 
         game.world.create_entity().with(atk).build();
@@ -149,6 +149,36 @@ impl AttacksQueryVillageAttacks {
         Ok(out)
     }
 }
+
+impl Game {
+    pub fn insert_visitors_from_active_attack(
+        &mut self,
+        units: Vec<GraphqlVisitingHobo>,
+        start_of_fight: NaiveDateTime,
+    ) -> PadlResult<Vec<Entity>> {
+        let mut out = vec![];
+        let now = self.world.fetch::<Now>().0;
+        for (i, unit) in units.into_iter().enumerate() {
+            let unit_rep = AttackingHobo {
+                unit,
+                start_of_fight: start_of_fight.into(),
+            };
+            let effects = self.touched_auras(&unit_rep, now.into());
+            let direction = self.town().attacker_direction;
+            let builder = unit_rep.create_entity(
+                self.town_context.home_world_mut().create_entity(),
+                now,
+                start_of_fight,
+                i,
+                effects,
+                direction,
+            )?;
+            out.push(builder.build());
+        }
+        Ok(out)
+    }
+}
+
 #[derive(Clone, Copy)]
 pub enum AttackerDirection {
     LeftToRight,
@@ -175,8 +205,8 @@ impl AttackerDirection {
         (x, y).into()
     }
 }
-impl<'a> AttackingHobo<'a> {
-    fn create_entity(
+impl AttackingHobo {
+    fn create_entity<'a>(
         &self,
         mut builder: specs::EntityBuilder<'a>,
         now: NaiveDateTime,
@@ -251,12 +281,11 @@ fn attacker_position_rank_offset(pr: usize, ul: f32) -> Vector {
     (x, y).into()
 }
 
-fn hobo_sprite_sad(color: UnitColor) -> RenderVariant {
-    let sprite_index = match color {
+pub fn hobo_sprite_sad(color: UnitColor) -> SingleSprite {
+    match color {
         UnitColor::Yellow => SingleSprite::Duck,
         UnitColor::White => SingleSprite::WhiteDuck,
         UnitColor::Camo => SingleSprite::CamoDuck,
         UnitColor::Prophet => SingleSprite::Prophet,
-    };
-    RenderVariant::ImgWithImgBackground(SpriteSet::Simple(sprite_index), SingleSprite::Water)
+    }
 }

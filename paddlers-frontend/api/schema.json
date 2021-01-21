@@ -2447,6 +2447,18 @@
               "deprecationReason": null,
               "description": null,
               "isDeprecated": false,
+              "name": "enteredVillage",
+              "type": {
+                "kind": "SCALAR",
+                "name": "GqlTimestamp",
+                "ofType": null
+              }
+            },
+            {
+              "args": [],
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
               "name": "attacker",
               "type": {
                 "kind": "OBJECT",

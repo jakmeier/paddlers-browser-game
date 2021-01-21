@@ -1,7 +1,16 @@
 use crate::game::{
-    components::*, fight::Aura, player_info::PlayerInfo, story::entity_trigger::EntityTrigger,
-    town::nests::Nest, town::DefaultShop, town::Town, town_resources::TownResources,
-    units::attackers::Visitor, units::hobos::Hobo, units::workers::Worker, visits::attacks::Attack,
+    components::*,
+    fight::Aura,
+    player_info::PlayerInfo,
+    story::entity_trigger::EntityTrigger,
+    town::DefaultShop,
+    town::Town,
+    town::{nests::Nest, visitor_gate::VisitorGate},
+    town_resources::TownResources,
+    units::attackers::Visitor,
+    units::hobos::Hobo,
+    units::workers::Worker,
+    visits::attacks::Attack,
 };
 use crate::gui::ui_state::*;
 use crate::view::entry_view;
@@ -15,6 +24,7 @@ pub(super) fn insert_global_resources(world: &mut World, player_info: PlayerInfo
     world.insert(player_info);
     let view = entry_view(player_info.story_state());
     world.insert(view);
+    world.insert(VisitorGate::new());
 }
 
 pub fn register_global_components(world: &mut World) {

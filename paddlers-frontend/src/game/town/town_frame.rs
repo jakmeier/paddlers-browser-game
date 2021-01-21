@@ -5,10 +5,9 @@ use crate::gui::{
 };
 use crate::{
     game::{
-        components::*, fight::*, forestry::ForestrySystem, mana::RenderVariant,
-        movement::MoveSystem, story::entity_trigger::EntityTrigger,
-        story::entity_trigger::EntityTriggerSystem, town::Town, units::worker_system::WorkerSystem,
-        units::workers::Worker, Game,
+        components::*, fight::*, forestry::ForestrySystem, movement::MoveSystem,
+        story::entity_trigger::EntityTrigger, story::entity_trigger::EntityTriggerSystem,
+        town::Town, units::worker_system::WorkerSystem, units::workers::Worker, Game,
     },
     gui::input::{left_click::TownLeftClickSystem, MouseState},
     prelude::*,

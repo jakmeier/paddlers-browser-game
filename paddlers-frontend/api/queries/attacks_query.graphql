@@ -21,6 +21,7 @@ query AttacksQuery($min_attack_id: Int, $village_id: Int!) {
       }
       departure
       arrival
+      enteredVillage
       attacker {
         displayName
       }

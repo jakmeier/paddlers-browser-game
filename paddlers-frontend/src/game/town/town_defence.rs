@@ -1,18 +1,17 @@
 use super::*;
 use crate::game::buildings::Building;
 use crate::game::fight::Aura;
-use crate::game::visits::attacks::Attack;
 use crate::net::graphql::attacks_query::{AttacksQueryVillageAttacksUnits, HoboAttributeType};
 use paddlers_shared_lib::game_mechanics::town::*;
 use paddlers_shared_lib::graphql_types::*;
 use specs::prelude::*;
 
-pub(crate) struct AttackingHobo<'a> {
+pub(crate) struct AttackingHobo {
     pub unit: AttacksQueryVillageAttacksUnits,
-    pub attack: &'a Attack,
+    pub start_of_fight: Timestamp,
 }
 
-impl<'a> IAttackingHobo for AttackingHobo<'a> {
+impl IAttackingHobo for AttackingHobo {
     fn max_hp(&self) -> u32 {
         self.unit.hobo.hp as u32
     }
@@ -23,7 +22,7 @@ impl<'a> IAttackingHobo for AttackingHobo<'a> {
         self.unit.hobo.hurried
     }
     fn start_of_fight(&self) -> Option<Timestamp> {
-        Some(self.attack.arrival.into())
+        Some(self.start_of_fight)
     }
     fn released(&self) -> Option<Timestamp> {
         self.unit

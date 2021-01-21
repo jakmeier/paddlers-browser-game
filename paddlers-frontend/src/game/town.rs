@@ -5,6 +5,7 @@ pub mod tiling;
 pub mod town_defence;
 pub mod town_input;
 pub mod town_render;
+pub mod visitor_gate;
 
 mod default_shop;
 mod temple_shop;

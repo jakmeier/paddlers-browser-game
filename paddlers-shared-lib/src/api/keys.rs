@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 
 // One example with `VillageKey` without macro, for readability
 
-#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct VillageKey(pub PadlId);
 impl Into<i64> for VillageKey {
     fn into(self) -> i64 {
@@ -30,7 +30,9 @@ impl SqlKey<VillageKey> for Village {
 // Repetition with macros
 macro_rules! object_key {
     ($object:ty, $key:ident) => {
-        #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
+        #[derive(
+            Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Hash,
+        )]
         pub struct $key(pub PadlId);
         impl Into<i64> for $key {
             fn into(self) -> i64 {

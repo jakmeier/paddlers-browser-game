@@ -26,6 +26,13 @@ impl GqlAttack {
     fn arrival(&self) -> FieldResult<GqlTimestamp> {
         datetime(&self.0.arrival)
     }
+    fn entered_village(&self) -> FieldResult<Option<GqlTimestamp>> {
+        self.0
+            .entered_destination
+            .as_ref()
+            .map(datetime)
+            .transpose()
+    }
     fn attacker(&self, ctx: &Context) -> FieldResult<Option<GqlPlayer>> {
         let db = ctx.db();
         Ok(self

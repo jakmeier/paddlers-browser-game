@@ -3,7 +3,7 @@ use crate::{
         components::*,
         components::{EntityContainer, ForestComponent, Level, StatusEffects, UiMenu},
         fight::{Aura, Health},
-        mana::{Mana, RenderVariant, TableTextProvider},
+        mana::Mana,
         map::VillageMetaInfo,
         player_info::PlayerInfo,
     },
@@ -164,9 +164,17 @@ pub fn draw_town_entity_details_table(
     let buildings = world.write_storage::<Building>();
     let mut ui_menu = world.write_storage::<UiMenu>();
     if let Some(b) = buildings.get(e) {
-        if b.bt == BuildingType::Temple && ui_menu.get(e).is_some() {
-            let player_info = world.read_resource::<PlayerInfo>();
-            table.extend(temple_details(&player_info));
+        match b.bt {
+            BuildingType::Temple => {
+                if ui_menu.get(e).is_some() {
+                    let player_info = world.read_resource::<PlayerInfo>();
+                    table.extend(temple_details(&player_info));
+                }
+            }
+            BuildingType::Watergate => {
+                // TODO: Display capacity etc
+            }
+            _ => {}
         }
     }
     let effects = world.read_storage::<StatusEffects>();

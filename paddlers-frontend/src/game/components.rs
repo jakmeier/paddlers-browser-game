@@ -171,6 +171,11 @@ impl UiMenu {
             ui: UiBox::new(3, 1, 0.0, 1.0),
         }
     }
+    pub fn new_gate_menu() -> Self {
+        UiMenu {
+            ui: UiBox::new(2, 4, 1.0, 1.0),
+        }
+    }
     pub fn with_shop_item<T: Into<ClickOutput> + Clone>(
         mut self,
         c: T,

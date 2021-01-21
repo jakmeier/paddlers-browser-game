@@ -53,7 +53,7 @@ impl Game {
         let mut resting_visitors = vec![];
         for (visitor, hp, e, pos) in (&visitors, &hps, &entities, &positions).join() {
             if !visitor.hurried
-                && visitor.arrival <= now
+                && visitor.entered_village <= now
                 && hp.hp > 0
                 && pos.area.pos.x >= TOWN_RESTING_X as f32 * ul
             {
@@ -66,7 +66,11 @@ impl Game {
             let world = self.town_world();
             let now = *world.fetch::<Now>();
             let mut mov = world.write_component::<Moving>();
-            resting_visitors.sort_by(|a, b| a.0.arrival.partial_cmp(&b.0.arrival).unwrap());
+            resting_visitors.sort_by(|a, b| {
+                a.0.entered_village
+                    .partial_cmp(&b.0.entered_village)
+                    .unwrap()
+            });
             for (visitor, e) in &resting_visitors[0..to_release] {
                 mov.insert(*e, release_and_move_visitor(visitor, now))?;
             }

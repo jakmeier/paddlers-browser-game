@@ -1,4 +1,4 @@
-pub use crate::gui::{gui_components::*, utils::*};
+use crate::gui::{gui_components::*, utils::*};
 use specs::prelude::*;
 
 #[derive(Component, Debug, Clone, Copy)]
