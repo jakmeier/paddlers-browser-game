@@ -12,8 +12,8 @@ use crate::gui::{sprites::*, utils::*, z::*};
 use paddle::quicksilver_compat::*;
 use paddle::*;
 use paddle::{FitStrategy, NutsCheck};
-use paddlers_shared_lib::api::shop::Price;
 use paddlers_shared_lib::prelude::*;
+use paddlers_shared_lib::{api::shop::Price, civilization::CivilizationPerk};
 
 pub enum TableRow<'a> {
     Text(String),
@@ -59,6 +59,7 @@ pub enum ClickOutput {
 pub enum Condition {
     HasResources(Price),
     HasKarma(i64),
+    HasCivPerk(CivilizationPerk),
 }
 
 #[derive(Clone, Debug, Copy)]

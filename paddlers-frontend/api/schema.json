@@ -741,6 +741,22 @@
             {
               "args": [],
               "deprecationReason": null,
+              "description": "Player civilization choices and progress, encoded in a single number\nField Visibility: user",
+              "isDeprecated": false,
+              "name": "civilization",
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "Int",
+                  "ofType": null
+                }
+              }
+            },
+            {
+              "args": [],
+              "deprecationReason": null,
               "description": "Active queries of a player\nField Visibility: user",
               "isDeprecated": false,
               "name": "quests",

@@ -85,7 +85,11 @@ impl DB {
         _vid: VillageKey,
         player: &Player,
     ) -> bool {
-        typ.player_can_build(player.karma, player.story_state)
+        typ.player_can_build(
+            player.karma,
+            player.story_state,
+            player.civilization_perks(),
+        )
     }
 }
 

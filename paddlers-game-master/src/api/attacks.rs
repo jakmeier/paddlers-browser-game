@@ -8,10 +8,11 @@ use actix_web::error::BlockingError;
 use actix_web::Responder;
 use actix_web::{web, HttpResponse};
 use futures::future::join_all;
-use paddlers_shared_lib::api::attacks::{
-    AttackDescriptor, InvitationDescriptor, StartFightRequest,
-};
 use paddlers_shared_lib::prelude::*;
+use paddlers_shared_lib::{
+    api::attacks::{AttackDescriptor, InvitationDescriptor, StartFightRequest},
+    civilization::CivilizationPerk,
+};
 
 pub(crate) fn create_attack(
     pool: web::Data<crate::db::Pool>,
@@ -116,7 +117,7 @@ pub(crate) fn visitor_satisfied_notification(
 pub(crate) fn new_invitation(
     pool: web::Data<crate::db::Pool>,
     body: web::Json<InvitationDescriptor>,
-    auth: Authentication,
+    mut auth: Authentication,
     addr: web::Data<crate::ActorAddresses>,
 ) -> impl Future<Item = HttpResponse, Error = actix_web::Error> {
     web::block(move || {
@@ -126,6 +127,14 @@ pub(crate) fn new_invitation(
         let origin_village = db.village(origin_vid);
         let destination_village = db.village(body.to).ok_or("Village not found")?;
         let hobos = db.idle_hobos_in_nest(body.nest);
+        if !auth
+            .player_object(&db)
+            .ok_or_else(|| "No such player".to_owned())?
+            .civilization_perks()
+            .has(CivilizationPerk::Invitation)
+        {
+            return Err("Invitations not unlocked".to_owned());
+        }
         if !db.village_owned_by(destination_village.key(), auth.user.uuid) {
             return Err("Village not owned by player".to_owned());
         }

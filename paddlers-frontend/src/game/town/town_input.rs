@@ -200,5 +200,12 @@ pub fn check_condition(
                 PadlErrorCode::NotEnoughKarma(*required_karma).usr()
             }
         }
+        Condition::HasCivPerk(perk) => {
+            if player_info.civilization_perks().has(*perk) {
+                Ok(())
+            } else {
+                PadlErrorCode::AbilityLocked.usr()
+            }
+        }
     }
 }

@@ -69,6 +69,7 @@ pub enum PadlErrorCode {
     PathBlocked,
     NoNetwork,
     NestEmpty,
+    AbilityLocked,
     // Dev only
     DevMsg(&'static str),
     MapOverflow(TileIndex),
@@ -117,6 +118,9 @@ impl fmt::Display for PadlErrorCode {
             PadlErrorCode::PathBlocked => write!(f, "The path is blocked."),
             PadlErrorCode::NoNetwork => write!(f, "Connection to server dropped."),
             PadlErrorCode::NestEmpty => write!(f, "Nobody around to invite."),
+            PadlErrorCode::AbilityLocked => {
+                write!(f, "Your Paddlers have not learned to do this, yet.")
+            }
             // Dev
             PadlErrorCode::DevMsg(msg) => write!(f, "Dev Error Msg: {}", msg),
             PadlErrorCode::MapOverflow(i) => write!(f, "Index is outside the map: {:?}", i),

@@ -16,6 +16,7 @@ pub extern crate strum;
 pub mod macros;
 
 pub mod api;
+pub mod civilization;
 pub mod config;
 pub mod display;
 pub mod generated;

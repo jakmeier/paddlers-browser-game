@@ -6,6 +6,7 @@ use paddle::quicksilver_compat::*;
 use paddle::*;
 use paddle::{quicksilver_compat::geom::Triangle, utc_now};
 use paddle::{FitStrategy, NutsCheck};
+use paddlers_shared_lib::civilization::CivilizationPerk;
 use std::f32::consts::SQRT_2;
 
 #[derive(Clone, Debug)]
@@ -385,6 +386,10 @@ impl UiElement {
     }
     pub fn with_karma_condition(mut self, minimum_karma: i64) -> Self {
         self.condition = Some(Condition::HasKarma(minimum_karma));
+        self
+    }
+    pub fn with_perk_condition(mut self, perk: CivilizationPerk) -> Self {
+        self.condition = Some(Condition::HasCivPerk(perk));
         self
     }
 

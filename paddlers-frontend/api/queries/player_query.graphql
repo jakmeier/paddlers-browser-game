@@ -4,5 +4,6 @@ query PlayerQuery {
         villageCount
         prophetCount
         storyState
+        civilization
     }
 }

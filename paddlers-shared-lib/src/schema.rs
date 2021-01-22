@@ -90,6 +90,7 @@ table! {
         karma -> Int8,
         display_name -> Varchar,
         story_state -> Story_state_type,
+        civ_perks -> Int8,
     }
 }
 

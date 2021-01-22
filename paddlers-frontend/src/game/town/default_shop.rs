@@ -25,7 +25,7 @@ impl DefaultShop {
         let karma = player_info.karma();
         let story_state = player_info.story_state();
         for b in BuildingType::default_shop_buildings()
-            .filter(|b| b.player_can_build(karma, story_state))
+            .filter(|b| b.player_can_build(karma, story_state, player_info.civilization_perks()))
         {
             result.add_building(*b);
         }

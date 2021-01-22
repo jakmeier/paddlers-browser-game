@@ -50,6 +50,7 @@ pub struct Player {
     pub karma: i64,
     pub display_name: String,
     pub story_state: StoryState,
+    pub civ_perks: i64,
 }
 
 #[cfg(feature = "sql_db")]

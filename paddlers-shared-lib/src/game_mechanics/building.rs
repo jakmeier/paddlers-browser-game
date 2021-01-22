@@ -1,5 +1,8 @@
-use crate::models::*;
 use crate::story::story_state::StoryState;
+use crate::{
+    civilization::{CivilizationPerk, CivilizationPerks},
+    models::*,
+};
 
 #[derive(PartialEq, Eq, Clone, Debug, Hash)]
 /// Part of [TileState](crate::game_mechanics::town::TileState) for validation state used similarly in backend and frontend.
@@ -41,7 +44,12 @@ impl BuildingType {
 
 impl BuildingType {
     /// Definition of which buildings are available to a player
-    pub fn player_can_build(&self, karma: i64, story_state: StoryState) -> bool {
+    pub fn player_can_build(
+        &self,
+        karma: i64,
+        story_state: StoryState,
+        civ: CivilizationPerks,
+    ) -> bool {
         match self {
             BuildingType::BlueFlowers => karma >= 1,
             BuildingType::BundlingStation => karma >= 20,
@@ -51,8 +59,8 @@ impl BuildingType {
             BuildingType::SawMill => karma >= 150,
             BuildingType::Temple => story_state == StoryState::ServantAccepted,
             BuildingType::Tree => karma >= 1,
-            BuildingType::SingleNest => false,
-            BuildingType::TripleNest => false,
+            BuildingType::SingleNest => civ.has(CivilizationPerk::NestBuilding),
+            BuildingType::TripleNest => civ.has(CivilizationPerk::TripleNestBuilding),
             BuildingType::Watergate => story_state == StoryState::BuildingWatergate,
         }
     }

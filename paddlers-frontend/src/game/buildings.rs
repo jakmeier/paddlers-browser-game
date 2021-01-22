@@ -16,7 +16,7 @@ use crate::gui::{
 };
 use chrono::NaiveDateTime;
 use paddle::utc_now;
-use paddlers_shared_lib::prelude::*;
+use paddlers_shared_lib::{civilization::CivilizationPerk, prelude::*};
 use paddlers_shared_lib::{game_mechanics::attributes::Attributes, graphql_types::*};
 use specs::prelude::*;
 use specs::world::EntitiesRes;
@@ -142,7 +142,7 @@ fn new_nest_menu() -> UiMenu {
     let mut menu = UiBox::new(1, 1, 1.0, 1.0);
     menu.add(
         UiElement::new(ClickOutput::SendInvitation)
-            .with_karma_condition(5) // TODO: This should be defined in shared lib
+            .with_perk_condition(CivilizationPerk::Invitation)
             .with_text("Invite".to_owned())
             .with_background_color(LIGHT_BLUE),
     );

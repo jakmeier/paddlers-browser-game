@@ -20,8 +20,8 @@
 use super::*;
 use juniper;
 use juniper::FieldResult;
-use paddlers_shared_lib::sql_db::keys::SqlKey;
-use paddlers_shared_lib::story::story_state::StoryState;
+use paddlers_shared_lib::{civilization::CivilizationPerks, story::story_state::StoryState};
+use paddlers_shared_lib::{civilization::SerializedCivPerks, sql_db::keys::SqlKey};
 
 // Complete list of fully public objects without private sub fields.
 pub struct GqlMapSlice {
@@ -89,6 +89,12 @@ impl GqlPlayer {
     fn story_state(&self, ctx: &Context) -> FieldResult<StoryState> {
         ctx.check_user_key(self.0.key())?;
         Ok(self.0.story_state)
+    }
+    /// Player civilization choices and progress, encoded in a single number
+    /// Field Visibility: user
+    fn civilization(&self, ctx: &Context) -> FieldResult<SerializedCivPerks> {
+        ctx.check_user_key(self.0.key())?;
+        Ok(CivilizationPerks::new(self.0.civ_perks as u32).encode())
     }
     /// Active queries of a player
     /// Field Visibility: user
