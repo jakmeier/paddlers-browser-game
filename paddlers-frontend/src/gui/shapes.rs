@@ -16,6 +16,7 @@ pub enum PadlShapeIndex {
     LeftArrow = 0,
     RightArrow = 1,
     Frame = 2,
+    LeftArrowV2 = 3,
 }
 
 pub fn load_shapes() -> Vec<PadlShape> {
@@ -39,6 +40,13 @@ pub fn load_shapes() -> Vec<PadlShape> {
         mesh: build_frame(base),
         bounding_box: base,
         paint: DARK_GREEN.into(),
+    });
+
+    let base = Rectangle::new_sized((200.0, 200.0));
+    shapes.push(PadlShape {
+        mesh: build_arrow(base, true),
+        bounding_box: base,
+        paint: WHITE.into(),
     });
 
     shapes

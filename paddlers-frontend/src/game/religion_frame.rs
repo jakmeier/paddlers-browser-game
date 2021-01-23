@@ -1,14 +1,17 @@
-use crate::gui::{sprites::WithSprite, utils::*};
-use crate::{
-    gui::shapes::{PadlShape, PadlShapeIndex},
-    prelude::UiView,
+use crate::gui::{
+    decoration::draw_leaf_border,
+    menu::{LEAVES_BORDER_H, LEAVES_BORDER_W},
+    sprites::WithSprite,
+    utils::*,
 };
-use paddle::quicksilver_compat::{Color, Shape};
+use crate::{gui::shapes::PadlShapeIndex, prelude::UiView};
+use paddle::quicksilver_compat::{Circle, Color, Shape};
 use paddle::*;
 use paddlers_shared_lib::civilization::*;
 
 use super::{
     game_event_manager::{game_event, GameEvent},
+    toplevel::Signal,
     Game,
 };
 
@@ -16,12 +19,24 @@ pub(crate) struct ReligionFrame {
     perks: CivilizationPerks,
 }
 
-const MARGIN: f32 = 50.0;
+const MARGIN: f32 = 75.0;
+const LOCKED_COLOR: Color = Color {
+    r: 0.0,
+    g: 0.0,
+    b: 0.0,
+    a: 0.75,
+};
 
 impl ReligionFrame {
     pub fn new() -> Self {
         Self {
             perks: CivilizationPerks::new(0),
+        }
+    }
+    pub fn signal(&mut self, state: &mut Game, msg: &Signal) {
+        match msg {
+            Signal::PlayerInfoUpdated => self.perks = state.player().civilization_perks(),
+            _ => {}
         }
     }
     const fn main_area() -> Rectangle {
@@ -40,11 +55,11 @@ impl ReligionFrame {
         let main_area = Self::main_area();
         Rectangle {
             pos: main_area.pos.const_translate(Vector {
-                x: Self::WIDTH as f32 / 3.0,
+                x: MARGIN,
                 y: main_area.size.y + MARGIN,
             }),
             size: Vector {
-                x: Self::WIDTH as f32 / 3.0,
+                x: Self::WIDTH as f32 / 5.0,
                 y: Self::HEIGHT as f32 * (1.0 - 0.61803398875) - 3.0 * MARGIN,
             },
         }
@@ -77,7 +92,20 @@ impl Frame for ReligionFrame {
     const HEIGHT: u32 = crate::resolution::SCREEN_H;
 
     fn draw(&mut self, state: &mut Self::State, canvas: &mut paddle::DisplayArea, _timestamp: f64) {
-        canvas.fill(Color::WHITE);
+        canvas.fill(Color::GREEN);
+
+        // background
+        let mut leaf_area = Self::area();
+        let dx = LEAVES_BORDER_W / 2.0;
+        leaf_area.pos.x += dx;
+        leaf_area.size.x -= dx;
+        draw_leaf_border(
+            canvas,
+            &mut state.sprites,
+            &leaf_area,
+            LEAVES_BORDER_W,
+            LEAVES_BORDER_H,
+        );
 
         // perks
         for perk in &[
@@ -85,10 +113,14 @@ impl Frame for ReligionFrame {
             CivilizationPerk::Invitation,
             CivilizationPerk::Conversion,
         ] {
-            canvas.draw(
-                &Self::perk_position(*perk),
-                &state.sprites.index(perk.sprite().default()),
-            );
+            let area = Self::perk_position(*perk);
+            canvas.draw(&area, &state.sprites.index(perk.sprite().default()));
+            if !self.perks.has(*perk) {
+                canvas.draw(
+                    &Circle::new(area.center(), area.width() / 2.0),
+                    LOCKED_COLOR,
+                );
+            }
         }
 
         // back button
@@ -96,12 +128,12 @@ impl Frame for ReligionFrame {
             &mut state.sprites,
             canvas,
             &Self::button_area(),
-            PadlShapeIndex::LeftArrow,
+            PadlShapeIndex::LeftArrowV2,
             FitStrategy::Center,
             1,
         );
     }
-    fn pointer(&mut self, state: &mut Self::State, event: PointerEvent) {
+    fn pointer(&mut self, _state: &mut Self::State, event: PointerEvent) {
         match event {
             PointerEvent(PointerEventType::PrimaryClick, pos) => {
                 if Self::button_area().contains(pos) {

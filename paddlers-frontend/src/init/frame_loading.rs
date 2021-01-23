@@ -118,6 +118,7 @@ pub(crate) fn load_viewer(view: UiView) -> ViewManager<UiView> {
     /* Civ / Religion view */
     let religion_frame = ReligionFrame::new();
     let religion_handle = viewer.add_frame(religion_frame, &[UiView::Religion], (0, 0));
+    religion_handle.listen(ReligionFrame::signal);
 
     viewer
 }
