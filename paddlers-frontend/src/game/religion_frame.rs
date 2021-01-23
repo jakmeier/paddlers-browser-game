@@ -1,4 +1,4 @@
-use crate::gui::utils::*;
+use crate::gui::{sprites::WithSprite, utils::*};
 use crate::{
     gui::shapes::{PadlShape, PadlShapeIndex},
     prelude::UiView,
@@ -50,7 +50,7 @@ impl ReligionFrame {
         }
     }
     const fn perk_position(perk: CivilizationPerk) -> Rectangle {
-        let s = 100.0;
+        let s = 150.0;
         let main_area = Self::main_area();
 
         let (dx, dy) = match perk {
@@ -85,7 +85,10 @@ impl Frame for ReligionFrame {
             CivilizationPerk::Invitation,
             CivilizationPerk::Conversion,
         ] {
-            canvas.draw(&Self::perk_position(*perk), Color::BLACK);
+            canvas.draw(
+                &Self::perk_position(*perk),
+                &state.sprites.index(perk.sprite().default()),
+            );
         }
 
         // back button

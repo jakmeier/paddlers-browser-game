@@ -146,6 +146,10 @@ pub enum SingleSprite {
     SittingYellowDuck,
     Stone1,
     Stone2,
+    PerkConversion,
+    PerkInvitation,
+    PerkNestBuilding,
+    PerkTripleNestBuilding,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -212,7 +216,7 @@ pub trait WithRenderVariant {
     fn render_variant(&self) -> RenderVariant;
 }
 
-use paddlers_shared_lib::models::BuildingType;
+use paddlers_shared_lib::{civilization::CivilizationPerk, models::BuildingType};
 impl WithRenderVariant for BuildingType {
     fn render_variant(&self) -> RenderVariant {
         match self {
@@ -296,5 +300,16 @@ impl WithSprite for TaskType {
             TaskType::WelcomeAbility => SpriteSet::Simple(SingleSprite::WelcomeAbility),
             TaskType::CollectReward => SpriteSet::Simple(SingleSprite::PresentA),
         }
+    }
+}
+
+impl WithSprite for CivilizationPerk {
+    fn sprite(&self) -> SpriteSet {
+        SpriteSet::Simple(match self {
+            CivilizationPerk::NestBuilding => SingleSprite::PerkNestBuilding,
+            CivilizationPerk::TripleNestBuilding => SingleSprite::PerkTripleNestBuilding,
+            CivilizationPerk::Invitation => SingleSprite::PerkInvitation,
+            CivilizationPerk::Conversion => SingleSprite::PerkConversion,
+        })
     }
 }
