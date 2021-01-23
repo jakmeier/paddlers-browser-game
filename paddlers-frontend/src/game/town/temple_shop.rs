@@ -1,19 +1,30 @@
-use crate::gui::sprites::{SingleSprite, SpriteSet};
+use crate::gui::gui_components::{ClickOutput, UiElement};
 use crate::net::state::current_village;
 use crate::prelude::*;
 use crate::{
     game::{components::UiMenu, game_event_manager::*, player_info::PlayerInfo, Game},
     net::game_master_api::RestApiState,
 };
+use paddle::quicksilver_compat::Color;
 use paddlers_shared_lib::api::shop::ProphetPurchase;
 use specs::prelude::*;
 
-pub fn new_temple_menu(player_info: &PlayerInfo) -> UiMenu {
-    UiMenu::new_shop_menu().with_shop_item(
-        GameEvent::HttpBuyProphet,
-        SpriteSet::Simple(SingleSprite::Prophet),
-        player_info.prophet_price(),
-    )
+pub fn new_temple_menu(_player_info: &PlayerInfo) -> UiMenu {
+    let mut menu = UiMenu::new_shop_menu()
+    // No prophets for now
+    // .with_shop_item(
+    //     GameEvent::HttpBuyProphet,
+    //     SpriteSet::Simple(SingleSprite::Prophet),
+    //     player_info.prophet_price(),
+    // )
+    ;
+    menu.ui.add(
+        UiElement::new(ClickOutput::Event(GameEvent::SwitchToView(
+            UiView::Religion,
+        )))
+        .with_background_color(Color::BLACK),
+    );
+    menu
 }
 
 pub fn purchase_prophet(player_info: &PlayerInfo) -> PadlResult<()> {

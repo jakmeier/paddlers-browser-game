@@ -19,7 +19,7 @@ impl Game {
             UiView::Town | UiView::TownHelp => UiView::Visitors(VisitorViewTab::Letters),
             UiView::Visitors(_) => UiView::Leaderboard,
             UiView::Leaderboard => UiView::Map,
-            UiView::Dialogue => return,
+            UiView::Dialogue | UiView::Religion => return,
         };
 
         self.switch_view(next);

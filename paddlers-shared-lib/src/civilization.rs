@@ -7,6 +7,8 @@ pub enum CivilizationPerk {
     TripleNestBuilding,
     /// Allows to send invitation to foreign hobos
     Invitation,
+    /// Allows to convert visiting hobos and thereby increase the worker count
+    Conversion,
 }
 
 // i32 is just the largest common denominator for current gql endpoint libraries used. Will have to change once > 31 perks are implemented.

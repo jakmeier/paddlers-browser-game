@@ -24,6 +24,7 @@ pub enum UiView {
     Town,
     TownHelp,
     Dialogue,
+    Religion,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum VisitorViewTab {

@@ -15,6 +15,7 @@ pub(crate) mod movement;
 pub(crate) mod net_receiver;
 pub(crate) mod player_info;
 pub(crate) mod quests;
+pub(crate) mod religion_frame;
 pub(crate) mod status_effects;
 pub(crate) mod story;
 pub(crate) mod toplevel;

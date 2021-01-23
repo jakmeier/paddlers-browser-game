@@ -68,6 +68,7 @@ impl PlayerInfo {
         self.prophets + self.village_count - 1
     }
     #[inline]
+    #[allow(dead_code)]
     pub fn prophet_price(&self) -> Price {
         prophet_cost(self.prophets_total())
     }

@@ -370,6 +370,9 @@ impl UiElement {
     }
     pub fn with_background_color(mut self, col: Color) -> Self {
         match self.display {
+            RenderVariant::Hide => {
+                self.display = RenderVariant::TextWithColBackground("".to_owned(), col);
+            }
             RenderVariant::Img(i) => {
                 self.display = RenderVariant::ImgWithColBackground(i, col);
             }
@@ -384,6 +387,7 @@ impl UiElement {
         self.condition = Some(Condition::HasResources(cost));
         self
     }
+    #[allow(dead_code)]
     pub fn with_karma_condition(mut self, minimum_karma: i64) -> Self {
         self.condition = Some(Condition::HasKarma(minimum_karma));
         self

@@ -30,6 +30,7 @@ pub fn game_event(ev: GameEvent) {
 #[derive(Debug, PartialEq, Clone)]
 pub enum GameEvent {
     HoboSatisfied(Entity),
+    #[allow(dead_code)]
     HttpBuyProphet,
     LoadHomeVillage,
     LoadVillage(VillageKey),

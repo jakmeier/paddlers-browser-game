@@ -1,4 +1,6 @@
-use crate::game::{dialogue::DialogueFrame, town::town_summary::TownSummaryFrame};
+use crate::game::{
+    dialogue::DialogueFrame, religion_frame::ReligionFrame, town::town_summary::TownSummaryFrame,
+};
 use crate::game::{
     quests::QuestsFrame,
     visits::{attacks::VisitorFrame, reports::ReportFrame, visitor_menu::VisitorMenuFrame},
@@ -112,5 +114,10 @@ pub(crate) fn load_viewer(view: UiView) -> ViewManager<UiView> {
     let dialogue_handle = viewer.add_frame(dialogue, &[UiView::Dialogue], (0, 0));
     dialogue_handle.listen(DialogueFrame::receive_load_scene);
     dialogue_handle.listen(DialogueFrame::receive_new_story_state);
+
+    /* Civ / Religion view */
+    let religion_frame = ReligionFrame::new();
+    let religion_handle = viewer.add_frame(religion_frame, &[UiView::Religion], (0, 0));
+
     viewer
 }

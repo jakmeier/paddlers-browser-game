@@ -176,6 +176,7 @@ impl UiMenu {
             ui: UiBox::new(2, 4, 1.0, 1.0),
         }
     }
+    #[allow(dead_code)]
     pub fn with_shop_item<T: Into<ClickOutput> + Clone>(
         mut self,
         c: T,
