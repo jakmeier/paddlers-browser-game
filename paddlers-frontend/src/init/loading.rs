@@ -1,11 +1,14 @@
-use crate::net::graphql::{
-    query_types::{
-        AttacksResponse, BuildingsResponse, HobosQueryResponse, VolatileVillageInfoResponse,
-    },
-    ReportsResponse,
-};
 use crate::prelude::{PadlError, PadlErrorCode};
 use crate::resolution::{SCREEN_H, SCREEN_W};
+use crate::{
+    game::shaders::Shaders,
+    net::graphql::{
+        query_types::{
+            AttacksResponse, BuildingsResponse, HobosQueryResponse, VolatileVillageInfoResponse,
+        },
+        ReportsResponse,
+    },
+};
 use crate::{
     game::{
         game_event_manager::load_game_event_manager, net_receiver::loading_update_net,
@@ -44,6 +47,7 @@ pub struct PostInit;
 pub(crate) struct LoadingFrame {
     preload_float: FloatingText,
     net_chan: Receiver<NetMsg>,
+    loaded_shaders: bool,
 }
 
 pub struct GameLoadingData {
@@ -53,6 +57,7 @@ pub struct GameLoadingData {
     pub hobos_response: HobosQueryResponse,
     pub attacking_hobos: AttacksResponse,
     pub village_info: VolatileVillageInfoResponse,
+    pub shaders: Shaders,
 }
 
 impl LoadingFrame {
@@ -120,7 +125,8 @@ impl LoadingFrame {
             .with_manually_reported::<AttacksResponse>("Summon visitors")
             .with_manually_reported::<VolatileVillageInfoResponse>("Gather village news")
             .with_manually_reported::<ReportsResponse>("Gather letters from mailbox")
-            .with_manually_reported::<QuestsResponse>("Listening to god's voice");
+            .with_manually_reported::<QuestsResponse>("Listening to god's voice")
+            .with_manually_reported::<Shaders>("Attending an art class");
 
         load_manager.attach_to_domain();
 
@@ -129,6 +135,7 @@ impl LoadingFrame {
         LoadingFrame {
             preload_float,
             net_chan,
+            loaded_shaders: false,
         }
         .run_as_activity();
     }
@@ -247,14 +254,21 @@ impl Frame for LoadingFrame {
     const WIDTH: u32 = SCREEN_W;
     const HEIGHT: u32 = SCREEN_H;
 
-    fn draw(&mut self, state: &mut Self::State, canvas: &mut DisplayArea, _timestamp: f64) {
+    fn draw(&mut self, state: &mut Self::State, display: &mut DisplayArea, _timestamp: f64) {
         if let Some(lm) = state.as_ref() {
             let progress = lm.progress();
             let msg = lm.waiting_for();
-            self.draw_progress(canvas, progress, msg.unwrap_or("Done."))
+            self.draw_progress(display, progress, msg.unwrap_or("Done."))
                 .nuts_check();
         } else {
-            self.draw_progress(canvas, 0.0, "Loading...").nuts_check();
+            self.draw_progress(display, 0.0, "Loading...").nuts_check();
+        }
+        if !self.loaded_shaders {
+            if let Some(lm) = state.as_mut() {
+                let shaders = Shaders::load(display.full_mut());
+                lm.add_progress(shaders);
+                self.loaded_shaders = true;
+            }
         }
     }
     fn update(&mut self, maybe_lm: &mut Self::State) {
@@ -273,6 +287,7 @@ impl GameLoadingData {
             hobos_response: *loaded_data.extract()?,
             attacking_hobos: *loaded_data.extract()?,
             village_info: *loaded_data.extract()?,
+            shaders: *loaded_data.extract()?,
         })
     }
 }

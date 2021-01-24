@@ -1,4 +1,7 @@
-use crate::gui::gui_components::{ClickOutput, UiElement};
+use crate::gui::{
+    gui_components::{ClickOutput, UiBox, UiElement},
+    sprites::{SingleSprite, SpriteSet},
+};
 use crate::net::state::current_village;
 use crate::prelude::*;
 use crate::{
@@ -10,18 +13,14 @@ use paddlers_shared_lib::api::shop::ProphetPurchase;
 use specs::prelude::*;
 
 pub fn new_temple_menu(_player_info: &PlayerInfo) -> UiMenu {
-    let mut menu = UiMenu::new_shop_menu()
-    // No prophets for now
-    // .with_shop_item(
-    //     GameEvent::HttpBuyProphet,
-    //     SpriteSet::Simple(SingleSprite::Prophet),
-    //     player_info.prophet_price(),
-    // )
-    ;
+    let mut menu = UiMenu {
+        ui: UiBox::new(1, 1, 0.0, 1.0),
+    };
     menu.ui.add(
         UiElement::new(ClickOutput::Event(GameEvent::SwitchToView(
             UiView::Religion,
         )))
+        .with_image(SpriteSet::Simple(SingleSprite::ReligionDroplets))
         .with_background_color(Color::BLACK),
     );
     menu

@@ -46,7 +46,7 @@ pub fn load_shapes() -> Vec<PadlShape> {
     shapes.push(PadlShape {
         mesh: build_arrow(base, true),
         bounding_box: base,
-        paint: WHITE.into(),
+        paint: Color::from_rgba(255, 255, 255, 0.4),
     });
 
     shapes

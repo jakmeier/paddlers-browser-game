@@ -166,11 +166,6 @@ impl UiMenu {
             ui: UiBox::new(3, 3, 0.0, 1.0),
         }
     }
-    pub fn new_shop_menu() -> Self {
-        UiMenu {
-            ui: UiBox::new(3, 1, 0.0, 1.0),
-        }
-    }
     pub fn new_gate_menu() -> Self {
         UiMenu {
             ui: UiBox::new(2, 4, 1.0, 1.0),

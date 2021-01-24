@@ -91,8 +91,14 @@ impl Frame for ReligionFrame {
     const WIDTH: u32 = crate::resolution::SCREEN_W;
     const HEIGHT: u32 = crate::resolution::SCREEN_H;
 
-    fn draw(&mut self, state: &mut Self::State, canvas: &mut paddle::DisplayArea, _timestamp: f64) {
-        canvas.fill(&Color::GREEN);
+    fn draw(&mut self, state: &mut Self::State, canvas: &mut paddle::DisplayArea, timestamp: f64) {
+        let bg_shader = &state.shaders.religion_background;
+        canvas.update_uniform(
+            bg_shader.render_pipeline(),
+            "Time",
+            &UniformValue::F32((timestamp / 1000.0) as f32),
+        );
+        canvas.fill(bg_shader);
 
         // background
         let mut leaf_area = Self::area();
@@ -114,11 +120,25 @@ impl Frame for ReligionFrame {
             CivilizationPerk::Conversion,
         ] {
             let area = Self::perk_position(*perk);
-            canvas.draw(&area, &state.sprites.index(perk.sprite().default()));
-            if !self.perks.has(*perk) {
-                canvas.draw(
+            canvas.draw_ex(
+                &area,
+                &state.sprites.index(perk.sprite().default()),
+                Transform::IDENTITY,
+                2,
+            );
+            if self.perks.has(*perk) {
+                canvas.draw_ex(
+                    &Circle::new(area.center(), area.width() / 2.0 + 5.0),
+                    &Color::WHITE,
+                    Transform::IDENTITY,
+                    1,
+                );
+            } else {
+                canvas.draw_ex(
                     &Circle::new(area.center(), area.width() / 2.0),
                     &LOCKED_COLOR,
+                    Transform::IDENTITY,
+                    3,
                 );
             }
         }

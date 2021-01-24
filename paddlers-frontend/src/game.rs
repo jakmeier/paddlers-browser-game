@@ -16,6 +16,7 @@ pub(crate) mod net_receiver;
 pub(crate) mod player_info;
 pub(crate) mod quests;
 pub(crate) mod religion_frame;
+pub(crate) mod shaders;
 pub(crate) mod status_effects;
 pub(crate) mod story;
 pub(crate) mod toplevel;
@@ -39,6 +40,7 @@ use map::{GlobalMap, GlobalMapPrivateState};
 use movement::*;
 use paddle::quicksilver_compat::*;
 use paddle::*;
+use shaders::Shaders;
 use shred::{Fetch, FetchMut};
 use specs::prelude::*;
 use std::sync::mpsc::Receiver;
@@ -47,6 +49,7 @@ use town::{DefaultShop, Town};
 pub(crate) struct Game {
     pub world: World,
     pub sprites: Sprites,
+    pub shaders: Shaders,
     pub locale: TextDb,
     pub net: Receiver<NetMsg>,
     pub time_zero: NaiveDateTime,
@@ -72,12 +75,14 @@ impl Game {
         let town_context = TownContextManager::new(player_info.clone());
         let mut world = crate::init::init_world(player_info);
         let now = utc_now();
+        let shaders = game_data.shaders;
         world.insert::<Now>(Now(now));
 
         world.maintain();
         let mut game = Game {
             world: world,
             sprites,
+            shaders,
             locale,
             net: net_chan,
             time_zero: now,
