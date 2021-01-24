@@ -59,7 +59,7 @@ impl Frame for TownSummaryFrame {
         let main_area = Rectangle::new_sized((MAIN_AREA_W, MAIN_AREA_H));
         window.draw_ex(
             &main_area.padded(50.0),
-            DARK_BLUE,
+            &DARK_BLUE,
             Transform::IDENTITY,
             Z_TEXTURE,
         );

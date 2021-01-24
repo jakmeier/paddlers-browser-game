@@ -122,7 +122,7 @@ impl Frame for ReportFrame {
     const HEIGHT: u32 = MAIN_AREA_H;
 
     fn draw(&mut self, _state: &mut Self::State, window: &mut DisplayArea, _timestamp: f64) {
-        window.fill(LIGHT_BLUE);
+        window.fill(&LIGHT_BLUE);
     }
     fn enter(&mut self, _state: &mut Self::State) {
         self.pane.show().nuts_check();

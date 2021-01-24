@@ -92,7 +92,7 @@ impl Frame for ReligionFrame {
     const HEIGHT: u32 = crate::resolution::SCREEN_H;
 
     fn draw(&mut self, state: &mut Self::State, canvas: &mut paddle::DisplayArea, _timestamp: f64) {
-        canvas.fill(Color::GREEN);
+        canvas.fill(&Color::GREEN);
 
         // background
         let mut leaf_area = Self::area();
@@ -118,7 +118,7 @@ impl Frame for ReligionFrame {
             if !self.perks.has(*perk) {
                 canvas.draw(
                     &Circle::new(area.center(), area.width() / 2.0),
-                    LOCKED_COLOR,
+                    &LOCKED_COLOR,
                 );
             }
         }

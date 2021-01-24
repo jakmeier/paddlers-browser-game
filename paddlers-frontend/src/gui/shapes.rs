@@ -3,12 +3,12 @@
 use crate::gui::utils::*;
 use lyon::lyon_tessellation::{FillOptions, StrokeTessellator};
 use lyon::{math::point, path::Path, tessellation::*};
-use paddle::{AbstractMesh, Paint, Rectangle, ShapeRenderer};
+use paddle::{quicksilver_compat::Color, AbstractMesh, Rectangle, ShapeRenderer};
 
 /// A single mesh of triangles ready to be drawn
 pub struct PadlShape {
     pub bounding_box: Rectangle,
-    pub paint: Paint<'static>,
+    pub paint: Color,
     pub mesh: AbstractMesh,
 }
 #[derive(Debug, Clone, Copy)]

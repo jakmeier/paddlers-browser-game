@@ -127,7 +127,7 @@ impl Game {
         let area = crate::gui::menu::menu_box_area();
 
         // Menu Box Background
-        window.draw_ex(&area, LIGHT_GREEN, Transform::IDENTITY, Z_MENU_BOX);
+        window.draw_ex(&area, &LIGHT_GREEN, Transform::IDENTITY, Z_MENU_BOX);
 
         draw_leaf_border(
             window,

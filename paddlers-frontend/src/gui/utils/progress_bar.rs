@@ -25,10 +25,10 @@ pub fn draw_progress_bar(
         )
         .nuts_check();
 
-    window.draw(&bar_area, Color::WHITE);
+    window.draw(&bar_area, &Color::WHITE);
     let mut bar = bar_area.padded(3.0);
-    window.draw(&bar, DARK_GREEN);
+    window.draw(&bar, &DARK_GREEN);
     bar.size.x *= progress;
-    window.draw(&bar, LIGHT_GREEN);
+    window.draw(&bar, &LIGHT_GREEN);
     Ok(())
 }

@@ -100,7 +100,7 @@ impl<'a> GlobalMap<'a> {
         window.draw_mesh_ex(
             &self.private.grid_mesh,
             Rectangle::new_sized(window.size() + Vector::X * Self::unit_length()),
-            TRANSPARENT_BLACK,
+            &TRANSPARENT_BLACK,
             t,
             Z_GRID,
         );
@@ -116,7 +116,7 @@ impl<'a> GlobalMap<'a> {
                 window.draw_mesh_ex(
                     &segment.water_mesh,
                     segment.scaled_base_shape(),
-                    LIGHT_BLUE,
+                    &LIGHT_BLUE,
                     t,
                     Z_RIVER,
                 );

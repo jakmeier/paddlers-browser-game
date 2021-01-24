@@ -374,7 +374,7 @@ fn draw_rect(window: &mut DisplayArea, area: &Rectangle, col: Color) {
 }
 #[inline]
 fn draw_rect_z(window: &mut DisplayArea, area: &Rectangle, col: Color, z_shift: i16) {
-    window.draw_ex(area, col, Transform::IDENTITY, Z_HP_BAR + z_shift);
+    window.draw_ex(area, &col, Transform::IDENTITY, Z_HP_BAR + z_shift);
 }
 
 impl Range {

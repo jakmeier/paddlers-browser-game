@@ -143,7 +143,7 @@ impl DialogueFrame {
         window: &mut DisplayArea,
         main_area: Rectangle,
     ) {
-        window.draw_ex(&main_area, LIGHT_BLUE, Transform::IDENTITY, Z_TEXTURE);
+        window.draw_ex(&main_area, &LIGHT_BLUE, Transform::IDENTITY, Z_TEXTURE);
         let leaf_w = LEAVES_BORDER_W;
         let leaf_h = LEAVES_BORDER_H;
         let mut leaf_area = main_area.clone();
@@ -167,7 +167,7 @@ impl DialogueFrame {
             Z_TEXTURE + 1,
             FitStrategy::Center,
         );
-        window.draw_mesh(&self.text_bubble, right_area(), Color::WHITE);
+        window.draw_mesh(&self.text_bubble, right_area(), &Color::WHITE);
     }
 
     pub fn receive_load_scene(&mut self, state: &mut Game, msg: &LoadNewDialogueScene) {

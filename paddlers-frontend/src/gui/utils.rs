@@ -94,7 +94,7 @@ pub fn draw_shape(
 ) {
     let shape = sprites.shape_index(i);
     let place = shape.bounding_box.fit_into_ex(&draw_area, fit_strat, true);
-    window.draw_mesh_ex(&shape.mesh, place, shape.paint, Transform::IDENTITY, z);
+    window.draw_mesh_ex(&shape.mesh, place, &shape.paint, Transform::IDENTITY, z);
 }
 
 pub fn draw_image_collection(

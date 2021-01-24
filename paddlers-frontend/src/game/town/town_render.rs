@@ -83,7 +83,7 @@ impl Town {
         let mut area = Rectangle::new_sized(size);
         for (x, y) in tiles {
             area.pos = (*x as f32 * ul, *y as f32 * ul).into();
-            window.draw_ex(&area, shadow_col, Transform::IDENTITY, Z_TILE_SHADOW);
+            window.draw_ex(&area, &shadow_col, Transform::IDENTITY, Z_TILE_SHADOW);
         }
     }
 }
@@ -117,7 +117,7 @@ fn draw_dot(window: &mut DisplayArea, p: Vector) {
         b: 1.0,
         a: 0.8,
     };
-    window.draw_ex(&dot, dot_col, Transform::IDENTITY, Z_UNIT_UI_HINT);
+    window.draw_ex(&dot, &dot_col, Transform::IDENTITY, Z_UNIT_UI_HINT);
 }
 
 const fn relative_top(area: Rectangle, r: f32) -> Vector {

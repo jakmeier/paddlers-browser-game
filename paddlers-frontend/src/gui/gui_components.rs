@@ -185,7 +185,7 @@ pub fn draw_table(
                     label_area.size.x = w;
                     area.pos.x += w;
                     area.size.x -= w;
-                    window.draw_ex(&label_area, *bkgcol, Transform::IDENTITY, z);
+                    window.draw_ex(&label_area, bkgcol, Transform::IDENTITY, z);
                     let mut label_text_area = label_area.shrink_to_center(0.9);
                     label_text_area.pos.y += label_text_area.size.y * 0.1;
                     white_floats
@@ -201,11 +201,11 @@ pub fn draw_table(
                     .write(window, &text_area, z + 1, FitStrategy::Center, &text)
                     .nuts_check();
 
-                window.draw_ex(&area, *col, Transform::IDENTITY, Z_MENU_BOX + 1);
+                window.draw_ex(&area, col, Transform::IDENTITY, Z_MENU_BOX + 1);
                 let mut bar = area.padded(3.0);
-                window.draw_ex(&bar, *bkgcol, Transform::IDENTITY, Z_MENU_BOX + 2);
+                window.draw_ex(&bar, bkgcol, Transform::IDENTITY, Z_MENU_BOX + 2);
                 bar.size.x *= *i as f32 / *n as f32;
-                window.draw_ex(&bar, *col, Transform::IDENTITY, Z_MENU_BOX + 3);
+                window.draw_ex(&bar, col, Transform::IDENTITY, Z_MENU_BOX + 3);
                 line.pos.y += line.size.y;
             }
         }

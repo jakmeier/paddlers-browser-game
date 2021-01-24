@@ -63,7 +63,7 @@ impl InteractiveTableArea for UiBox {
                 RenderVariant::ImgWithColBackground(img, col) => {
                     window.draw_ex(
                         &draw_area.padded(self.margin),
-                        *col,
+                        col,
                         Transform::IDENTITY,
                         z_button_background,
                     );
@@ -127,7 +127,7 @@ impl InteractiveTableArea for UiBox {
                 RenderVariant::TextWithColBackground(t, col) => {
                     window.draw_ex(
                         &draw_area.padded(self.margin),
-                        *col,
+                        col,
                         Transform::IDENTITY,
                         z_button_background,
                     );
@@ -172,7 +172,7 @@ impl InteractiveTableArea for UiBox {
                     let notification_area = Circle::new(center, radius);
                     window.draw_ex(
                         &notification_area,
-                        WHITE,
+                        &WHITE,
                         Transform::IDENTITY,
                         z_button_decoration,
                     );
@@ -312,7 +312,7 @@ impl UiElement {
                     );
                     window.draw_ex(
                         &t,
-                        Color {
+                        &Color {
                             r: 1.0,
                             g: 1.0,
                             b: 1.0,

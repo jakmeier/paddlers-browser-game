@@ -76,7 +76,7 @@ impl Frame for LeaderboardFrame {
         window: &mut paddle::DisplayArea,
         _timestamp: f64,
     ) {
-        window.fill(DARK_BLUE);
+        window.fill(&DARK_BLUE);
     }
     fn enter(&mut self, _state: &mut Self::State) {
         self.pane.show().nuts_check();

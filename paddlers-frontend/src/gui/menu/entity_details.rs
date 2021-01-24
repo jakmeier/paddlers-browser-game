@@ -44,7 +44,7 @@ pub fn draw_entity_img(
                 );
             }
             RenderVariant::ImgWithColBackground(main, col) => {
-                window.draw_ex(area, col, Transform::IDENTITY, Z_MENU_BOX + 1);
+                window.draw_ex(area, &col, Transform::IDENTITY, Z_MENU_BOX + 1);
                 draw_static_image(
                     sprites,
                     window,

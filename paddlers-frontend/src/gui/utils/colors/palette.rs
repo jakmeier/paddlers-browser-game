@@ -15,9 +15,9 @@ fn draw_three_colors(
 ) {
     let w = area.size.x / 3.0;
     area.size.x = w;
-    window.draw_ex(&area, col1, Transform::IDENTITY, 1000);
+    window.draw_ex(&area, &col1, Transform::IDENTITY, 1000);
     area.pos.x += w;
-    window.draw_ex(&area, col2, Transform::IDENTITY, 1000);
+    window.draw_ex(&area, &col2, Transform::IDENTITY, 1000);
     area.pos.x += w;
-    window.draw_ex(&area, col3, Transform::IDENTITY, 1000);
+    window.draw_ex(&area, &col3, Transform::IDENTITY, 1000);
 }
