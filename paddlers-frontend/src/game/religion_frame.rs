@@ -17,6 +17,8 @@ use super::{
 
 pub(crate) struct ReligionFrame {
     perks: CivilizationPerks,
+    mouse: PointerTracker,
+    tp: TextPool,
 }
 
 const MARGIN: f32 = 75.0;
@@ -26,11 +28,24 @@ const LOCKED_COLOR: Color = Color {
     b: 0.0,
     a: 0.75,
 };
+const TEXT_BG_COLOR: Color = Color {
+    r: 1.0,
+    g: 1.0,
+    b: 1.0,
+    a: 0.6,
+};
 
 impl ReligionFrame {
     pub fn new() -> Self {
         Self {
             perks: CivilizationPerks::new(0),
+            mouse: Default::default(),
+            tp: TextPool::new(
+                "".to_owned(),
+                &[("font-size", "x-large")],
+                &[],
+                Self::text_area(),
+            ),
         }
     }
     pub fn signal(&mut self, state: &mut Game, msg: &Signal) {
@@ -64,6 +79,19 @@ impl ReligionFrame {
             },
         }
     }
+    const fn text_area() -> Rectangle {
+        let main_area = Self::main_area();
+        Rectangle {
+            pos: main_area.pos.const_translate(Vector {
+                x: MARGIN + Self::WIDTH as f32 / 5.0,
+                y: main_area.size.y + MARGIN,
+            }),
+            size: Vector {
+                x: Self::WIDTH as f32 * 3.0 / 5.0,
+                y: Self::HEIGHT as f32 * (1.0 - 0.61803398875) - 3.0 * MARGIN,
+            },
+        }
+    }
     const fn perk_position(perk: CivilizationPerk) -> Rectangle {
         let s = 150.0;
         let main_area = Self::main_area();
@@ -92,6 +120,7 @@ impl Frame for ReligionFrame {
     const HEIGHT: u32 = crate::resolution::SCREEN_H;
 
     fn draw(&mut self, state: &mut Self::State, canvas: &mut paddle::DisplayArea, timestamp: f64) {
+        self.tp.reset();
         let bg_shader = &state.shaders.religion_background;
         canvas.update_uniform(
             bg_shader.render_pipeline(),
@@ -113,13 +142,20 @@ impl Frame for ReligionFrame {
             LEAVES_BORDER_H,
         );
 
-        // perks
+        // draw perks (and check if any is hovered)
+        let mut hovered_perk = None;
         for perk in &[
             CivilizationPerk::NestBuilding,
             CivilizationPerk::Invitation,
             CivilizationPerk::Conversion,
         ] {
+            self.tp.reset();
             let area = Self::perk_position(*perk);
+            if let Some(mouse_pos) = self.mouse.pos() {
+                if area.contains(mouse_pos) {
+                    hovered_perk = Some(*perk);
+                }
+            }
             canvas.draw_ex(
                 &area,
                 &state.sprites.index(perk.sprite().default()),
@@ -143,6 +179,22 @@ impl Frame for ReligionFrame {
             }
         }
 
+        // Optionally draw text for hovered perk
+        if let Some(perk) = hovered_perk {
+            let text_area = Self::text_area();
+            canvas.draw(&text_area, &TEXT_BG_COLOR);
+            self.tp
+                .allocate()
+                .write(
+                    canvas,
+                    &text_area,
+                    4,
+                    FitStrategy::Center,
+                    state.locale.gettext(perk.gettext_key()),
+                )
+                .nuts_check();
+        }
+
         // back button
         draw_shape(
             &mut state.sprites,
@@ -152,8 +204,10 @@ impl Frame for ReligionFrame {
             FitStrategy::Center,
             1,
         );
+        self.tp.finish_draw();
     }
     fn pointer(&mut self, _state: &mut Self::State, event: PointerEvent) {
+        self.mouse.track_pointer_event(&event);
         match event {
             PointerEvent(PointerEventType::PrimaryClick, pos) => {
                 if Self::button_area().contains(pos) {
@@ -162,5 +216,8 @@ impl Frame for ReligionFrame {
             }
             _ => {}
         }
+    }
+    fn leave(&mut self, _state: &mut Self::State) {
+        self.tp.hide();
     }
 }

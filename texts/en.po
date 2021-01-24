@@ -143,3 +143,17 @@ msgstr "Use Bundling station"
 
 msgid "use-bundlig-station-description"
 msgstr "Send your servant to gather sticks and bundle them. Select the Paddler and then right-click or long-tap on the bundling station."
+
+
+# Civ perks
+msgid "perk-nest-building"
+msgstr "Construct homes for more followers."
+
+msgid "perk-triple-nest-building"
+msgstr "Larger nests for even more followers."
+
+msgid "perk-invitation"
+msgstr "Invite Paddlers to visit your town."
+
+msgid "perk-conversion"
+msgstr "Convert visitors to join your following."

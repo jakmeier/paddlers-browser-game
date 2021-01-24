@@ -43,6 +43,18 @@ impl CivilizationPerks {
     }
 }
 
+impl CivilizationPerk {
+    #[inline(always)]
+    pub fn gettext_key(&self) -> &'static str {
+        match self {
+            CivilizationPerk::NestBuilding => "perk-nest-building",
+            CivilizationPerk::TripleNestBuilding => "perk-triple-nest-building",
+            CivilizationPerk::Invitation => "perk-invitation",
+            CivilizationPerk::Conversion => "perk-conversion",
+        }
+    }
+}
+
 impl std::fmt::Debug for CivilizationPerks {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "[")?;
