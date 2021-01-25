@@ -129,9 +129,10 @@ impl Game {
                 ));
                 self.switch_view(UiView::Dialogue);
             }
-            StoryAction::StoryProgress(new_story_state) => {
+            StoryAction::StoryProgress(new_story_state, choice) => {
                 let t = StoryStateTransition {
                     now: self.story_state(),
+                    choice,
                 };
                 nuts::send_to::<RestApiState, _>(t);
                 paddle::share(crate::game::dialogue::NewStoryState { new_story_state });

@@ -142,8 +142,10 @@ fn load_entry_scene(active_slide: SlideIndex) -> Scene {
     });
     let button = SlideButton {
         text_key: "welcomescene-A60".into(),
-        action: SlideButtonAction::to_slide(5)
-            .with_action(StoryAction::StoryProgress(StoryState::ServantAccepted)),
+        action: SlideButtonAction::to_slide(5).with_action(StoryAction::StoryProgress(
+            StoryState::ServantAccepted,
+            None,
+        )),
     };
     // 4
     slides.push(Slide {
@@ -214,7 +216,7 @@ fn load_scene_two(active_slide: SlideIndex) -> Scene {
     let button = SlideButton {
         text_key: "button-back-to-town".into(),
         action: SlideButtonAction::default()
-            .with_action(StoryAction::StoryProgress(StoryState::VisitorArrived))
+            .with_action(StoryAction::StoryProgress(StoryState::VisitorArrived, None))
             .with_view_change(UiView::Town),
     };
     slides.push(Slide {
@@ -253,7 +255,10 @@ fn load_build_watergate_scene(active_slide: SlideIndex) -> Scene {
     let button = SlideButton {
         text_key: "button-back-to-town".into(),
         action: SlideButtonAction::default()
-            .with_action(StoryAction::StoryProgress(StoryState::BuildingWatergate))
+            .with_action(StoryAction::StoryProgress(
+                StoryState::BuildingWatergate,
+                None,
+            ))
             .with_action(StoryAction::TownSelectEntity(None))
             .with_view_change(UiView::Town),
     };

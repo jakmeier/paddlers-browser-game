@@ -3,13 +3,13 @@ pub mod scene;
 
 use crate::game::{player_info::PlayerInfo, story::scene::SceneIndex, Game};
 use crate::prelude::*;
-use paddlers_shared_lib::story::story_state::StoryState;
+use paddlers_shared_lib::story::{story_state::StoryState, story_trigger::StoryChoice};
 use scene::*;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum StoryAction {
     OpenScene(SceneIndex, SlideIndex),
-    StoryProgress(StoryState),
+    StoryProgress(StoryState, Option<StoryChoice>),
     TownSelectEntity(Option<specs::Entity>),
 }
 
