@@ -76,6 +76,7 @@ fn register_ui_components(world: &mut World) {
     world.register::<Clickable>();
     world.register::<EntityTrigger>();
     world.register::<UiMenu>();
+    world.register::<ForeignUiMenu>();
 }
 fn register_graphic_components(world: &mut World) {
     world.register::<AnimationState>();

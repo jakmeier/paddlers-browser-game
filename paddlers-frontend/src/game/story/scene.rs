@@ -72,6 +72,7 @@ pub enum SceneIndex {
     Entrance,
     BuildWatergate,
     WelcomeVisitor,
+    NewHobo,
 }
 
 impl SceneIndex {
@@ -81,6 +82,7 @@ impl SceneIndex {
             Self::Entrance => load_entry_scene(slide),
             Self::BuildWatergate => load_build_watergate_scene(slide),
             Self::WelcomeVisitor => load_scene_two(slide),
+            Self::NewHobo => load_new_hobo_scene(slide),
         }
     }
 }
@@ -267,6 +269,31 @@ fn load_build_watergate_scene(active_slide: SlideIndex) -> Scene {
         buttons: vec![button],
         sprite: SpriteIndex::Simple(SingleSprite::Stone2),
         back_button: true,
+        next_button: false,
+    });
+    Scene {
+        slides,
+        active_slide,
+    }
+}
+
+fn load_new_hobo_scene(active_slide: SlideIndex) -> Scene {
+    let mut slides = Vec::new();
+    let yes_button = SlideButton {
+        text_key: "button-yes".into(),
+        action: SlideButtonAction::default()
+            .with_action(StoryAction::SettleHobo)
+            .with_view_change(UiView::Town),
+    };
+    let no_button = SlideButton {
+        text_key: "button-no".into(),
+        action: SlideButtonAction::default().with_view_change(UiView::Town),
+    };
+    slides.push(Slide {
+        text_key: "new-hobo-text".into(),
+        buttons: vec![no_button, yes_button],
+        sprite: SpriteIndex::Simple(SingleSprite::DuckHappy),
+        back_button: false,
         next_button: false,
     });
     Scene {

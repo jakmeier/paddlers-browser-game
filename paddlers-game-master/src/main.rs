@@ -23,6 +23,7 @@ use game_master::{
 };
 use paddlers_shared_lib::api::{
     attacks::{InvitationDescriptor, StartFightRequest},
+    hobo::SettleHobo,
     quests::QuestCollect,
     reports::ReportCollect,
     story::StoryStateTransition,
@@ -164,6 +165,11 @@ fn main() {
                 web::resource("/quest/collect")
                     .data(web::Json::<QuestCollect>)
                     .route(web::post().to_async(api::collect_quest)),
+            )
+            .service(
+                web::resource("/hobo/settle")
+                    .data(web::Json::<SettleHobo>)
+                    .route(web::post().to(api::settle_hobo)),
             )
     })
     .disable_signals()

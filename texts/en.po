@@ -15,6 +15,15 @@ msgstr "Reward"
 msgid "your-task"
 msgstr "Your task"
 
+msgid "button-back-to-town"
+msgstr "Back to town"
+
+msgid "button-yes"
+msgstr "Yes"
+
+msgid "button-no"
+msgstr "No"
+
 #  Stories
 ## Welcome scene
 msgid "welcomescene-A0"
@@ -115,8 +124,12 @@ msgstr ""
 "Then click on the\n"
 "visting Paddler."
 
-msgid "button-back-to-town"
-msgstr "Back to town"
+## New hobo scene
+msgid "new-hobo-text"
+msgstr ""
+"My lord,\n"
+"May I take up residence\n"
+"at this magnificient place?"
 
 
 # Quests

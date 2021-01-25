@@ -1,5 +1,6 @@
 pub mod attacks;
 pub mod error;
+pub mod hobo;
 pub mod keys;
 pub mod quests;
 pub mod reports;

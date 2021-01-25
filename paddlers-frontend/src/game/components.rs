@@ -107,6 +107,14 @@ impl NetObj {
 #[storage(HashMapStorage)]
 /// Clickable menu that pop up when entity is selected
 pub struct UiMenu {
+    pub show_at_home: bool,
+    pub show_abroad: bool,
+    pub ui: UiBox,
+}
+#[derive(Component, Debug, Clone)]
+#[storage(HashMapStorage)]
+// For a menu that is only shown in foreign towns, which can be different from another menu shown at home
+pub struct ForeignUiMenu {
     pub ui: UiBox,
 }
 
@@ -161,15 +169,26 @@ impl EntityContainer {
 }
 
 impl UiMenu {
-    pub fn new_entity_container() -> Self {
-        UiMenu {
-            ui: UiBox::new(3, 3, 0.0, 1.0),
+    pub fn new_private(ui: UiBox) -> Self {
+        Self {
+            show_at_home: true,
+            show_abroad: false,
+            ui,
         }
     }
-    pub fn new_gate_menu() -> Self {
-        UiMenu {
-            ui: UiBox::new(2, 4, 1.0, 1.0),
+    pub fn new_public(ui: UiBox) -> Self {
+        Self {
+            show_at_home: true,
+            show_abroad: true,
+            ui,
         }
+    }
+
+    pub fn new_entity_container() -> Self {
+        UiMenu::new_private(UiBox::new(3, 3, 0.0, 1.0))
+    }
+    pub fn new_gate_menu() -> Self {
+        UiMenu::new_private(UiBox::new(2, 4, 1.0, 1.0))
     }
     #[allow(dead_code)]
     pub fn with_shop_item<T: Into<ClickOutput> + Clone>(
@@ -185,5 +204,18 @@ impl UiMenu {
                 .with_cost(cost),
         );
         self
+    }
+    pub fn show(&self, foreign: bool) -> bool {
+        if foreign {
+            self.show_abroad
+        } else {
+            self.show_at_home
+        }
+    }
+}
+
+impl ForeignUiMenu {
+    pub fn new(ui: UiBox) -> Self {
+        Self { ui }
     }
 }

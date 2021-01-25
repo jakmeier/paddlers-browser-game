@@ -51,9 +51,7 @@ pub fn with_hero<B: Builder>(builder: B) -> B {
 }
 
 pub fn with_abilities<B: Builder>(builder: B, abilities: AbilitySet) -> B {
-    builder.with(UiMenu {
-        ui: abilities.construct_ui_box(),
-    })
+    builder.with(UiMenu::new_private(abilities.construct_ui_box()))
 }
 
 pub fn with_basic_worker<B: Builder>(builder: B, color: UnitColor) -> B {

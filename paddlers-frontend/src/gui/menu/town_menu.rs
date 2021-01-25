@@ -86,6 +86,7 @@ impl<'a, 'b> Frame for TownMenuFrame<'a, 'b> {
                 &mut self.text_provider,
                 &mut self.hover_component,
                 self.mouse.pos(),
+                foreign,
             );
         } else if !foreign {
             state.render_default_shop(

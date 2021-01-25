@@ -57,7 +57,7 @@ impl DialogueFrame {
             .ok_or(PadlError::dev_err(PadlErrorCode::DialogueEmpty))
     }
     #[inline(always)]
-    fn scene(&mut self) -> PadlResult<&Scene> {
+    fn scene(&self) -> PadlResult<&Scene> {
         self.current_scene
             .as_ref()
             .ok_or(PadlError::dev_err(PadlErrorCode::DialogueEmpty))
@@ -84,13 +84,16 @@ impl DialogueFrame {
         // load sprite
         self.image = scene.slide_sprite();
 
-        // Create navigation buttons
+        // Create dialogue buttons for interactions
+        let extra_buttons = self.current_scene.as_ref().unwrap().slide_buttons();
+
+        // Create and add navigation buttons
         if let Some(i) = self.scene().unwrap().back_button() {
             let back_button =
                 UiElement::new(ClickOutput::SlideAction(SlideButtonAction::to_slide(i)))
                     .with_render_variant(RenderVariant::Shape(PadlShapeIndex::LeftArrow));
             self.buttons.add(back_button);
-        } else {
+        } else if extra_buttons.len() < 2 {
             self.buttons.add(UiElement::empty());
         }
         if let Some(i) = self.scene().unwrap().next_button() {
@@ -100,13 +103,10 @@ impl DialogueFrame {
             self.buttons.add(next_button);
         }
 
-        // Create dialogue buttons for interactions
-        self.load_slide_buttons(locale);
-    }
-    fn load_slide_buttons(&mut self, texts: &TextDb) {
-        for b in self.current_scene.as_ref().unwrap().slide_buttons() {
+        // Add dialogue buttons for interactions
+        for b in extra_buttons {
             let button = UiElement::new(ClickOutput::SlideAction(b.action.clone()))
-                .with_text(texts.gettext(b.text_key.key()).to_owned())
+                .with_text(locale.gettext(b.text_key.key()).to_owned())
                 .with_background_color(LIGHT_GREEN);
             self.buttons.add(button);
         }

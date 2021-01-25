@@ -60,9 +60,7 @@ impl VillageMetaInfo {
         TableRow::Text(text)
     }
     pub fn new_village_menu(&self, owned: bool) -> UiMenu {
-        let mut menu = UiMenu {
-            ui: UiBox::new(2, 2, 10.0, 2.0),
-        };
+        let mut menu = UiMenu::new_public(UiBox::new(2, 2, 10.0, 2.0));
         if !owned {
             menu.ui.add(
                 UiElement::new(ClickOutput::Event(GameEvent::LoadVillage(self.id)))

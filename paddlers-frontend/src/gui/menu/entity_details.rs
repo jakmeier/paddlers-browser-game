@@ -124,6 +124,7 @@ pub fn draw_town_entity_details_table(
     text_provider: &mut TableTextProvider,
     res_comp: &mut ResourcesComponent,
     mouse_pos: Option<Vector>,
+    foreign: bool,
 ) {
     let mut area = *area;
     let mut table = vec![];
@@ -187,8 +188,18 @@ pub fn draw_town_entity_details_table(
     }
 
     if let Some(ui) = ui_menu.get_mut(e) {
-        Game::draw_shop_prices(window, &mut area, &mut ui.ui, res_comp, mouse_pos).nuts_check();
-        table.push(TableRow::InteractiveArea(&mut ui.ui));
+        if ui.show(foreign) {
+            Game::draw_shop_prices(window, &mut area, &mut ui.ui, res_comp, mouse_pos).nuts_check();
+            table.push(TableRow::InteractiveArea(&mut ui.ui));
+        }
+    }
+
+    let mut foreign_ui_menu = world.write_storage::<ForeignUiMenu>();
+    if foreign {
+        if let Some(ui) = foreign_ui_menu.get_mut(e) {
+            Game::draw_shop_prices(window, &mut area, &mut ui.ui, res_comp, mouse_pos).nuts_check();
+            table.push(TableRow::InteractiveArea(&mut ui.ui));
+        }
     }
 
     draw_table(

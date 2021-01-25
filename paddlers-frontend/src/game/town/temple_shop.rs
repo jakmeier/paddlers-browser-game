@@ -13,9 +13,7 @@ use paddlers_shared_lib::api::shop::ProphetPurchase;
 use specs::prelude::*;
 
 pub fn new_temple_menu(_player_info: &PlayerInfo) -> UiMenu {
-    let mut menu = UiMenu {
-        ui: UiBox::new(1, 1, 0.0, 1.0),
-    };
+    let mut menu = UiMenu::new_private(UiBox::new(1, 1, 0.0, 1.0));
     menu.ui.add(
         UiElement::new(ClickOutput::Event(GameEvent::SwitchToView(
             UiView::Religion,

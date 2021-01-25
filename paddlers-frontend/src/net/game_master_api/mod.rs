@@ -1,10 +1,10 @@
 use super::{ajax, authentication::keycloak_preferred_name, url::*, RequestQuests};
 use crate::prelude::*;
 use paddle::{Domain, NutsCheck};
-use paddlers_shared_lib::api::story::StoryStateTransition;
 use paddlers_shared_lib::api::{
     attacks::*, keys::*, shop::*, statistics::*, tasks::TaskList, PlayerInitData,
 };
+use paddlers_shared_lib::api::{hobo::SettleHobo, story::StoryStateTransition};
 use paddlers_shared_lib::api::{quests::QuestCollect, reports::ReportCollect};
 use std::sync::atomic::AtomicBool;
 
@@ -46,6 +46,7 @@ impl RestApiState {
         rest_activity.private_channel(Self::http_send_attack);
         rest_activity.private_channel(Self::http_send_statistics);
         rest_activity.private_channel(Self::http_update_story_state);
+        rest_activity.private_channel(Self::http_settle_hobo);
     }
     pub fn http_place_building(
         pos: (usize, usize),
@@ -191,6 +192,16 @@ impl RestApiState {
         let future = async move {
             ajax::fetch_empty_response("POST", &uri, &msg).await?;
             nuts::publish(RequestQuests);
+            Ok(())
+        };
+        spawn_future(future);
+    }
+    fn http_settle_hobo(&mut self, msg: SettleHobo) {
+        let uri = format!("{}/hobo/settle", &self.game_master_url);
+        let future = async move {
+            ajax::fetch_empty_response("POST", &uri, &msg).await?;
+            // TODO: load hobo
+            // nuts::publish(...);
             Ok(())
         };
         spawn_future(future);

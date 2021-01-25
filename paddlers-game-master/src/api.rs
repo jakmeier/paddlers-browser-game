@@ -1,4 +1,5 @@
 mod attacks;
+mod hobo;
 mod quests;
 mod reports;
 mod shop;
@@ -7,6 +8,7 @@ mod story;
 pub(crate) use attacks::{
     create_attack, new_invitation, visitor_satisfied_notification, welcome_visitor,
 };
+pub(crate) use hobo::settle_hobo;
 pub(crate) use quests::collect_quest;
 pub(crate) use reports::collect_report_rewards;
 pub(crate) use story::story_transition;

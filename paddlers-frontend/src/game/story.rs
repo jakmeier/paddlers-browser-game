@@ -11,6 +11,7 @@ pub enum StoryAction {
     OpenScene(SceneIndex, SlideIndex),
     StoryProgress(StoryState, Option<StoryChoice>),
     TownSelectEntity(Option<specs::Entity>),
+    SettleHobo,
 }
 
 impl Game {

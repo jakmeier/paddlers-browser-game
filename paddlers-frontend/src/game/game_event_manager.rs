@@ -13,7 +13,9 @@ use crate::{
 use crate::{gui::input::UiView, net::game_master_api::RestApiState};
 use crate::{gui::ui_state::Now, net::state::current_village};
 use paddle::{Domain, NutsCheck};
-use paddlers_shared_lib::api::{attacks::StartFightRequest, story::StoryStateTransition};
+use paddlers_shared_lib::api::{
+    attacks::StartFightRequest, hobo::SettleHobo, story::StoryStateTransition,
+};
 use paddlers_shared_lib::prelude::*;
 use specs::prelude::*;
 
@@ -140,6 +142,26 @@ impl Game {
             StoryAction::TownSelectEntity(e) => {
                 let world = self.town_context.world();
                 world.write_resource::<UiState>().selected_entity = e;
+            }
+            StoryAction::SettleHobo => {
+                let e = self
+                    .town_world()
+                    .read_resource::<UiState>()
+                    .selected_entity
+                    .ok_or_else(|| {
+                        PadlError::dev_err(PadlErrorCode::DevMsg("No entity selected"))
+                    })?;
+
+                let net_ids = self.town_world().read_component::<NetObj>();
+                let nest_obj = net_ids
+                    .get(e)
+                    .ok_or_else(|| PadlError::dev_err(PadlErrorCode::MissingComponent("NetObj")))?;
+                let nest = nest_obj.as_building().ok_or_else(|| {
+                    PadlError::dev_err(PadlErrorCode::DevMsg("Expected nest to be selected"))
+                })?;
+
+                let rest_msg = SettleHobo { nest };
+                nuts::send_to::<RestApiState, _>(rest_msg);
             }
         }
         Ok(())

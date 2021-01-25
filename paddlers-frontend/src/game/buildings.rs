@@ -101,10 +101,12 @@ impl Town {
             BuildingType::SingleNest => {
                 builder = builder.with(Nest::new(1));
                 builder = builder.with(new_nest_menu());
+                builder = builder.with(new_foreign_nest_menu());
             }
             BuildingType::TripleNest => {
                 builder = builder.with(Nest::new(3));
                 builder = builder.with(new_nest_menu());
+                builder = builder.with(new_foreign_nest_menu());
             }
             BuildingType::Watergate => {
                 builder = builder.with(UiMenu::new_gate_menu());
@@ -139,19 +141,34 @@ fn building_ingame_scaling(b: BuildingType) -> f32 {
 }
 
 fn new_nest_menu() -> UiMenu {
-    let mut menu = UiBox::new(1, 1, 1.0, 1.0);
-    menu.add(
+    let mut ui = UiBox::new(1, 1, 1.0, 1.0);
+    ui.add(
+        UiElement::new(ClickOutput::Event(GameEvent::StoryActions(vec![
+            StoryAction::OpenScene(SceneIndex::NewHobo, 0),
+        ])))
+        .with_image(SpriteSet::Simple(SingleSprite::SittingYellowDuck))
+        .with_background_color(WHITE),
+    );
+    UiMenu::new_private(ui)
+}
+fn new_foreign_nest_menu() -> ForeignUiMenu {
+    let mut invitation_ui = UiBox::new(1, 1, 1.0, 1.0);
+    invitation_ui.add(
         UiElement::new(ClickOutput::SendInvitation)
             .with_perk_condition(CivilizationPerk::Invitation)
             .with_text("Invite".to_owned())
             .with_background_color(LIGHT_BLUE),
     );
-    UiMenu { ui: menu }
+    ForeignUiMenu::new(invitation_ui)
 }
 
 use crate::net::graphql::buildings_query;
 
-use super::town::tiling;
+use super::{
+    game_event_manager::GameEvent,
+    story::{scene::SceneIndex, StoryAction},
+    town::tiling,
+};
 impl buildings_query::ResponseData {
     pub(crate) fn village_id(&self) -> VillageKey {
         VillageKey(self.village.id)
