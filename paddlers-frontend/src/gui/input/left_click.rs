@@ -127,6 +127,7 @@ impl<'a> System<'a> for TownMenuLeftClickSystem {
         ReadStorage<'a, NetObj>,
         WriteStorage<'a, EntityContainer>,
         WriteStorage<'a, UiMenu>,
+        WriteStorage<'a, ForeignUiMenu>,
         WriteStorage<'a, Worker>,
         WriteStorage<'a, Nest>,
     );
@@ -135,7 +136,7 @@ impl<'a> System<'a> for TownMenuLeftClickSystem {
         &mut self,
         (
             mouse_state,
-            ui_state,
+            mut ui_state,
             shop,
             resources,
             mut town,
@@ -143,33 +144,58 @@ impl<'a> System<'a> for TownMenuLeftClickSystem {
             lazy,
             position,
             netids,
-            containers,
+            mut containers,
             mut ui_menus,
-            workers,
-            nests,
+            mut foreign_ui_menus,
+            mut workers,
+            mut nests,
         ): Self::SystemData,
     ) {
         let MouseState(mouse_pos) = *mouse_state;
+        let foreign = town.is_foreign();
 
+        // let ui_state = &mut ui_state;
+        // let ui_menus = &mut ui_menus;
         if let Some(entity) = (*ui_state).selected_entity {
-            if let Some(ui_menu) = ui_menus.get_mut(entity) {
-                town.left_click_on_menu(
-                    entity,
-                    mouse_pos,
-                    ui_state,
-                    position,
-                    netids,
-                    workers,
-                    containers,
-                    ui_menu,
-                    nests,
-                    lazy,
-                    &*resources,
-                    &player_info,
-                );
+            let menu = ui_menus.get_mut(entity);
+            if let Some(ui_menu) = menu {
+                if ui_menu.show(foreign) {
+                    town.left_click_on_menu(
+                        entity,
+                        mouse_pos,
+                        &mut ui_state,
+                        &position,
+                        &netids,
+                        &mut workers,
+                        &mut containers,
+                        &mut ui_menu.ui,
+                        &mut nests,
+                        &lazy,
+                        &*resources,
+                        &player_info,
+                    );
+                }
+            }
+            if foreign {
+                if let Some(ui_menu) = foreign_ui_menus.get_mut(entity) {
+                    town.left_click_on_menu(
+                        entity,
+                        mouse_pos,
+                        &mut ui_state,
+                        &position,
+                        &netids,
+                        &mut workers,
+                        &mut containers,
+                        &mut ui_menu.ui,
+                        &mut nests,
+                        &lazy,
+                        &*resources,
+                        &player_info,
+                    );
+                }
             }
         } else {
-            Town::click_default_shop(mouse_pos, ui_state, shop, resources, player_info)
+            Town::click_default_shop(mouse_pos, &mut ui_state, shop, resources, player_info)
                 .unwrap_or_else(|e| nuts::publish(e));
         }
     }

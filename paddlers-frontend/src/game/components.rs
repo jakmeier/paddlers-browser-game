@@ -25,7 +25,7 @@ enum NetObjType {
     Building,
 }
 
-#[derive(Component, Debug, Clone, Copy)]
+#[derive(Component, Debug, Clone, Copy, PartialEq)]
 #[storage(VecStorage)]
 /// Identifies an entity across views (frontend/backend(s))
 pub struct NetObj {

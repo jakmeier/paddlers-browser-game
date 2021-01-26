@@ -78,7 +78,10 @@ pub(crate) fn purchase_building(
     }
 
     db.try_buy_building(building, (body.x, body.y), body.village, player, addr)
-        .map_or_else(|e| HttpResponse::from(&e), |_| HttpResponse::Ok().into())
+        .map_or_else(
+            |e| HttpResponse::from(&e),
+            |id| HttpResponse::Ok().json(id).into(),
+        )
 }
 
 pub fn delete_building(

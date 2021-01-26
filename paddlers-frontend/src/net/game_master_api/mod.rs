@@ -1,11 +1,15 @@
-use super::{ajax, authentication::keycloak_preferred_name, url::*, RequestQuests};
-use crate::prelude::*;
+use super::{ajax, authentication::keycloak_preferred_name, url::*, RequestHobos, RequestQuests};
+use crate::{
+    game::{components::NetObj, game_event_manager::game_event},
+    prelude::*,
+};
 use paddle::{Domain, NutsCheck};
 use paddlers_shared_lib::api::{
     attacks::*, keys::*, shop::*, statistics::*, tasks::TaskList, PlayerInitData,
 };
 use paddlers_shared_lib::api::{hobo::SettleHobo, story::StoryStateTransition};
 use paddlers_shared_lib::api::{quests::QuestCollect, reports::ReportCollect};
+use specs::Entity;
 use std::sync::atomic::AtomicBool;
 
 static SENT_PLAYER_CREATION: AtomicBool = AtomicBool::new(false);
@@ -52,26 +56,31 @@ impl RestApiState {
         pos: (usize, usize),
         building_type: BuildingType,
         village: VillageKey,
+        entity: Entity,
     ) {
-        nuts::send_to::<RestApiState, _>(HttpPlaceBuilding {
-            pos,
-            building_type,
-            village,
-        });
+        nuts::send_to::<RestApiState, _>((
+            entity,
+            HttpPlaceBuilding {
+                pos,
+                building_type,
+                village,
+            },
+        ));
     }
-    fn http_place_building_0(&mut self, input: HttpPlaceBuilding) {
+    fn http_place_building_0(&mut self, (entity, input): (Entity, HttpPlaceBuilding)) {
         let msg = BuildingPurchase {
             building_type: input.building_type,
             x: input.pos.0,
             y: input.pos.1,
             village: input.village,
         };
-
-        let future = ajax::fetch_json(
-            "POST",
-            &format!("{}/shop/building", self.game_master_url),
-            &msg,
-        );
+        let uri = self.game_master_url.clone() + "/shop/building";
+        let future = async move {
+            let id: i64 = ajax::fetch_json("POST", &uri, &msg).await?;
+            let net_obj = NetObj::building(id);
+            game_event(GameEvent::NetObjId(entity, net_obj));
+            Ok(())
+        };
         spawn_future(future);
     }
 
@@ -200,8 +209,7 @@ impl RestApiState {
         let uri = format!("{}/hobo/settle", &self.game_master_url);
         let future = async move {
             ajax::fetch_empty_response("POST", &uri, &msg).await?;
-            // TODO: load hobo
-            // nuts::publish(...);
+            nuts::publish(RequestHobos);
             Ok(())
         };
         spawn_future(future);

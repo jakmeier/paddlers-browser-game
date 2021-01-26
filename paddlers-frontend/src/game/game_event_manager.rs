@@ -41,6 +41,8 @@ pub enum GameEvent {
     SwitchToView(UiView),
     DisplayConfirmation(TextKey),
     LetVisitorsIn(AttackKey),
+    /// For objects that already exist in the frontend but are lacking the net id
+    NetObjId(Entity, NetObj),
 }
 
 pub fn load_game_event_manager() {
@@ -119,6 +121,11 @@ impl Game {
                 };
                 nuts::send_to::<RestApiState, _>(message);
                 self.release_attack(attack);
+            }
+            GameEvent::NetObjId(entity, obj) => {
+                self.town_world()
+                    .write_component::<NetObj>()
+                    .insert(entity, obj)?;
             }
         }
         Ok(())

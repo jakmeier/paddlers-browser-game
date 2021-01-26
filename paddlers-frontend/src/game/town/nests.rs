@@ -36,7 +36,7 @@ impl Town {
     pub fn nest_invitation<'a>(
         &mut self,
         nest: &mut Nest,
-        netids: ReadStorage<'a, NetObj>,
+        netids: &ReadStorage<'a, NetObj>,
         e: Entity,
         lazy: &LazyUpdate,
     ) -> PadlResult<()> {

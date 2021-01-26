@@ -57,6 +57,7 @@ struct RequestWorkerTasksUpdate {
 struct RequestForeignTownUpdate {
     vid: VillageKey,
 }
+struct RequestHobos;
 
 // Update for responses
 struct NewAttackId {
@@ -120,6 +121,7 @@ impl NetState {
         net_activity.subscribe(NetState::request_worker_tasks_update);
         net_activity.subscribe(NetState::request_foreign_town);
         net_activity.subscribe(NetState::request_quests);
+        net_activity.subscribe(NetState::request_hobos);
         net_activity.subscribe(NetState::update_attack_id);
         net_activity.subscribe(NetState::update_report_id);
     }
@@ -191,6 +193,10 @@ impl NetState {
 
     fn request_quests(&mut self, _msg: &RequestQuests) {
         self.transfer_response(GraphQlState::quests_query());
+    }
+
+    fn request_hobos(&mut self, _msg: &RequestHobos) {
+        self.transfer_response(GraphQlState::hobos_query());
     }
 
     fn log_in(&mut self, _: &LoggedIn) {

@@ -1,5 +1,5 @@
-use crate::game::town::TownContext;
 use crate::game::{components::NetObj, movement::Position, Game};
+use crate::game::{components::UiMenu, town::TownContext};
 use crate::gui::{render::Renderable, sprites::*, utils::*, z::Z_UNITS};
 use crate::net::graphql::query_types::{
     hobos_query::HobosQueryVillageHobosNest, HobosQueryResponse, HobosQueryUnitColor,
@@ -79,14 +79,19 @@ fn new_sitting_hobo(
         .with(Position::new(pos, size, Z_UNITS))
         .build();
 
+    // Lookup nest building entity
     let nest_entity = NetObj::lookup_building(nest_id, &world.read_storage(), &world.entities())?;
+
+    // Insert hobo to entity nest
     let mut nests = world.write_storage::<Nest>();
-    let nest =
-        nests
-            .get_mut(nest_entity)
-            .ok_or(PadlError::dev_err(PadlErrorCode::MissingComponent(
-                "NetObj",
-            )))?;
+    let nest = nests
+        .get_mut(nest_entity)
+        .ok_or(PadlError::dev_err(PadlErrorCode::MissingComponent("Nest")))?;
     nest.add_hobo(entity);
+
+    // Now that there is a hobo, the "new hobo" menu has to be removed.
+    let mut ui_menus = world.write_storage::<UiMenu>();
+    ui_menus.remove(nest_entity);
+
     Ok(entity)
 }

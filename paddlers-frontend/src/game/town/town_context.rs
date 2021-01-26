@@ -24,7 +24,7 @@ impl TownContextManager {
     pub fn new(player_info: PlayerInfo) -> Self {
         let vid = crate::net::state::current_village();
         Self {
-            home_town: TownContext::new(player_info, vid),
+            home_town: TownContext::new(player_info, vid, false),
             foreign_town: None,
         }
     }
@@ -32,7 +32,7 @@ impl TownContextManager {
     pub fn load_foreign(&mut self, v: VillageKey) {
         let home_data = self.home_town.world();
         let player_info = *home_data.fetch::<PlayerInfo>();
-        self.foreign_town = Some(TownContext::new(player_info, v));
+        self.foreign_town = Some(TownContext::new(player_info, v, true));
     }
     /// Remove all loaded foreign towns from the view and display home again
     pub fn reset_to_home(&mut self) {
@@ -85,11 +85,11 @@ impl TownContextManager {
 }
 
 impl TownContext {
-    fn new(player_info: PlayerInfo, vid: VillageKey) -> Self {
+    fn new(player_info: PlayerInfo, vid: VillageKey, foreign: bool) -> Self {
         let mut world = World::new();
         register_town_components(&mut world);
 
-        let town = Town::new();
+        let town = Town::new(foreign);
         insert_town_resources(&mut world, player_info, town);
 
         Self {

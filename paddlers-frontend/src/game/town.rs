@@ -36,13 +36,14 @@ pub struct Town {
     pub idle_prophets: Vec<specs::Entity>,
     pub faith: u8,
     pub attacker_direction: AttackerDirection,
+    foreign: bool,
 }
 
 pub const X: usize = TOWN_X;
 const Y: usize = TOWN_Y;
 
 impl Town {
-    pub fn new() -> Self {
+    pub fn new(foreign: bool) -> Self {
         let map = TownMap::new(TownLayout::Basic);
         Town {
             map: map,
@@ -51,6 +52,7 @@ impl Town {
             idle_prophets: vec![],
             faith: 100,
             attacker_direction: AttackerDirection::RightToLeft,
+            foreign,
         }
     }
 
@@ -206,5 +208,8 @@ impl Town {
             .tiles_with_task(t)
             .iter()
             .fold(0, |acc, index| acc + self.state.count_workers_at(index))
+    }
+    pub fn is_foreign(&self) -> bool {
+        self.foreign
     }
 }

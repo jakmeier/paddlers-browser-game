@@ -12,18 +12,17 @@ impl DB {
         village: VillageKey,
         player: &Player,
         addr: actix_web::web::Data<crate::ActorAddresses>,
-    ) -> StringErr {
+    ) -> Result<i64, String> {
         self.building_has_space(typ, pos, village)
             .map(|_| self.try_spend(&typ.price(), village))
-            .map(|_| {
-                self.insert_building(&BuildingFactory::new(typ, pos, village));
-            })
-            .map(|_| {
+            .map(|_| self.insert_building(&BuildingFactory::new(typ, pos, village)))
+            .map(|b| {
                 addr.story_worker.do_send(StoryWorkerMessage::new_verified(
                     player.key(),
                     player.story_state,
                     StoryTrigger::BuildingBuilt(typ),
-                ))
+                ));
+                b.id
             })
     }
 
