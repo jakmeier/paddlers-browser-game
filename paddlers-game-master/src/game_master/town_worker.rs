@@ -40,6 +40,7 @@ impl TownWorker {
                 }
             }
         }
+        self.event_queue.schedule_tax_collection();
         self
     }
 }

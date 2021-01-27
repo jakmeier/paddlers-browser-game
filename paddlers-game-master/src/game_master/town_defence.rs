@@ -96,10 +96,11 @@ impl DB {
         let sticks = happy_hobos.iter().map(reward_sticks).fold(0, i64::add);
         let logs = happy_hobos.iter().map(reward_logs).fold(0, i64::add);
 
-        if report.karma + feathers + sticks + logs == 0 {
-            return;
+        if report.karma + feathers + sticks + logs != 0 {
+            self.add_new_report(report, feathers, sticks, logs);
         }
-
+    }
+    pub fn add_new_report(&self, report: NewVisitReport, feathers: i64, sticks: i64, logs: i64) {
         let vr = self.insert_visit_report(report);
 
         let mut rewards = vec![];

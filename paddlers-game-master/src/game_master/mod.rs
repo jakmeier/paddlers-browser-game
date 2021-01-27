@@ -4,6 +4,7 @@ pub(super) mod economy_worker;
 pub(super) mod event;
 mod event_queue;
 pub(super) mod story_worker;
+mod taxes;
 mod town_defence;
 pub(super) mod town_worker;
 

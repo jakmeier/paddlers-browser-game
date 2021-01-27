@@ -4,13 +4,23 @@ use chrono::prelude::*;
 use paddlers_shared_lib::game_mechanics::town::MAX_VISITOR_QUEUE;
 use paddlers_shared_lib::prelude::*;
 
+use super::event_queue::EventQueue;
+
 #[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Ord, Debug)]
 /// For actions that must be performed at a later point in time.
 /// These events can be queued up in the `EventQueue`
 pub enum Event {
-    WorkerTask { task_id: TaskKey },
-    CheckRestingVisitors { village_id: VillageKey },
-    CheckVisitorHp { hobo_id: HoboKey },
+    WorkerTask {
+        task_id: TaskKey,
+    },
+    CheckRestingVisitors {
+        village_id: VillageKey,
+    },
+    CheckVisitorHp {
+        hobo_id: HoboKey,
+    },
+    /// At the end of the day, each hobos sends a thank you letter to its lord
+    PayTaxes,
 }
 
 impl Event {
@@ -42,6 +52,10 @@ impl Event {
                     db.maybe_evaluate_attack(&atk, now);
                 }
                 None
+            }
+            Self::PayTaxes => {
+                db.pay_taxes_to_all_players();
+                Some((Self::PayTaxes, EventQueue::next_tax_collection()))
             }
         }
     }
