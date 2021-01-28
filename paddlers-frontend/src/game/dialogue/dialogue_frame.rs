@@ -189,7 +189,7 @@ impl DialogueFrame {
                         game_event(evt);
                     }
                     if a.actions.len() > 0 {
-                        let evt = GameEvent::StoryActions(a.actions);
+                        let evt = GameEvent::DialogueActions(a.actions);
                         game_event(evt);
                     }
                 }

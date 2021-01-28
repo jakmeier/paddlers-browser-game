@@ -1,5 +1,5 @@
 use crate::game::story::scene::SceneIndex;
-use crate::game::story::StoryAction;
+use crate::game::story::DialogueAction;
 use crate::game::units::workers::Worker;
 use crate::gui::ui_state::UiState;
 use crate::prelude::*;
@@ -11,7 +11,7 @@ use specs::storage::HashMapStorage;
 #[storage(HashMapStorage)]
 /// If attached to an entity, will be triggered when the entity is selected.
 pub struct EntityTrigger {
-    pub actions: Vec<StoryAction>,
+    pub actions: Vec<DialogueAction>,
 }
 
 impl Game {
@@ -19,17 +19,17 @@ impl Game {
         match story_state {
             StoryState::Initialized => {
                 self.add_trigger_to_hero(EntityTrigger {
-                    actions: vec![StoryAction::OpenScene(SceneIndex::Entrance, 0)],
+                    actions: vec![DialogueAction::OpenScene(SceneIndex::Entrance, 0)],
                 })?;
             }
             StoryState::WatergateBuilt => {
                 self.add_trigger_to_hero(EntityTrigger {
-                    actions: vec![StoryAction::OpenScene(SceneIndex::WelcomeVisitor, 0)],
+                    actions: vec![DialogueAction::OpenScene(SceneIndex::WelcomeVisitor, 0)],
                 })?;
             }
             StoryState::TempleBuilt => {
                 self.add_trigger_to_hero(EntityTrigger {
-                    actions: vec![StoryAction::OpenScene(SceneIndex::BuildWatergate, 0)],
+                    actions: vec![DialogueAction::OpenScene(SceneIndex::BuildWatergate, 0)],
                 })?;
             }
             StoryState::VisitorArrived
@@ -68,7 +68,7 @@ impl EntityTriggerSystem {
         EntityTriggerSystem
     }
     fn trigger(&mut self, trigger: EntityTrigger) -> PadlResult<()> {
-        crate::game::game_event_manager::game_event(GameEvent::StoryActions(trigger.actions));
+        crate::game::game_event_manager::game_event(GameEvent::DialogueActions(trigger.actions));
         Ok(())
     }
 }

@@ -143,8 +143,8 @@ fn building_ingame_scaling(b: BuildingType) -> f32 {
 fn new_nest_menu() -> UiMenu {
     let mut ui = UiBox::new(1, 1, 1.0, 1.0);
     ui.add(
-        UiElement::new(ClickOutput::Event(GameEvent::StoryActions(vec![
-            StoryAction::OpenScene(SceneIndex::NewHobo, 0),
+        UiElement::new(ClickOutput::Event(GameEvent::DialogueActions(vec![
+            DialogueAction::OpenScene(SceneIndex::NewHobo, 0),
         ])))
         .with_image(SpriteSet::Simple(SingleSprite::SittingYellowDuck))
         .with_background_color(WHITE),
@@ -166,7 +166,7 @@ use crate::net::graphql::buildings_query;
 
 use super::{
     game_event_manager::GameEvent,
-    story::{scene::SceneIndex, StoryAction},
+    story::{scene::SceneIndex, DialogueAction},
     town::tiling,
 };
 impl buildings_query::ResponseData {

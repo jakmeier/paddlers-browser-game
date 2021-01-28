@@ -5,7 +5,7 @@ use crate::net::request_foreign_town;
 use crate::prelude::*;
 use crate::{
     game::{
-        components::*, player_info::PlayerInfo, story::StoryAction, units::attackers::Visitor,
+        components::*, player_info::PlayerInfo, story::DialogueAction, units::attackers::Visitor,
         units::attackers::*,
     },
     net::game_master_api::HttpNotifyVisitorSatisfied,
@@ -37,7 +37,7 @@ pub enum GameEvent {
     LoadHomeVillage,
     LoadVillage(VillageKey),
     SendProphetAttack(VillageCoordinate),
-    StoryActions(Vec<StoryAction>),
+    DialogueActions(Vec<DialogueAction>),
     SwitchToView(UiView),
     DisplayConfirmation(TextKey),
     LetVisitorsIn(AttackKey),
@@ -98,7 +98,7 @@ impl Game {
             GameEvent::SwitchToView(view) => {
                 self.switch_view(view);
             }
-            GameEvent::StoryActions(actions) => {
+            GameEvent::DialogueActions(actions) => {
                 for a in actions {
                     self.try_handle_story_action(a)?;
                 }
@@ -130,15 +130,15 @@ impl Game {
         }
         Ok(())
     }
-    fn try_handle_story_action(&mut self, action: StoryAction) -> PadlResult<()> {
+    fn try_handle_story_action(&mut self, action: DialogueAction) -> PadlResult<()> {
         match action {
-            StoryAction::OpenScene(scene, slide) => {
+            DialogueAction::OpenScene(scene, slide) => {
                 paddle::share(crate::game::dialogue::LoadNewDialogueScene::new(
                     scene, slide,
                 ));
                 self.switch_view(UiView::Dialogue);
             }
-            StoryAction::StoryProgress(new_story_state, choice) => {
+            DialogueAction::StoryProgress(new_story_state, choice) => {
                 let t = StoryStateTransition {
                     now: self.story_state(),
                     choice,
@@ -146,11 +146,11 @@ impl Game {
                 nuts::send_to::<RestApiState, _>(t);
                 paddle::share(crate::game::dialogue::NewStoryState { new_story_state });
             }
-            StoryAction::TownSelectEntity(e) => {
+            DialogueAction::TownSelectEntity(e) => {
                 let world = self.town_context.world();
                 world.write_resource::<UiState>().selected_entity = e;
             }
-            StoryAction::SettleHobo => {
+            DialogueAction::SettleHobo => {
                 let e = self
                     .town_world()
                     .read_resource::<UiState>()

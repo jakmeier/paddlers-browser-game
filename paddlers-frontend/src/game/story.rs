@@ -7,7 +7,7 @@ use paddlers_shared_lib::story::{story_state::StoryState, story_trigger::StoryCh
 use scene::*;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub enum StoryAction {
+pub enum DialogueAction {
     OpenScene(SceneIndex, SlideIndex),
     StoryProgress(StoryState, Option<StoryChoice>),
     TownSelectEntity(Option<specs::Entity>),
@@ -24,8 +24,8 @@ impl Game {
     pub fn load_story_state(&mut self) -> PadlResult<()> {
         let story_state = self.story_state();
         if let Some((scene, slide)) = select_dialogue_scene(story_state) {
-            crate::game::game_event_manager::game_event(GameEvent::StoryActions(vec![
-                StoryAction::OpenScene(scene, slide),
+            crate::game::game_event_manager::game_event(GameEvent::DialogueActions(vec![
+                DialogueAction::OpenScene(scene, slide),
             ]));
         }
         self.load_story_triggers(&story_state)?;

@@ -1,4 +1,4 @@
-use crate::game::story::StoryAction;
+use crate::game::story::DialogueAction;
 use crate::gui::input::UiView;
 use crate::gui::sprites::*;
 use crate::prelude::*;
@@ -29,7 +29,7 @@ pub struct SlideButton {
 pub struct SlideButtonAction {
     pub next_slide: Option<SlideIndex>,
     pub next_view: Option<UiView>,
-    pub actions: Vec<StoryAction>,
+    pub actions: Vec<DialogueAction>,
 }
 
 pub type SlideIndex = usize;
@@ -95,7 +95,7 @@ impl SlideButtonAction {
             actions: vec![],
         }
     }
-    fn with_action(mut self, a: StoryAction) -> Self {
+    fn with_action(mut self, a: DialogueAction) -> Self {
         self.actions.push(a);
         self
     }
@@ -144,7 +144,7 @@ fn load_entry_scene(active_slide: SlideIndex) -> Scene {
     });
     let button = SlideButton {
         text_key: "welcomescene-A60".into(),
-        action: SlideButtonAction::to_slide(5).with_action(StoryAction::StoryProgress(
+        action: SlideButtonAction::to_slide(5).with_action(DialogueAction::StoryProgress(
             StoryState::ServantAccepted,
             None,
         )),
@@ -170,7 +170,7 @@ fn load_entry_scene(active_slide: SlideIndex) -> Scene {
         text_key: "welcomescene-A90".into(),
         action: SlideButtonAction::default()
             .with_view_change(UiView::Town)
-            .with_action(StoryAction::TownSelectEntity(None)),
+            .with_action(DialogueAction::TownSelectEntity(None)),
     };
     // 6
     slides.push(Slide {
@@ -218,7 +218,7 @@ fn load_scene_two(active_slide: SlideIndex) -> Scene {
     let button = SlideButton {
         text_key: "button-back-to-town".into(),
         action: SlideButtonAction::default()
-            .with_action(StoryAction::StoryProgress(StoryState::VisitorArrived, None))
+            .with_action(DialogueAction::StoryProgress(StoryState::VisitorArrived, None))
             .with_view_change(UiView::Town),
     };
     slides.push(Slide {
@@ -257,11 +257,11 @@ fn load_build_watergate_scene(active_slide: SlideIndex) -> Scene {
     let button = SlideButton {
         text_key: "button-back-to-town".into(),
         action: SlideButtonAction::default()
-            .with_action(StoryAction::StoryProgress(
+            .with_action(DialogueAction::StoryProgress(
                 StoryState::BuildingWatergate,
                 None,
             ))
-            .with_action(StoryAction::TownSelectEntity(None))
+            .with_action(DialogueAction::TownSelectEntity(None))
             .with_view_change(UiView::Town),
     };
     slides.push(Slide {
@@ -282,7 +282,7 @@ fn load_new_hobo_scene(active_slide: SlideIndex) -> Scene {
     let yes_button = SlideButton {
         text_key: "button-yes".into(),
         action: SlideButtonAction::default()
-            .with_action(StoryAction::SettleHobo)
+            .with_action(DialogueAction::SettleHobo)
             .with_view_change(UiView::Town),
     };
     let no_button = SlideButton {
