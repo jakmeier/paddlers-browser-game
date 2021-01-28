@@ -316,6 +316,18 @@
                   "ofType": null
                 }
               }
+            },
+            {
+              "args": [],
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
+              "name": "sender",
+              "type": {
+                "kind": "OBJECT",
+                "name": "GqlHobo",
+                "ofType": null
+              }
             }
           ],
           "inputFields": null,
@@ -1587,6 +1599,22 @@
                 "ofType": {
                   "kind": "SCALAR",
                   "name": "Boolean",
+                  "ofType": null
+                }
+              }
+            },
+            {
+              "args": [],
+              "deprecationReason": null,
+              "description": "Field Visibility: public",
+              "isDeprecated": false,
+              "name": "home",
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "OBJECT",
+                  "name": "GqlVillage",
                   "ofType": null
                 }
               }

@@ -49,6 +49,7 @@ pub struct GqlAttack(pub paddlers_shared_lib::models::Attack, PrivacyGuard);
 pub struct GqlAttackReport {
     pub inner: paddlers_shared_lib::models::VisitReport,
     pub rewards: Option<Resources>,
+    pub sender: Option<Option<GqlHobo>>,
     _priv: PrivacyGuard,
 }
 pub struct GqlEffect(pub paddlers_shared_lib::models::Effect, PrivacyGuard);
@@ -203,10 +204,15 @@ impl GqlVillage {
             .map(|report| GqlAttackReport {
                 inner: report,
                 rewards: None,
+                sender: None,
                 _priv: PrivacyGuard,
             })
             .map(|mut rep| {
                 rep.load_rewards(ctx);
+                rep
+            })
+            .map(|mut rep| {
+                rep.load_sender(ctx);
                 rep
             })
             .collect())
@@ -272,6 +278,10 @@ impl GqlHobo {
     /// Field Visibility: public
     pub fn hurried(&self, ctx: &Context) -> bool {
         self.0.hurried
+    }
+    /// Field Visibility: public
+    pub fn home(&self, ctx: &Context) -> GqlVillage {
+        GqlVillage(ctx.db().village(self.0.home()).unwrap())
     }
     /// Field Visibility: public
     pub fn idle(&self, ctx: &Context) -> bool {

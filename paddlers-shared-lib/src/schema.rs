@@ -236,6 +236,7 @@ table! {
         village_id -> Int8,
         reported -> Timestamp,
         karma -> Int8,
+        sender -> Nullable<Int8>,
     }
 }
 
@@ -287,6 +288,7 @@ joinable!(tasks -> hobos (target_hobo_id));
 joinable!(tasks -> workers (worker_id));
 joinable!(villages -> players (player_id));
 joinable!(villages -> streams (stream_id));
+joinable!(visit_reports -> hobos (sender));
 joinable!(visit_reports -> villages (village_id));
 joinable!(worker_flags -> workers (worker_id));
 joinable!(workers -> villages (home));

@@ -16,6 +16,12 @@ impl Worker {
     }
 }
 
+impl Hobo {
+    pub fn home(&self) -> VillageKey {
+        VillageKey(self.home)
+    }
+}
+
 impl Village {
     pub fn owner(&self) -> Option<PlayerKey> {
         Some(PlayerKey(self.player_id?))
@@ -25,6 +31,9 @@ impl Village {
 impl VisitReport {
     pub fn village(&self) -> VillageKey {
         VillageKey(self.village_id)
+    }
+    pub fn sender(&self) -> Option<HoboKey> {
+        self.sender.map(HoboKey)
     }
 }
 

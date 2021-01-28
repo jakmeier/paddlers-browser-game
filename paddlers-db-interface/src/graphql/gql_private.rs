@@ -77,12 +77,25 @@ impl GqlAttackReport {
     fn resources(&self) -> &Resources {
         self.rewards.as_ref().unwrap()
     }
+    fn sender(&self) -> Option<&GqlHobo> {
+        self.sender.as_ref().unwrap().as_ref()
+    }
 }
 impl GqlAttackReport {
     pub fn load_rewards(&mut self, ctx: &Context) {
         if self.rewards.is_none() {
             let db = ctx.db();
             self.rewards = Some(db.rewards(self.inner.key()).into())
+        }
+    }
+    pub fn load_sender(&mut self, ctx: &Context) {
+        if self.sender.is_none() {
+            let db = ctx.db();
+            if let Some(sender_id) = self.inner.sender() {
+                self.sender = Some(Some(GqlHobo(db.hobo(sender_id).unwrap())));
+            } else {
+                self.sender = Some(None)
+            }
         }
     }
 }

@@ -289,3 +289,11 @@ pub fn hobo_sprite_sad(color: UnitColor) -> SingleSprite {
         UnitColor::Prophet => SingleSprite::Prophet,
     }
 }
+pub fn hobo_sprite_happy(color: UnitColor) -> SingleSprite {
+    match color {
+        UnitColor::Yellow => SingleSprite::DuckHappy,
+        UnitColor::White => SingleSprite::WhiteDuckHappy,
+        UnitColor::Camo => SingleSprite::CamoDuckHappy,
+        UnitColor::Prophet => SingleSprite::Prophet,
+    }
+}

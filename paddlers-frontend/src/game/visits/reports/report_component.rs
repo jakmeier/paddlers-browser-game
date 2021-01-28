@@ -1,4 +1,7 @@
-use crate::{gui::gui_components::*, net::game_master_api::RestApiState};
+use crate::{
+    gui::{gui_components::*, sprites::Sprites},
+    net::game_master_api::RestApiState,
+};
 
 use super::{RemoveReport, Report};
 use mogwai::prelude::*;
@@ -54,8 +57,12 @@ impl Component for Report {
         if self.logs > 0 {
             nodes.push(mogwai_res_node(self.logs, ResourceType::Logs));
         }
+
+        let img = self.sender_image.map(Sprites::new_image_node_builder);
+
         let builder = builder!(
             <div class="letter">
+                <div class="sender"> { img } </div>
                 <p> { self.text } </p>
                 { nodes.get(0).cloned() }
                 { nodes.get(1).cloned() }

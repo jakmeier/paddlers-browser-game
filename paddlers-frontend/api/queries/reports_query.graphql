@@ -8,6 +8,15 @@ query ReportsQuery($min_report_id: Int, $village_id: Int!) {
         sticks
         logs
       }
+      sender {
+        color
+        home {
+          id
+          owner {
+            displayName
+          }
+        }
+      }
     }
   }
 }

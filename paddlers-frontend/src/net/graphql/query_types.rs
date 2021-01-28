@@ -272,6 +272,18 @@ impl Into<UnitColor> for &attacks_query::UnitColor {
     }
 }
 
+impl Into<UnitColor> for &reports_query::UnitColor {
+    fn into(self) -> UnitColor {
+        match self {
+            reports_query::UnitColor::YELLOW => UnitColor::Yellow,
+            reports_query::UnitColor::WHITE => UnitColor::White,
+            reports_query::UnitColor::CAMO => UnitColor::Camo,
+            reports_query::UnitColor::PROPHET => UnitColor::Prophet,
+            reports_query::UnitColor::Other(_) => panic!("Unexpected unit color"),
+        }
+    }
+}
+
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "api/schema.json",
@@ -331,3 +343,4 @@ impl Into<StoryState> for PlayerStoryState {
 )]
 pub struct ReportsQuery;
 pub type ReportsResponse = reports_query::ResponseData;
+pub type ReportsResponseReport = reports_query::ReportsQueryVillageReports;

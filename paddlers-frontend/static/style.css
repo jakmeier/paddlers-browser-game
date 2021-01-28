@@ -1,4 +1,5 @@
-body, a {
+body,
+a {
     font-family: manjari;
     color: white;
 }
@@ -48,7 +49,7 @@ div.attack-table {
     padding: 10px;
 }
 
-div.attack-table>:first-child ,
+div.attack-table>:first-child,
 section.letters>:first-child {
     /* span from grid column line 1 to 4 (3 columns) */
     grid-column: 1 / 4;
@@ -67,6 +68,17 @@ div.letter {
     padding: 4vh;
     margin: 10px;
     border-radius: 33px;
+}
+
+div.letter div.sender {
+    height: 75px;
+    width: auto;
+    text-align: center;
+}
+
+div.letter .sender img {
+    height: 100%;
+    width: auto;
 }
 
 div.letter .button {
@@ -139,6 +151,7 @@ div.quest .condition {
 div.quest .condition-in-progress {
     border-color: black;
 }
+
 div.quest .condition-met {
     border-color: white;
     background-color: #0fa100;
@@ -154,6 +167,7 @@ div.quest .rewards {
     justify-content: center;
     margin: 10px;
 }
+
 div.quest .title {
     font-weight: 600;
 }
@@ -172,6 +186,7 @@ div.quest .button {
     padding: 0.6em;
 }
 
+
 /* MID */
 
 @media screen and (max-width: 1439px) {
@@ -179,6 +194,7 @@ div.quest .button {
         font-size: 20px;
     }
 }
+
 
 /* LOW */
 

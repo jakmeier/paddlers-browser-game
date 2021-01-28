@@ -1,15 +1,21 @@
-use crate::net::NetMsg;
-use crate::prelude::*;
-use crate::resolution::{MAIN_AREA_H, MAIN_AREA_W};
 use crate::{
     game::toplevel::Signal,
     gui::{menu::LEAVES_BORDER_W, utils::colors::LIGHT_BLUE},
+};
+use crate::{
+    game::units::attackers::hobo_sprite_happy,
+    resolution::{MAIN_AREA_H, MAIN_AREA_W},
+};
+use crate::{gui::sprites::SingleSprite, prelude::*};
+use crate::{
+    gui::sprites::SpriteIndex,
+    net::{graphql::ReportsResponseReport, state::current_village, NetMsg},
 };
 use div::doc;
 use mogwai::prelude::*;
 use paddle::{DisplayArea, FrameHandle};
 use paddle::{JsError, NutsCheck};
-use paddlers_shared_lib::prelude::VisitReportKey;
+use paddlers_shared_lib::prelude::{VillageKey, VisitReportKey};
 use web_sys::Node;
 
 mod report_component;
@@ -30,6 +36,7 @@ struct Report {
     feathers: i64,
     sticks: i64,
     logs: i64,
+    sender_image: Option<SpriteIndex>,
 }
 
 impl ReportFrame {
@@ -71,16 +78,6 @@ impl ReportFrame {
         self.reports.push((id, view));
         Ok(())
     }
-    fn letter_text(&self, id: usize) -> &'static str {
-        match id as usize % 5 {
-            0 => "Thank you, was a very enjoyable visit.",
-            1 => "Cheers!",
-            2 => "Thanks for showing me your town.",
-            3 => "See you again soon.",
-            4 => "A lovely place you have there.",
-            _ => unreachable!(),
-        }
-    }
     fn number_of_reports(&self) -> usize {
         self.reports.len()
     }
@@ -89,15 +86,20 @@ impl ReportFrame {
             NetMsg::Reports(data) => {
                 for r in &data.village.reports {
                     let id = r.id.parse().unwrap();
-                    self.add_report(Report {
-                        id: VisitReportKey(id),
-                        karma: r.karma,
-                        feathers: r.resources.feathers,
-                        logs: r.resources.logs,
-                        sticks: r.resources.sticks,
-                        text: self.letter_text(id as usize),
-                    })
-                    .nuts_check();
+                    let report = if let Some(sender) = &r.sender {
+                        let unit_color = match &sender.color {
+                            None => UnitColor::Yellow,
+                            Some(col) => col.into(),
+                        };
+                        if VillageKey(sender.home.id) == current_village() {
+                            Report::inhabitant_letter(id, r, Some(unit_color))
+                        } else {
+                            Report::visitor_letter(id, r, Some(unit_color))
+                        }
+                    } else {
+                        Report::visitor_letter(id, r, None)
+                    };
+                    self.add_report(report).nuts_check();
                 }
             }
             _ => {}
@@ -116,6 +118,43 @@ impl ReportFrame {
     }
 }
 
+impl Report {
+    pub fn visitor_letter(
+        id: i64,
+        r: &ReportsResponseReport,
+        sender_color: Option<UnitColor>,
+    ) -> Self {
+        let sender_image = sender_color.map(|color| SpriteIndex::Simple(hobo_sprite_happy(color)));
+        Report {
+            id: VisitReportKey(id),
+            karma: r.karma,
+            feathers: r.resources.feathers,
+            logs: r.resources.logs,
+            sticks: r.resources.sticks,
+            text: visitor_letter_text(id as usize),
+            sender_image,
+        }
+    }
+    pub fn inhabitant_letter(
+        id: i64,
+        r: &ReportsResponseReport,
+        sender_color: Option<UnitColor>,
+    ) -> Self {
+        let total_res_reward = r.resources.feathers + r.resources.logs + r.resources.sticks;
+        let sender_image =
+            sender_color.map(|_color| SpriteIndex::Simple(SingleSprite::SittingYellowDuck));
+        Report {
+            id: VisitReportKey(id),
+            karma: r.karma,
+            feathers: r.resources.feathers,
+            logs: r.resources.logs,
+            sticks: r.resources.sticks,
+            text: inhabitant_letter_text(id as usize, total_res_reward > 0),
+            sender_image,
+        }
+    }
+}
+
 impl Frame for ReportFrame {
     type State = Game;
     const WIDTH: u32 = MAIN_AREA_W;
@@ -129,5 +168,37 @@ impl Frame for ReportFrame {
     }
     fn leave(&mut self, _state: &mut Self::State) {
         self.pane.hide().nuts_check();
+    }
+}
+
+fn visitor_letter_text(id: usize) -> &'static str {
+    match id as usize % 5 {
+        0 => "Thank you, was a very enjoyable visit.",
+        1 => "Cheers!",
+        2 => "Thanks for showing me your town.",
+        3 => "See you again soon.",
+        4 => "A lovely place you have there.",
+        _ => unreachable!(),
+    }
+}
+fn inhabitant_letter_text(id: usize, has_reward: bool) -> &'static str {
+    if has_reward {
+        match id as usize % 5 {
+            0 => "Please accept this present.",
+            1 => "For you, my lord.",
+            2 => "With sincerest gratitude.",
+            3 => "I wish I could give more.",
+            4 => "For you will know best how to use this.",
+            _ => unreachable!(),
+        }
+    } else {
+        match id as usize % 5 {
+            0 => "Thank you for my home.",
+            1 => "Praise upon you!",
+            2 => "I wish I could spare you a sacrifice but I'm broke...",
+            3 => "Cheers, mate.",
+            4 => "😁",
+            _ => unreachable!(),
+        }
     }
 }

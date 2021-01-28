@@ -38,17 +38,18 @@ impl DB {
         }
     }
     fn collect_taxes(&self, village: Village, seed: u8) {
-        let mut report = NewVisitReport {
-            village_id: village.id,
-            karma: 0,
-        };
         let hobos = self.hobos(village.key());
-        if hobos.len() == 0 {
-            return;
-        }
-        let mut feathers = 0;
-        let mut logs = 0;
         for hobo in &hobos {
+            let mut report = NewVisitReport {
+                sender: Some(hobo.id),
+                village_id: village.id,
+                karma: 0,
+            };
+            if hobos.len() == 0 {
+                return;
+            }
+            let mut feathers = 0;
+            let mut logs = 0;
             report.karma += 1;
             match (hobo.id.wrapping_mul(seed as i64).abs() + seed as i64) % 255 {
                 0 => feathers += 3,
@@ -56,7 +57,7 @@ impl DB {
                 11..60 => feathers += 1,
                 _ => {}
             }
+            self.add_new_report(report, feathers, 0, logs);
         }
-        self.add_new_report(report, feathers, 0, logs);
     }
 }

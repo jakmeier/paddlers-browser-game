@@ -83,12 +83,14 @@ impl DB {
     }
 
     fn generate_report(&self, atk: &Attack) {
+        let happy_hobos = self.attack_hobos_satisfied(atk);
+
         let mut report = NewVisitReport {
+            sender: happy_hobos.first().map(|hobo| hobo.id),
             village_id: atk.destination_village_id,
             karma: 0,
         };
 
-        let happy_hobos = self.attack_hobos_satisfied(atk);
         report.karma = happy_hobos.len() as i64;
 
         use std::ops::Add;

@@ -377,6 +377,7 @@ pub struct VisitReport {
     pub village_id: i64,
     pub reported: NaiveDateTime,
     pub karma: i64,
+    pub sender: Option<i64>,
     // letter text, icon, ...
 }
 
@@ -386,6 +387,7 @@ pub struct VisitReport {
 pub struct NewVisitReport {
     pub village_id: i64,
     pub karma: i64,
+    pub sender: Option<i64>,
 }
 
 #[derive(Debug, Clone, Copy, Queryable)]
