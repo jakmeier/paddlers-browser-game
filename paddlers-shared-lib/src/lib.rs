@@ -1,4 +1,6 @@
 #![feature(trivial_bounds)]
+#![feature(const_in_array_repeat_expressions)]
+#![feature(const_fn)]
 #[cfg(feature = "sql_db")]
 #[macro_use]
 extern crate diesel;
@@ -18,17 +20,19 @@ pub mod macros;
 pub mod api;
 pub mod civilization;
 pub mod config;
+pub mod const_list;
 pub mod display;
 pub mod generated;
 pub mod graphql_types;
 pub mod models;
 pub mod prelude;
 pub mod shared_types;
-pub mod story;
 pub mod test_data;
 
 #[cfg(feature = "game_mechanics")]
 pub mod game_mechanics;
+#[cfg(feature = "game_mechanics")]
+pub mod story;
 
 #[cfg(feature = "sql_db")]
 pub mod schema;

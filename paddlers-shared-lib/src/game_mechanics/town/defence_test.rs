@@ -148,8 +148,8 @@ impl IAttackingHobo for TestHobo {
     fn hurried(&self) -> bool {
         self.hurried
     }
-    fn arrival(&self) -> Timestamp {
-        self.arrival
+    fn start_of_fight(&self) -> Option<Timestamp> {
+        Some(self.arrival)
     }
     fn released(&self) -> Option<Timestamp> {
         self.released

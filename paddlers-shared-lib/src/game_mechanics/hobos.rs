@@ -1,9 +1,35 @@
-// TODO [0.1.5] Move to better place, maybe a separate specification / balancing crate.
+mod visitor_groups;
+pub use visitor_groups::*;
 
+#[derive(Copy, Clone, Debug)]
 pub struct HoboLevel(usize);
+#[derive(Copy, Clone, Debug)]
+pub enum HoboType {
+    Yellow,
+    Camo,
+    White,
+    Prophet,
+}
+
+#[derive(Copy, Clone, Debug)]
+pub struct VisitorDefinition {
+    typ: HoboType,
+    level: HoboLevel,
+    hurried: bool,
+}
+
+impl VisitorDefinition {
+    pub const fn new(typ: HoboType, level: HoboLevel, hurried: bool) -> Self {
+        Self {
+            typ,
+            hurried,
+            level,
+        }
+    }
+}
 
 impl HoboLevel {
-    pub fn zero() -> Self {
+    pub const fn zero() -> Self {
         HoboLevel(0)
     }
     pub fn anarchist(player_karma: i64) -> Self {
