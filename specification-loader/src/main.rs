@@ -13,12 +13,18 @@ fn main() {
         )
         .subcommand(
             SubCommand::with_name("generate")
-                .before_help("Generates some enums from specifications.")
+                .before_help("Generates some files from specifications.")
+                .arg(
+                    Arg::with_name("GENERATION_TARGET")
+                        .required(true)
+                        .index(1)
+                        .help("{enum, chart}"),
+                )
                 .arg(
                     Arg::with_name("OUTPUT_DIR")
                         .required(true)
-                        .index(1)
-                        .help("Path where generated filed will go."),
+                        .index(2)
+                        .help("Path where generated files will go."),
                 ),
         )
         .get_matches();
@@ -29,9 +35,21 @@ fn main() {
         upload_quests(&db, open_file(file).unwrap());
     }
     if let Some(matches) = matches.subcommand_matches("generate") {
-        let path = matches.value_of("OUTPUT_DIR").unwrap();
-        let mut quest_rs = write_file(&(path.to_owned() + "/quest.rs")).unwrap();
-        gen::generate_quest_enum(&mut quest_rs).unwrap();
+        match matches.value_of("GENERATION_TARGET").unwrap() {
+            "enum" => {
+                let path = matches.value_of("OUTPUT_DIR").unwrap();
+                let mut quest_rs = write_file(&(path.to_owned() + "/quest.rs")).unwrap();
+                gen::generate_quest_enum(&mut quest_rs).unwrap();
+            }
+            "chart" => {
+                let path = matches.value_of("OUTPUT_DIR").unwrap();
+                let mut story_dot = write_file(&(path.to_owned() + "/story.dot")).unwrap();
+                gen::generate_dot_story_diagram(&mut story_dot).unwrap();
+            }
+            target => {
+                eprintln!("Unknown generation target: {}", target)
+            }
+        }
     }
 }
 

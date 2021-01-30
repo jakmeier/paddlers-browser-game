@@ -1,6 +1,7 @@
 
 REPO=jakmeier/paddlers
 LOCAL=jakmeier/paddlers-local
+DOT := $(shell command -v dot 2> /dev/null)
 
 build-and-run: build
 	make run
@@ -85,6 +86,9 @@ images:
 	$(MAKE) -C paddlers-frontend images
 
 # Code generation
-.PHONY: shared-lib-generated-code
-shared-lib-generated-code:
-	cd specification-loader; cargo +nightly run -- generate ../paddlers-shared-lib/src/generated
+.PHONY: generate-files-from-specifications
+generate-files-from-specifications:
+	cd specification-loader; cargo +nightly run -- generate enum ../paddlers-shared-lib/src/generated
+	cd specification-loader; cargo +nightly run -- generate chart ../specification
+# If this fails, install graphviz  (e.g. sudo apt-get install graphviz)
+	cd specification; dot -Tsvg story.dot > story.svg

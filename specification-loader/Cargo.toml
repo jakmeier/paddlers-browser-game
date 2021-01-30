@@ -5,7 +5,7 @@ authors = ["jakmeier <jakmeier@student.ethz.ch>"]
 edition = "2018"
 
 [dependencies]
-paddlers-shared-lib = { path = "../paddlers-shared-lib",  features = ["sql_db"] }
+paddlers-shared-lib = { path = "../paddlers-shared-lib",  features = ["sql_db", "enum_utils"] }
 serde = { version = "1.0", features = ["derive"] }
 ron = { version = "0.6" }
 clap = "2.33"

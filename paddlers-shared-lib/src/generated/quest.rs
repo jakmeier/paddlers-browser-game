@@ -1,5 +1,5 @@
 //! This module has been auto-generate using specification loader.
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone,Copy,Debug)]
 pub enum QuestName {
     HelloWorld,
     CreateForest,
@@ -14,12 +14,5 @@ impl QuestName {
             Self::BuildBundligStation => "build-bundlig-station",
             Self::UseBundligStation => "use-bundlig-station",
         }
-    }
-}
-
-// Pseudo const-trait
-impl QuestName {
-    pub const fn const_eq(self, other: Self) -> bool {
-        self as usize == other as usize
     }
 }

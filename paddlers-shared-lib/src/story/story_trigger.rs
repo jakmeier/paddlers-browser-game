@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 pub type StoryTriggerList = ConstList<StoryTrigger>;
 
 /// Event that can trigger a story transition
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug)]
 pub enum StoryTrigger {
     /// Client acknowledges that player went through the blocking UI states of the current story
     DialogueStoryTrigger,
