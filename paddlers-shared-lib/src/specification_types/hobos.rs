@@ -1,6 +1,3 @@
-mod visitor_groups;
-pub use visitor_groups::*;
-
 #[derive(Copy, Clone, Debug)]
 pub struct HoboLevel(usize);
 #[derive(Copy, Clone, Debug)]

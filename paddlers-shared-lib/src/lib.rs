@@ -27,12 +27,12 @@ pub mod graphql_types;
 pub mod models;
 pub mod prelude;
 pub mod shared_types;
+pub mod specification_types;
+pub mod story;
 pub mod test_data;
 
 #[cfg(feature = "game_mechanics")]
 pub mod game_mechanics;
-#[cfg(feature = "game_mechanics")]
-pub mod story;
 
 #[cfg(feature = "sql_db")]
 pub mod schema;

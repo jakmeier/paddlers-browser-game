@@ -12,7 +12,7 @@ use crate::db::*;
 use crate::game_master::attack_spawn::{AttackSpawner, SendAnarchistAttack};
 use actix::prelude::*;
 use chrono::NaiveDateTime;
-use paddlers_shared_lib::game_mechanics::hobos::HoboLevel;
+use paddlers_shared_lib::specification_types::HoboLevel;
 use paddlers_shared_lib::game_mechanics::town::TOWN_X;
 use paddlers_shared_lib::prelude::*;
 use paddlers_shared_lib::sql::GameDB;

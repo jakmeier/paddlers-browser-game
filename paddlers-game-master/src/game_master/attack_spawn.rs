@@ -4,7 +4,7 @@ use crate::db::*;
 use crate::game_master::attack_funnel::{AttackFunnel, PlannedAttack};
 use actix::prelude::*;
 use futures::future::join_all;
-use paddlers_shared_lib::game_mechanics::hobos::HoboLevel;
+use paddlers_shared_lib::specification_types::HoboLevel;
 use paddlers_shared_lib::prelude::*;
 use rand::Rng;
 

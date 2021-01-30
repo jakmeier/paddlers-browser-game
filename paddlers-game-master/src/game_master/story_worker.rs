@@ -60,15 +60,23 @@ impl StoryWorkerMessage {
 impl Handler<StoryWorkerMessage> for StoryWorker {
     type Result = ();
     fn handle(&mut self, msg: StoryWorkerMessage, _ctx: &mut Context<Self>) {
-        let (next, actions) = msg.confirmed_current_story_state.transition(&msg.trigger);
-        for action in actions.iter() {
+        let transition = msg.confirmed_current_story_state.transition(&msg.trigger);
+        if transition.is_none() {
+            eprintln!(
+                "Invalid transition attempt: {:?} --- {:?} ---> ???",
+                msg.confirmed_current_story_state, msg.trigger
+            );
+            return;
+        }
+        let t = transition.unwrap();
+        for action in t.actions.into_iter() {
             match action {
                 paddlers_shared_lib::story::story_action::StoryAction::StartQuest(q) => {
                     self.db_actor
-                        .do_send(DeferredDbStatement::AssignQuest(msg.player, *q));
+                        .do_send(DeferredDbStatement::AssignQuest(msg.player, q));
                 }
-                paddlers_shared_lib::story::story_action::StoryAction::SendHobo => {
-                    // TODO: Define attack wave
+                paddlers_shared_lib::story::story_action::StoryAction::SendHobo(_) => {
+                    // TODO: send defined attack wave
                     // For now: Send one hard-coded hobo
                     let village_lookup = PlayerHomeLookup { player: msg.player };
 
@@ -79,8 +87,7 @@ impl Handler<StoryWorkerMessage> for StoryWorker {
                         .and_then(move |PlayerHome(village)| {
                             let msg = SendAnarchistAttack {
                                 village,
-                                level: paddlers_shared_lib::game_mechanics::hobos::HoboLevel::zero(
-                                ),
+                                level: paddlers_shared_lib::specification_types::HoboLevel::zero(),
                             };
                             attack_spawner.send(msg)
                         })
@@ -89,9 +96,9 @@ impl Handler<StoryWorkerMessage> for StoryWorker {
                 }
             }
         }
-        if next != msg.confirmed_current_story_state {
+        if t.next_state != msg.confirmed_current_story_state {
             self.db_actor
-                .do_send(DeferredDbStatement::PlayerUpdate(msg.player, next));
+                .do_send(DeferredDbStatement::PlayerUpdate(msg.player, t.next_state));
         }
     }
 }

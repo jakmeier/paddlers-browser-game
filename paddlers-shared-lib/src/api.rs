@@ -6,10 +6,8 @@ pub mod quests;
 pub mod reports;
 pub mod shop;
 pub mod statistics;
-pub mod tasks;
-
-#[cfg(feature = "game_mechanics")]
 pub mod story;
+pub mod tasks;
 
 use serde::*;
 

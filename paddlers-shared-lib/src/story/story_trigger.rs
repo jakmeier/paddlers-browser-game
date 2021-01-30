@@ -1,8 +1,11 @@
-use crate::generated::QuestName;
 use crate::prelude::BuildingType;
+use crate::{const_list::ConstList, generated::QuestName};
 use serde::{Deserialize, Serialize};
 
+pub type StoryTriggerList = ConstList<StoryTrigger>;
+
 /// Event that can trigger a story transition
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum StoryTrigger {
     /// Client acknowledges that player went through the blocking UI states of the current story
     DialogueStoryTrigger,
@@ -22,5 +25,12 @@ pub struct StoryChoice {
 impl StoryChoice {
     pub fn new(chosen_option: u8) -> Self {
         Self { chosen_option }
+    }
+}
+
+// Pseudo const-trait
+impl StoryChoice {
+    pub const fn const_eq(self, other: Self) -> bool {
+        self.chosen_option == other.chosen_option
     }
 }
