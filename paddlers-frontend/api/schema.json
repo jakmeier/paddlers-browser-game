@@ -2216,7 +2216,7 @@
             {
               "args": [],
               "deprecationReason": null,
-              "description": null,
+              "description": "X-coordinate within the town",
               "isDeprecated": false,
               "name": "x",
               "type": {
@@ -2232,9 +2232,25 @@
             {
               "args": [],
               "deprecationReason": null,
-              "description": null,
+              "description": "Y-coordinate within the town",
               "isDeprecated": false,
               "name": "y",
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "Int",
+                  "ofType": null
+                }
+              }
+            },
+            {
+              "args": [],
+              "deprecationReason": null,
+              "description": "Upgrade level of the building",
+              "isDeprecated": false,
+              "name": "level",
               "type": {
                 "kind": "NON_NULL",
                 "name": null,
@@ -2264,7 +2280,7 @@
             {
               "args": [],
               "deprecationReason": null,
-              "description": null,
+              "description": "range for attack aura",
               "isDeprecated": false,
               "name": "buildingRange",
               "type": {
@@ -2276,7 +2292,7 @@
             {
               "args": [],
               "deprecationReason": null,
-              "description": null,
+              "description": "only relevant if range is defined",
               "isDeprecated": false,
               "name": "attackPower",
               "type": {
@@ -2288,7 +2304,7 @@
             {
               "args": [],
               "deprecationReason": null,
-              "description": null,
+              "description": "unused",
               "isDeprecated": false,
               "name": "attacksPerCycle",
               "type": {
@@ -2300,7 +2316,7 @@
             {
               "args": [],
               "deprecationReason": null,
-              "description": null,
+              "description": "Timestamp of when building was built",
               "isDeprecated": false,
               "name": "creation",
               "type": {

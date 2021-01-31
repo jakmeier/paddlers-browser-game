@@ -14,6 +14,7 @@ impl BuildingFactory {
             attacks_per_cycle: typ.attacks_per_cycle().map(|i| i as i32),
             creation: now,
             village_id: village.num(),
+            lv: 1,
         }
     }
 }

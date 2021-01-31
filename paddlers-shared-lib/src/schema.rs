@@ -49,6 +49,7 @@ table! {
         attacks_per_cycle -> Nullable<Int4>,
         creation -> Timestamp,
         village_id -> Int8,
+        lv -> Int4,
     }
 }
 

@@ -5,6 +5,7 @@ query BuildingsQuery($village_id: Int!) {
       id
       x
       y
+      level
       buildingType
       buildingRange
       attackPower

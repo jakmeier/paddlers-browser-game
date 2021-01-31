@@ -224,24 +224,34 @@ impl GqlBuilding {
     fn id(&self) -> juniper::ID {
         self.0.id.to_string().into()
     }
+    /// X-coordinate within the town
     fn x(&self) -> i32 {
         self.0.x
     }
+    /// Y-coordinate within the town
     fn y(&self) -> i32 {
         self.0.y
+    }
+    /// Upgrade level of the building
+    fn level(&self) -> i32 {
+        self.0.lv
     }
     fn building_type(&self) -> &paddlers_shared_lib::models::BuildingType {
         &self.0.building_type
     }
+    /// range for attack aura
     fn building_range(&self) -> Option<f64> {
         self.0.building_range.map(f64::from)
     }
+    /// only relevant if range is defined
     fn attack_power(&self) -> Option<f64> {
         self.0.attack_power.map(f64::from)
     }
+    /// unused
     fn attacks_per_cycle(&self) -> Option<i32> {
         self.0.attacks_per_cycle
     }
+    /// Timestamp of when building was built
     fn creation(&self) -> FieldResult<GqlTimestamp> {
         datetime(&self.0.creation)
     }

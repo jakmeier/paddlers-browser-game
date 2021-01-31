@@ -182,6 +182,7 @@ pub struct Building {
     pub attacks_per_cycle: Option<i32>,
     pub creation: NaiveDateTime,
     pub village_id: i64,
+    pub lv: i32,
 }
 
 #[cfg(feature = "sql_db")]
@@ -196,6 +197,7 @@ pub struct NewBuilding {
     pub attacks_per_cycle: Option<i32>,
     pub creation: NaiveDateTime,
     pub village_id: i64,
+    pub lv: i32,
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Serialize, Deserialize)]
