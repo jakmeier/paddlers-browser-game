@@ -5,7 +5,7 @@ pub use messages::*;
 
 use crate::db::*;
 use actix::prelude::*;
-use paddlers_shared_lib::story::story_state::StoryState;
+use paddlers_shared_lib::{game_mechanics::worker::hero_max_mana, story::story_state::StoryState};
 
 /// This actor executes DB requests which can be done concurrent to
 /// the request processing or game-master logic.
@@ -15,7 +15,7 @@ pub struct DbActor {
 
 impl Handler<DeferredDbStatement> for DbActor {
     type Result = ();
-    fn handle(&mut self, msg: DeferredDbStatement, _ctx: &mut SyncContext<Self>) {
+    fn handle(&mut self, msg: DeferredDbStatement, ctx: &mut SyncContext<Self>) {
         match msg {
             DeferredDbStatement::NewProphet(village) => {
                 self.db().add_prophet(village);
@@ -34,7 +34,7 @@ impl Handler<DeferredDbStatement> for DbActor {
             }
             DeferredDbStatement::AssignQuest(player, quest_name) => {
                 let db = self.db();
-                // Potential for optimazion: Keep quest assignment cached in memory (probably in a separate actor)
+                // Potential for optimization: Keep quest assignment cached in memory (probably in a separate actor)
                 if let Err(e) = db
                     .quest_by_name(quest_name)
                     .and_then(|quest| db.assign_player_quest(player, quest.key()))
@@ -44,6 +44,20 @@ impl Handler<DeferredDbStatement> for DbActor {
             }
             DeferredDbStatement::PlayerUpdate(player, new_story_state) => {
                 if let Err(e) = self.db().set_story_state(player, new_story_state) {
+                    eprintln!("Player update failed: {}", e);
+                }
+            }
+            DeferredDbStatement::AddMana(player, added_mana) => {
+                let PlayerHome(village) = self.handle(PlayerHomeLookup { player }, ctx);
+                let db = self.db();
+                if let Some(hero) = db.hero(village) {
+                    db.add_worker_mana(hero.key(), added_mana as i32, hero_max_mana())
+                } else {
+                    eprintln!("Player has no hero: {:?}", player);
+                }
+            }
+            DeferredDbStatement::UnlockCivPerk(player, perk) => {
+                if let Err(e) = self.db().unlock_civ_perk(player, perk) {
                     eprintln!("Player update failed: {}", e);
                 }
             }

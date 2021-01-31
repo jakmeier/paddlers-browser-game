@@ -1,8 +1,9 @@
 use super::*;
-use diesel::prelude::*;
-use paddlers_shared_lib::models::dsl;
-use paddlers_shared_lib::schema::*;
-use paddlers_shared_lib::story::story_state::StoryState;
+use diesel::*;
+use paddlers_shared_lib::{
+    civilization::CivilizationPerk, civilization::CivilizationPerks, models::dsl, schema::*,
+    story::story_state::StoryState,
+};
 
 impl DB {
     pub fn insert_player(&self, u: &NewPlayer) -> QueryResult<Player> {
@@ -14,6 +15,17 @@ impl DB {
         let target = players::table.find(p.num());
         diesel::update(target)
             .set(players::story_state.eq(story_state))
+            .get_result(self.dbconn())
+    }
+    pub fn unlock_civ_perk(&self, p: PlayerKey, perk: CivilizationPerk) -> QueryResult<Player> {
+        let target = players::table.find(p.num());
+        let mut new_perks = CivilizationPerks::new(0);
+        new_perks.set(perk);
+        let mask = new_perks.encode() as i64;
+        // This should be done with bitwise or (|) instead of an additional lookup. It seems not supported in diesel out-of-the-box. However, `diesel_infix_operator!` should offer a solution, but is it worth it? (I tried for ~30min and then gave up.)
+        let old_value = self.player(p).unwrap().civ_perks;
+        diesel::update(target)
+            .set(players::civ_perks.eq(mask | old_value))
             .get_result(self.dbconn())
     }
 

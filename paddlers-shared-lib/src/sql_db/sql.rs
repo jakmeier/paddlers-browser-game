@@ -84,6 +84,15 @@ pub trait GameDB {
             .expect("Error loading data");
         results
     }
+    fn hero(&self, village: VillageKey) -> Option<Worker> {
+        // Now (0.2) there is only one worker allowed in a town, which has to be the hero.
+        let result = workers::table
+            .filter(workers::home.eq(village.num()))
+            .first::<Worker>(self.dbconn())
+            .optional()
+            .expect("Error loading data");
+        result
+    }
     fn count_workers_at_pos_doing_job(
         &self,
         village: VillageKey,

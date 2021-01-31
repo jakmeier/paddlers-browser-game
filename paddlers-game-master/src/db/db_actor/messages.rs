@@ -1,16 +1,18 @@
 use actix::dev::{MessageResponse, ResponseChannel};
 use actix::prelude::*;
-use paddlers_shared_lib::{generated::QuestName, prelude::*, story::story_state::StoryState};
+use paddlers_shared_lib::{civilization::CivilizationPerk, generated::QuestName, prelude::*, story::story_state::StoryState};
 
 #[derive(Debug)]
 /// Deferred DB requests should not be dependent on the state of the DB
 /// and instead be logically guaranteed to work. For example, the resource
 /// price should already be payed before-hand.
 pub enum DeferredDbStatement {
-    NewProphet(VillageKey),
-    NewAttack(ScheduledAttack),
+    AddMana(PlayerKey, i16),
     AssignQuest(PlayerKey, QuestName),
+    NewAttack(ScheduledAttack),
+    NewProphet(VillageKey),
     PlayerUpdate(PlayerKey, StoryState),
+    UnlockCivPerk(PlayerKey, CivilizationPerk),
 }
 impl Message for DeferredDbStatement {
     type Result = ();
