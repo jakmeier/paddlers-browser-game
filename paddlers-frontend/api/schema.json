@@ -1802,36 +1802,6 @@
               "deprecationReason": null,
               "description": null,
               "isDeprecated": false,
-              "name": "FLOWER_PLANTED"
-            },
-            {
-              "deprecationReason": null,
-              "description": null,
-              "isDeprecated": false,
-              "name": "MORE_HAPPY_VISITORS"
-            },
-            {
-              "deprecationReason": null,
-              "description": null,
-              "isDeprecated": false,
-              "name": "TREE_PLANTED"
-            },
-            {
-              "deprecationReason": null,
-              "description": null,
-              "isDeprecated": false,
-              "name": "STICK_GATHERING_STATION_BUILD"
-            },
-            {
-              "deprecationReason": null,
-              "description": null,
-              "isDeprecated": false,
-              "name": "GATHERING_STICKS"
-            },
-            {
-              "deprecationReason": null,
-              "description": null,
-              "isDeprecated": false,
               "name": "PICKING_PRIMARY_CIV_BONUS"
             },
             {
@@ -1850,19 +1820,25 @@
               "deprecationReason": null,
               "description": null,
               "isDeprecated": false,
-              "name": "PICKING_SECONDARY_CIV_BONUS"
+              "name": "DIALOGUE_BALANCE_A"
             },
             {
               "deprecationReason": null,
               "description": null,
               "isDeprecated": false,
-              "name": "SOLVING_SECONDARY_QUEST_PART_A"
+              "name": "DIALOGUE_BALANCE_B"
             },
             {
               "deprecationReason": null,
               "description": null,
               "isDeprecated": false,
-              "name": "SOLVING_SECONDARY_QUEST_PART_B"
+              "name": "SOLVING_SECONDARY_QUEST_A"
+            },
+            {
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
+              "name": "SOLVING_SECONDARY_QUEST_B"
             },
             {
               "deprecationReason": null,
@@ -3078,18 +3054,6 @@
                   "name": "String",
                   "ofType": null
                 }
-              }
-            },
-            {
-              "args": [],
-              "deprecationReason": null,
-              "description": null,
-              "isDeprecated": false,
-              "name": "nextStoryState",
-              "type": {
-                "kind": "ENUM",
-                "name": "StoryState",
-                "ofType": null
               }
             },
             {

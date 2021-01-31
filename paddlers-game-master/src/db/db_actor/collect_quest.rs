@@ -11,9 +11,9 @@ impl Handler<CollectQuestMessage> for DbActor {
                 eprintln!("Reward collection failed: {}", e);
             }
         }
-        if let Some(story_state) = msg.next_story_state {
-            if let Err(e) = db.set_story_state(msg.player, story_state) {
-                eprintln!("Setting new story state failed: {}", e);
+        if let Some(quest) = msg.follow_up_quest {
+            if let Err(e) = db.assign_player_quest(msg.player, quest) {
+                eprintln!("Assigning follow up quest failed: {}", e);
             }
         }
         db.delete_player_quest(msg.player, msg.quest);

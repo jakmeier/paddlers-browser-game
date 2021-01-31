@@ -1,6 +1,6 @@
 use clap::{App, Arg, SubCommand};
 use diesel::PgConnection;
-use std::io::{BufRead, Read};
+use std::io::{BufRead, Read, Write};
 
 mod gen;
 mod quest;
@@ -38,8 +38,12 @@ fn main() {
         match matches.value_of("GENERATION_TARGET").unwrap() {
             "enum" => {
                 let path = matches.value_of("OUTPUT_DIR").unwrap();
+                let backup = std::fs::read_to_string(path.to_owned() + "/quest.rs").unwrap();
                 let mut quest_rs = write_file(&(path.to_owned() + "/quest.rs")).unwrap();
-                gen::generate_quest_enum(&mut quest_rs).unwrap();
+                if let Err(e) = gen::generate_quest_enum(&mut quest_rs) {
+                    eprintln!("\x1b[031mFailed generating quest enum: {}\x1b[0m", e);
+                    write!(quest_rs, "{}", backup).unwrap();
+                }
             }
             "chart" => {
                 let path = matches.value_of("OUTPUT_DIR").unwrap();

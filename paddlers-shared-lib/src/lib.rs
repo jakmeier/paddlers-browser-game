@@ -35,6 +35,7 @@ pub mod test_data;
 pub mod game_mechanics;
 
 #[cfg(feature = "sql_db")]
+#[allow(unused_imports)]
 pub mod schema;
 
 #[cfg(feature = "sql_db")]

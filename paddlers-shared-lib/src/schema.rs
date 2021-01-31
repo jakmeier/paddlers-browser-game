@@ -159,8 +159,9 @@ table! {
     quests (id) {
         id -> Int8,
         quest_key -> Varchar,
-        next_story_state -> Nullable<Story_state_type>,
         karma_condition -> Nullable<Int8>,
+        pop_condition -> Nullable<Int8>,
+        follow_up_quest -> Nullable<Varchar>,
     }
 }
 

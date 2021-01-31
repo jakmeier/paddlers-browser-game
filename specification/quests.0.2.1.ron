@@ -1,8 +1,8 @@
 #![enable(implicit_some)]
 [
+    /* LINEAR STARTER QUESTS */
     (
         quest_key: "hello-world",
-        next_story_state: FirstVisitorWelcomed,
         condition: (
             karma: 1,
         ),
@@ -13,7 +13,6 @@
     ),
     (
         quest_key: "create-forest",
-        next_story_state: TreePlanted,
         condition: (
             buildings: {
                 Tree: 3,
@@ -26,8 +25,7 @@
         )
     ),
     (
-        quest_key: "build-bundlig-station",
-        next_story_state: StickGatheringStationBuild,
+        quest_key: "build-bundling-station",
         condition: (
             buildings: {
                 BundlingStation: 1,
@@ -37,17 +35,49 @@
         )
     ),
     (
-        quest_key: "use-bundlig-station",
-        next_story_state: GatheringSticks,
+        quest_key: "use-bundling-station",
         condition: (
             workers: {
                 GatherSticks: 1,
             }
         ),
         reward: (
-            resources: {
-                Sticks: 100,
-            },
+            resources: { Sticks: 5 },
+        )
+    ),
+    /* PATH WITH INVITATION PERK */
+    (
+        quest_key: "socialize",
+        karma_condition: 8,
+        condition: (),
+        reward: (
+            resources: { Logs: 10 }, // This should correspond to something help upgrade watergate
+        )
+    ),
+    (
+        quest_key: "socialize-more",
+        karma_condition: 53,
+        condition: (),
+        reward: (
+            resources: { Sticks: 5, Feathers: 5, },
+        )
+    ),
+    /* PATH WITH NEST PERK */
+    (
+        quest_key: "build-nest",
+        condition: (
+            buildings: { SingleNest: 1 }
+        ),
+        reward: (
+            resources: { Sticks: 10, Feathers: 5 },
+        )
+    ),
+    (
+        quest_key: "grow-population",
+        pop_condition: 5,
+        condition: (),
+        reward: (
+            resources: { Logs: 10 },
         )
     ),
 ]

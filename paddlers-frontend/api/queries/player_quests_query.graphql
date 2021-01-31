@@ -3,7 +3,6 @@ query PlayerQuestsQuery {
         quests {
             id
             key
-            nextStoryState
             rewards {
                 feathers
                 sticks

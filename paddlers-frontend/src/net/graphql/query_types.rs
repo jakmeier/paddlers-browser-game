@@ -304,13 +304,6 @@ impl Into<StoryState> for &PlayerStoryState {
             PlayerStoryState::TEMPLE_BUILT => StoryState::TempleBuilt,
             PlayerStoryState::VISITOR_ARRIVED => StoryState::VisitorArrived,
             PlayerStoryState::FIRST_VISITOR_WELCOMED => StoryState::FirstVisitorWelcomed,
-            PlayerStoryState::FLOWER_PLANTED => StoryState::FlowerPlanted,
-            PlayerStoryState::MORE_HAPPY_VISITORS => StoryState::MoreHappyVisitors,
-            PlayerStoryState::TREE_PLANTED => StoryState::TreePlanted,
-            PlayerStoryState::STICK_GATHERING_STATION_BUILD => {
-                StoryState::StickGatheringStationBuild
-            }
-            PlayerStoryState::GATHERING_STICKS => StoryState::GatheringSticks,
             PlayerStoryState::PICKING_PRIMARY_CIV_BONUS => StoryState::PickingPrimaryCivBonus,
             PlayerStoryState::SOLVING_PRIMARY_CIV_QUEST_PART_A => {
                 StoryState::SolvingPrimaryCivQuestPartA
@@ -318,13 +311,10 @@ impl Into<StoryState> for &PlayerStoryState {
             PlayerStoryState::SOLVING_PRIMARY_CIV_QUEST_PART_B => {
                 StoryState::SolvingPrimaryCivQuestPartB
             }
-            PlayerStoryState::PICKING_SECONDARY_CIV_BONUS => StoryState::PickingSecondaryCivBonus,
-            PlayerStoryState::SOLVING_SECONDARY_QUEST_PART_A => {
-                StoryState::SolvingSecondaryQuestPartA
-            }
-            PlayerStoryState::SOLVING_SECONDARY_QUEST_PART_B => {
-                StoryState::SolvingSecondaryQuestPartB
-            }
+            PlayerStoryState::SOLVING_SECONDARY_QUEST_A => StoryState::SolvingSecondaryQuestA,
+            PlayerStoryState::SOLVING_SECONDARY_QUEST_B => StoryState::SolvingSecondaryQuestB,
+            PlayerStoryState::DIALOGUE_BALANCE_A => StoryState::DialogueBalanceA,
+            PlayerStoryState::DIALOGUE_BALANCE_B => StoryState::DialogueBalanceB,
             PlayerStoryState::ALL_DONE => StoryState::AllDone,
             PlayerStoryState::Other(_) => panic!("Unexpected story state"),
         }

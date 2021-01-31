@@ -8,7 +8,6 @@ use paddlers_shared_lib::{
         quest_building_conditions, quest_res_conditions, quest_res_rewards,
         quest_worker_conditions, quests,
     },
-    story::story_state::StoryState,
 };
 use serde::Deserialize;
 use std::collections::HashMap;
@@ -16,10 +15,11 @@ use std::collections::HashMap;
 #[derive(Deserialize)]
 pub struct QuestDefinition {
     pub quest_key: String,
-    pub next_story_state: Option<StoryState>,
+    pub follow_up_quest: Option<String>,
     pub condition: QuestConditions,
     pub reward: QuestRewards,
     pub karma_condition: Option<i64>,
+    pub pop_condition: Option<i64>,
 }
 
 #[derive(Deserialize)]
@@ -38,8 +38,9 @@ impl QuestDefinition {
     pub fn upload(self, db: &PgConnection) -> QueryResult<()> {
         let quest = NewQuest {
             quest_key: self.quest_key,
-            next_story_state: self.next_story_state,
+            follow_up_quest: self.follow_up_quest,
             karma_condition: self.karma_condition,
+            pop_condition: self.pop_condition,
         };
         let quest = diesel::insert_into(quests::dsl::quests)
             .values(&quest)

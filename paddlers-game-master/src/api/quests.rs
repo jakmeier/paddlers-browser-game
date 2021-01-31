@@ -38,11 +38,20 @@ pub(crate) fn collect_quest(
         check_karma_conditions(&quest, &player)?;
         check_worker_conditions(&db, quest_key, village.key())?;
 
+        let follow_up_quest = quest.follow_up_quest.map(|name| {
+            db.quest_by_name(
+                name.parse()
+                    .expect("Couldn't parse QuestName from value found in DB"),
+            )
+            .map(|quest| quest.key())
+            .expect("Quest not found in DB")
+        });
+
         let msg = CollectQuestMessage {
             quest: quest_key,
-            next_story_state: quest.next_story_state,
             player: player_key,
             village: village.key(),
+            follow_up_quest,
         };
         let future = addr
             .db_actor

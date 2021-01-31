@@ -50,7 +50,7 @@ pub struct CollectQuestMessage {
     pub player: PlayerKey,
     pub quest: QuestKey,
     pub village: VillageKey,
-    pub next_story_state: Option<StoryState>,
+    pub follow_up_quest: Option<QuestKey>,
 }
 impl Message for CollectQuestMessage {
     type Result = ();

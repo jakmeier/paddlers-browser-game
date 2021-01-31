@@ -94,6 +94,12 @@ impl Handler<StoryWorkerMessage> for StoryWorker {
                         .map_err(|e| eprintln!("Attack spawn failed: {:?}", e));
                     Arbiter::spawn(future);
                 }
+                paddlers_shared_lib::story::story_action::StoryAction::AddMana(_) => {
+                    todo!()
+                }
+                paddlers_shared_lib::story::story_action::StoryAction::UnlockPerk(_) => {
+                    todo!()
+                }
             }
         }
         if t.next_state != msg.confirmed_current_story_state {

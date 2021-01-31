@@ -5,7 +5,6 @@
 use super::*;
 use juniper;
 use juniper::FieldResult;
-use paddlers_shared_lib::story::story_state::StoryState;
 
 #[juniper::object (Context = Context)]
 impl GqlAttack {
@@ -211,9 +210,6 @@ impl GqlQuest {
     }
     pub fn key(&self) -> &str {
         &self.0.quest_key
-    }
-    pub fn next_story_state(&self) -> &Option<StoryState> {
-        &self.0.next_story_state
     }
     pub fn rewards(&self, ctx: &Context) -> Resources {
         ctx.db()

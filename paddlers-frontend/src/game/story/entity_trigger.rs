@@ -34,19 +34,15 @@ impl Game {
             }
             StoryState::VisitorArrived
             | StoryState::FirstVisitorWelcomed
-            | StoryState::FlowerPlanted
-            | StoryState::MoreHappyVisitors
-            | StoryState::TreePlanted
-            | StoryState::StickGatheringStationBuild
-            | StoryState::GatheringSticks
             | StoryState::ServantAccepted
             | StoryState::BuildingWatergate
             | StoryState::PickingPrimaryCivBonus
             | StoryState::SolvingPrimaryCivQuestPartA
             | StoryState::SolvingPrimaryCivQuestPartB
-            | StoryState::PickingSecondaryCivBonus
-            | StoryState::SolvingSecondaryQuestPartA
-            | StoryState::SolvingSecondaryQuestPartB
+            | StoryState::SolvingSecondaryQuestA
+            | StoryState::SolvingSecondaryQuestB
+            | StoryState::DialogueBalanceA
+            | StoryState::DialogueBalanceB
             | StoryState::AllDone => {}
         }
         Ok(())

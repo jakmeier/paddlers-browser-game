@@ -12,9 +12,9 @@ use crate::db::*;
 use crate::game_master::attack_spawn::{AttackSpawner, SendAnarchistAttack};
 use actix::prelude::*;
 use chrono::NaiveDateTime;
-use paddlers_shared_lib::specification_types::HoboLevel;
 use paddlers_shared_lib::game_mechanics::town::TOWN_X;
 use paddlers_shared_lib::prelude::*;
+use paddlers_shared_lib::specification_types::HoboLevel;
 use paddlers_shared_lib::sql::GameDB;
 use paddlers_shared_lib::sql_db::keys::SqlKey;
 use paddlers_shared_lib::story::story_state::StoryState;
@@ -111,14 +111,12 @@ impl GameMaster {
     }
 }
 
-// TODO [0.1.5]: Define this in specification document and/or integrate with wiki
 fn should_send_attack(ongoing_attacks: usize, random_number: usize, vid: VillageKey) -> bool {
     match ongoing_attacks {
         0 => true,
         n => (random_number + vid.0 as usize) % (n * n + 9) == 0,
     }
 }
-// TODO [0.1.5]: Define this in specification document and/or integrate with wiki
 fn repetitive_attack_strength(player: &Player) -> Option<HoboLevel> {
     match player.story_state {
         StoryState::Initialized
@@ -126,18 +124,15 @@ fn repetitive_attack_strength(player: &Player) -> Option<HoboLevel> {
         | StoryState::TempleBuilt
         | StoryState::WatergateBuilt
         | StoryState::BuildingWatergate
-        | StoryState::MoreHappyVisitors
-        | StoryState::TreePlanted
-        | StoryState::StickGatheringStationBuild
         | StoryState::PickingPrimaryCivBonus
         | StoryState::SolvingPrimaryCivQuestPartA
         | StoryState::SolvingPrimaryCivQuestPartB
-        | StoryState::PickingSecondaryCivBonus
-        | StoryState::SolvingSecondaryQuestPartA
-        | StoryState::SolvingSecondaryQuestPartB
-        | StoryState::GatheringSticks
+        | StoryState::SolvingSecondaryQuestA
+        | StoryState::SolvingSecondaryQuestB
+        | StoryState::DialogueBalanceA
+        | StoryState::DialogueBalanceB
         | StoryState::VisitorArrived => None,
-        StoryState::FirstVisitorWelcomed | StoryState::FlowerPlanted => Some(HoboLevel::zero()),
+        StoryState::FirstVisitorWelcomed => Some(HoboLevel::zero()),
         StoryState::AllDone => Some(HoboLevel::anarchist(player.karma)),
     }
 }

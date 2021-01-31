@@ -38,21 +38,18 @@ pub fn select_dialogue_scene(story_state: StoryState) -> Option<(SceneIndex, Sli
         StoryState::Initialized
         | StoryState::VisitorArrived
         | StoryState::FirstVisitorWelcomed
-        | StoryState::FlowerPlanted
-        | StoryState::MoreHappyVisitors
-        | StoryState::TreePlanted
-        | StoryState::StickGatheringStationBuild
         | StoryState::BuildingWatergate
         | StoryState::WatergateBuilt
         | StoryState::PickingPrimaryCivBonus
         | StoryState::SolvingPrimaryCivQuestPartA
         | StoryState::SolvingPrimaryCivQuestPartB
-        | StoryState::PickingSecondaryCivBonus
-        | StoryState::SolvingSecondaryQuestPartA
-        | StoryState::SolvingSecondaryQuestPartB
+        | StoryState::SolvingSecondaryQuestA
+        | StoryState::SolvingSecondaryQuestB
         | StoryState::AllDone
-        | StoryState::TempleBuilt
-        | StoryState::GatheringSticks => None,
+        | StoryState::TempleBuilt => None,
         StoryState::ServantAccepted => Some((SceneIndex::Entrance, 5)),
+        // TODO
+        StoryState::DialogueBalanceA => None,
+        StoryState::DialogueBalanceB => None,
     }
 }

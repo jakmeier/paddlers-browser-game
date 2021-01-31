@@ -413,8 +413,9 @@ pub struct NewReward {
 pub struct Quest {
     pub id: i64,
     pub quest_key: String,
-    pub next_story_state: Option<StoryState>,
     pub karma_condition: Option<i64>,
+    pub pop_condition: Option<i64>,
+    pub follow_up_quest: Option<String>,
 }
 
 #[derive(Insertable, Debug)]
@@ -422,8 +423,9 @@ pub struct Quest {
 #[table_name = "quests"]
 pub struct NewQuest {
     pub quest_key: String,
-    pub next_story_state: Option<StoryState>,
     pub karma_condition: Option<i64>,
+    pub pop_condition: Option<i64>,
+    pub follow_up_quest: Option<String>,
 }
 
 #[derive(Debug, Clone, Copy, Queryable)]

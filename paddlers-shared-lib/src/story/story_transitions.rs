@@ -5,8 +5,8 @@
 //! In each transition, a set of StoryActions is also performed in the game-master and/or frontend.
 
 use super::{story_action::StoryActionList, story_state::StoryState, story_trigger::StoryChoice};
-use crate::story::story_action::StoryAction;
 use crate::story::story_trigger::StoryTrigger;
+use crate::{civilization::CivilizationPerk, story::story_action::StoryAction};
 use crate::{const_list::ConstList, prelude::BuildingType};
 use crate::{generated::QuestName, specification_types::SINGLE_ONE_HP};
 pub type StoryTransitionList = ConstList<StoryTransition>;
@@ -20,7 +20,6 @@ pub struct StoryTransition {
 }
 
 // TODO: Add trigger to watergate -> to duck slots (also make slote more visually appealing)
-// TODO: manage mana
 // TODO: Something is missing here. Something that introduces quests and something for letters. Maybe more.
 impl StoryState {
     pub const fn transition(self, trigger: &StoryTrigger) -> Option<StoryTransition> {
@@ -58,7 +57,8 @@ impl StoryState {
             Self::VisitorArrived => {
                 out = out.push(
                     StoryTransition::on_dialogue(Self::VisitorArrived)
-                        .with(StoryAction::StartQuest(QuestName::HelloWorld)),
+                        .with(StoryAction::StartQuest(QuestName::HelloWorld))
+                        .with(StoryAction::AddMana(10)),
                 );
                 out = out.push(
                     StoryTransition::after_quest(QuestName::HelloWorld, Self::FirstVisitorWelcomed)
@@ -71,21 +71,87 @@ impl StoryState {
                         QuestName::CreateForest,
                         Self::FirstVisitorWelcomed,
                     )
-                    .with(StoryAction::StartQuest(QuestName::BuildBundligStation)),
+                    .with(StoryAction::StartQuest(QuestName::BuildBundlingStation)),
                 );
                 out = out.push(
                     StoryTransition::after_quest(
-                        QuestName::BuildBundligStation,
+                        QuestName::BuildBundlingStation,
                         Self::FirstVisitorWelcomed,
                     )
-                    .with(StoryAction::StartQuest(QuestName::UseBundligStation)),
+                    .with(StoryAction::StartQuest(QuestName::UseBundlingStation)),
                 );
                 out = out.push(StoryTransition::after_quest(
-                    QuestName::UseBundligStation,
-                    Self::GatheringSticks,
+                    QuestName::UseBundlingStation,
+                    Self::PickingPrimaryCivBonus,
                 ));
             }
-            _ => {}
+            Self::PickingPrimaryCivBonus => {
+                out = out.push(
+                    StoryTransition::on_choice(
+                        StoryChoice::new(0),
+                        Self::SolvingPrimaryCivQuestPartA,
+                    )
+                    .with(StoryAction::StartQuest(QuestName::Socialize)),
+                );
+                out = out.push(
+                    StoryTransition::on_choice(
+                        StoryChoice::new(1),
+                        Self::SolvingPrimaryCivQuestPartA,
+                    )
+                    .with(StoryAction::StartQuest(QuestName::BuildNest))
+                    .with(StoryAction::UnlockPerk(CivilizationPerk::NestBuilding)),
+                );
+            }
+            Self::SolvingPrimaryCivQuestPartA => {
+                out = out.push(
+                    StoryTransition::after_quest(
+                        QuestName::Socialize,
+                        Self::SolvingPrimaryCivQuestPartB,
+                    )
+                    .with(StoryAction::StartQuest(QuestName::SocializeMore))
+                    .with(StoryAction::UnlockPerk(CivilizationPerk::Invitation)),
+                );
+                out = out.push(
+                    StoryTransition::after_quest(
+                        QuestName::BuildNest,
+                        Self::SolvingPrimaryCivQuestPartB,
+                    )
+                    .with(StoryAction::StartQuest(QuestName::GrowPopulation)),
+                );
+            }
+            Self::SolvingPrimaryCivQuestPartB => {
+                out = out.push(StoryTransition::after_quest(
+                    QuestName::SocializeMore,
+                    Self::DialogueBalanceA,
+                ));
+                out = out.push(StoryTransition::after_quest(
+                    QuestName::GrowPopulation,
+                    Self::DialogueBalanceB,
+                ));
+            }
+            Self::DialogueBalanceA => {
+                out = out.push(
+                    StoryTransition::on_dialogue(Self::SolvingSecondaryQuestA)
+                        .with(StoryAction::StartQuest(QuestName::GrowPopulation)),
+                );
+            }
+            Self::DialogueBalanceB => {
+                out = out.push(
+                    StoryTransition::on_dialogue(Self::SolvingSecondaryQuestB)
+                        .with(StoryAction::UnlockPerk(CivilizationPerk::Invitation))
+                        .with(StoryAction::StartQuest(QuestName::SocializeMore)),
+                );
+            }
+            Self::SolvingSecondaryQuestA => {
+                out = out.push(StoryTransition::after_quest(
+                    QuestName::SocializeMore,
+                    Self::AllDone,
+                ));
+            }
+            Self::SolvingSecondaryQuestB => {
+                out = out.push(StoryTransition::on_dialogue(Self::AllDone));
+            }
+            Self::AllDone => {}
         }
         out
     }

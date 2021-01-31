@@ -23,7 +23,7 @@ pub struct StoryChoice {
 }
 
 impl StoryChoice {
-    pub fn new(chosen_option: u8) -> Self {
+    pub const fn new(chosen_option: u8) -> Self {
         Self { chosen_option }
     }
 }

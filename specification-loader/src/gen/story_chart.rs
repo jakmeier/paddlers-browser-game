@@ -1,4 +1,4 @@
-use paddlers_shared_lib::story::{story_state::StoryState, story_transitions::StoryTransition};
+use paddlers_shared_lib::story::{story_state::StoryState};
 use paddlers_shared_lib::strum::IntoEnumIterator;
 
 /// Generate a flow chart in dot format from the defined FSM
