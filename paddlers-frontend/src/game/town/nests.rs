@@ -1,7 +1,4 @@
 use crate::game::town::*;
-use crate::net::state::current_village;
-use crate::{game::components::NetObj, net::game_master_api::RestApiState};
-use paddlers_shared_lib::api::attacks::InvitationDescriptor;
 use specs::prelude::*;
 
 #[derive(Component, Debug, Clone)]
@@ -30,30 +27,5 @@ impl Nest {
             lazy.exec_mut(move |world| world.delete_entities(&hobos).expect("Delete failed"));
             Ok(())
         }
-    }
-}
-impl Town {
-    pub fn nest_invitation<'a>(
-        &mut self,
-        nest: &mut Nest,
-        netids: &ReadStorage<'a, NetObj>,
-        e: Entity,
-        lazy: &LazyUpdate,
-    ) -> PadlResult<()> {
-        nest.clear_hobos(lazy)?;
-        let netid = netids
-            .get(e)
-            .ok_or(PadlError::dev_err(PadlErrorCode::MissingComponent(
-                "NetObj",
-            )))?;
-        let msg = InvitationDescriptor {
-            nest: netid.as_building().expect("building"),
-            to: current_village(),
-        };
-        nuts::send_to::<RestApiState, _>(msg);
-        crate::game::game_event_manager::game_event(GameEvent::DisplayConfirmation(
-            "invitation-sent".into(),
-        ));
-        Ok(())
     }
 }

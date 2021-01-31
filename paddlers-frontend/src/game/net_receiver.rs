@@ -1,23 +1,21 @@
-use crate::game::toplevel::Signal;
-use crate::game::units::hobos::insert_hobos;
+use super::*;
 use crate::game::{
-    components::*, units::worker_factory::create_worker_entities, units::workers::Worker,
+    components::*, toplevel::Signal, town::TownContext, town_resources::TownResources,
+    units::hobos::insert_hobos, units::worker_factory::create_worker_entities,
+    units::workers::Worker, visits::attacks::Attack,
 };
-use crate::net::graphql::query_types::WorkerResponse;
+use crate::net::game_master_api::{HttpCreatePlayer, RestApiState};
 use crate::net::graphql::query_types::{
     AttacksResponse, BuildingsResponse, HobosQueryResponse, VolatileVillageInfoResponse,
+    WorkerResponse,
 };
 use crate::net::NetMsg;
 use crate::prelude::*;
-use crate::{game::town::TownContext, net::game_master_api::HttpCreatePlayer};
-use crate::{game::town_resources::TownResources, net::game_master_api::RestApiState};
 use paddle::LoadScheduler;
 use paddlers_shared_lib::prelude::*;
+use specs::prelude::*;
 use std::convert::TryInto;
 use std::sync::mpsc::TryRecvError;
-
-use super::*;
-use specs::prelude::*;
 
 pub fn loading_update_net(
     net_chan: &mut Receiver<NetMsg>,
@@ -87,6 +85,7 @@ impl Game {
                     NetMsg::Attacks(response) => {
                         self.load_attacking_hobos(response)?;
                         self.check_resting_queue()?;
+                        self.update_inflight_attack_count()?;
                     }
                     NetMsg::Buildings(response) => {
                         self.load_buildings_from_net_response(response)?;
@@ -189,6 +188,18 @@ impl Game {
         for atk in data.village.attacks {
             atk.create_entities(self)?;
         }
+        Ok(())
+    }
+    pub fn update_inflight_attack_count(&mut self) -> PadlResult<()> {
+        let attacks = self.world.read_component::<Attack>();
+        let mut n = 0;
+        for (a,) in (&attacks,).join() {
+            if !a.has_arrived() {
+                n += 1;
+            }
+        }
+        self.inflight_visitor_groups = n;
+        println!("inflight_visitor_groups = {}", n);
         Ok(())
     }
     pub fn load_village_info(&mut self, data: VolatileVillageInfoResponse) -> PadlResult<()> {

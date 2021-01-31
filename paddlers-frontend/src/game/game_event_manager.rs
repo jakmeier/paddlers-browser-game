@@ -14,10 +14,14 @@ use crate::{gui::input::UiView, net::game_master_api::RestApiState};
 use crate::{gui::ui_state::Now, net::state::current_village};
 use paddle::{Domain, NutsCheck};
 use paddlers_shared_lib::api::{
-    attacks::StartFightRequest, hobo::SettleHobo, story::StoryStateTransition,
+    attacks::{InvitationDescriptor, StartFightRequest},
+    hobo::SettleHobo,
+    story::StoryStateTransition,
 };
 use paddlers_shared_lib::prelude::*;
 use specs::prelude::*;
+
+use super::town::nests::Nest;
 
 pub struct EventManager;
 
@@ -37,6 +41,8 @@ pub enum GameEvent {
     LoadHomeVillage,
     LoadVillage(VillageKey),
     SendProphetAttack(VillageCoordinate),
+    /// Building entity of currently active town
+    SendInvitation(Entity),
     DialogueActions(Vec<DialogueAction>),
     SwitchToView(UiView),
     DisplayConfirmation(TextKey),
@@ -126,6 +132,34 @@ impl Game {
                 self.town_world()
                     .write_component::<NetObj>()
                     .insert(entity, obj)?;
+            }
+            GameEvent::SendInvitation(foreign_entity) => {
+                if !self.watergate_has_capacity() {
+                    return PadlErrorCode::BuildingFull(Some(BuildingType::Watergate)).usr();
+                }
+
+                let world = self.town_world();
+                let lazy = world.fetch();
+                let mut nests = world.write_component::<Nest>();
+                let netids = world.read_component::<NetObj>();
+
+                let nest = nests
+                    .get_mut(foreign_entity)
+                    .expect("foreign nest vanished");
+                nest.clear_hobos(&lazy)?;
+
+                let netid = netids.get(foreign_entity).ok_or(PadlError::dev_err(
+                    PadlErrorCode::MissingComponent("NetObj"),
+                ))?;
+                let msg = InvitationDescriptor {
+                    nest: netid.as_building().expect("building"),
+                    to: current_village(),
+                };
+                nuts::send_to::<RestApiState, _>(msg);
+
+                crate::game::game_event_manager::game_event(GameEvent::DisplayConfirmation(
+                    "invitation-sent".into(),
+                ));
             }
         }
         Ok(())

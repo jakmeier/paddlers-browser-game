@@ -124,7 +124,6 @@ impl<'a> System<'a> for TownMenuLeftClickSystem {
         ReadExpect<'a, PlayerInfo>,
         Read<'a, LazyUpdate>,
         ReadStorage<'a, Position>,
-        ReadStorage<'a, NetObj>,
         WriteStorage<'a, EntityContainer>,
         WriteStorage<'a, UiMenu>,
         WriteStorage<'a, ForeignUiMenu>,
@@ -143,7 +142,6 @@ impl<'a> System<'a> for TownMenuLeftClickSystem {
             player_info,
             lazy,
             position,
-            netids,
             mut containers,
             mut ui_menus,
             mut foreign_ui_menus,
@@ -154,8 +152,6 @@ impl<'a> System<'a> for TownMenuLeftClickSystem {
         let MouseState(mouse_pos) = *mouse_state;
         let foreign = town.is_foreign();
 
-        // let ui_state = &mut ui_state;
-        // let ui_menus = &mut ui_menus;
         if let Some(entity) = (*ui_state).selected_entity {
             let menu = ui_menus.get_mut(entity);
             if let Some(ui_menu) = menu {
@@ -165,7 +161,6 @@ impl<'a> System<'a> for TownMenuLeftClickSystem {
                         mouse_pos,
                         &mut ui_state,
                         &position,
-                        &netids,
                         &mut workers,
                         &mut containers,
                         &mut ui_menu.ui,
@@ -183,7 +178,6 @@ impl<'a> System<'a> for TownMenuLeftClickSystem {
                         mouse_pos,
                         &mut ui_state,
                         &position,
-                        &netids,
                         &mut workers,
                         &mut containers,
                         &mut ui_menu.ui,

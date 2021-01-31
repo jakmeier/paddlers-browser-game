@@ -31,7 +31,6 @@ impl Town {
         mouse_pos: Vector,
         ui_state: &mut WriteExpect<'a, UiState>,
         position: &ReadStorage<'a, Position>,
-        netids: &ReadStorage<'a, NetObj>,
         workers: &mut WriteStorage<'a, Worker>,
         containers: &mut WriteStorage<'a, EntityContainer>,
         ui: &'b mut UiBox,
@@ -76,9 +75,8 @@ impl Town {
                 }
             }
             Some((ClickOutput::SendInvitation, _)) => {
-                if let Some(nest) = nests.get_mut(menu_entity) {
-                    self.nest_invitation(nest, netids, menu_entity, &lazy)
-                        .unwrap_or_else(nuts::publish);
+                if let Some(_nest) = nests.get_mut(menu_entity) {
+                    game_event(GameEvent::SendInvitation(menu_entity));
                 } else {
                     nuts::publish(PadlError::user_err(PadlErrorCode::NestEmpty));
                 }

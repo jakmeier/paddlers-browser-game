@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use crate::{
     game::{components::UiMenu, units::attackers::hobo_sprite_sad, Game},
     gui::{
-        gui_components::{ClickOutput, UiElement},
+        gui_components::{ClickOutput, InteractiveTableArea, UiElement},
         sprites::SpriteSet,
         ui_state::Now,
     },
@@ -13,6 +13,7 @@ use chrono::NaiveDateTime;
 use paddle::{quicksilver_compat::Color, NutsCheck};
 use paddlers_shared_lib::prelude::*;
 use specs::WorldExt;
+
 pub type GraphqlVisitingHobo = crate::net::graphql::attacks_query::AttacksQueryVillageAttacksUnits;
 
 /// Stores information about incoming attacks
@@ -49,6 +50,22 @@ impl Game {
             let now = self.world.fetch::<Now>().0;
             self.insert_visitors_from_active_attack(attack.hobos, now)
                 .nuts_check();
+
+            if let Some(gate_component) =
+                super::Town::find_building(self.town_world(), BuildingType::Watergate)
+            {
+                if let Some(ui) = self
+                    .town_world()
+                    .write_component::<UiMenu>()
+                    .get_mut(gate_component)
+                {
+                    let event = GameEvent::LetVisitorsIn(key);
+                    ui.ui.remove(ClickOutput::Event(event));
+                }
+                self.town_mut()
+                    .add_entity_to_building_by_id(gate_component)
+                    .nuts_check();
+            }
         }
     }
     pub fn queue_attack(&mut self, atk: WaitingAttack, key: AttackKey) {
@@ -66,8 +83,11 @@ impl Game {
                     UiElement::new(ClickOutput::Event(event))
                         .with_image(SpriteSet::Simple(img))
                         .with_background_color(Color::BLACK),
-                )
+                );
             }
+            self.town_mut()
+                .add_entity_to_building_by_id(gate_component)
+                .nuts_check();
         }
         self.world
             .write_resource::<VisitorGate>()

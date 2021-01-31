@@ -57,6 +57,8 @@ pub(crate) struct Game {
     pub mouse: PointerTracker,
     pub map: Option<GlobalMapPrivateState>,
     pub town_context: TownContextManager,
+    /// Number of attacks not yet arrived at the watergate
+    pub inflight_visitor_groups: usize,
 
     #[cfg(feature = "dev_view")]
     pub palette: bool,
@@ -89,6 +91,7 @@ impl Game {
             total_updates: 0,
             map: None,
             town_context,
+            inflight_visitor_groups: 0,
             mouse: Default::default(),
             #[cfg(feature = "dev_view")]
             palette: false,

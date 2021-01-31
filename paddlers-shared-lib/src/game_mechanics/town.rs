@@ -154,6 +154,9 @@ impl<I: Eq + std::hash::Hash + Clone + Copy + std::fmt::Debug> TownState<I> {
         self.entity_locations.remove(&state.entity);
         state
     }
+    pub fn find(&mut self, id: I) -> Option<&TileIndex> {
+        self.entity_locations.get(&id)
+    }
     pub fn get(&self, tile: &TileIndex) -> Option<&TileState<I>> {
         self.tiles.get(tile)
     }

@@ -195,6 +195,10 @@ impl Town {
             }
         }
     }
+    pub fn add_entity_to_building_by_id(&mut self, id: specs::Entity) -> PadlResult<()> {
+        let i = *self.state.find(id).expect("Building not found");
+        self.add_entity_to_building(&i)
+    }
     pub fn remove_entity_from_building(&mut self, i: &TileIndex) -> PadlResult<()> {
         match self.state.get_mut(i) {
             None => PadlErrorCode::NoStateForTile(*i).dev(),
@@ -217,5 +221,15 @@ impl Town {
     }
     pub fn is_foreign(&self) -> bool {
         self.foreign
+    }
+}
+
+impl Game {
+    pub fn watergate_has_capacity(&self) -> bool {
+        self.town_context
+            .home_town_context()
+            .town()
+            .state
+            .can_send_invite(self.inflight_visitor_groups)
     }
 }
