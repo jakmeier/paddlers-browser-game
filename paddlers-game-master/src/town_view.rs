@@ -25,10 +25,12 @@ impl TownView {
         for b in buildings {
             let idx = (b.x as usize, b.y as usize);
             map[idx] = TownTileType::BUILDING(b.building_type);
-            let capacity = b.building_type.capacity();
             let task_type = b.building_type.worker_task();
             let entity_count = db.count_workers_at_pos_doing_job(village, b.x, b.y, task_type);
-            state.insert(idx, TileState::new_building(b.id, capacity, entity_count));
+            state.insert(
+                idx,
+                TileState::new_building(b.id, b.building_type, b.lv, entity_count),
+            );
             let forest_supply = match b.building_type {
                 BuildingType::Tree => tree_size(now - b.creation),
                 _ => 0,

@@ -9,20 +9,49 @@ use crate::{
 ///
 /// See also description of [TownState](crate::game_mechanics::town::TownState)
 pub struct BuildingState {
-    pub capacity: usize,
-    pub entity_count: usize,
+    pub typ: BuildingType,
+    entity_count: u32,
+    level: u32,
 }
 impl BuildingState {
-    pub fn new(bt: BuildingType, entity_count: usize) -> Self {
+    pub fn new(typ: BuildingType, level: i32, entity_count: usize) -> Self {
+        debug_assert!(level > 0);
         BuildingState {
-            capacity: bt.capacity(),
-            entity_count: entity_count,
+            typ,
+            entity_count: entity_count as u32,
+            level: level as u32,
+        }
+    }
+    /// How many entities can be inside
+    pub const fn capacity(&self) -> usize {
+        self.typ.capacity()
+    }
+    /// How many entities are inside right now
+    pub const fn entity_count(&self) -> usize {
+        self.entity_count as usize
+    }
+    pub fn add_entity(&mut self) {
+        self.entity_count += 1;
+    }
+    pub fn remove_entity(&mut self) {
+        self.entity_count += 1;
+    }
+    pub fn visitor_queue_capacity(&self) -> usize {
+        match self.typ {
+            BuildingType::Watergate => self.level as usize,
+            _ => 0,
+        }
+    }
+    pub fn contained_queued_visitors(&self) -> usize {
+        match self.typ {
+            BuildingType::Watergate => self.entity_count as usize,
+            _ => 0,
         }
     }
 }
 
 impl BuildingType {
-    pub fn capacity(&self) -> usize {
+    pub const fn capacity(&self) -> usize {
         match self {
             BuildingType::BundlingStation => 2,
             BuildingType::SawMill => 1,

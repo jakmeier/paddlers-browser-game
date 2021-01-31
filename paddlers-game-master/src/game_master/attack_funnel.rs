@@ -7,10 +7,10 @@
 //!     - No hobo is involved in more than one attack at the time
 //!     - The maximum number of resting hobos is not surpassed
 
-use crate::db::*;
 use crate::game_master::event::Event;
 use crate::game_master::town_defence::AttackingHobo;
 use crate::game_master::town_worker::{TownWorker, TownWorkerEventMsg};
+use crate::{db::*, town_view::TownView};
 use actix::prelude::*;
 use chrono::{offset::TimeZone, NaiveDateTime, Utc};
 use paddlers_shared_lib::game_mechanics::{map::map_distance, town::defence::IAttackingHobo};
@@ -42,6 +42,7 @@ pub struct PlannedAttack {
     pub destination_village: Village,
     pub hobos: Vec<Hobo>,
     pub no_delay: bool,
+    pub subject_to_visitor_queue_limit: bool,
 }
 impl Message for PlannedAttack {
     type Result = ();
@@ -53,6 +54,16 @@ impl Handler<PlannedAttack> for AttackFunnel {
     fn handle(&mut self, msg: PlannedAttack, _ctx: &mut Context<Self>) -> Self::Result {
         let db = self.db();
         let vid = msg.destination_village.key();
+
+        // Check that the visitor queue capacity is respected
+        if msg.subject_to_visitor_queue_limit {
+            let active_attacks = db.attacks(vid, None).len();
+            let town_context = TownView::load_village(&db, vid);
+            if town_context.state.visitor_capacity() <= active_attacks {
+                eprintln!("Attempted to invite more than allowed. Request ignored.");
+                return;
+            }
+        }
 
         // Checks and attack creation must be sequential
         // TODO (Correctness): Somehow efficiently check that hobos are not attacking already

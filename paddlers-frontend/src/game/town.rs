@@ -153,13 +153,19 @@ impl Town {
             .collect()
     }
 
-    pub fn place_building(&mut self, i: TileIndex, bt: BuildingType, id: specs::Entity) {
+    pub fn place_building(
+        &mut self,
+        i: TileIndex,
+        bt: BuildingType,
+        level: i32,
+        id: specs::Entity,
+    ) {
         debug_assert!(self.is_buildable(i, bt), "Cannot build {} here", bt);
         let tile = self.map.tile_type_mut(i);
 
         debug_assert!(tile.is_some(), "Tile is outside of map");
         *tile.unwrap() = TileType::BUILDING(bt);
-        let state = TileState::new_building(id, bt.capacity(), 0);
+        let state = TileState::new_building(id, bt, level, 0);
         self.state.insert(i, state);
     }
     pub fn remove_building(&mut self, i: TileIndex) -> specs::Entity {

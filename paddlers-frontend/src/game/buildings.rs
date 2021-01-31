@@ -41,6 +41,7 @@ impl Town {
             lazy,
             pos,
             bt,
+            1,
             bt.attack_power(),
             bt.attacks_per_cycle(),
             bt.range(),
@@ -54,6 +55,7 @@ impl Town {
         lazy: &LazyUpdate,
         tile_index: TileIndex,
         bt: BuildingType,
+        level: i32,
         ap: Option<i64>,
         attacks_per_cycle: Option<i64>,
         range: Option<f32>,
@@ -114,7 +116,7 @@ impl Town {
             _ => {}
         }
 
-        self.place_building(tile_index, bt, builder.entity);
+        self.place_building(tile_index, bt, level, builder.entity);
 
         let entity = builder.build();
         entity
@@ -213,6 +215,7 @@ impl buildings_query::BuildingsQueryVillageBuildings {
             &lazy,
             coordinates,
             bt,
+            self.level as i32,
             maybe_ap,
             self.attacks_per_cycle,
             maybe_range,

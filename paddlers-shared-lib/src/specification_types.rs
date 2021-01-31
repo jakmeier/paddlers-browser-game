@@ -1,4 +1,3 @@
-//! Types used in specification
 mod hobos;
 mod visitor_groups;
 

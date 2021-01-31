@@ -12,8 +12,9 @@
 //! Hobos associated with an attack can have different speeds. For the travel time, this does not matter.
 //!
 //! After arriving at the destination time, they are not entering it immediately.
-//! Player input is required to let them in. Until then they are queued up in the watergate queue.
-//! If the watergate queue is full and more attackers arrive, they will pop the first in the queue to make space for themselves.
+//! They are queued up in the watergate queue and input from the player is required to let them in and start the fight.
+//! The watergate queue has a certain capacity and most attacks can only be scheduled until that limit is reached.
+//! However, there are legal ways to have the queue go over capacity, such as story progression. So, it should not be relied upon the queue to have a certain maximum length.
 //!
 //! Inside he town, there is a second queue, sometimes called the resting queue. This one is for (non-hurried) hobos.
 //! Units in that queue will swim to the center of the town and stay there until satisfied or pushed by another unit that takes its place.
@@ -23,7 +24,7 @@
 //! Usually, the satisfaction of each visitor is only computed when time is up for an attack to be finished.
 //! But there are two exceptions.
 //!     1) When a player has an open browser window, the frontend can detect that a visitor is satisfied and then notify the server
-//!     2) Units that wait in the town need to be checked regularly
+//!     2) Units that are resting in the town need to be checked regularly
 //!
 //! Effects that must be taken into consideration:
 //!     * Defensive towers (flowers etc) which are only available by computing proximity

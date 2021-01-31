@@ -185,33 +185,48 @@ impl<I: Eq + std::hash::Hash + Clone + Copy + std::fmt::Debug> TownState<I> {
     }
     pub fn count_workers_at(&self, i: &TileIndex) -> usize {
         match self.tiles.get(i) {
-            Some(tile_state) => tile_state.building_state.entity_count,
+            Some(tile_state) => tile_state.building_state.entity_count(),
             None => 0,
         }
+    }
+    /// How many active groups of visitors the town can have simultaneously.
+    pub fn visitor_capacity(&self) -> usize {
+        self.tiles.values().fold(0, |acc, tile_state| {
+            acc + tile_state.building_state.visitor_queue_capacity()
+        })
+    }
+    /// Current number of visitor group awaiting to be allowed in
+    pub fn visitors_in_queue(&self) -> usize {
+        self.tiles.values().fold(0, |acc, tile_state| {
+            acc + tile_state.building_state.contained_queued_visitors()
+        })
+    }
+    /// Given a number of visitor groups already on the way (but not queued yet), can a new invitation be sent out?
+    pub fn can_send_invite(&self, inflight_visitor_groups: usize) -> bool {
+        let capacity = self.visitor_capacity();
+        let used = self.visitors_in_queue();
+        capacity > used + inflight_visitor_groups
     }
 }
 
 impl<I: Eq + std::hash::Hash + Clone + Copy + std::fmt::Debug> TileState<I> {
-    pub fn new_building(e: I, capacity: usize, count: usize) -> Self {
+    pub fn new_building(e: I, bt: BuildingType, level: i32, current_entity_count: usize) -> Self {
         TileState {
             entity: e,
-            building_state: BuildingState {
-                capacity: capacity,
-                entity_count: count,
-            },
+            building_state: BuildingState::new(bt, level, current_entity_count),
         }
     }
     pub fn try_add_entity(&mut self) -> Result<(), TownError> {
-        if self.building_state.capacity > self.building_state.entity_count {
-            self.building_state.entity_count += 1;
+        if self.building_state.capacity() > self.building_state.entity_count() {
+            self.building_state.add_entity();
             Ok(())
         } else {
             Err(TownError::BuildingFull)
         }
     }
     pub fn try_remove_entity(&mut self) -> Result<(), TownError> {
-        if 0 < self.building_state.entity_count {
-            self.building_state.entity_count -= 1;
+        if 0 < self.building_state.entity_count() {
+            self.building_state.remove_entity();
             Ok(())
         } else {
             Err(TownError::InvalidState("No entity to remove"))

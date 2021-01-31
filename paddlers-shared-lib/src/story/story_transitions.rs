@@ -144,12 +144,15 @@ impl StoryState {
             }
             Self::SolvingSecondaryQuestA => {
                 out = out.push(StoryTransition::after_quest(
-                    QuestName::SocializeMore,
+                    QuestName::GrowPopulation,
                     Self::AllDone,
                 ));
             }
             Self::SolvingSecondaryQuestB => {
-                out = out.push(StoryTransition::on_dialogue(Self::AllDone));
+                out = out.push(StoryTransition::after_quest(
+                    QuestName::SocializeMore,
+                    Self::AllDone,
+                ));
             }
             Self::AllDone => {}
         }

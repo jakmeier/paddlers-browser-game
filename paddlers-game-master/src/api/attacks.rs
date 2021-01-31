@@ -84,6 +84,7 @@ pub(crate) fn create_attack(
                 destination_village,
                 hobos,
                 no_delay: false,
+                subject_to_visitor_queue_limit: false,
             },
         )
         .and_then(move |pa| attack_funnel.try_send(pa).map_err(internal_server_error))
@@ -143,6 +144,7 @@ pub(crate) fn new_invitation(
             destination_village,
             hobos,
             no_delay: false,
+            subject_to_visitor_queue_limit: true,
         };
         addr.attack_funnel
             .try_send(atk)

@@ -1,6 +1,9 @@
 use actix::dev::{MessageResponse, ResponseChannel};
 use actix::prelude::*;
-use paddlers_shared_lib::{civilization::CivilizationPerk, generated::QuestName, prelude::*, story::story_state::StoryState};
+use paddlers_shared_lib::{
+    civilization::CivilizationPerk, generated::QuestName, prelude::*,
+    story::story_state::StoryState,
+};
 
 #[derive(Debug)]
 /// Deferred DB requests should not be dependent on the state of the DB

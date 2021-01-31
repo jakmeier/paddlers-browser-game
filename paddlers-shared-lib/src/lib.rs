@@ -27,12 +27,15 @@ pub mod graphql_types;
 pub mod models;
 pub mod prelude;
 pub mod shared_types;
-pub mod specification_types;
 pub mod story;
 pub mod test_data;
 
+
 #[cfg(feature = "game_mechanics")]
+/// Module contains game-logic specification which needs to be shared between the frontend and the game-master (but not the GQL DB interface, or even the specification loader)
 pub mod game_mechanics;
+/// For specifications that are used by all crates. (E.g. everything required for the central story FSM)
+pub mod specification_types;
 
 #[cfg(feature = "sql_db")]
 #[allow(unused_imports)]
