@@ -66,10 +66,10 @@ impl Town {
         let mut builder = lazy
             .create_entity(entities)
             .with(Position::new(area.pos, area.size, Z_BUILDINGS))
-            .with(Renderable::new_transformed(
-                bt.render_variant(),
-                building_ingame_scaling(bt),
-            ))
+            .with(
+                Renderable::new_transformed(bt.render_variant(), building_ingame_scaling(bt))
+                    .with_on_selection(bt.on_selection_render_variant()),
+            )
             .with(Building {
                 built: created,
                 bt,

@@ -4,7 +4,7 @@ use crate::{
     game::{components::UiMenu, units::attackers::hobo_sprite_sad, Game},
     gui::{
         gui_components::{ClickOutput, InteractiveTableArea, UiBox, UiElement},
-        sprites::{SingleSprite, SpriteSet},
+        sprites::SingleSprite,
         ui_state::Now,
         utils::{ImageCollection, RenderVariant, SubImg},
         z::Z_UI_MENU,
@@ -51,8 +51,10 @@ impl VisitorGate {
         self.inflight_visitor_groups = n;
     }
     pub fn queue_attack(&mut self, ui: &mut UiBox, atk: WaitingAttack) {
+        ui.remove(ClickOutput::DoNothing);
         ui.add(atk.ui_element());
         self.queue.insert(atk.key, atk);
+        self.fill_to_capacity_with_empty_slots(ui);
     }
     pub fn fill_to_capacity_with_empty_slots(&self, ui: &mut UiBox) {
         ui.remove(ClickOutput::DoNothing);
@@ -90,7 +92,6 @@ impl Game {
                 .get_mut(gate_entity)
             {
                 gate.queue_attack(&mut ui.ui, atk);
-                gate.fill_to_capacity_with_empty_slots(&mut ui.ui);
             }
             // This is necessary to update the tile state and keep it consistent.
             // That way, the centrally defined logic (paddlers-shared-lib) can be used to check capacity.
@@ -212,6 +213,12 @@ impl WaitingAttack {
         RenderVariant::ImgCollection(ImageCollection::new(
             (1.0, 1.0),
             vec![
+                SubImg::new(
+                    SingleSprite::SingleDuckBackgroundShape,
+                    (0.0, 0.0),
+                    (1.5, 1.0),
+                    Z_UI_MENU,
+                ),
                 SubImg::new(main_img, inner_offset, inner_size, Z_UI_MENU + 1),
                 SubImg::new(
                     SingleSprite::SingleDuckShape,
@@ -223,7 +230,16 @@ impl WaitingAttack {
         ))
     }
     fn empty_slot() -> UiElement {
-        UiElement::new(ClickOutput::DoNothing)
-            .with_image(SpriteSet::Simple(SingleSprite::SingleDuckShape))
+        UiElement::new(ClickOutput::DoNothing).with_render_variant(RenderVariant::ImgCollection(
+            ImageCollection::new(
+                (1.0, 1.0),
+                vec![SubImg::new(
+                    SingleSprite::SingleDuckBackgroundShape,
+                    (0.0, 0.0),
+                    (1.5, 1.0),
+                    Z_UI_MENU,
+                )],
+            ),
+        ))
     }
 }

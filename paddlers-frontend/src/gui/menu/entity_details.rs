@@ -24,7 +24,18 @@ pub fn draw_entity_img(
     let r = world.read_storage::<Renderable>();
     let inner_area = area.shrink_to_center(0.8);
     if let Some(rd) = r.get(e) {
-        match rd.kind {
+        let kind = rd.on_selection.as_ref().unwrap_or(&rd.kind);
+        match *kind {
+            RenderVariant::Img(img) => {
+                draw_static_image(
+                    sprites,
+                    window,
+                    &inner_area,
+                    img.default(),
+                    Z_MENU_BOX + 2,
+                    FitStrategy::Center,
+                );
+            }
             RenderVariant::ImgWithImgBackground(main, background) => {
                 draw_static_image(
                     sprites,

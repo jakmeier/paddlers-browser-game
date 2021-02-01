@@ -153,6 +153,7 @@ pub enum SingleSprite {
     ReligionDroplets,
     SingleDuckShape,
     SingleDuckBackgroundShape,
+    VisitorGateSymbol,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -217,6 +218,7 @@ pub trait WithSprite {
 /// Fully rendered represenation of an object
 pub trait WithRenderVariant {
     fn render_variant(&self) -> RenderVariant;
+    fn on_selection_render_variant(&self) -> Option<RenderVariant>;
 }
 
 use paddlers_shared_lib::{civilization::CivilizationPerk, models::BuildingType};
@@ -239,6 +241,15 @@ impl WithRenderVariant for BuildingType {
                 .with_background(SingleSprite::Water),
             ),
             _ => RenderVariant::ImgWithImgBackground(self.sprite(), SingleSprite::Grass),
+        }
+    }
+
+    fn on_selection_render_variant(&self) -> Option<RenderVariant> {
+        match self {
+            BuildingType::Watergate => Some(RenderVariant::Img(SpriteSet::Simple(
+                SingleSprite::VisitorGateSymbol,
+            ))),
+            _ => None,
         }
     }
 }
