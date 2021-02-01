@@ -151,6 +151,8 @@ pub enum SingleSprite {
     PerkNestBuilding,
     PerkTripleNestBuilding,
     ReligionDroplets,
+    SingleDuckShape,
+    SingleDuckBackgroundShape,
 }
 
 #[derive(Debug, Clone, Copy)]

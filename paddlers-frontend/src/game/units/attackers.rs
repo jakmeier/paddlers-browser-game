@@ -138,9 +138,11 @@ impl AttacksQueryVillageAttacks {
             let birth_time = GqlTimestamp::from_string(&entered).unwrap().to_chrono();
             out = game.insert_visitors_from_active_attack(self.units, birth_time)?;
         } else {
-            let waiting_attack = WaitingAttack::new(arrival, self.units);
+            let now = paddle::utc_now();
+            let arrived = arrival <= now;
             let key = AttackKey(self.id.parse().expect("Parsing id"));
-            game.queue_attack(waiting_attack, key);
+            let waiting_attack = WaitingAttack::new(arrival, self.units, arrived, key);
+            game.queue_attack(waiting_attack);
             out = vec![];
         }
 

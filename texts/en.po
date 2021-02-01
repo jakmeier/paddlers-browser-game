@@ -5,6 +5,9 @@ msgstr "Attack sent"
 msgid "invitation-sent"
 msgstr "Invitation sent"
 
+msgid "visitor-not-here"
+msgstr "Paddlers are still travelling"
+
 #  UI elements
 msgid "quests"
 msgstr "Duties"
@@ -145,16 +148,16 @@ msgstr "Forest creation"
 msgid "create-forest-description"
 msgstr "Fill this place with life! Start by planting three trees."
 
-msgid "build-bundlig-station"
+msgid "build-bundling-station"
 msgstr "Build a bundling station"
 
-msgid "build-bundlig-station-description"
+msgid "build-bundling-station-description"
 msgstr "Your servant can gather resources from the forest if the right buildings exist. To gather sticks, you need to build a bundling station."
 
-msgid "use-bundlig-station"
+msgid "use-bundling-station"
 msgstr "Use Bundling station"
 
-msgid "use-bundlig-station-description"
+msgid "use-bundling-station-description"
 msgstr "Send your servant to gather sticks and bundle them. Select the Paddler and then right-click or long-tap on the bundling station."
 
 

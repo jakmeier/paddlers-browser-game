@@ -24,7 +24,6 @@ pub(super) fn insert_global_resources(world: &mut World, player_info: PlayerInfo
     world.insert(player_info);
     let view = entry_view(player_info.story_state());
     world.insert(view);
-    world.insert(VisitorGate::new());
 }
 
 pub fn register_global_components(world: &mut World) {
@@ -47,6 +46,7 @@ pub fn insert_town_resources(world: &mut World, player_info: PlayerInfo, town: T
     world.insert(UiState::new());
     world.insert(player_info);
     world.insert(town);
+    world.insert(VisitorGate::new());
 }
 
 /// All components used in the town view

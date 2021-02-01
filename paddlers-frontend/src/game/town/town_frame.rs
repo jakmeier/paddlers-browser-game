@@ -24,7 +24,7 @@ use paddlers_shared_lib::story::story_state::StoryState;
 use specs::prelude::*;
 use std::ops::Deref;
 
-use super::{tiling, town_render::draw_shiny_border};
+use super::{tiling, town_render::draw_shiny_border, visitor_gate::WatergateQueueSystem};
 
 pub(crate) struct TownFrame<'a, 'b> {
     left_click_dispatcher: Dispatcher<'a, 'b>,
@@ -98,6 +98,7 @@ impl<'a, 'b> TownFrame<'a, 'b> {
             .with(FightSystem::new(), "fight", &["move"])
             .with(ForestrySystem, "forest", &[])
             .with(EntityTriggerSystem::new(), "ets", &[])
+            .with(WatergateQueueSystem, "wgq", &[])
             .build();
 
         TownFrame {

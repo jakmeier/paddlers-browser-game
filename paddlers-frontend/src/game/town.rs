@@ -25,6 +25,8 @@ pub(crate) use paddlers_shared_lib::game_mechanics::town::TownTileType as TileTy
 use paddlers_shared_lib::game_mechanics::town::*;
 use paddlers_shared_lib::prelude::*;
 
+use self::visitor_gate::VisitorGate;
+
 use super::{toplevel::Signal, units::attackers::AttackerDirection};
 pub type TileState = TileStateEx<specs::Entity>;
 
@@ -225,11 +227,18 @@ impl Town {
 }
 
 impl Game {
+    pub fn home_town_world(&self) -> &specs::World {
+        &self.town_context.home_town_context().town_world
+    }
     pub fn watergate_has_capacity(&self) -> bool {
         self.town_context
             .home_town_context()
             .town()
             .state
-            .can_send_invite(self.inflight_visitor_groups)
+            .can_send_invite(
+                self.home_town_world()
+                    .fetch_mut::<VisitorGate>()
+                    .inflight_visitor_groups(),
+            )
     }
 }

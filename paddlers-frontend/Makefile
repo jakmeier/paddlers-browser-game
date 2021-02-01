@@ -12,6 +12,8 @@ all: images
 images:
 	$(MAKE) $(STATIC)/gui/letters.png width=$(MENU_WIDTH)
 	$(MAKE) $(STATIC)/gui/duck_shapes.png width=$(MENU_WIDTH)
+	$(MAKE) $(STATIC)/gui/duck_shape.png width=$(MENU_WIDTH)
+	$(MAKE) $(STATIC)/gui/duck_background_shape.png width=$(MENU_WIDTH)
 	$(MAKE) $(STATIC)/perks/conversion.png width=$(PERK_WIDTH)
 	$(MAKE) $(STATIC)/perks/invitation.png width=$(PERK_WIDTH)
 	$(MAKE) $(STATIC)/perks/nest_building.png width=$(PERK_WIDTH)

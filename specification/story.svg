@@ -164,22 +164,22 @@
 <!-- SolvingPrimaryCivQuestPartB&#45;&gt;DialogueBalanceA -->
 <g id="edge15" class="edge">
 <title>SolvingPrimaryCivQuestPartB&#45;&gt;DialogueBalanceA</title>
-<path fill="none" stroke="black" d="M175.66,-291.43C153.01,-286.09 133.08,-279.03 126.04,-270 121.01,-263.54 119.95,-255.07 120.62,-246.93"/>
-<polygon fill="black" stroke="black" points="124.09,-247.42 122.23,-236.99 117.18,-246.3 124.09,-247.42"/>
-<text text-anchor="start" x="126.04" y="-259.8" font-family="Times,serif" font-size="14.00"> </text>
-<text text-anchor="start" x="131.04" y="-259.8" font-family="Times,serif" font-weight="bold" font-size="14.00">FinishedQuest(SocializeMore)</text>
-<text text-anchor="start" x="370.04" y="-259.8" font-family="Times,serif" font-size="14.00"> </text>
-<polyline fill="none" stroke="black" points="375.04,-255 126.04,-255 175.65,-291.43 "/>
+<path fill="none" stroke="black" d="M179.87,-291.01C157.76,-285.62 138.13,-278.64 131.04,-270 125.9,-263.74 124.1,-255.41 123.89,-247.35"/>
+<polygon fill="black" stroke="black" points="127.4,-247.27 124.39,-237.11 120.41,-246.93 127.4,-247.27"/>
+<text text-anchor="start" x="131.04" y="-259.8" font-family="Times,serif" font-size="14.00"> </text>
+<text text-anchor="start" x="136.04" y="-259.8" font-family="Times,serif" font-weight="bold" font-size="14.00">FinishedQuest(SocializeMore)</text>
+<text text-anchor="start" x="375.04" y="-259.8" font-family="Times,serif" font-size="14.00"> </text>
+<polyline fill="none" stroke="black" points="380.04,-255 131.04,-255 179.87,-291.01 "/>
 </g>
 <!-- SolvingPrimaryCivQuestPartB&#45;&gt;DialogueBalanceB -->
 <g id="edge16" class="edge">
 <title>SolvingPrimaryCivQuestPartB&#45;&gt;DialogueBalanceB</title>
-<path fill="none" stroke="black" d="M343.93,-290.56C356.69,-285.6 368.98,-278.94 379.04,-270 385.96,-263.84 390.81,-255.09 394.15,-246.63"/>
-<polygon fill="black" stroke="black" points="397.52,-247.6 397.42,-237.01 390.89,-245.35 397.52,-247.6"/>
-<text text-anchor="start" x="390.04" y="-259.8" font-family="Times,serif" font-size="14.00"> </text>
-<text text-anchor="start" x="395.04" y="-259.8" font-family="Times,serif" font-weight="bold" font-size="14.00">FinishedQuest(GrowPopulation)</text>
-<text text-anchor="start" x="650.04" y="-259.8" font-family="Times,serif" font-size="14.00"> </text>
-<polyline fill="none" stroke="black" points="655.04,-255 390.04,-255 394.15,-246.64 "/>
+<path fill="none" stroke="black" d="M344.62,-290.66C357.49,-285.69 369.89,-279 380.04,-270 386.97,-263.85 391.82,-255.1 395.16,-246.64"/>
+<polygon fill="black" stroke="black" points="398.53,-247.61 398.43,-237.02 391.9,-245.36 398.53,-247.61"/>
+<text text-anchor="start" x="391.04" y="-259.8" font-family="Times,serif" font-size="14.00"> </text>
+<text text-anchor="start" x="396.04" y="-259.8" font-family="Times,serif" font-weight="bold" font-size="14.00">FinishedQuest(GrowPopulation)</text>
+<text text-anchor="start" x="651.04" y="-259.8" font-family="Times,serif" font-size="14.00"> </text>
+<polyline fill="none" stroke="black" points="656.04,-255 391.04,-255 395.16,-246.65 "/>
 </g>
 <!-- DialogueBalanceA&#45;&gt;SolvingSecondaryQuestA -->
 <g id="edge17" class="edge">
@@ -195,34 +195,34 @@
 <!-- DialogueBalanceB&#45;&gt;SolvingSecondaryQuestB -->
 <g id="edge18" class="edge">
 <title>DialogueBalanceB&#45;&gt;SolvingSecondaryQuestB</title>
-<path fill="none" stroke="black" d="M401.19,-200.99C401.35,-183.06 401.61,-154.56 401.79,-133.44"/>
-<polygon fill="black" stroke="black" points="405.3,-133.2 401.89,-123.17 398.3,-133.14 405.3,-133.2"/>
-<text text-anchor="start" x="409.54" y="-172.8" font-family="Times,serif" font-size="14.00"> </text>
-<text text-anchor="start" x="414.54" y="-172.8" font-family="Times,serif" font-weight="bold" font-size="14.00">DialogueStoryTrigger</text>
-<text text-anchor="start" x="584.54" y="-172.8" font-family="Times,serif" font-size="14.00"> </text>
-<text text-anchor="start" x="416.54" y="-158.8" font-family="Times,serif" font-size="14.00">UnlockPerk(Invitation) </text>
-<text text-anchor="start" x="402.04" y="-144.8" font-family="Times,serif" font-size="14.00">StartQuest(SocializeMore) </text>
-<polyline fill="none" stroke="black" points="597.04,-141 402.04,-141 401.55,-161.06 "/>
+<path fill="none" stroke="black" d="M402.49,-200.99C402.97,-183.06 403.74,-154.56 404.3,-133.44"/>
+<polygon fill="black" stroke="black" points="407.81,-133.26 404.58,-123.17 400.81,-133.07 407.81,-133.26"/>
+<text text-anchor="start" x="412.54" y="-172.8" font-family="Times,serif" font-size="14.00"> </text>
+<text text-anchor="start" x="417.54" y="-172.8" font-family="Times,serif" font-weight="bold" font-size="14.00">DialogueStoryTrigger</text>
+<text text-anchor="start" x="587.54" y="-172.8" font-family="Times,serif" font-size="14.00"> </text>
+<text text-anchor="start" x="419.54" y="-158.8" font-family="Times,serif" font-size="14.00">UnlockPerk(Invitation) </text>
+<text text-anchor="start" x="405.04" y="-144.8" font-family="Times,serif" font-size="14.00">StartQuest(SocializeMore) </text>
+<polyline fill="none" stroke="black" points="600.04,-141 405.04,-141 403.62,-159.08 "/>
 </g>
 <!-- SolvingSecondaryQuestA&#45;&gt;AllDone -->
 <g id="edge19" class="edge">
 <title>SolvingSecondaryQuestA&#45;&gt;AllDone</title>
-<path fill="none" stroke="black" d="M123.99,-86.93C122.53,-76.34 122.73,-63.06 130.04,-54 140.44,-41.1 178.29,-31.99 211.28,-26.31"/>
-<polygon fill="black" stroke="black" points="212.03,-29.73 221.33,-24.65 210.89,-22.82 212.03,-29.73"/>
-<text text-anchor="start" x="130.04" y="-58.8" font-family="Times,serif" font-size="14.00"> </text>
-<text text-anchor="start" x="135.04" y="-58.8" font-family="Times,serif" font-weight="bold" font-size="14.00">FinishedQuest(SocializeMore)</text>
-<text text-anchor="start" x="374.04" y="-58.8" font-family="Times,serif" font-size="14.00"> </text>
-<polyline fill="none" stroke="black" points="379.04,-54 130.04,-54 211.28,-26.31 "/>
+<path fill="none" stroke="black" d="M120.16,-86.56C116.73,-76.09 114.91,-63.08 122.04,-54 133.06,-39.95 174.64,-30.82 210.15,-25.41"/>
+<polygon fill="black" stroke="black" points="211.05,-28.82 220.45,-23.92 210.05,-21.89 211.05,-28.82"/>
+<text text-anchor="start" x="122.04" y="-58.8" font-family="Times,serif" font-size="14.00"> </text>
+<text text-anchor="start" x="127.04" y="-58.8" font-family="Times,serif" font-weight="bold" font-size="14.00">FinishedQuest(GrowPopulation)</text>
+<text text-anchor="start" x="382.04" y="-58.8" font-family="Times,serif" font-size="14.00"> </text>
+<polyline fill="none" stroke="black" points="387.04,-54 122.04,-54 210.14,-25.41 "/>
 </g>
 <!-- SolvingSecondaryQuestB&#45;&gt;AllDone -->
 <g id="edge20" class="edge">
 <title>SolvingSecondaryQuestB&#45;&gt;AllDone</title>
-<path fill="none" stroke="black" d="M398.06,-86.98C394.7,-76.13 388.82,-62.56 379.04,-54 362.5,-39.53 340.08,-31.04 319.5,-26.07"/>
-<polygon fill="black" stroke="black" points="320.1,-22.61 309.58,-23.89 318.6,-29.45 320.1,-22.61"/>
-<text text-anchor="start" x="390.04" y="-58.8" font-family="Times,serif" font-size="14.00"> </text>
-<text text-anchor="start" x="395.04" y="-58.8" font-family="Times,serif" font-weight="bold" font-size="14.00">DialogueStoryTrigger</text>
-<text text-anchor="start" x="565.04" y="-58.8" font-family="Times,serif" font-size="14.00"> </text>
-<polyline fill="none" stroke="black" points="570.04,-54 390.04,-54 397.98,-86.73 "/>
+<path fill="none" stroke="black" d="M402.92,-86.99C400.71,-76.15 396.2,-62.57 387.04,-54 369.17,-37.28 343.84,-28.48 320.89,-23.87"/>
+<polygon fill="black" stroke="black" points="321.35,-20.4 310.89,-22.09 320.12,-27.29 321.35,-20.4"/>
+<text text-anchor="start" x="397.04" y="-58.8" font-family="Times,serif" font-size="14.00"> </text>
+<text text-anchor="start" x="402.04" y="-58.8" font-family="Times,serif" font-weight="bold" font-size="14.00">FinishedQuest(SocializeMore)</text>
+<text text-anchor="start" x="641.04" y="-58.8" font-family="Times,serif" font-size="14.00"> </text>
+<polyline fill="none" stroke="black" points="646.04,-54 397.04,-54 402.81,-86.48 "/>
 </g>
 <!-- Initialized -->
 <g id="node1" class="node">
@@ -293,8 +293,8 @@
 <!-- DialogueBalanceB -->
 <g id="node12" class="node">
 <title>DialogueBalanceB</title>
-<ellipse fill="none" stroke="black" cx="401.04" cy="-219" rx="94.78" ry="18"/>
-<text text-anchor="middle" x="401.04" y="-215.3" font-family="Times,serif" font-size="14.00">DialogueBalanceB</text>
+<ellipse fill="none" stroke="black" cx="402.04" cy="-219" rx="94.78" ry="18"/>
+<text text-anchor="middle" x="402.04" y="-215.3" font-family="Times,serif" font-size="14.00">DialogueBalanceB</text>
 </g>
 <!-- SolvingSecondaryQuestA -->
 <g id="node13" class="node">
@@ -305,8 +305,8 @@
 <!-- SolvingSecondaryQuestB -->
 <g id="node14" class="node">
 <title>SolvingSecondaryQuestB</title>
-<ellipse fill="none" stroke="black" cx="402.04" cy="-105" rx="128.08" ry="18"/>
-<text text-anchor="middle" x="402.04" y="-101.3" font-family="Times,serif" font-size="14.00">SolvingSecondaryQuestB</text>
+<ellipse fill="none" stroke="black" cx="405.04" cy="-105" rx="128.08" ry="18"/>
+<text text-anchor="middle" x="405.04" y="-101.3" font-family="Times,serif" font-size="14.00">SolvingSecondaryQuestB</text>
 </g>
 <!-- AllDone -->
 <g id="node15" class="node">

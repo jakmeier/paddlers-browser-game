@@ -33,6 +33,6 @@ SolvingPrimaryCivQuestPartB -> DialogueBalanceA [decorate=true, color=black, lab
 SolvingPrimaryCivQuestPartB -> DialogueBalanceB [decorate=true, color=black, label=< <B>FinishedQuest(GrowPopulation)</B> >]
 DialogueBalanceA -> SolvingSecondaryQuestA [decorate=true, color=black, label=< <B>DialogueStoryTrigger</B> <br/>StartQuest(GrowPopulation) >]
 DialogueBalanceB -> SolvingSecondaryQuestB [decorate=true, color=black, label=< <B>DialogueStoryTrigger</B> <br/>UnlockPerk(Invitation) <br/>StartQuest(SocializeMore) >]
-SolvingSecondaryQuestA -> AllDone [decorate=true, color=black, label=< <B>FinishedQuest(SocializeMore)</B> >]
-SolvingSecondaryQuestB -> AllDone [decorate=true, color=black, label=< <B>DialogueStoryTrigger</B> >]
+SolvingSecondaryQuestA -> AllDone [decorate=true, color=black, label=< <B>FinishedQuest(GrowPopulation)</B> >]
+SolvingSecondaryQuestB -> AllDone [decorate=true, color=black, label=< <B>FinishedQuest(SocializeMore)</B> >]
 }

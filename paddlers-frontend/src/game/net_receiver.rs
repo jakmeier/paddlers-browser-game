@@ -1,8 +1,8 @@
 use super::*;
 use crate::game::{
-    components::*, toplevel::Signal, town::TownContext, town_resources::TownResources,
-    units::hobos::insert_hobos, units::worker_factory::create_worker_entities,
-    units::workers::Worker, visits::attacks::Attack,
+    components::*, toplevel::Signal, town::visitor_gate::VisitorGate, town::TownContext,
+    town_resources::TownResources, units::hobos::insert_hobos,
+    units::worker_factory::create_worker_entities, units::workers::Worker, visits::attacks::Attack,
 };
 use crate::net::game_master_api::{HttpCreatePlayer, RestApiState};
 use crate::net::graphql::query_types::{
@@ -198,8 +198,9 @@ impl Game {
                 n += 1;
             }
         }
-        self.inflight_visitor_groups = n;
-        println!("inflight_visitor_groups = {}", n);
+        self.home_town_world()
+            .fetch_mut::<VisitorGate>()
+            .set_inflight_visitor_groups(n);
         Ok(())
     }
     pub fn load_village_info(&mut self, data: VolatileVillageInfoResponse) -> PadlResult<()> {

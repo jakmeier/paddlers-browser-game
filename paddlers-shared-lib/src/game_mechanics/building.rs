@@ -55,6 +55,7 @@ impl BuildingType {
         match self {
             BuildingType::BundlingStation => 2,
             BuildingType::SawMill => 1,
+            BuildingType::Watergate => 6,
             _ => 0,
         }
     }
