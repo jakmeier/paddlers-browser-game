@@ -38,7 +38,7 @@ impl Game {
     pub fn update_temple(&self) -> PadlResult<()> {
         let player_info = self.world.fetch::<PlayerInfo>();
         if let Some(temple) =
-            super::Town::find_building(&self.town_context.home_world(), BuildingType::Temple)
+            super::Town::find_building_entity(&self.town_context.home_world(), BuildingType::Temple)
         {
             let mut menus = self.town_context.home_world().write_storage::<UiMenu>();
             // This insert overwrites existing entries

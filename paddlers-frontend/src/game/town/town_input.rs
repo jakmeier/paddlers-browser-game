@@ -87,6 +87,7 @@ impl Town {
                 // into the game event manger and not here.
                 game_event(e);
             }
+            Some((ClickOutput::DoNothing, _)) => { /* Do nothing */ }
             Some(_) => nuts::publish(PadlError::dev_err(PadlErrorCode::DevMsg(
                 "Unexpectedly clicked something",
             ))),

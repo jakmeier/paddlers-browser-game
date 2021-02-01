@@ -4,22 +4,24 @@ use crate::{
     models::*,
 };
 
+use super::attributes::Attributes;
+
 #[derive(PartialEq, Eq, Clone, Debug, Hash)]
 /// Part of [TileState](crate::game_mechanics::town::TileState) for validation state used similarly in backend and frontend.
 ///
 /// See also description of [TownState](crate::game_mechanics::town::TownState)
 pub struct BuildingState {
     pub typ: BuildingType,
-    entity_count: u32,
-    level: u32,
+    entity_count: u16,
+    level: u16,
 }
 impl BuildingState {
     pub fn new(typ: BuildingType, level: i32, entity_count: usize) -> Self {
         debug_assert!(level > 0);
         BuildingState {
             typ,
-            entity_count: entity_count as u32,
-            level: level as u32,
+            entity_count: entity_count as u16,
+            level: level as u16,
         }
     }
     /// How many entities can be inside
@@ -37,10 +39,7 @@ impl BuildingState {
         self.entity_count += 1;
     }
     pub fn visitor_queue_capacity(&self) -> usize {
-        match self.typ {
-            BuildingType::Watergate => self.level as usize,
-            _ => 0,
-        }
+        self.typ.visitor_queue_capacity(self.level)
     }
     pub fn contained_queued_visitors(&self) -> usize {
         match self.typ {

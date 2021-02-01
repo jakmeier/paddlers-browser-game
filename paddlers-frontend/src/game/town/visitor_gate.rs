@@ -4,12 +4,12 @@ use crate::{
     game::{components::UiMenu, units::attackers::hobo_sprite_sad, Game},
     gui::{
         gui_components::{ClickOutput, InteractiveTableArea, UiBox, UiElement},
-        sprites::SingleSprite,
+        sprites::{SingleSprite, SpriteSet},
         ui_state::Now,
         utils::{ImageCollection, RenderVariant, SubImg},
         z::Z_UI_MENU,
     },
-    prelude::GameEvent,
+    prelude::{GameEvent, PadlError, PadlErrorCode},
 };
 use chrono::NaiveDateTime;
 use paddle::NutsCheck;
@@ -24,6 +24,7 @@ pub struct VisitorGate {
     /// Number of attacks not yet arrived at the watergate
     inflight_visitor_groups: usize,
     town_entity: Option<Entity>,
+    display_capacity: usize,
 }
 
 /// A group of visitors waiting to be let in
@@ -40,6 +41,7 @@ impl VisitorGate {
             queue: Default::default(),
             inflight_visitor_groups: 0,
             town_entity: None,
+            display_capacity: 1,
         }
     }
     pub fn inflight_visitor_groups(&self) -> usize {
@@ -48,56 +50,81 @@ impl VisitorGate {
     pub fn set_inflight_visitor_groups(&mut self, n: usize) {
         self.inflight_visitor_groups = n;
     }
-    pub fn update_entity(&mut self, town_entity: Entity) {
-        self.town_entity = Some(town_entity);
-    }
     pub fn queue_attack(&mut self, ui: &mut UiBox, atk: WaitingAttack) {
         ui.add(atk.ui_element());
         self.queue.insert(atk.key, atk);
     }
+    pub fn fill_to_capacity_with_empty_slots(&self, ui: &mut UiBox) {
+        ui.remove(ClickOutput::DoNothing);
+        let in_queue = self.queue.len();
+        if in_queue < self.display_capacity {
+            let required_empty_slots = self.display_capacity - in_queue;
+            for _ in 0..required_empty_slots {
+                ui.add(WaitingAttack::empty_slot());
+            }
+        }
+    }
 }
 impl Game {
-    pub fn release_attack(&mut self, key: AttackKey) {
-        let popped = self
-            .home_town_world()
-            .write_resource::<VisitorGate>()
-            .queue
-            .remove(&key);
-        if let Some(attack) = popped {
-            let now = self.world.fetch::<Now>().0;
-            if let Some(gate_component) =
-                super::Town::find_building(self.town_world(), BuildingType::Watergate)
-            {
-                if let Some(ui) = self
-                    .town_world()
-                    .write_component::<UiMenu>()
-                    .get_mut(gate_component)
-                {
-                    ui.ui.remove(attack.click_output());
-                }
-                self.town_mut()
-                    .add_entity_to_building_by_id(gate_component)
-                    .nuts_check();
+    /// Refresh internal state of watergate to make sure the capacity is displayed correctly
+    pub fn refresh_visitor_gate(&self) {
+        if let Some((gate_entity, gate_building)) =
+            super::Town::find_building(self.home_town_world(), BuildingType::Watergate)
+        {
+            let mut gate = self.home_town_world().write_resource::<VisitorGate>();
+            gate.town_entity = Some(gate_entity);
+            gate.display_capacity = gate_building.level as usize;
+            let mut uis = self.home_town_world().write_component::<UiMenu>();
+            if let Some(ui) = uis.get_mut(gate_entity) {
+                gate.fill_to_capacity_with_empty_slots(&mut ui.ui);
             }
-            self.insert_visitors_from_active_attack(attack.hobos, now)
-                .nuts_check();
         }
     }
     pub fn queue_attack(&mut self, atk: WaitingAttack) {
-        if let Some(gate_component) =
-            super::Town::find_building(self.town_world(), BuildingType::Watergate)
-        {
+        let mut gate = self.home_town_world().write_resource::<VisitorGate>();
+        if let Some(gate_entity) = gate.town_entity {
+            // Update the UiMenu for the watergate
             if let Some(ui) = self
-                .town_world()
+                .home_town_world()
                 .write_component::<UiMenu>()
-                .get_mut(gate_component)
+                .get_mut(gate_entity)
             {
-                let mut gate = self.home_town_world().write_resource::<VisitorGate>();
-                gate.update_entity(gate_component);
                 gate.queue_attack(&mut ui.ui, atk);
+                gate.fill_to_capacity_with_empty_slots(&mut ui.ui);
             }
+            // This is necessary to update the tile state and keep it consistent.
+            // That way, the centrally defined logic (paddlers-shared-lib) can be used to check capacity.
+            // (Does that make sense? Seems overcomplicated.)
             self.town_mut()
-                .add_entity_to_building_by_id(gate_component)
+                .add_entity_to_building_by_id(gate_entity)
+                .nuts_check();
+        } else {
+            NutsCheck::<()>::nuts_check(Err(PadlError::dev_err(PadlErrorCode::DevMsg(
+                "Watergate not initialized or not present in town",
+            ))));
+        }
+    }
+    pub fn release_attack(&mut self, key: AttackKey) {
+        let mut gate = self.home_town_world().write_resource::<VisitorGate>();
+        let popped = gate.queue.remove(&key);
+        if let Some(attack) = popped {
+            let now = self.world.fetch::<Now>().0;
+            if let Some(gate_entity) = gate.town_entity {
+                if let Some(ui) = self
+                    .home_town_world()
+                    .write_component::<UiMenu>()
+                    .get_mut(gate_entity)
+                {
+                    ui.ui.remove(attack.click_output());
+                    gate.fill_to_capacity_with_empty_slots(&mut ui.ui);
+                }
+                // Keep town/tile state consistent
+                self.town_mut()
+                    .add_entity_to_building_by_id(gate_entity)
+                    .nuts_check();
+            }
+            std::mem::drop(gate);
+            self.insert_visitors_from_active_attack(attack.hobos, now)
                 .nuts_check();
         }
     }
@@ -195,7 +222,8 @@ impl WaitingAttack {
             ],
         ))
     }
-    fn empty_render_variant() -> RenderVariant {
-        Self::arrived_render_variant(SingleSprite::SingleDuckShape)
+    fn empty_slot() -> UiElement {
+        UiElement::new(ClickOutput::DoNothing)
+            .with_image(SpriteSet::Simple(SingleSprite::SingleDuckShape))
     }
 }

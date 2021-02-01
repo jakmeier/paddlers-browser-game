@@ -21,11 +21,12 @@ use paddlers_shared_lib::{game_mechanics::attributes::Attributes, graphql_types:
 use specs::prelude::*;
 use specs::world::EntitiesRes;
 
-#[derive(Debug, Component)]
+#[derive(Debug, Component, Clone)]
 #[storage(HashMapStorage)]
 pub struct Building {
     pub built: NaiveDateTime,
     pub bt: BuildingType,
+    pub level: u16,
 }
 
 impl Town {
@@ -69,7 +70,11 @@ impl Town {
                 bt.render_variant(),
                 building_ingame_scaling(bt),
             ))
-            .with(Building { built: created, bt })
+            .with(Building {
+                built: created,
+                bt,
+                level: level as u16,
+            })
             .with(Clickable);
 
         if let Some(r) = range {
@@ -121,12 +126,22 @@ impl Town {
         let entity = builder.build();
         entity
     }
-    pub fn find_building(world: &World, bt: BuildingType) -> Option<Entity> {
+    pub fn find_building_entity(world: &World, bt: BuildingType) -> Option<Entity> {
         let buildings = world.read_component::<Building>();
         let entities = world.entities();
         for (b, e) in (&buildings, &entities).join() {
             if b.bt == bt {
                 return Some(e);
+            }
+        }
+        None
+    }
+    pub fn find_building(world: &World, bt: BuildingType) -> Option<(Entity, Building)> {
+        let buildings = world.read_component::<Building>();
+        let entities = world.entities();
+        for (b, e) in (&buildings, &entities).join() {
+            if b.bt == bt {
+                return Some((e, b.clone()));
             }
         }
         None

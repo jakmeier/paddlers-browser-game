@@ -218,7 +218,10 @@ fn load_scene_two(active_slide: SlideIndex) -> Scene {
     let button = SlideButton {
         text_key: "button-back-to-town".into(),
         action: SlideButtonAction::default()
-            .with_action(DialogueAction::StoryProgress(StoryState::VisitorArrived, None))
+            .with_action(DialogueAction::StoryProgress(
+                StoryState::VisitorArrived,
+                None,
+            ))
             .with_view_change(UiView::Town),
     };
     slides.push(Slide {

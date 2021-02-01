@@ -218,6 +218,7 @@ impl<'a> System<'a> for MapLeftClickSystem {
                     Some((ClickOutput::Event(e), _)) => {
                         crate::game::game_event_manager::game_event(e);
                     }
+                    Some((ClickOutput::DoNothing, _)) => { /* Do nothing */ }
                     Some(_) => nuts::publish(PadlError::dev_err(PadlErrorCode::DevMsg(
                         "Unexpectedly clicked something",
                     ))),

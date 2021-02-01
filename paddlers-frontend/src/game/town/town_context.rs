@@ -53,6 +53,9 @@ impl TownContextManager {
     pub fn home_town_context(&self) -> &TownContext {
         &self.home_town
     }
+    pub fn home_town_context_mut(&mut self) -> &mut TownContext {
+        &mut self.home_town
+    }
     pub fn active_context(&self) -> &TownContext {
         if let Some(ctx) = self.foreign_town.as_ref() {
             ctx

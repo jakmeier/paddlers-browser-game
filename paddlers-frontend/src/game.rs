@@ -111,6 +111,7 @@ impl Game {
             game.town_context.active_context_mut(),
             game_data.hobos_response,
         )?;
+        game.refresh_visitor_gate();
         game.load_attacking_hobos(game_data.attacking_hobos)?;
         game.load_player_info(game_data.player_info)?;
 

@@ -5,6 +5,7 @@ pub trait Attributes {
     fn attack_power(&self) -> Option<i64>;
     fn attacks_per_cycle(&self) -> Option<i64>;
     fn size(&self) -> (usize, usize);
+    fn visitor_queue_capacity(&self, level: u16) -> usize;
 }
 
 impl Attributes for BuildingType {
@@ -35,6 +36,14 @@ impl Attributes for BuildingType {
             BuildingType::SingleNest => None,
             BuildingType::TripleNest => None,
             BuildingType::Watergate => None,
+        }
+    }
+    fn visitor_queue_capacity(&self, level: u16) -> usize {
+        match self {
+            BuildingType::Watergate => match level {
+                lv => lv as usize,
+            },
+            _ => 0,
         }
     }
     fn size(&self) -> (usize, usize) {

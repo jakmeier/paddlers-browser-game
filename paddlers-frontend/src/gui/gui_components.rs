@@ -39,7 +39,7 @@ pub trait InteractiveTableArea {
     );
     /// Check if the mouse hits somthing on the area
     fn click(&self, mouse: Vector) -> Option<(ClickOutput, Option<Condition>)>;
-    /// Remove one of the clickable options
+    /// Remove all matching clickable options
     fn remove(&mut self, output: ClickOutput);
 }
 
@@ -53,6 +53,8 @@ pub enum ClickOutput {
     Event(GameEvent),
     SlideAction(SlideButtonAction),
     SendInvitation,
+    /// Useful to add dummy buttons
+    DoNothing,
 }
 #[derive(Clone, Debug)]
 /// Represents a checkable condition. Used to check it later when the state is not available inside a system, for example.

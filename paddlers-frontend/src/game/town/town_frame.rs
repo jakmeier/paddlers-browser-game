@@ -113,15 +113,18 @@ impl<'a, 'b> TownFrame<'a, 'b> {
                 state.update_temple().nuts_check();
             }
             Signal::BuildingBuilt(BuildingType::Temple) => {
+                state.home_town_world_mut().maintain();
                 state
                     .load_story_triggers(&StoryState::TempleBuilt)
                     .nuts_check();
             }
             Signal::BuildingBuilt(BuildingType::Watergate) => {
+                state.home_town_world_mut().maintain();
                 state
                     .load_story_triggers(&StoryState::WatergateBuilt)
                     .nuts_check();
                 state.town_mut().refresh_attacker_direction();
+                state.refresh_visitor_gate();
             }
             _ => {}
         }

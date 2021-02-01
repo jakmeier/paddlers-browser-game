@@ -230,6 +230,9 @@ impl Game {
     pub fn home_town_world(&self) -> &specs::World {
         &self.town_context.home_town_context().town_world
     }
+    pub fn home_town_world_mut(&mut self) -> &mut specs::World {
+        &mut self.town_context.home_town_context_mut().town_world
+    }
     pub fn watergate_has_capacity(&self) -> bool {
         self.town_context
             .home_town_context()
