@@ -132,6 +132,12 @@ impl DB {
             .execute(self.dbconn())
             .expect("Deleting building");
     }
+    pub fn set_building_level(&self, building_id: BuildingKey, level: i32) {
+        diesel::update(buildings::table.filter(buildings::id.eq(building_id.num())))
+            .set(buildings::lv.eq(level))
+            .execute(self.dbconn())
+            .expect("Set building level");
+    }
     pub fn insert_task(&self, task: &NewTask) -> Task {
         diesel::insert_into(tasks::dsl::tasks)
             .values(task)

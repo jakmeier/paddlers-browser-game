@@ -14,6 +14,13 @@ use std::sync::atomic::AtomicBool;
 
 static SENT_PLAYER_CREATION: AtomicBool = AtomicBool::new(false);
 
+// TODO: Decide to use this new pattern for all GM message, or don't use.
+/// Message to backend GM
+#[derive(Debug, PartialEq, Clone)]
+pub enum GameMasterMessage {
+    UpgradeBuilding(HttpUpgradeBuilding),
+}
+
 pub struct RestApiState {
     pub game_master_url: String,
 }
@@ -21,6 +28,11 @@ pub struct HttpCreatePlayer;
 pub struct HttpDeleteBuilding {
     pub idx: (usize, usize),
     pub village: VillageKey,
+}
+#[derive(Debug, PartialEq, Clone)]
+pub struct HttpUpgradeBuilding {
+    pub building: BuildingKey,
+    pub current_level: usize,
 }
 pub struct HttpNotifyVisitorSatisfied {
     pub hobo: HoboKey,
@@ -42,6 +54,7 @@ impl RestApiState {
         rest_activity.private_channel(Self::http_collect_quest);
         rest_activity.private_channel(Self::http_create_player);
         rest_activity.private_channel(Self::http_delete_building);
+        rest_activity.private_channel(Self::http_upgrade_building);
         rest_activity.private_channel(Self::http_invite);
         rest_activity.private_channel(Self::http_let_visitor_in);
         rest_activity.private_channel(Self::http_notify_visitor_satisfied);
@@ -93,6 +106,19 @@ impl RestApiState {
         let future = ajax::fetch_json(
             "POST",
             &format!("{}/shop/building/delete", self.game_master_url),
+            &msg,
+        );
+        spawn_future(future);
+    }
+
+    fn http_upgrade_building(&mut self, input: HttpUpgradeBuilding) {
+        let msg = BuildingUpgrade {
+            building: input.building,
+            current_level: input.current_level,
+        };
+        let future = ajax::fetch_json(
+            "POST",
+            &format!("{}/shop/building/upgrade", self.game_master_url),
             &msg,
         );
         spawn_future(future);

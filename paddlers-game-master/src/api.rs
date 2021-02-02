@@ -19,13 +19,16 @@ use crate::StringErr;
 use actix_web::error::BlockingError;
 use actix_web::{web, HttpResponse, Responder};
 use futures::Future;
-use paddlers_shared_lib::api::{
-    keys::{VillageKey, WorkerKey},
-    shop::{BuildingDeletion, BuildingPurchase, ProphetPurchase},
-    tasks::TaskList,
-    PlayerInitData,
-};
 use paddlers_shared_lib::sql::GameDB;
+use paddlers_shared_lib::{
+    api::{
+        keys::{VillageKey, WorkerKey},
+        shop::{BuildingDeletion, BuildingPurchase, BuildingUpgrade, ProphetPurchase},
+        tasks::TaskList,
+        PlayerInitData,
+    },
+    keys::SqlKey,
+};
 
 pub fn index() -> impl Responder {
     HttpResponse::Ok().body("Game Master OK")
@@ -106,6 +109,35 @@ pub fn delete_building(
         }
     } else {
         HttpResponse::BadRequest().body(format!("No building at {}|{}", body.x, body.y))
+    }
+}
+pub fn upgrade_building(
+    pool: web::Data<crate::db::Pool>,
+    body: web::Json<BuildingUpgrade>,
+    auth: Authentication,
+) -> impl Responder {
+    let db: crate::db::DB = pool.get_ref().into();
+
+    if let Some(building) = db.building(body.building) {
+        if let Err(err) = check_owns_village(&db, &auth, building.village()) {
+            return err;
+        }
+        if building.lv as usize == body.current_level {
+            if let Some(price) = building.building_type.upgrade_cost(building.lv as usize) {
+                if let Err(err) = db.try_spend(&price, building.village()) {
+                    return HttpResponse::BadRequest().body(err);
+                }
+            } else {
+                return HttpResponse::BadRequest().body("Cannot be upgraded.".to_owned());
+            }
+            db.set_building_level(building.key(), body.current_level as i32 + 1);
+            HttpResponse::Ok().into()
+        } else {
+            HttpResponse::BadRequest()
+                .body("Unexpected building level. Duplicate request?".to_owned())
+        }
+    } else {
+        HttpResponse::BadRequest().body("No such building".to_owned())
     }
 }
 

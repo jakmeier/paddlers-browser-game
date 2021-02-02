@@ -26,6 +26,7 @@ use paddlers_shared_lib::api::{
     hobo::SettleHobo,
     quests::QuestCollect,
     reports::ReportCollect,
+    shop::BuildingUpgrade,
     story::StoryStateTransition,
 };
 use paddlers_shared_lib::prelude::HoboKey;
@@ -115,6 +116,11 @@ fn main() {
                 web::resource("/shop/building/delete")
                     .data(web::Json::<BuildingDeletion>)
                     .route(web::post().to(api::delete_building)),
+            )
+            .service(
+                web::resource("/shop/building/upgrade")
+                    .data(web::Json::<BuildingUpgrade>)
+                    .route(web::post().to(api::upgrade_building)),
             )
             .service(
                 web::resource("/shop/unit/prophet")

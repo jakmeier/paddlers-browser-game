@@ -1,7 +1,11 @@
 use std::collections::HashMap;
 
 use crate::{
-    game::{components::UiMenu, units::attackers::hobo_sprite_sad, Game},
+    game::{
+        components::{NetObj, UiMenu},
+        units::attackers::hobo_sprite_sad,
+        Game,
+    },
     gui::{
         gui_components::{ClickOutput, InteractiveTableArea, UiBox, UiElement},
         sprites::{SingleSprite, SpriteSet},
@@ -9,11 +13,12 @@ use crate::{
         utils::{ImageCollection, RenderVariant, SubImg},
         z::Z_UI_MENU,
     },
+    net::game_master_api::{GameMasterMessage, HttpUpgradeBuilding},
     prelude::{GameEvent, PadlError, PadlErrorCode},
 };
 use chrono::NaiveDateTime;
 use paddle::NutsCheck;
-use paddlers_shared_lib::prelude::*;
+use paddlers_shared_lib::{game_mechanics::attributes::Attributes, prelude::*};
 use specs::prelude::*;
 
 pub type GraphqlVisitingHobo = crate::net::graphql::attacks_query::AttacksQueryVillageAttacksUnits;
@@ -25,6 +30,8 @@ pub struct VisitorGate {
     inflight_visitor_groups: usize,
     town_entity: Option<Entity>,
     display_capacity: usize,
+    level: usize,
+    net_id: Option<NetObj>,
 }
 
 /// A group of visitors waiting to be let in
@@ -42,6 +49,8 @@ impl VisitorGate {
             inflight_visitor_groups: 0,
             town_entity: None,
             display_capacity: 1,
+            level: 1,
+            net_id: None,
         }
     }
     pub fn inflight_visitor_groups(&self) -> usize {
@@ -57,7 +66,7 @@ impl VisitorGate {
     }
     pub fn complement_ui_table(&self, ui: &mut UiBox) {
         ui.remove(WaitingAttack::empty_slot_click_output());
-        ui.remove(WaitingAttack::upgrade_click_output());
+        ui.remove(self.upgrade_click_output());
         let in_queue = self.queue.len();
         if in_queue < self.display_capacity {
             let required_empty_slots = self.display_capacity - in_queue;
@@ -65,7 +74,7 @@ impl VisitorGate {
                 ui.add(WaitingAttack::empty_slot());
             }
         }
-        ui.add(WaitingAttack::upgrade_button());
+        ui.add(self.upgrade_button());
     }
 }
 impl Game {
@@ -76,7 +85,14 @@ impl Game {
         {
             let mut gate = self.home_town_world().write_resource::<VisitorGate>();
             gate.town_entity = Some(gate_entity);
-            gate.display_capacity = gate_building.level as usize;
+            gate.level = gate_building.level as usize;
+            gate.display_capacity =
+                BuildingType::Watergate.visitor_queue_capacity(gate_building.level);
+            gate.net_id = self
+                .home_town_world()
+                .read_component::<NetObj>()
+                .get(gate_entity)
+                .cloned();
             let mut uis = self.home_town_world().write_component::<UiMenu>();
             if let Some(ui) = uis.get_mut(gate_entity) {
                 gate.complement_ui_table(&mut ui.ui);
@@ -246,11 +262,22 @@ impl WaitingAttack {
             )),
         )
     }
-    fn upgrade_click_output() -> ClickOutput {
-        ClickOutput::DoNothing
+}
+impl VisitorGate {
+    fn upgrade_click_output(&self) -> ClickOutput {
+        if let Some(building) = self.net_id.as_ref().and_then(NetObj::as_building) {
+            ClickOutput::Event(GameEvent::SendGameMasterMessage(
+                GameMasterMessage::UpgradeBuilding(HttpUpgradeBuilding {
+                    building,
+                    current_level: self.level,
+                }),
+            ))
+        } else {
+            ClickOutput::DoNothing
+        }
     }
-    fn upgrade_button() -> UiElement {
-        UiElement::new(Self::upgrade_click_output())
+    fn upgrade_button(&self) -> UiElement {
+        UiElement::new(self.upgrade_click_output())
             .with_render_variant(RenderVariant::Img(SpriteSet::Simple(SingleSprite::Plus)))
     }
 }

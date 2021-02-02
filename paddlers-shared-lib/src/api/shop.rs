@@ -1,4 +1,4 @@
-use crate::api::keys::VillageKey;
+use crate::api::keys::{BuildingKey, VillageKey};
 use crate::models::*;
 use serde::{Deserialize, Serialize};
 
@@ -50,6 +50,11 @@ pub struct BuildingDeletion {
     pub village: VillageKey,
     pub x: usize,
     pub y: usize,
+}
+#[derive(Clone, Serialize, Deserialize)]
+pub struct BuildingUpgrade {
+    pub building: BuildingKey,
+    pub current_level: usize,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
