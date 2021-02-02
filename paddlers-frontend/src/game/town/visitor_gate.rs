@@ -4,7 +4,7 @@ use crate::{
     game::{components::UiMenu, units::attackers::hobo_sprite_sad, Game},
     gui::{
         gui_components::{ClickOutput, InteractiveTableArea, UiBox, UiElement},
-        sprites::SingleSprite,
+        sprites::{SingleSprite, SpriteSet},
         ui_state::Now,
         utils::{ImageCollection, RenderVariant, SubImg},
         z::Z_UI_MENU,
@@ -51,13 +51,13 @@ impl VisitorGate {
         self.inflight_visitor_groups = n;
     }
     pub fn queue_attack(&mut self, ui: &mut UiBox, atk: WaitingAttack) {
-        ui.remove(ClickOutput::DoNothing);
         ui.add(atk.ui_element());
         self.queue.insert(atk.key, atk);
-        self.fill_to_capacity_with_empty_slots(ui);
+        self.complement_ui_table(ui);
     }
-    pub fn fill_to_capacity_with_empty_slots(&self, ui: &mut UiBox) {
-        ui.remove(ClickOutput::DoNothing);
+    pub fn complement_ui_table(&self, ui: &mut UiBox) {
+        ui.remove(WaitingAttack::empty_slot_click_output());
+        ui.remove(WaitingAttack::upgrade_click_output());
         let in_queue = self.queue.len();
         if in_queue < self.display_capacity {
             let required_empty_slots = self.display_capacity - in_queue;
@@ -65,6 +65,7 @@ impl VisitorGate {
                 ui.add(WaitingAttack::empty_slot());
             }
         }
+        ui.add(WaitingAttack::upgrade_button());
     }
 }
 impl Game {
@@ -78,7 +79,7 @@ impl Game {
             gate.display_capacity = gate_building.level as usize;
             let mut uis = self.home_town_world().write_component::<UiMenu>();
             if let Some(ui) = uis.get_mut(gate_entity) {
-                gate.fill_to_capacity_with_empty_slots(&mut ui.ui);
+                gate.complement_ui_table(&mut ui.ui);
             }
         }
     }
@@ -117,7 +118,7 @@ impl Game {
                     .get_mut(gate_entity)
                 {
                     ui.ui.remove(attack.click_output());
-                    gate.fill_to_capacity_with_empty_slots(&mut ui.ui);
+                    gate.complement_ui_table(&mut ui.ui);
                 }
                 // Keep town/tile state consistent
                 self.town_mut()
@@ -195,7 +196,7 @@ impl WaitingAttack {
         let inner_size = (1.2, 0.8);
         let inner_offset = (0.15, 0.1);
         RenderVariant::ImgCollection(ImageCollection::new(
-            (1.0, 1.0),
+            (1.5, 1.0),
             vec![
                 SubImg::new(
                     SingleSprite::SingleDuckBackgroundShape,
@@ -211,7 +212,7 @@ impl WaitingAttack {
         let inner_size = (1.2, 0.8);
         let inner_offset = (0.15, 0.1);
         RenderVariant::ImgCollection(ImageCollection::new(
-            (1.0, 1.0),
+            (1.5, 1.0),
             vec![
                 SubImg::new(
                     SingleSprite::SingleDuckBackgroundShape,
@@ -229,17 +230,27 @@ impl WaitingAttack {
             ],
         ))
     }
+    fn empty_slot_click_output() -> ClickOutput {
+        ClickOutput::DoNothing
+    }
     fn empty_slot() -> UiElement {
-        UiElement::new(ClickOutput::DoNothing).with_render_variant(RenderVariant::ImgCollection(
-            ImageCollection::new(
-                (1.0, 1.0),
+        UiElement::new(Self::empty_slot_click_output()).with_render_variant(
+            RenderVariant::ImgCollection(ImageCollection::new(
+                (1.5, 1.0),
                 vec![SubImg::new(
                     SingleSprite::SingleDuckBackgroundShape,
                     (0.0, 0.0),
                     (1.5, 1.0),
                     Z_UI_MENU,
                 )],
-            ),
-        ))
+            )),
+        )
+    }
+    fn upgrade_click_output() -> ClickOutput {
+        ClickOutput::DoNothing
+    }
+    fn upgrade_button() -> UiElement {
+        UiElement::new(Self::upgrade_click_output())
+            .with_render_variant(RenderVariant::Img(SpriteSet::Simple(SingleSprite::Plus)))
     }
 }

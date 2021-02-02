@@ -30,7 +30,7 @@ pub fn draw_entity_img(
                 draw_static_image(
                     sprites,
                     window,
-                    &inner_area,
+                    &area,
                     img.default(),
                     Z_MENU_BOX + 2,
                     FitStrategy::Center,

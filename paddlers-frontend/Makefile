@@ -15,6 +15,8 @@ images:
 	$(MAKE) $(STATIC)/gui/duck_shape.png width=$(MENU_WIDTH)
 	$(MAKE) $(STATIC)/gui/duck_background_shape.png width=$(MENU_WIDTH)
 	$(MAKE) $(STATIC)/gui/visitor_gate.png width=$(MENU_WIDTH)
+	$(MAKE) $(STATIC)/gui/plus.png width=$(MENU_WIDTH)
+	$(MAKE) $(STATIC)/religion.png width=$(MENU_WIDTH)
 	$(MAKE) $(STATIC)/perks/conversion.png width=$(PERK_WIDTH)
 	$(MAKE) $(STATIC)/perks/invitation.png width=$(PERK_WIDTH)
 	$(MAKE) $(STATIC)/perks/nest_building.png width=$(PERK_WIDTH)
@@ -22,7 +24,6 @@ images:
 	$(MAKE) $(STATIC)/buildings/nest.png width=$(BUILDING_WIDTH)
 	$(MAKE) $(STATIC)/buildings/nests.png width=$(BUILDING_WIDTH)
 	$(MAKE) $(STATIC)/ducks/sitting_duck.png width=$(BUILDING_WIDTH)
-	$(MAKE) $(STATIC)/religion.png
 
 $(STATIC)/%.png: $(SOURCE)/%.svg
 	inkscape --without-gui --file $< --export-png $@ --export-width $(width)

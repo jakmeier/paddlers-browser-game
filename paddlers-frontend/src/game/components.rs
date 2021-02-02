@@ -188,7 +188,7 @@ impl UiMenu {
         UiMenu::new_private(UiBox::new(3, 3, 0.0, 1.0))
     }
     pub fn new_gate_menu() -> Self {
-        UiMenu::new_private(UiBox::new(2, 3, 0.0, 1.0))
+        UiMenu::new_private(UiBox::new(2, 3, 0.0, 5.0))
     }
     #[allow(dead_code)]
     pub fn with_shop_item<T: Into<ClickOutput> + Clone>(
