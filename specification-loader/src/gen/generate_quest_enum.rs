@@ -17,7 +17,7 @@ fn generate_type(
     out: &mut impl std::io::Write,
     parsed_quests: &[QuestDefinition],
 ) -> std::io::Result<()> {
-    writeln!(out, "#[derive(Clone,Copy,Debug)]")?;
+    writeln!(out, "#[derive(Clone,Copy,Debug,PartialEq,Hash)]")?;
     writeln!(out, "pub enum QuestName {{")?;
     let indent = "    ";
     for quest in parsed_quests {

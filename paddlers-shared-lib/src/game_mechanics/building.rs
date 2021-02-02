@@ -1,4 +1,4 @@
-use crate::story::story_state::StoryState;
+use crate::{api::shop::Price, story::story_state::StoryState};
 use crate::{
     civilization::{CivilizationPerk, CivilizationPerks},
     models::*,
@@ -132,5 +132,45 @@ impl BuildingType {
             BuildingType::SawMill => TaskType::ChopTree,
             _ => TaskType::Idle,
         }
+    }
+}
+
+impl BuildingType {
+    /// No cost means no upgrade available
+    pub fn upgrade_cost(&self, current_level: usize) -> Option<Price> {
+        match self {
+            BuildingType::Watergate => watergate_upgrade_cost(current_level),
+            _ => None,
+        }
+    }
+}
+fn watergate_upgrade_cost(level: usize) -> Option<Price> {
+    match level {
+        1 => Some(
+            Price::new()
+                .with(ResourceType::Feathers, 10)
+                .with(ResourceType::Logs, 5),
+        ),
+        2 => Some(
+            Price::new()
+                .with(ResourceType::Feathers, 10)
+                .with(ResourceType::Logs, 10),
+        ),
+        3 => Some(
+            Price::new()
+                .with(ResourceType::Feathers, 50)
+                .with(ResourceType::Logs, 20),
+        ),
+        4 => Some(
+            Price::new()
+                .with(ResourceType::Feathers, 200)
+                .with(ResourceType::Logs, 40),
+        ),
+        5 => Some(
+            Price::new()
+                .with(ResourceType::Feathers, 500)
+                .with(ResourceType::Logs, 100),
+        ),
+        _ => None,
     }
 }

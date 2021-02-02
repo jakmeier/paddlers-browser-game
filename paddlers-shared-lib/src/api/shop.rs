@@ -25,10 +25,10 @@ impl Cost for BuildingType {
             BuildingType::PresentB => vec![(ResourceType::Sticks, 50), (ResourceType::Logs, 50)],
             BuildingType::Temple => vec![],
             BuildingType::SingleNest => {
-                vec![(ResourceType::Feathers, 20), (ResourceType::Sticks, 20)]
+                vec![(ResourceType::Feathers, 10), (ResourceType::Sticks, 50)]
             }
             BuildingType::TripleNest => {
-                vec![(ResourceType::Feathers, 60), (ResourceType::Sticks, 60)]
+                vec![(ResourceType::Feathers, 100), (ResourceType::Sticks, 200)]
             }
             BuildingType::Watergate => {
                 vec![]
@@ -55,4 +55,18 @@ pub struct BuildingDeletion {
 #[derive(Clone, Serialize, Deserialize)]
 pub struct ProphetPurchase {
     pub village: VillageKey,
+}
+
+impl Price {
+    pub fn new() -> Self {
+        Price(Vec::new())
+    }
+    pub fn with(mut self, rt: ResourceType, amount: i64) -> Self {
+        for (r, ref mut n) in &mut self.0 {
+            if *r == rt {
+                *n += amount
+            }
+        }
+        self
+    }
 }

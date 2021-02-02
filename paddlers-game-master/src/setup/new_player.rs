@@ -25,7 +25,7 @@ impl DB {
             color: None,
             speed: 0.5,
             home: vid.num(),
-            mana: Some(10),
+            mana: Some(0),
             level: 1,
             exp: 0,
         };
