@@ -95,6 +95,10 @@ impl Game {
                 .cloned();
             let mut uis = self.home_town_world().write_component::<UiMenu>();
             if let Some(ui) = uis.get_mut(gate_entity) {
+                ui.ui.clear();
+                for atk in gate.queue.values() {
+                    ui.ui.add(atk.ui_element());
+                }
                 gate.complement_ui_table(&mut ui.ui);
             }
         }
@@ -268,6 +272,7 @@ impl VisitorGate {
         if let Some(building) = self.net_id.as_ref().and_then(NetObj::as_building) {
             ClickOutput::Event(GameEvent::SendGameMasterMessage(
                 GameMasterMessage::UpgradeBuilding(HttpUpgradeBuilding {
+                    entity: self.town_entity.expect("Entity for watergate invalidated?"),
                     building,
                     current_level: self.level,
                 }),

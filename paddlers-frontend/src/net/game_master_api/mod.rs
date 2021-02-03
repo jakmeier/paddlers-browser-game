@@ -20,6 +20,11 @@ static SENT_PLAYER_CREATION: AtomicBool = AtomicBool::new(false);
 pub enum GameMasterMessage {
     UpgradeBuilding(HttpUpgradeBuilding),
 }
+#[derive(Debug, PartialEq, Clone)]
+pub enum GameMasterResponse {
+    /// Only works on home town buildings
+    NewBuildingLevel(Entity, usize),
+}
 
 pub struct RestApiState {
     pub game_master_url: String,
@@ -31,6 +36,7 @@ pub struct HttpDeleteBuilding {
 }
 #[derive(Debug, PartialEq, Clone)]
 pub struct HttpUpgradeBuilding {
+    pub entity: Entity,
     pub building: BuildingKey,
     pub current_level: usize,
 }
@@ -112,15 +118,18 @@ impl RestApiState {
     }
 
     fn http_upgrade_building(&mut self, input: HttpUpgradeBuilding) {
+        let uri = self.game_master_url.clone() + "/shop/building/upgrade";
         let msg = BuildingUpgrade {
             building: input.building,
             current_level: input.current_level,
         };
-        let future = ajax::fetch_json(
-            "POST",
-            &format!("{}/shop/building/upgrade", self.game_master_url),
-            &msg,
-        );
+        let future = async move {
+            ajax::fetch_empty_response("POST", &uri, &msg).await?;
+            game_event(GameEvent::GameMasterResponse(
+                GameMasterResponse::NewBuildingLevel(input.entity, input.current_level + 1),
+            ));
+            Ok(())
+        };
         spawn_future(future);
     }
 

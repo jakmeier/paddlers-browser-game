@@ -126,6 +126,9 @@ impl<'a, 'b> TownFrame<'a, 'b> {
                 state.town_mut().refresh_attacker_direction();
                 state.refresh_visitor_gate();
             }
+            Signal::BuildingUpgraded(BuildingType::Watergate) => {
+                state.refresh_visitor_gate();
+            }
             _ => {}
         }
     }

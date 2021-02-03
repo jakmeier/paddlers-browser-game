@@ -30,7 +30,6 @@ pub mod shared_types;
 pub mod story;
 pub mod test_data;
 
-
 #[cfg(feature = "game_mechanics")]
 /// Module contains game-logic specification which needs to be shared between the frontend and the game-master (but not the GQL DB interface, or even the specification loader)
 pub mod game_mechanics;

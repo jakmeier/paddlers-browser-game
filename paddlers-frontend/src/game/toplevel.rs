@@ -14,6 +14,7 @@ pub enum Signal {
     PlayerInfoUpdated,
     LocaleUpdated,
     BuildingBuilt(BuildingType),
+    BuildingUpgraded(BuildingType),
     BuildingRemoved(BuildingType),
     NewReportCount(usize),
     NewWorker(TaskType),
