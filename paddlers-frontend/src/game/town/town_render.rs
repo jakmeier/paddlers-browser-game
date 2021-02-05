@@ -9,35 +9,40 @@ use std::f32::consts::PI;
 impl Town {
     pub fn render(
         &self,
-        window: &mut DisplayArea,
+        display: &mut DisplayArea,
         sprites: &mut Sprites,
         tick: u32,
+        water_shader: &CustomShader,
     ) -> PadlResult<()> {
         let d = TOWN_TILE_S as f32;
+
+        let water_area = Rectangle::new((0, TOWN_LANE_Y as f32 * d), (TOWN_X as f32 * d, d));
+        display.draw(&water_area, water_shader);
 
         for (x, col) in self.map.0.iter().enumerate() {
             for (y, _tile) in col.iter().enumerate() {
                 if y == TOWN_LANE_Y {
-                    let shifted = ((tick / 10) % (d as u32)) as i32;
-                    let t = Transform::translate((shifted, 0));
-                    window.draw_ex(
-                        &Rectangle::new((d * x as f32, d * y as f32), (d, d)),
-                        &sprites.index(SpriteIndex::Simple(SingleSprite::Water)),
-                        t,
-                        Z_TEXTURE,
-                    );
-                    if x == 0 {
-                        let x = -1;
-                        window.draw_ex(
-                            &Rectangle::new((d * x as f32, d * y as f32), (d, d)),
-                            &sprites.index(SpriteIndex::Simple(SingleSprite::Water)),
-                            t,
-                            Z_TEXTURE,
-                        );
-                    }
+                    // water already drawn with custom shader
+                    // let shifted = ((tick / 10) % (d as u32)) as i32;
+                    // let t = Transform::translate((shifted, 0));
+                    // display.draw_ex(
+                    //     &Rectangle::new((d * x as f32, d * y as f32), (d, d)),
+                    //     &sprites.index(SpriteIndex::Simple(SingleSprite::Water)),
+                    //     t,
+                    //     Z_TEXTURE,
+                    // );
+                    // if x == 0 {
+                    //     let x = -1;
+                    //     display.draw_ex(
+                    //         &Rectangle::new((d * x as f32, d * y as f32), (d, d)),
+                    //         &sprites.index(SpriteIndex::Simple(SingleSprite::Water)),
+                    //         t,
+                    //         Z_TEXTURE,
+                    //     );
+                    // }
                     let grass_top_img = &sprites.index(SpriteIndex::Simple(SingleSprite::GrassTop));
                     let h = d / 200.0 * 30.0;
-                    window.draw_ex(
+                    display.draw_ex(
                         &Rectangle::new((d * x as f32, d * y as f32 + d - h), (d, h)),
                         grass_top_img,
                         Transform::IDENTITY,
@@ -45,7 +50,7 @@ impl Town {
                     );
                     let grass_bot_img = &sprites.index(SpriteIndex::Simple(SingleSprite::GrassBot));
                     let h = d / 200.0 * 42.0;
-                    window.draw_ex(
+                    display.draw_ex(
                         &Rectangle::new((d * x as f32, d * y as f32), (d, h)),
                         grass_bot_img,
                         Transform::IDENTITY,
@@ -54,7 +59,7 @@ impl Town {
                 } else {
                     let img = sprites.index(SpriteIndex::Simple(SingleSprite::Grass));
                     let rect = Rectangle::new((d * x as f32, d * y as f32), (d, d));
-                    window.draw(&rect, &img);
+                    display.draw(&rect, &img);
                 }
             }
         }

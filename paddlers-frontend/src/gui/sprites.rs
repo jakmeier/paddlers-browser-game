@@ -168,7 +168,7 @@ pub enum AnimatedSprite {
 }
 
 impl Sprites {
-    pub fn index(&mut self, index: SpriteIndex) -> Image {
+    pub fn index(&self, index: SpriteIndex) -> Image {
         match index {
             SpriteIndex::Simple(j) => {
                 let i = j.index_in_vector();
@@ -179,7 +179,7 @@ impl Sprites {
                 self.img[i].clone()
             }
             SpriteIndex::Animated(j, d, a) => {
-                let animations = &mut self.animations;
+                let animations = & self.animations;
                 let i = j.index_in_vector();
                 animations[i].sprite(d, a)
             }

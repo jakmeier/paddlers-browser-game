@@ -22,8 +22,15 @@ pub enum Signal {
 }
 
 impl Game {
-    pub fn register(self) {
-        let fh = paddle::register_frame(GameActivity, self, (0, 0));
+    pub fn register<I>(initializer: I)
+    where
+        I: FnOnce(&mut Display) -> PadlResult<Game> + 'static,
+    {
+        let fh = paddle::register_frame_with(
+            GameActivity,
+            move |display| initializer(display).nuts_check().unwrap(),
+            (0, 0),
+        );
         fh.listen(|_, game, _msg: &crate::init::loading::PostInit| {
             game.post_load().nuts_check();
         });

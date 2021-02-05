@@ -74,7 +74,9 @@ impl VisitorGate {
                 ui.add(WaitingAttack::empty_slot());
             }
         }
-        ui.add(self.upgrade_button());
+        if let Some(button) = self.upgrade_button() {
+            ui.add(button);
+        }
     }
 }
 impl Game {
@@ -281,8 +283,15 @@ impl VisitorGate {
             ClickOutput::DoNothing
         }
     }
-    fn upgrade_button(&self) -> UiElement {
-        UiElement::new(self.upgrade_click_output())
-            .with_render_variant(RenderVariant::Img(SpriteSet::Simple(SingleSprite::Plus)))
+    fn upgrade_button(&self) -> Option<UiElement> {
+        if let Some(upgrade_price) = BuildingType::Watergate.upgrade_cost(self.level) {
+            Some(
+                UiElement::new(self.upgrade_click_output())
+                    .with_render_variant(RenderVariant::Img(SpriteSet::Simple(SingleSprite::Plus)))
+                    .with_cost(upgrade_price),
+            )
+        } else {
+            None
+        }
     }
 }

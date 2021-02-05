@@ -51,7 +51,8 @@ impl<'a, 'b> Frame for TownFrame<'a, 'b> {
             let tick = state.world.read_resource::<ClockTick>().0;
             let asset = &mut state.sprites;
             let town = state.town_context.town_mut();
-            town.render(window, asset, tick).nuts_check();
+            let water_shader = &state.shaders.water;
+            town.render(window, asset, tick, water_shader).nuts_check();
         }
 
         let world = state.town_context.world();

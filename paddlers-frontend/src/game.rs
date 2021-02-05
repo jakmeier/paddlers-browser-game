@@ -66,6 +66,7 @@ pub(crate) struct Game {
 
 impl Game {
     pub fn load_game(
+        display: &mut Display,
         sprites: Sprites,
         locale: TextDb,
         game_data: GameLoadingData,
@@ -75,7 +76,7 @@ impl Game {
         let town_context = TownContextManager::new(player_info.clone());
         let mut world = crate::init::init_world(player_info);
         let now = utc_now();
-        let shaders = game_data.shaders;
+        let shaders = Shaders::load(display, &sprites);
         world.insert::<Now>(Now(now));
 
         world.maintain();

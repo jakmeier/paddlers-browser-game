@@ -1,14 +1,11 @@
+use crate::net::graphql::{
+    query_types::{
+        AttacksResponse, BuildingsResponse, HobosQueryResponse, VolatileVillageInfoResponse,
+    },
+    ReportsResponse,
+};
 use crate::prelude::{PadlError, PadlErrorCode};
 use crate::resolution::{SCREEN_H, SCREEN_W};
-use crate::{
-    game::shaders::Shaders,
-    net::graphql::{
-        query_types::{
-            AttacksResponse, BuildingsResponse, HobosQueryResponse, VolatileVillageInfoResponse,
-        },
-        ReportsResponse,
-    },
-};
 use crate::{
     game::{
         game_event_manager::load_game_event_manager, net_receiver::loading_update_net,
@@ -47,7 +44,6 @@ pub struct PostInit;
 pub(crate) struct LoadingFrame {
     preload_float: FloatingText,
     net_chan: Receiver<NetMsg>,
-    loaded_shaders: bool,
 }
 
 pub struct GameLoadingData {
@@ -57,7 +53,6 @@ pub struct GameLoadingData {
     pub hobos_response: HobosQueryResponse,
     pub attacking_hobos: AttacksResponse,
     pub village_info: VolatileVillageInfoResponse,
-    pub shaders: Shaders,
 }
 
 impl LoadingFrame {
@@ -69,7 +64,7 @@ impl LoadingFrame {
         });
         aid.on_delete_domained(|loading_state, domain| {
             let loaded_data = std::mem::take(domain.get_mut::<LoadedData>());
-            loading_state.finalize(loaded_data).nuts_check();
+            loading_state.finalize_loading(loaded_data).nuts_check();
         });
         aid.subscribe(move |_loading_state, _msg: &LoadingDone| {
             aid.set_status(LifecycleStatus::Deleted);
@@ -125,8 +120,7 @@ impl LoadingFrame {
             .with_manually_reported::<AttacksResponse>("Summon visitors")
             .with_manually_reported::<VolatileVillageInfoResponse>("Gather village news")
             .with_manually_reported::<ReportsResponse>("Gather letters from mailbox")
-            .with_manually_reported::<QuestsResponse>("Listening to god's voice")
-            .with_manually_reported::<Shaders>("Attending an art class");
+            .with_manually_reported::<QuestsResponse>("Listening to god's voice");
 
         load_manager.attach_to_domain();
 
@@ -135,7 +129,6 @@ impl LoadingFrame {
         LoadingFrame {
             preload_float,
             net_chan,
-            loaded_shaders: false,
         }
         .run_as_activity();
     }
@@ -157,7 +150,7 @@ impl LoadingFrame {
         draw_progress_bar(window, &mut self.preload_float, area, progress, &msg)?;
         Ok(())
     }
-    fn finalize(self, mut loaded_data: LoadedData) -> PadlResult<()> {
+    fn finalize_loading(self, mut loaded_data: LoadedData) -> PadlResult<()> {
         let catalog = (*loaded_data.extract::<PadlResult<gettext::Catalog>>()?)?;
         let maybe_images: Vec<paddle::PaddleResult<Image>> = loaded_data.extract_vec()?;
         let mut images = vec![];
@@ -174,43 +167,46 @@ impl LoadingFrame {
         let sprites = Sprites::new(images, animations);
 
         let game_data = GameLoadingData::try_from_loaded_data(&mut loaded_data)?;
+        Game::register(move |display| {
+            match Game::load_game(display, sprites, catalog, game_data, net_chan) {
+                Err(e) => {
+                    TextBoard::display_error_message(":(\nLoading game failed".to_owned())
+                        .nuts_check(); // TODO: multi-lang errors
+                    panic!("Fatal Error: Could not load game {:?}", e);
+                }
+                Ok(game) => {
+                    let view = UiView::Town;
+                    let viewer = super::frame_loading::load_viewer(view);
 
-        match Game::load_game(sprites, catalog, game_data, net_chan) {
-            Err(e) => {
-                TextBoard::display_error_message(":(\nLoading game failed".to_owned()).nuts_check(); // TODO: multi-lang errors
-                panic!("Fatal Error: Could not load game {:?}", e);
+                    let leaderboard_data = *loaded_data.extract::<NetMsg>()?;
+                    paddle::share(leaderboard_data);
+
+                    let reports = *loaded_data.extract::<ReportsResponse>()?;
+                    paddle::share(NetMsg::Reports(reports));
+
+                    let quests = *loaded_data.extract::<QuestsResponse>()?;
+                    paddle::share(NetMsg::Quests(quests));
+
+                    let viewer_activity = nuts::new_domained_activity(viewer, &Domain::Frame);
+                    viewer_activity.subscribe_domained(|viewer, domain, _: &UpdateWorld| {
+                        let game: &mut Game = domain.try_get_mut().expect("Forgot to insert Game?");
+                        let view: UiView = *game.world.fetch();
+                        viewer.set_view(view);
+                    });
+                    load_game_event_manager();
+
+                    paddle::share_foreground(Signal::ResourcesUpdated);
+                    paddle::share(Signal::LocaleUpdated);
+
+                    crate::net::start_sync();
+                    paddle::share(PostInit);
+
+                    Ok(game)
+                }
             }
-            Ok(game) => {
-                game.register();
-                let view = UiView::Town;
-                let viewer = super::frame_loading::load_viewer(view);
+        });
 
-                let leaderboard_data = *loaded_data.extract::<NetMsg>()?;
-                paddle::share(leaderboard_data);
-
-                let reports = *loaded_data.extract::<ReportsResponse>()?;
-                paddle::share(NetMsg::Reports(reports));
-
-                let quests = *loaded_data.extract::<QuestsResponse>()?;
-                paddle::share(NetMsg::Quests(quests));
-
-                let viewer_activity = nuts::new_domained_activity(viewer, &Domain::Frame);
-                viewer_activity.subscribe_domained(|viewer, domain, _: &UpdateWorld| {
-                    let game: &mut Game = domain.try_get_mut().expect("Forgot to insert Game?");
-                    let view: UiView = *game.world.fetch();
-                    viewer.set_view(view);
-                });
-                load_game_event_manager();
-
-                paddle::share_foreground(Signal::ResourcesUpdated);
-                paddle::share(Signal::LocaleUpdated);
-
-                crate::net::start_sync();
-                paddle::share(PostInit);
-
-                Ok(())
-            }
-        }
+        Ok(())
     }
 }
 async fn load_image_from_variant(v: &AnimationVariantDef) -> PadlResult<Image> {
@@ -263,13 +259,6 @@ impl Frame for LoadingFrame {
         } else {
             self.draw_progress(display, 0.0, "Loading...").nuts_check();
         }
-        if !self.loaded_shaders {
-            if let Some(lm) = state.as_mut() {
-                let shaders = Shaders::load(display.full_mut());
-                lm.add_progress(shaders);
-                self.loaded_shaders = true;
-            }
-        }
     }
     fn update(&mut self, maybe_lm: &mut Self::State) {
         if let Some(lm) = maybe_lm.as_mut() {
@@ -287,7 +276,6 @@ impl GameLoadingData {
             hobos_response: *loaded_data.extract()?,
             attacking_hobos: *loaded_data.extract()?,
             village_info: *loaded_data.extract()?,
-            shaders: *loaded_data.extract()?,
         })
     }
 }
