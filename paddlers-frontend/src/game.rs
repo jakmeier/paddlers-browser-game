@@ -57,6 +57,7 @@ pub(crate) struct Game {
     pub mouse: PointerTracker,
     pub map: Option<GlobalMapPrivateState>,
     pub town_context: TownContextManager,
+    pub loaded_data: Option<LoadedData>,
 
     #[cfg(feature = "dev_view")]
     pub palette: bool,
@@ -71,6 +72,7 @@ impl Game {
         locale: TextDb,
         game_data: GameLoadingData,
         net_chan: Receiver<NetMsg>,
+        loaded_data: LoadedData,
     ) -> PadlResult<Self> {
         let player_info = game_data.player_info;
         let town_context = TownContextManager::new(player_info.clone());
@@ -91,6 +93,7 @@ impl Game {
             map: None,
             town_context,
             mouse: Default::default(),
+            loaded_data: Some(loaded_data),
             #[cfg(feature = "dev_view")]
             palette: false,
             #[cfg(feature = "dev_view")]

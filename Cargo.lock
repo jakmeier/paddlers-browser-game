@@ -2073,8 +2073,6 @@ dependencies = [
 [[package]]
 name = "nuts"
 version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b914b9cbb6ca17ed8d0857da8c1c35be93c4dccf5b7ccd905887431c44ece2da"
 dependencies = [
  "wasm-bindgen",
  "web-sys",

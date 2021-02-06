@@ -1,3 +1,4 @@
+use crate::net::graphql::QuestsResponse;
 use crate::net::graphql::{
     query_types::{
         AttacksResponse, BuildingsResponse, HobosQueryResponse, VolatileVillageInfoResponse,
@@ -6,18 +7,11 @@ use crate::net::graphql::{
 };
 use crate::prelude::{PadlError, PadlErrorCode};
 use crate::resolution::{SCREEN_H, SCREEN_W};
-use crate::{
-    game::{
-        game_event_manager::load_game_event_manager, net_receiver::loading_update_net,
-        toplevel::Signal,
-    },
-    resolution::OUTER_MENU_AREA_W,
-};
-use crate::{gui::input::UiView, net::graphql::QuestsResponse};
+use crate::{game::net_receiver::loading_update_net, resolution::OUTER_MENU_AREA_W};
 use nuts::LifecycleStatus;
 use paddle::{
     DisplayArea, ErrorMessage, Frame, Image, LoadScheduler, LoadedData, LoadingDone,
-    LoadingProgress, NutsCheck, TextBoard, UpdateWorld,
+    LoadingProgress, NutsCheck, TextBoard,
 };
 use wasm_bindgen::JsCast;
 use web_sys::HtmlCanvasElement;
@@ -168,40 +162,17 @@ impl LoadingFrame {
 
         let game_data = GameLoadingData::try_from_loaded_data(&mut loaded_data)?;
         Game::register(move |display| {
-            match Game::load_game(display, sprites, catalog, game_data, net_chan) {
+            match Game::load_game(display, sprites, catalog, game_data, net_chan, loaded_data) {
                 Err(e) => {
                     TextBoard::display_error_message(":(\nLoading game failed".to_owned())
                         .nuts_check(); // TODO: multi-lang errors
                     panic!("Fatal Error: Could not load game {:?}", e);
                 }
                 Ok(game) => {
-                    let view = UiView::Town;
-                    let viewer = super::frame_loading::load_viewer(view);
-
-                    let leaderboard_data = *loaded_data.extract::<NetMsg>()?;
-                    paddle::share(leaderboard_data);
-
-                    let reports = *loaded_data.extract::<ReportsResponse>()?;
-                    paddle::share(NetMsg::Reports(reports));
-
-                    let quests = *loaded_data.extract::<QuestsResponse>()?;
-                    paddle::share(NetMsg::Quests(quests));
-
-                    let viewer_activity = nuts::new_domained_activity(viewer, &Domain::Frame);
-                    viewer_activity.subscribe_domained(|viewer, domain, _: &UpdateWorld| {
-                        let game: &mut Game = domain.try_get_mut().expect("Forgot to insert Game?");
-                        let view: UiView = *game.world.fetch();
-                        viewer.set_view(view);
-                    });
-                    load_game_event_manager();
-
-                    paddle::share_foreground(Signal::ResourcesUpdated);
-                    paddle::share(Signal::LocaleUpdated);
-
-                    crate::net::start_sync();
-                    paddle::share(PostInit);
-
-                    Ok(game)
+                    // Note that at this point the game object has been created but is not stored to the Domain yet.
+                    // This means that publishing messages with handlers that require the game state is not allowed, yet.
+                    // That kind of initialization can be done in GameActivity::initialize_game
+                    game
                 }
             }
         });

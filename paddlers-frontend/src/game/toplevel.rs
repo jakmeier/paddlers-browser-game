@@ -3,10 +3,12 @@
 use crate::prelude::*;
 use paddle::*;
 
+use crate::game::game_event_manager::load_game_event_manager;
 use crate::game::*;
 use crate::gui::ui_state::*;
+use crate::init::{frame_loading::load_viewer, loading::PostInit};
+use crate::net::graphql::{QuestsResponse, ReportsResponse};
 use crate::specs::WorldExt;
-
 #[derive(Clone, Debug)]
 /// Signals are a way to broadcast events for event listeners across views.
 pub enum Signal {
@@ -24,11 +26,11 @@ pub enum Signal {
 impl Game {
     pub fn register<I>(initializer: I)
     where
-        I: FnOnce(&mut Display) -> PadlResult<Game> + 'static,
+        I: FnOnce(&mut Display) -> Game + 'static,
     {
         let fh = paddle::register_frame_with(
-            GameActivity,
-            move |display| initializer(display).nuts_check().unwrap(),
+            GameActivity { initialized: false },
+            move |display| initializer(display),
             (0, 0),
         );
         fh.listen(|_, game, _msg: &crate::init::loading::PostInit| {
@@ -37,7 +39,10 @@ impl Game {
     }
 }
 
-struct GameActivity;
+struct GameActivity {
+    /// For initialization of the game, which requires all data to be loaded previously and the Game objet to be placed in the domain.
+    initialized: bool,
+}
 impl Frame for GameActivity {
     type State = Game;
     const WIDTH: u32 = crate::resolution::SCREEN_W;
@@ -63,6 +68,10 @@ impl Frame for GameActivity {
         #[cfg(feature = "dev_view")]
         game.start_update();
 
+        if !self.initialized {
+            self.initialize_game(game).nuts_check();
+        }
+
         game.total_updates += 1;
         game.update_time_reference();
 
@@ -87,5 +96,40 @@ impl Frame for GameActivity {
     }
     fn pointer(&mut self, state: &mut Self::State, event: PointerEvent) {
         state.mouse.track_pointer_event(&event);
+    }
+}
+
+impl GameActivity {
+    fn initialize_game(&mut self, game: &mut Game) -> PadlResult<()> {
+        let view = UiView::Town;
+        let viewer = load_viewer(view);
+
+        let mut loaded_data = game.loaded_data.take().unwrap();
+
+        let leaderboard_data = *loaded_data.extract::<NetMsg>()?;
+        paddle::share(leaderboard_data);
+
+        let reports = *loaded_data.extract::<ReportsResponse>()?;
+        paddle::share(NetMsg::Reports(reports));
+
+        let quests = *loaded_data.extract::<QuestsResponse>()?;
+        paddle::share(NetMsg::Quests(quests));
+
+        let viewer_activity = nuts::new_domained_activity(viewer, &Domain::Frame);
+        viewer_activity.subscribe_domained(|viewer, domain, _: &UpdateWorld| {
+            let game: &mut Game = domain.try_get_mut().expect("Forgot to insert Game?");
+            let view: UiView = *game.world.fetch();
+            viewer.set_view(view);
+        });
+        load_game_event_manager();
+
+        paddle::share_foreground(Signal::ResourcesUpdated);
+        paddle::share(Signal::LocaleUpdated);
+
+        crate::net::start_sync();
+        paddle::share(PostInit);
+
+        self.initialized = true;
+        Ok(())
     }
 }

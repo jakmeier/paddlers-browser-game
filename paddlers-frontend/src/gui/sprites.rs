@@ -179,7 +179,7 @@ impl Sprites {
                 self.img[i].clone()
             }
             SpriteIndex::Animated(j, d, a) => {
-                let animations = & self.animations;
+                let animations = &self.animations;
                 let i = j.index_in_vector();
                 animations[i].sprite(d, a)
             }

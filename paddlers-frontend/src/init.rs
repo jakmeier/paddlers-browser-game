@@ -7,7 +7,7 @@ pub mod wasm_setup;
 /// Handles the loading phase when all assets are downloaded
 pub mod loading;
 
-mod frame_loading;
+pub mod frame_loading;
 /// Boiler-plate code for initializing SPECS
 pub mod specs_registration;
 

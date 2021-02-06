@@ -1,5 +1,5 @@
-use paddle::{CustomShader, Display, Image, UniformValue, VertexDescriptor};
 use crate::gui::sprites::{SingleSprite, SpriteIndex, Sprites};
+use paddle::{CustomShader, Display, Image, UniformValue, VertexDescriptor};
 
 pub const VERTEX_SHADER: &str = include_str!("shaders/vertex_shader.glsl");
 pub const VERTEX_SHADER_WITH_TEX: &str = include_str!("shaders/vertex_shader_with_tex.glsl");
