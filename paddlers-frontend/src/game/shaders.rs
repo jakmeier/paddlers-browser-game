@@ -49,7 +49,7 @@ fn religion_background_shader(display: &mut Display) -> CustomShader {
 fn water_shader(display: &mut Display, water_texture: Image) -> CustomShader {
     let vertex_shader = VERTEX_SHADER_WITH_TEX;
     let fragment_shader = WATER_FRAGMENT_SHADER;
-    let vertex_descriptor = VertexDescriptor::new().with_pos();
+    let vertex_descriptor = VertexDescriptor::new().with_pos().with_tex();
 
     let projection = display.webgl_transform();
 

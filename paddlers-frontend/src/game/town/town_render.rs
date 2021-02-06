@@ -7,39 +7,17 @@ use paddle::*;
 use std::f32::consts::PI;
 
 impl Town {
-    pub fn render(
-        &self,
-        display: &mut DisplayArea,
-        sprites: &mut Sprites,
-        tick: u32,
-        water_shader: &CustomShader,
-    ) -> PadlResult<()> {
+    pub fn render_water(&self, display: &mut DisplayArea, water_shader: &CustomShader) {
         let d = TOWN_TILE_S as f32;
-
-        let water_area = Rectangle::new((0, TOWN_LANE_Y as f32 * d), (TOWN_X as f32 * d, d));
+        let water_area = Rectangle::new((0.0, d * TOWN_LANE_Y as f32), (d * TOWN_X as f32, d));
         display.draw(&water_area, water_shader);
-
+    }
+    pub fn render(&self, display: &mut DisplayArea, sprites: &mut Sprites) {
+        let d = TOWN_TILE_S as f32;
         for (x, col) in self.map.0.iter().enumerate() {
             for (y, _tile) in col.iter().enumerate() {
                 if y == TOWN_LANE_Y {
                     // water already drawn with custom shader
-                    // let shifted = ((tick / 10) % (d as u32)) as i32;
-                    // let t = Transform::translate((shifted, 0));
-                    // display.draw_ex(
-                    //     &Rectangle::new((d * x as f32, d * y as f32), (d, d)),
-                    //     &sprites.index(SpriteIndex::Simple(SingleSprite::Water)),
-                    //     t,
-                    //     Z_TEXTURE,
-                    // );
-                    // if x == 0 {
-                    //     let x = -1;
-                    //     display.draw_ex(
-                    //         &Rectangle::new((d * x as f32, d * y as f32), (d, d)),
-                    //         &sprites.index(SpriteIndex::Simple(SingleSprite::Water)),
-                    //         t,
-                    //         Z_TEXTURE,
-                    //     );
-                    // }
                     let grass_top_img = &sprites.index(SpriteIndex::Simple(SingleSprite::GrassTop));
                     let h = d / 200.0 * 30.0;
                     display.draw_ex(
@@ -63,7 +41,6 @@ impl Town {
                 }
             }
         }
-        Ok(())
     }
 
     pub fn shadow_rectified_circle(

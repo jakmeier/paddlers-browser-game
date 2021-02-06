@@ -43,16 +43,20 @@ impl<'a, 'b> Frame for TownFrame<'a, 'b> {
         world.maintain();
         self.town_dispatcher.dispatch(world);
     }
-    fn draw(&mut self, state: &mut Self::State, window: &mut DisplayArea, _timestamp: f64) {
+    fn draw(&mut self, state: &mut Self::State, window: &mut DisplayArea, timestamp: f64) {
         {
             // FIXME: This should not be necessary if resources are defined properly
             state.prepare_town_resources();
 
-            let tick = state.world.read_resource::<ClockTick>().0;
-            let asset = &mut state.sprites;
             let town = state.town_context.town_mut();
             let water_shader = &state.shaders.water;
-            town.render(window, asset, tick, water_shader).nuts_check();
+            window.update_uniform(
+                water_shader.render_pipeline(),
+                "Time",
+                &UniformValue::F32((timestamp / 1000.0) as f32),
+            );
+            town.render_water(window, water_shader);
+            town.render(window, &mut state.sprites);
         }
 
         let world = state.town_context.world();
