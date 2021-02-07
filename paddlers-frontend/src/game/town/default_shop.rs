@@ -56,42 +56,47 @@ impl DefaultShop {
     }
 }
 
-impl Game {
-    // TODO: Shouldn't this be in town_menu?
-    pub fn render_default_shop(
-        &mut self,
+impl DefaultShop {
+    pub(crate) fn render_default_shop(
+        game: &mut Game,
         window: &mut DisplayArea,
         area: &Rectangle,
         text_provider: &mut TableTextProvider,
         res_comp: &mut ResourcesComponent,
+        mouse_pos: Option<Vector>,
     ) {
         let mut table = vec![];
         let mut area = *area;
-        // table.push(faith_details(self.town().faith));
+
+        // <TODO: This stuff should be moved to the town info view>
+        // table.push(faith_details(game.town().faith));
         table.push(forest_details(
-            self.town().forest_size(),
-            self.town().forest_usage(),
+            game.town().forest_size(),
+            game.town().forest_usage(),
         ));
-        table.push(total_aura_details(self.town().ambience()));
-        let shop = &mut self.town_context.world().write_resource::<DefaultShop>();
-        Self::draw_shop_prices(window, &mut area, &mut shop.ui, res_comp, self.mouse.pos())
-            .nuts_check();
+        table.push(total_aura_details(game.town().ambience()));
+        // </TODO>
+
+        let shop = &mut game.town_context.world().write_resource::<DefaultShop>();
+        Game::draw_shop_prices(window, &mut area, &mut shop.ui, res_comp, mouse_pos).nuts_check();
 
         table.push(TableRow::InteractiveArea(&mut shop.ui));
 
         draw_table(
             window,
-            &mut self.sprites,
+            &mut game.sprites,
             &mut table,
             &area,
             text_provider,
             60.0,
             Z_UI_MENU,
-            self.town_context.world().read_resource::<Now>().0,
+            game.town_context.world().read_resource::<Now>().0,
             TableVerticalAlignment::Top,
-            self.mouse.pos(),
+            mouse_pos,
         )
     }
+}
+impl Game {
     pub fn draw_shop_prices(
         display: &mut DisplayArea,
         area: &mut Rectangle,

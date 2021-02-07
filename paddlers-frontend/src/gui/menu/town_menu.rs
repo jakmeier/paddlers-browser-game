@@ -89,11 +89,13 @@ impl<'a, 'b> Frame for TownMenuFrame<'a, 'b> {
                 foreign,
             );
         } else if !foreign {
-            state.render_default_shop(
+            DefaultShop::render_default_shop(
+                state,
                 window,
                 &area,
                 &mut self.text_provider,
                 &mut self.hover_component,
+                self.mouse.pos(),
             );
         }
 
