@@ -44,13 +44,21 @@ pub fn draw_leaf_border(
     let leaves = &sprites.index(SpriteIndex::Directed(lv, Direction::East));
     let h = leaf_h;
     let start = area.pos.translate((0, -h / 2.0));
-    fill_row_with_img(window, leaves, start, area.x() + area.width(), h);
+    fill_row_with_img(
+        window,
+        leaves,
+        start,
+        area.x() + area.width(),
+        h,
+        Transform::vertical_flip(),
+    );
     fill_row_with_img(
         window,
         leaves,
         start.translate((0, area.height())),
         area.x() + area.width(),
         h,
+        Transform::IDENTITY,
     );
 }
 
@@ -77,12 +85,19 @@ fn draw_column_texture(
     window.draw_ex(&stamp, bot, Transform::IDENTITY, Z_UI_BORDERS);
 }
 
-fn fill_row_with_img(window: &mut DisplayArea, img: &Image, start: Vector, end: f32, h: f32) {
+fn fill_row_with_img(
+    window: &mut DisplayArea,
+    img: &Image,
+    start: Vector,
+    end: f32,
+    h: f32,
+    transform: Transform,
+) {
     let mut stamp = Rectangle::new(start, img.natural_size());
     let factor = h / stamp.height();
     stamp.size = stamp.size * factor;
     while stamp.x() < end {
-        window.draw_ex(&stamp, img, Transform::IDENTITY, Z_UI_BORDERS - 1);
+        window.draw_ex(&stamp, img, transform, Z_UI_BORDERS - 1);
         stamp.pos.x += stamp.width() * 0.9;
     }
 }
@@ -95,5 +110,5 @@ pub fn draw_duck_step_line(
     h: f32,
 ) {
     let img = &sprites.index(SpriteIndex::Simple(SingleSprite::DuckSteps));
-    fill_row_with_img(window, img, start, end, h);
+    fill_row_with_img(window, img, start, end, h, Transform::IDENTITY);
 }
