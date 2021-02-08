@@ -7,6 +7,7 @@ use crate::gui::utils::*;
 use animation::AnimatedObject;
 use mogwai::prelude::*;
 use paddle::*;
+use serde::Deserialize;
 
 /// Manager of all sprites.
 /// Cannot easily be in a component because Image is thread local.
@@ -26,7 +27,7 @@ impl Sprites {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Deserialize)]
 /// An instance of a SpriteIndex is a key for a specific sprite (Something that maps uniquely to a quicksilver Image)
 pub enum SpriteIndex {
     // Multi-sprite images
@@ -80,7 +81,7 @@ impl SpriteSet {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Deserialize)]
 pub enum SingleSprite {
     Grass,
     GrassTop,
@@ -157,12 +158,12 @@ pub enum SingleSprite {
     Plus,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Deserialize)]
 pub enum DirectedSprite {
     VerticalLeaves,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Deserialize)]
 pub enum AnimatedSprite {
     Roger,
 }

@@ -197,9 +197,9 @@ impl Game {
                 nuts::send_to::<RestApiState, _>(t);
                 paddle::share(crate::game::dialogue::NewStoryState { new_story_state });
             }
-            DialogueAction::TownSelectEntity(e) => {
+            DialogueAction::ClearSelectedUnit => {
                 let world = self.town_context.world();
-                world.write_resource::<UiState>().selected_entity = e;
+                world.write_resource::<UiState>().selected_entity = None;
             }
             DialogueAction::SettleHobo => {
                 let e = self

@@ -1,3 +1,4 @@
+use crate::gui::ui_state::UiState;
 use crate::prelude::*;
 use crate::{game::fight::*, net::game_master_api::HttpDeleteBuilding};
 use crate::{game::movement::Position, net::game_master_api::RestApiState};
@@ -7,16 +8,16 @@ use crate::{game::town::tiling, net::state::current_village};
 use paddle::quicksilver_compat::*;
 use paddle::Vector;
 use paddlers_shared_lib::prelude::*;
+use serde::Deserialize;
 use specs::prelude::*;
 
 pub mod left_click;
 pub use self::left_click::*;
-use crate::gui::ui_state::UiState;
 
 #[derive(Default, Clone, Copy)]
 pub struct MouseState(pub Vector);
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Deserialize)]
 pub enum UiView {
     Visitors(VisitorViewTab),
     Leaderboard,
@@ -26,7 +27,7 @@ pub enum UiView {
     Dialogue,
     Religion,
 }
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Deserialize)]
 pub enum VisitorViewTab {
     IncomingAttacks,
     Letters,

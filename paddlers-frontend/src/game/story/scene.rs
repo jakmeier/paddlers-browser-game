@@ -1,12 +1,13 @@
-use crate::game::story::DialogueAction;
 use crate::gui::input::UiView;
 use crate::gui::sprites::*;
-use crate::prelude::*;
+use crate::{game::story::DialogueAction, i18n::OwnedTextKey};
 use paddlers_shared_lib::story::story_state::StoryState;
+use serde::Deserialize;
 
 /// A Scene consists of a set of slides and can be loaded in the Dialogue view.
 /// It starts at a specific slide and the player can click through the, as defined on the slides.
 /// Slides are referenced (within a scene) by their index.
+#[derive(Deserialize)]
 pub struct Scene {
     slides: Vec<Slide>,
     active_slide: SlideIndex,
@@ -14,18 +15,20 @@ pub struct Scene {
 
 /// A Slide shows some text and optionally back/next and other buttons.
 /// At least one button should be visible, or players cannot do anything to progress the scene.
+#[derive(Deserialize)]
 pub struct Slide {
-    text_key: TextKey,
+    text_key: OwnedTextKey,
     buttons: Vec<SlideButton>,
     sprite: SpriteIndex,
     back_button: bool,
     next_button: bool,
 }
+#[derive(Deserialize)]
 pub struct SlideButton {
-    pub text_key: TextKey,
+    pub text_key: OwnedTextKey,
     pub action: SlideButtonAction,
 }
-#[derive(Default, Clone, Debug, PartialEq)]
+#[derive(Default, Clone, Debug, PartialEq, Deserialize)]
 pub struct SlideButtonAction {
     pub next_slide: Option<SlideIndex>,
     pub next_view: Option<UiView>,
@@ -35,7 +38,7 @@ pub struct SlideButtonAction {
 pub type SlideIndex = usize;
 
 impl Scene {
-    pub fn slide_text_key(&self) -> &TextKey {
+    pub fn slide_text_key(&self) -> &OwnedTextKey {
         &self.slides[self.active_slide].text_key
     }
     pub fn current_slide(&self) -> &Slide {
@@ -67,7 +70,7 @@ impl Scene {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
 pub enum SceneIndex {
     Entrance,
     BuildWatergate,
@@ -170,7 +173,7 @@ fn load_entry_scene(active_slide: SlideIndex) -> Scene {
         text_key: "welcomescene-A90".into(),
         action: SlideButtonAction::default()
             .with_view_change(UiView::Town)
-            .with_action(DialogueAction::TownSelectEntity(None)),
+            .with_action(DialogueAction::ClearSelectedUnit),
     };
     // 6
     slides.push(Slide {
@@ -264,7 +267,7 @@ fn load_build_watergate_scene(active_slide: SlideIndex) -> Scene {
                 StoryState::BuildingWatergate,
                 None,
             ))
-            .with_action(DialogueAction::TownSelectEntity(None))
+            .with_action(DialogueAction::ClearSelectedUnit)
             .with_view_change(UiView::Town),
     };
     slides.push(Slide {

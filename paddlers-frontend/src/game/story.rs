@@ -5,12 +5,13 @@ use crate::game::{player_info::PlayerInfo, story::scene::SceneIndex, Game};
 use crate::prelude::*;
 use paddlers_shared_lib::story::{story_state::StoryState, story_trigger::StoryChoice};
 use scene::*;
+use serde::Deserialize;
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
 pub enum DialogueAction {
     OpenScene(SceneIndex, SlideIndex),
     StoryProgress(StoryState, Option<StoryChoice>),
-    TownSelectEntity(Option<specs::Entity>),
+    ClearSelectedUnit,
     SettleHobo,
 }
 
