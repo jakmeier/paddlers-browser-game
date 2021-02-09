@@ -1,0 +1,25 @@
+#![enable(implicit_some)]
+(
+    slides: [Slide(
+        text_key: "new-hobo-text",
+        buttons: [
+            SlideButton(
+                text_key: "button-yes",
+                action: SlideButtonAction(
+                    next_view: Town,
+                    actions: [SettleHobo],
+                ),
+            ),
+            SlideButton(
+                text_key: "button-no",
+                action: SlideButtonAction(
+                    next_view: Town,
+                    actions: [],
+                ),
+            ),
+        ],
+        sprite: Simple(DuckHappy),
+        back_button: false,
+        next_button: false,
+    )],
+)

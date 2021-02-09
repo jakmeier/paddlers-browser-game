@@ -2,6 +2,7 @@ use clap::{App, Arg, SubCommand};
 use diesel::PgConnection;
 use std::io::{BufRead, Read, Write};
 
+mod check;
 mod gen;
 mod quest;
 
@@ -27,12 +28,33 @@ fn main() {
                         .help("Path where generated files will go."),
                 ),
         )
+        .subcommand(
+            SubCommand::with_name("check")
+                .before_help("Checks that files are available as expected.")
+                .arg(
+                    Arg::with_name("SPECIFICATION_DIRECTORY")
+                        .required(true)
+                        .index(1),
+                ),
+        )
         .get_matches();
 
     if let Some(matches) = matches.subcommand_matches("upload-quests") {
         let db = paddlers_shared_lib::establish_connection();
         let file = matches.value_of("INPUT_FILE").unwrap();
         upload_quests(&db, open_file(file).unwrap());
+    }
+    if let Some(matches) = matches.subcommand_matches("check") {
+        let dir = matches
+            .value_of("SPECIFICATION_DIRECTORY")
+            .unwrap()
+            .to_string()
+            + "/dialogue/";
+        if let Err(e) = check::check_dialogue_scenes(std::path::Path::new(&dir)) {
+            println!("\x1b[031mFAILED\x1b[0m: {}", e)
+        } else {
+            println!("OK");
+        }
     }
     if let Some(matches) = matches.subcommand_matches("generate") {
         match matches.value_of("GENERATION_TARGET").unwrap() {
@@ -74,8 +96,11 @@ fn upload_quests(db: &PgConnection, input: impl Read) {
     }
 }
 
-fn open_file(path: &str) -> std::io::Result<impl BufRead> {
-    let f = std::fs::File::open(path)?;
+fn open_file<S>(path: &S) -> std::io::Result<impl BufRead>
+where
+    S: AsRef<std::ffi::OsStr> + ?Sized,
+{
+    let f = std::fs::File::open(std::path::Path::new(path))?;
     Ok(std::io::BufReader::new(f))
 }
 fn write_file(path: &str) -> std::io::Result<std::io::BufWriter<impl std::io::Write>> {

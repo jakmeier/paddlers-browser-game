@@ -1,0 +1,35 @@
+#![enable(implicit_some)]
+(slides: [
+    Slide (
+        text_key: "templebuilt-A0",
+        buttons: [],
+        sprite: Simple(Temple),
+        back_button: false,
+        next_button: true,
+    ),
+    Slide (
+        text_key: "templebuilt-A10",
+        buttons: [],
+        sprite: Simple(RogerLarge),
+        back_button: true,
+        next_button: true,
+    ),
+    Slide (
+        text_key: "templebuilt-H20",
+        buttons: [
+            SlideButton (
+                text_key: "button-back-to-town",
+                action: SlideButtonAction(
+                    actions: [
+                        StoryProgress(BuildingWatergate, None),
+                        ClearSelectedUnit,
+                    ],
+                    next_view: Town,
+                )
+            ),
+        ],
+        sprite: Simple(Stone2),
+        back_button: true,
+        next_button: false,
+    ),
+])

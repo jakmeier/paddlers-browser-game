@@ -1,0 +1,68 @@
+#![enable(implicit_some)]
+(slides: [
+    Slide(
+        text_key: "welcomescene-B10",
+        buttons: [],
+        sprite: Simple(DuckHappy),
+        back_button: false,
+        next_button: true,
+    ),
+    Slide(
+        text_key: "welcomescene-B20",
+        buttons: [],
+        sprite: Simple(RogerLarge),
+        back_button: true,
+        next_button: true,
+    ),
+    Slide(
+        text_key: "welcomescene-B30",
+        buttons: [],
+        sprite: Simple(RogerLarge),
+        back_button: true,
+        next_button: true,
+    ),
+    Slide (
+        text_key: "welcomescene-B40",
+        sprite: Simple(RogerLargeSad),
+        buttons: [],
+        back_button: true,
+        next_button: true,
+    ),
+    Slide (
+        text_key: "welcomescene-B50",
+        sprite: Simple(RogerLargeObedient),
+        buttons: [
+            SlideButton (
+                text_key: "welcomescene-A60",
+                action: SlideButtonAction(
+                    next_slide: 5,
+                    actions: [StoryProgress(ServantAccepted, None)],
+                )
+            ),
+        ],
+        back_button: true,
+        next_button: false,
+    ),
+    Slide (
+        text_key: "welcomescene-B70",
+        sprite: Simple(RogerLargeCelebrating),
+        buttons: [],
+        back_button: false,
+        next_button: true,
+    ),
+    Slide (
+        text_key: "welcomescene-B80",
+        sprite: Simple(RogerLarge),
+        buttons: [
+            SlideButton (
+                text_key: "welcomescene-A90",
+                action: SlideButtonAction(
+                    next_view: Town,
+                    actions: [ClearSelectedUnit ]
+                )
+            )
+        ],
+        back_button: true,
+        next_button: false,
+    ),
+])

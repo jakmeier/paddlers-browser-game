@@ -1,0 +1,44 @@
+#![enable(implicit_some)]
+(slides: [
+    Slide (
+        text_key: "gatebuilt-A0",
+        buttons: [],
+        sprite: Simple(RogerLarge),
+        back_button: false,
+        next_button: true,
+    ),
+    Slide (
+        text_key: "gatebuilt-A10",
+        buttons: [],
+        sprite: Simple(Duck),
+        back_button: true,
+        next_button: true,
+    ),
+    Slide (
+        text_key: "gatebuilt-A20",
+        buttons: [],
+        sprite: Simple(RogerLarge),
+        back_button: true,
+        next_button: true,
+    ),
+    Slide (
+        text_key: "gatebuilt-H30",
+        buttons: [
+            SlideButton (
+                text_key: "button-back-to-town",
+                action: SlideButtonAction(
+                    next_view: Town,
+                    actions: [
+                        StoryProgress(
+                            VisitorArrived,
+                            None,
+                        )
+                    ]
+                )
+            )
+        ],
+        sprite: Simple(WelcomeAbility),
+        back_button: true,
+        next_button: false,
+    ),
+])
