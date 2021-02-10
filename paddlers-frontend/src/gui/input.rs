@@ -8,7 +8,6 @@ use crate::{game::town::tiling, net::state::current_village};
 use paddle::quicksilver_compat::*;
 use paddle::Vector;
 use paddlers_shared_lib::prelude::*;
-use serde::Deserialize;
 use specs::prelude::*;
 
 pub mod left_click;
@@ -16,23 +15,6 @@ pub use self::left_click::*;
 
 #[derive(Default, Clone, Copy)]
 pub struct MouseState(pub Vector);
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Deserialize)]
-pub enum UiView {
-    Visitors(VisitorViewTab),
-    Leaderboard,
-    Map,
-    Town,
-    TownHelp,
-    Dialogue,
-    Religion,
-}
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Deserialize)]
-pub enum VisitorViewTab {
-    IncomingAttacks,
-    Letters,
-    Quests,
-}
 
 #[derive(Default, Debug, Component)]
 #[storage(NullStorage)]

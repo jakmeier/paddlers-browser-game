@@ -1,13 +1,16 @@
-use crate::gui::{
-    decoration::draw_leaf_border,
-    menu::{LEAVES_BORDER_H, LEAVES_BORDER_W},
-    sprites::WithSprite,
-    utils::*,
+use crate::gui::shapes::PadlShapeIndex;
+use crate::{
+    gui::{
+        decoration::draw_leaf_border,
+        menu::{LEAVES_BORDER_H, LEAVES_BORDER_W},
+        sprites::WithSprite,
+        utils::*,
+    },
+    prelude::ISpriteIndex,
 };
-use crate::{gui::shapes::PadlShapeIndex, prelude::UiView};
 use paddle::quicksilver_compat::{Circle, Color, Shape};
 use paddle::*;
-use paddlers_shared_lib::civilization::*;
+use paddlers_shared_lib::{civilization::*, specification_types::UiView};
 
 use super::{
     game_event_manager::{game_event, GameEvent},

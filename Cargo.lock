@@ -2149,6 +2149,7 @@ dependencies = [
  "paddle",
  "paddlers-shared-lib",
  "pathfinding",
+ "ron",
  "serde",
  "serde_json",
  "shred",

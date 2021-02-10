@@ -2,8 +2,8 @@ use crate::prelude::*;
 use crate::{
     game::game_event_manager::game_event,
     gui::{
-        gui_components::*, input::UiView, shapes::PadlShapeIndex, sprites::*, ui_state::Now,
-        utils::*, z::Z_UI_MENU,
+        gui_components::*, shapes::PadlShapeIndex, sprites::*, ui_state::Now, utils::*,
+        z::Z_UI_MENU,
     },
 };
 use paddle::{DisplayArea, PointerEvent, PointerEventType, PointerTracker};

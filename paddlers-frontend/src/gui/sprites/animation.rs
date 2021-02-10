@@ -1,6 +1,6 @@
 use super::SingleSprite;
-use crate::gui::utils::Direction;
 use paddle::*;
+use paddlers_shared_lib::specification_types::*;
 
 /// Stores the sprites of an animated object.
 /// Provides functions to render the object in different contexts.

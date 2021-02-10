@@ -3,20 +3,23 @@ mod visitor_maintenance;
 use chrono::NaiveDateTime;
 pub use visitor_maintenance::*;
 
-use crate::game::{
-    components::{AnimationState, NetObj},
-    fight::Health,
-    input::Clickable,
-    movement::{Moving, Position, TargetPosition},
-    status_effects::StatusEffects,
-    town::visitor_gate::{GraphqlVisitingHobo, WaitingAttack},
-    visits::attacks::Attack,
-};
 use crate::gui::ui_state::Now;
 use crate::gui::{render::Renderable, sprites::*, utils::*, z::Z_VISITOR};
 use crate::net::graphql::query_types::HoboEffect;
 use crate::prelude::*;
 use crate::{game::town::town_defence::AttackingHobo, resolution::TOWN_TILE_S};
+use crate::{
+    game::{
+        components::{AnimationState, NetObj},
+        fight::Health,
+        input::Clickable,
+        movement::{Moving, Position, TargetPosition},
+        status_effects::StatusEffects,
+        town::visitor_gate::{GraphqlVisitingHobo, WaitingAttack},
+        visits::attacks::Attack,
+    },
+    gui::animation::IDirection,
+};
 use paddle::Vector;
 use paddlers_shared_lib::graphql_types::*;
 use paddlers_shared_lib::{game_mechanics::town::*, prelude::AttackKey};

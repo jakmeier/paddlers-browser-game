@@ -14,6 +14,7 @@ COPY --from=WasmBuilder ./paddlers-frontend/target/deploy/paddlers-frontend.* /u
 COPY ./paddlers-frontend/static /usr/share/nginx/html
 # COPY ./paddlers-frontend/static/nologin.index.html /usr/share/nginx/html/index.html
 COPY ./paddlers-frontend/static/js/keycloak/player.mobile.json /usr/share/nginx/html/js/keycloak/player.json
+COPY ./specification/dialogue /usr/share/nginx/html/dialogue_scenes
 COPY ./paddlers-frontend/nginx/mime.types ./paddlers-frontend/nginx/nginx.conf /etc/nginx/
 COPY ./paddlers-frontend/nginx/localhost.conf /etc/nginx/conf.d/paddlers.conf
 # COPY ./paddlers-frontend/nginx/nologin.conf /etc/nginx/conf.d/paddlers.conf

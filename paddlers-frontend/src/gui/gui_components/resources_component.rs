@@ -1,7 +1,8 @@
-use crate::gui::sprites::{paths::SPRITE_PATHS, Sprites, *};
+use crate::gui::sprites::{Sprites, *};
 use crate::prelude::*;
 use div::{doc, DivError};
 use paddle::{DisplayArea, Rectangle};
+use paddlers_shared_lib::specification_types::sprite_paths::SPRITE_PATHS;
 use wasm_bindgen::JsCast;
 use web_sys::{Element, HtmlElement, HtmlImageElement};
 

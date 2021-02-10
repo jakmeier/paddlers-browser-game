@@ -1,5 +1,4 @@
-use super::utils::*;
-use paddle::quicksilver_compat::Rectangle;
+use paddle::{FitStrategy, Rectangle};
 
 #[test]
 fn shrink_rectangle_to_center() {

@@ -2,13 +2,13 @@
 //! It is mainly used to display conversations with paddlers to explain the story of Paddland.
 
 mod dialogue_frame;
+mod scene_loader;
 mod text_bubble;
 pub(crate) use dialogue_frame::*;
 pub(crate) use text_bubble::*;
 
-use crate::game::story::scene::*;
 use paddle::*;
-use paddlers_shared_lib::story::story_state::StoryState;
+use paddlers_shared_lib::{specification_types::*, story::story_state::StoryState};
 
 /// Command struct to update current dialogue scene
 pub struct LoadNewDialogueScene {

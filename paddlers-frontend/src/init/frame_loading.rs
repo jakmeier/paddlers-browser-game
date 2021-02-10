@@ -112,8 +112,7 @@ pub(crate) fn load_viewer(view: UiView) -> ViewManager<UiView> {
     /* Dialogue box */
     let dialogue = DialogueFrame::new().expect("Dialogue loading");
     let dialogue_handle = viewer.add_frame(dialogue, &[UiView::Dialogue], (0, 0));
-    dialogue_handle.listen(DialogueFrame::receive_load_scene);
-    dialogue_handle.listen(DialogueFrame::receive_new_story_state);
+    DialogueFrame::init_listeners(dialogue_handle);
 
     /* Civ / Religion view */
     let religion_frame = ReligionFrame::new();

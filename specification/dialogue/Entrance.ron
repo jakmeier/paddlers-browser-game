@@ -3,7 +3,7 @@
     Slide(
         text_key: "welcomescene-B10",
         buttons: [],
-        sprite: Simple(DuckHappy),
+        sprite: Simple(RogerLargeAstonished),
         back_button: false,
         next_button: true,
     ),

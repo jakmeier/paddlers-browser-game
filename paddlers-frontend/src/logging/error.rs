@@ -89,6 +89,7 @@ pub enum PadlErrorCode {
     PaddleError(String),
     DivError(String),
     JsonParseError(serde_json::error::Error),
+    RonParseError(ron::error::Error),
     UrlParseError(String),
     BrowserError(String),
     DialogueEmpty,
@@ -155,6 +156,9 @@ impl fmt::Display for PadlErrorCode {
             PadlErrorCode::DivError(cause) => write!(f, "Panes error: {}", cause),
             PadlErrorCode::JsonParseError(cause) => {
                 write!(f, "Error while parsing JSON data: {}", cause)
+            }
+            PadlErrorCode::RonParseError(cause) => {
+                write!(f, "Error while parsing RON data: {}", cause)
             }
             PadlErrorCode::UrlParseError(cause) => {
                 write!(f, "Error while parsing browser URL: {}", cause)

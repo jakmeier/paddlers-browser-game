@@ -1,3 +1,5 @@
+pub mod sprite_paths;
+
 use serde::Deserialize;
 
 #[derive(Debug, Clone, Copy, Deserialize)]

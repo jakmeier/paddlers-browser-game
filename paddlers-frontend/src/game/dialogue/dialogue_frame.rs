@@ -1,14 +1,11 @@
-use super::*;
+use super::{scene_loader::SceneLoader, text_area, *};
 use crate::game::{game_event_manager::game_event, Game};
+use crate::gui::menu::{LEAVES_BORDER_H, LEAVES_BORDER_W};
 use crate::gui::{
     decoration::draw_leaf_border, gui_components::*, shapes::PadlShapeIndex, sprites::*,
     ui_state::Now, utils::colors::LIGHT_BLUE, utils::*, z::*,
 };
 use crate::prelude::*;
-use crate::{
-    game::story::scene::*,
-    gui::menu::{LEAVES_BORDER_H, LEAVES_BORDER_W},
-};
 use chrono::NaiveDateTime;
 use paddle::Frame;
 use paddle::*;
@@ -16,12 +13,14 @@ use paddle::{graphics::AbstractMesh, quicksilver_compat::Color};
 use specs::WorldExt;
 
 pub(crate) struct DialogueFrame {
+    scenes: SceneLoader,
     image: SpriteIndex,
     buttons: UiBox,
     text_lines: Vec<String>,
     text_provider: TableTextProvider,
     text_bubble: AbstractMesh,
-    current_scene: Option<Scene>,
+    current_scene: Option<SceneIndex>,
+    current_slide: SlideIndex,
     mouse: PointerTracker,
 }
 
@@ -40,75 +39,72 @@ impl DialogueFrame {
             text_provider,
             text_bubble,
             current_scene: None,
+            current_slide: 0,
             mouse: PointerTracker::new(),
+            scenes: Default::default(),
         };
 
         Ok(dialogue)
     }
 
-    pub fn load_scene(&mut self, scene: Scene, locale: &TextDb) {
+    pub fn load(&mut self, scene: SceneIndex, slide: SlideIndex, locale: &TextDb) {
         self.current_scene = Some(scene);
+        self.current_slide = slide;
         self.reload(locale);
     }
-    #[inline(always)]
-    fn scene_mut(&mut self) -> PadlResult<&mut Scene> {
-        self.current_scene
-            .as_mut()
-            .ok_or(PadlError::dev_err(PadlErrorCode::DialogueEmpty))
-    }
-    #[inline(always)]
-    fn scene(&self) -> PadlResult<&Scene> {
-        self.current_scene
-            .as_ref()
-            .ok_or(PadlError::dev_err(PadlErrorCode::DialogueEmpty))
-    }
     fn load_slide(&mut self, i: usize, locale: &TextDb) -> PadlResult<()> {
-        let scene = self.scene_mut()?;
-        scene.set_slide(i);
+        self.current_slide = i;
         self.reload(locale);
         Ok(())
     }
-    /// Panics if no scene is loaded
+    /// Panics if no scene is active
     fn reload(&mut self, locale: &TextDb) {
         self.buttons.clear();
         self.text_lines.clear();
-        let scene = self.current_scene.as_ref().unwrap();
 
-        // Write text into text bubble
-        let key = scene.slide_text_key().key();
-        let text = locale.gettext(key);
-        for s in text.split("\n") {
-            self.text_lines.push(s.to_owned());
-        }
+        if let Some(scene_index) = self.current_scene {
+            if let Some(scene) = self.scenes.get(scene_index) {
+                let key = scene.slide_text_key(self.current_slide).key();
+                let text = locale.gettext(key);
+                let image = scene.slide_sprite(self.current_slide);
+                let back_button = scene.back_button(self.current_slide);
+                let next_button = scene.next_button(self.current_slide);
 
-        // load sprite
-        self.image = scene.slide_sprite();
+                // Write text into text bubble
+                for s in text.split("\n") {
+                    self.text_lines.push(s.to_owned());
+                }
+                // load sprite
+                self.image = image;
+                // Create dialogue buttons for interactions
+                let extra_buttons = scene.slide_buttons(self.current_slide);
 
-        // Create dialogue buttons for interactions
-        let extra_buttons = self.current_scene.as_ref().unwrap().slide_buttons();
+                // Create and add navigation buttons
+                if let Some(i) = back_button {
+                    let back_button =
+                        UiElement::new(ClickOutput::SlideAction(SlideButtonAction::to_slide(i)))
+                            .with_render_variant(RenderVariant::Shape(PadlShapeIndex::LeftArrow));
+                    self.buttons.add(back_button);
+                } else if extra_buttons.len() < 2 {
+                    self.buttons.add(UiElement::empty());
+                }
+                if let Some(i) = next_button {
+                    let next_button =
+                        UiElement::new(ClickOutput::SlideAction(SlideButtonAction::to_slide(i)))
+                            .with_render_variant(RenderVariant::Shape(PadlShapeIndex::RightArrow));
+                    self.buttons.add(next_button);
+                }
 
-        // Create and add navigation buttons
-        if let Some(i) = self.scene().unwrap().back_button() {
-            let back_button =
-                UiElement::new(ClickOutput::SlideAction(SlideButtonAction::to_slide(i)))
-                    .with_render_variant(RenderVariant::Shape(PadlShapeIndex::LeftArrow));
-            self.buttons.add(back_button);
-        } else if extra_buttons.len() < 2 {
-            self.buttons.add(UiElement::empty());
-        }
-        if let Some(i) = self.scene().unwrap().next_button() {
-            let next_button =
-                UiElement::new(ClickOutput::SlideAction(SlideButtonAction::to_slide(i)))
-                    .with_render_variant(RenderVariant::Shape(PadlShapeIndex::RightArrow));
-            self.buttons.add(next_button);
-        }
-
-        // Add dialogue buttons for interactions
-        for b in extra_buttons {
-            let button = UiElement::new(ClickOutput::SlideAction(b.action.clone()))
-                .with_text(locale.gettext(b.text_key.key()).to_owned())
-                .with_background_color(LIGHT_GREEN);
-            self.buttons.add(button);
+                // Add dialogue buttons for interactions
+                for b in extra_buttons {
+                    let button = UiElement::new(ClickOutput::SlideAction(b.action.clone()))
+                        .with_text(locale.gettext(b.text_key.key()).to_owned())
+                        .with_background_color(LIGHT_GREEN);
+                    self.buttons.add(button);
+                }
+            } else {
+                // TODO: display something that shows that data is loading
+            }
         }
     }
 
@@ -169,11 +165,19 @@ impl DialogueFrame {
         );
         window.draw_mesh(&self.text_bubble, right_area(), &Color::WHITE);
     }
-
-    pub fn receive_load_scene(&mut self, state: &mut Game, msg: &LoadNewDialogueScene) {
-        self.load_scene(msg.scene.load_scene(msg.slide), &state.locale);
+    pub fn init_listeners(frame_handle: FrameHandle<Self>) {
+        frame_handle.listen(DialogueFrame::receive_load_scene);
+        frame_handle.listen(DialogueFrame::receive_new_story_state);
+        frame_handle.register_receiver(DialogueFrame::receive_scene)
     }
-    pub fn receive_new_story_state(&mut self, state: &mut Game, msg: &NewStoryState) {
+    fn receive_scene(&mut self, state: &mut Game, msg: scene_loader::SceneResponse) {
+        self.scenes.add(msg);
+        self.reload(&state.locale);
+    }
+    fn receive_load_scene(&mut self, state: &mut Game, msg: &LoadNewDialogueScene) {
+        self.load(msg.scene, msg.slide, &state.locale);
+    }
+    fn receive_new_story_state(&mut self, state: &mut Game, msg: &NewStoryState) {
         state.set_story_state(msg.new_story_state);
         state.load_story_state().nuts_check();
     }

@@ -1,19 +1,9 @@
 pub mod entity_trigger;
-pub mod scene;
 
-use crate::game::{player_info::PlayerInfo, story::scene::SceneIndex, Game};
+use crate::game::{player_info::PlayerInfo, Game};
 use crate::prelude::*;
-use paddlers_shared_lib::story::{story_state::StoryState, story_trigger::StoryChoice};
-use scene::*;
-use serde::Deserialize;
-
-#[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
-pub enum DialogueAction {
-    OpenScene(SceneIndex, SlideIndex),
-    StoryProgress(StoryState, Option<StoryChoice>),
-    ClearSelectedUnit,
-    SettleHobo,
-}
+use paddlers_shared_lib::specification_types::*;
+use paddlers_shared_lib::story::story_state::StoryState;
 
 impl Game {
     pub fn set_story_state(&self, s: StoryState) {

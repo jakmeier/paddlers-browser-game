@@ -1,4 +1,3 @@
-use crate::game::story::scene::SceneIndex;
 use crate::game::story::DialogueAction;
 use crate::game::units::workers::Worker;
 use crate::gui::ui_state::UiState;

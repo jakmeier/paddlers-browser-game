@@ -14,7 +14,6 @@ use crate::prelude::*;
 use paddle::quicksilver_compat::*;
 use paddle::*;
 use paddle::{DisplayArea, FitStrategy};
-use serde::Deserialize;
 
 // Improvement: Would be nice to have Copy here (maybe with string interning)
 #[derive(Debug, Clone)]
@@ -30,14 +29,6 @@ pub enum RenderVariant {
     TextWithColBackground(String, Color),
     Shape(PadlShapeIndex),
     Hide,
-}
-#[derive(Debug, Clone, Copy, Deserialize)]
-pub enum Direction {
-    Undirected,
-    North,
-    East,
-    South,
-    West,
 }
 
 pub fn draw_animated_sprite(

@@ -1,7 +1,6 @@
 //! High-level GUI components that may be related to game logic as far as necessary
 
 mod ui_box;
-use crate::game::story::scene::SlideButtonAction;
 use chrono::NaiveDateTime;
 pub use ui_box::*;
 mod resources_component;

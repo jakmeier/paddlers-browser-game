@@ -34,6 +34,7 @@ cd /etc/nginx/ssl/letsencrypt/demo.paddlers.ch/;
 COPY --from=WasmBuilder ./www/dist/* /usr/share/nginx/html/
 COPY ./paddlers-frontend/static /usr/share/nginx/html
 COPY ./paddlers-frontend/static/js/keycloak/player.demo.json /usr/share/nginx/html/js/keycloak/player.json
+COPY ./specification/dialogue /usr/share/nginx/html/dialogue_scenes
 COPY ./paddlers-frontend/nginx/mime.types ./paddlers-frontend/nginx/nginx.conf /etc/nginx/
 COPY ./paddlers-frontend/nginx/demo.conf /etc/nginx/conf.d/paddlers_ssl.conf
 COPY ./paddlers-frontend/nginx/demo_no_ssl.conf /etc/nginx/conf.d/paddlers.conf

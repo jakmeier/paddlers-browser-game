@@ -13,6 +13,7 @@ use paddle::{
     DisplayArea, ErrorMessage, Frame, Image, LoadScheduler, LoadedData, LoadingDone,
     LoadingProgress, NutsCheck, TextBoard,
 };
+use paddlers_shared_lib::specification_types::sprite_paths::SPRITE_PATHS;
 use wasm_bindgen::JsCast;
 use web_sys::HtmlCanvasElement;
 
@@ -20,7 +21,7 @@ use crate::game::player_info::PlayerInfo;
 use crate::game::Game;
 use crate::gui::sprites::{
     animation::{AnimatedObject, AnimatedObjectDef, AnimationVariantDef},
-    paths::{ANIMATION_DEFS, SPRITE_PATHS},
+    paths::ANIMATION_DEFS,
     Sprites,
 };
 use crate::gui::utils::*;

@@ -18,6 +18,7 @@ FROM nginx:latest as WebServer
 COPY --from=WasmBuilder ./www/dist/* /usr/share/nginx/html/
 COPY ./paddlers-frontend/static /usr/share/nginx/html
 COPY ./paddlers-frontend/static/js/keycloak/player.local.json /usr/share/nginx/html/js/keycloak/player.json
+COPY ./specification/dialogue /usr/share/nginx/html/dialogue_scenes
 COPY ./paddlers-frontend/nginx/mime.types ./paddlers-frontend/nginx/nginx.conf /etc/nginx/
 COPY ./paddlers-frontend/nginx/localhost.conf /etc/nginx/conf.d/paddlers.conf
 COPY ./wait-for-it.sh ./wait-for-it.sh

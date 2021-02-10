@@ -1,6 +1,6 @@
-use crate::gui::utils::*;
 use paddle::quicksilver_compat::*;
 use paddle::*;
+use paddlers_shared_lib::specification_types::Direction;
 use specs::prelude::*;
 use specs::storage::BTreeStorage;
 
@@ -16,8 +16,12 @@ impl AnimationState {
     }
 }
 
-impl Direction {
-    pub fn from_vector(vec: &Vector) -> Self {
+pub trait IDirection {
+    fn from_vector(vec: &Vector) -> Self;
+    fn unit_vector(&self) -> Vector;
+}
+impl IDirection for Direction {
+    fn from_vector(vec: &Vector) -> Self {
         if about_equal(vec.x, vec.y) {
             return Direction::Undirected;
         }
@@ -36,7 +40,7 @@ impl Direction {
         }
     }
     #[allow(dead_code)]
-    pub fn unit_vector(&self) -> Vector {
+    fn unit_vector(&self) -> Vector {
         match self {
             Direction::Undirected => Vector::new(0, 0),
             Direction::North => Vector::new(0, -1),

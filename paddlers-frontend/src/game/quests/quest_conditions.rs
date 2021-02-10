@@ -1,6 +1,7 @@
 use crate::{
     game::town::Town,
     gui::sprites::{SingleSprite, SpriteIndex, Sprites, WithSprite},
+    prelude::ISpriteIndex,
 };
 use crate::{game::town_resources::TownResources, net::graphql::PlayerQuest};
 use mogwai::prelude::*;

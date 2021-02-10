@@ -181,11 +181,7 @@ fn new_foreign_nest_menu() -> ForeignUiMenu {
 
 use crate::net::graphql::buildings_query;
 
-use super::{
-    game_event_manager::GameEvent,
-    story::{scene::SceneIndex, DialogueAction},
-    town::tiling,
-};
+use super::{game_event_manager::GameEvent, town::tiling};
 impl buildings_query::ResponseData {
     pub(crate) fn village_id(&self) -> VillageKey {
         VillageKey(self.village.id)

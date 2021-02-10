@@ -9,7 +9,6 @@ use crate::game::{
 use crate::gui::animation::*;
 use crate::gui::gui_components::ClickOutput;
 use crate::gui::render::Renderable;
-use crate::gui::utils::*;
 use crate::prelude::*;
 use chrono::NaiveDateTime;
 use paddle::quicksilver_compat::about_equal;
@@ -77,7 +76,7 @@ impl<'a> System<'a> for WorkerSystem {
                         mov.start_ts = task.start_time;
                         mov.start_pos = position_now;
                         mov.momentum = dir.normalize() * mov.max_speed;
-                        anim.direction = Direction::from_vector(&mov.momentum);
+                        anim.direction = IDirection::from_vector(&mov.momentum);
                     }
                     TaskType::Idle => {
                         mov.stand_still(task.start_time);
