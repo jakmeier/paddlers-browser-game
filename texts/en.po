@@ -27,6 +27,9 @@ msgstr "Yes"
 msgid "button-no"
 msgstr "No"
 
+msgid "confirm"
+msgstr "OK!"
+
 #  Stories
 ## Welcome scene
 msgid "welcomescene-A0"
@@ -95,7 +98,7 @@ msgstr ""
 msgid "templebuilt-H20"
 msgstr ""
 "Place a set of stones\n"
-"on one side of the town.\n"
+"at one side of the town.\n"
 "Visitors will know to\n"
 "enter from there."
 
@@ -110,13 +113,12 @@ msgid "gatebuilt-A10"
 msgstr ""
 "Look at that sad\n"
 "Paddler.\n"
-"Why is it so depressed\n"
-"on such a sunny day?"
+"Why is it so depressed?"
 
 msgid "gatebuilt-A20"
 msgstr ""
 "Let me go and give\n"
-"it warm welcome."
+"it a warm welcome."
 
 msgid "gatebuilt-H30"
 msgstr ""
@@ -133,6 +135,43 @@ msgstr ""
 "My lord,\n"
 "May I take up residence\n"
 "at this magnificient place?"
+
+## First choice scene
+msgid "..."
+msgstr "..."
+
+msgid "bored-and-anxious"
+msgstr ""
+"I am bored...\n"
+"And I feel useless.\n"
+
+msgid "what-to-do-in-life"
+msgstr ""
+"Just what should I do with\n"
+"the time I have in this world?\n"
+
+msgid "make-friends"
+msgstr "..."
+
+msgid "make-friends-description"
+msgstr "..."
+
+msgid "help-others"
+msgstr "..."
+
+msgid "help-others-description"
+msgstr "..."
+
+msgid "build-something"
+msgstr "..."
+
+msgid "build-something-description"
+msgstr "..."
+
+msgid "look-for-quest"
+msgstr ""
+"I will help you to get started.\n"
+"Check your quests for a new task."
 
 
 # Quests

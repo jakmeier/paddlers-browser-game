@@ -18,6 +18,7 @@ pub enum StoryTrigger {
 }
 
 #[derive(Clone, Copy, Serialize, Deserialize, Debug, PartialEq, Hash)]
+#[serde(transparent)]
 pub struct StoryChoice {
     chosen_option: u8,
 }

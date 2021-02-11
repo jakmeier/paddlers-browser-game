@@ -1,0 +1,106 @@
+#![enable(implicit_some)]
+(slides: [
+    Slide(
+        text_key: "...",
+        buttons: [],
+        sprite: Simple(RogerLargeSad),
+        back_button: false,
+        next_button: true,
+    ),
+    Slide(
+        text_key: "bored-and-anxious",
+        buttons: [],
+        sprite: Simple(RogerLargeSad),
+        back_button: true,
+        next_button: true,
+    ),
+    Slide(
+        text_key: "what-to-do-in-life",
+        buttons: [
+            SlideButton (
+                text_key: "make-friends",
+                action: SlideButtonAction(
+                    next_slide: 3,
+                    actions: [],
+                )
+            ),
+            SlideButton (
+                text_key: "help-others",
+                action: SlideButtonAction(
+                    next_slide: 4,
+                    actions: [],
+                )
+            ),
+            SlideButton (
+                text_key: "build-something",
+                action: SlideButtonAction(
+                    next_slide: 5,
+                    actions: [],
+                )
+            ),
+        ],
+        sprite: Simple(RogerLargeSad),
+        back_button: true,
+        next_button: false,
+    ),
+    Slide(
+        text_key: "make-friends-description",
+        buttons: [
+            SlideButton(
+                text_key: "confirm",
+                action: SlideButtonAction(
+                    next_slide: 6,
+                    actions: [StoryProgress(SolvingPrimaryCivQuestPartA, 0)],
+                )
+            ),
+        ],
+        sprite: Simple(RogerLargeObedient),
+        back_button: true,
+        next_button: false,
+    ),
+    Slide(
+        text_key: "help-others-description",
+        buttons: [
+            SlideButton (
+                text_key: "confirm",
+                action: SlideButtonAction(
+                    next_slide: 6,
+                    actions: [StoryProgress(SolvingPrimaryCivQuestPartA, 1)],
+                )
+            ),
+        ],
+        sprite: Simple(RogerLargeObedient),
+        back_button: true,
+        next_button: false,
+    ),
+    Slide(
+        text_key: "build-something-description",
+        buttons: [
+            SlideButton (
+                text_key: "confirm",
+                action: SlideButtonAction(
+                    next_slide: 6,
+                    actions: [StoryProgress(SolvingPrimaryCivQuestPartA, 2)],
+                )
+            ),
+        ],
+        sprite: Simple(RogerLargeObedient),
+        back_button: true,
+        next_button: false,
+    ),
+    Slide(
+        text_key: "look-for-quest",
+                buttons: [
+            SlideButton (
+                text_key: "button-back-to-town",
+                action: SlideButtonAction(
+                    next_view: Town,
+                    actions: [],
+                )
+            ),
+        ],
+        sprite: Simple(RogerLarge),
+        back_button: false,
+        next_button: false,
+    )
+])

@@ -92,3 +92,8 @@ generate-files-from-specifications:
 	cd specification-loader; cargo +nightly run -- generate chart ../specification
 # If this fails, install graphviz  (e.g. sudo apt-get install graphviz)
 	cd specification; dot -Tsvg story.dot > story.svg
+
+
+.PHONY: check
+check:
+	cd specification-loader; cargo +nightly run -- check ../specification

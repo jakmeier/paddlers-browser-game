@@ -71,6 +71,7 @@ pub enum SceneIndex {
     BuildWatergate,
     WelcomeVisitor,
     NewHobo,
+    FirstChoice,
 }
 
 #[cfg(feature = "enum_utils")]
