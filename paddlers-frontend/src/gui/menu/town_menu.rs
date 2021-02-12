@@ -20,10 +20,10 @@ pub(crate) struct TownMenuFrame<'a, 'b> {
     text_provider: TableTextProvider,
     bank_component: ResourcesComponent,
     hover_component: ResourcesComponent,
-    resources_area: Rectangle,
     foreign_town_menu: UiBox,
     left_click_dispatcher: Dispatcher<'a, 'b>,
     mouse: PointerTracker,
+    html_attached: bool,
 }
 
 impl<'a, 'b> Frame for TownMenuFrame<'a, 'b> {
@@ -32,6 +32,12 @@ impl<'a, 'b> Frame for TownMenuFrame<'a, 'b> {
     const HEIGHT: u32 = crate::gui::menu::INNER_MENU_AREA_H as u32;
 
     fn draw(&mut self, state: &mut Self::State, window: &mut DisplayArea, _timestamp: f64) {
+        if !self.html_attached {
+            self.bank_component.attach(window);
+            self.hover_component.attach(window);
+            self.html_attached = true;
+        }
+
         self.text_provider.reset();
         let world = state.town_context.world();
         let mut area = Self::area();
@@ -53,21 +59,20 @@ impl<'a, 'b> Frame for TownMenuFrame<'a, 'b> {
                 self.mouse.pos(),
             );
         } else {
-            self.bank_component.attach(window);
-            let (resources_area, remainder) = area.cut_horizontal(resources_height);
+            let (top, remainder) = area.cut_horizontal(resources_height);
+            let resources_area = top;
             area = remainder;
-            self.resources_area = resources_area;
             let resources = &state
                 .town_world()
                 .fetch::<TownResources>()
                 .non_zero_resources();
             self.bank_component.update(resources).nuts_check();
+            // TODO: Calling this every frame is expensive
             self.bank_component
-                .draw(window, &self.resources_area)
+                .draw(window, &resources_area)
                 .nuts_check();
         }
 
-        self.hover_component.attach(window);
         if let Some(selected_entity) = selected_entity {
             let (img_area, table_area) = menu_selected_entity_spacing(&area);
             draw_entity_img(
@@ -103,6 +108,7 @@ impl<'a, 'b> Frame for TownMenuFrame<'a, 'b> {
     }
     fn leave(&mut self, _state: &mut Self::State) {
         self.text_provider.hide();
+        // self.hover_component.clear(); // that doesn't work? Doing it every frame instead...
     }
     fn pointer(&mut self, state: &mut Self::State, event: PointerEvent) {
         self.mouse.track_pointer_event(&event);
@@ -129,11 +135,11 @@ impl TownMenuFrame<'_, '_> {
         Ok(TownMenuFrame {
             text_provider: TableTextProvider::new(),
             left_click_dispatcher,
-            resources_area: Rectangle::default(),
             bank_component: ResourcesComponent::new()?,
             hover_component: ResourcesComponent::new()?,
             foreign_town_menu,
             mouse: Default::default(),
+            html_attached: false,
         })
     }
     fn left_click(&mut self, state: &mut Game, pos: Vector) {

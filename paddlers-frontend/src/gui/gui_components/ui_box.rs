@@ -259,15 +259,18 @@ impl UiBox {
 
     pub fn draw_hover_info(
         &mut self,
-        _display: &mut DisplayArea,
+        display: &mut DisplayArea,
         res_comp: &mut ResourcesComponent,
-        _area: &Rectangle,
+        area: &Rectangle,
         mouse_pos: Vector,
     ) -> PadlResult<()> {
         let mouse = mouse_pos;
         if let Some(el) = self.find_element_under_mouse(mouse) {
             if let Some(Condition::HasResources(cost)) = &el.condition {
+                // TODO: Calling draw every frame is expensive
                 res_comp.update(&cost.0)?;
+                res_comp.draw(display, area)?;
+            } else {
             }
         } else {
             res_comp.update(&[])?;

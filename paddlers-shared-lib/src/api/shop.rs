@@ -69,9 +69,11 @@ impl Price {
     pub fn with(mut self, rt: ResourceType, amount: i64) -> Self {
         for (r, ref mut n) in &mut self.0 {
             if *r == rt {
-                *n += amount
+                *n += amount;
+                return self;
             }
         }
+        self.0.push((rt, amount));
         self
     }
 }

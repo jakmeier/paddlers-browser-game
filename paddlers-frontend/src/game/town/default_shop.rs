@@ -109,6 +109,8 @@ impl Game {
         *area = shop_area;
         if let Some(mouse_pos) = mouse_pos {
             ui.draw_hover_info(display, res_comp, &price_tag_area, mouse_pos)?;
+        } else {
+            res_comp.clear();
         }
         Ok(())
     }
