@@ -1,0 +1,42 @@
+#![enable(implicit_some)]
+(slides: [
+    Slide (
+        text_key: "wonderful",
+        buttons: [],
+        sprite: Simple(RogerLarge),
+        back_button: false,
+        next_button: true,
+    ),
+    Slide (
+        text_key: "visitor-on-its-way",
+        buttons: [],
+        sprite: Simple(DuckHappy),
+        back_button: true,
+        next_button: true,
+    ),
+    Slide (
+        text_key: "expl-watergate-queue",
+        buttons: [],
+        sprite: Simple(Stone2),
+        back_button: true,
+        next_button: true,
+    ),
+    Slide (
+        text_key: "expl-watergate-release",
+        sprite: Simple(DuckHappy),
+        back_button: true,
+        next_button: false,
+        buttons: [
+            SlideButton (
+                text_key: "button-back-to-town",
+                action: SlideButtonAction(
+                    next_view: Town,
+                    actions: [
+                        StoryProgress(VisitorQueued, None),
+                    ],
+                )
+            )
+        ],
+    ),
+    
+])

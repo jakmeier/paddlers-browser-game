@@ -1790,7 +1790,19 @@
               "deprecationReason": null,
               "description": null,
               "isDeprecated": false,
+              "name": "VISITOR_QUEUED"
+            },
+            {
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
               "name": "VISITOR_ARRIVED"
+            },
+            {
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
+              "name": "WELCOME_VISITOR_QUEST_STARTED"
             },
             {
               "deprecationReason": null,

@@ -1,17 +1,10 @@
 #![enable(implicit_some)]
 (slides: [
     Slide (
-        text_key: "gatebuilt-A0",
-        buttons: [],
-        sprite: Simple(RogerLarge),
-        back_button: false,
-        next_button: true,
-    ),
-    Slide (
         text_key: "gatebuilt-A10",
         buttons: [],
         sprite: Simple(Duck),
-        back_button: true,
+        back_button: false,
         next_button: true,
     ),
     Slide (
@@ -30,7 +23,7 @@
                     next_view: Town,
                     actions: [
                         StoryProgress(
-                            VisitorArrived,
+                            WelcomeVisitorQuestStarted,
                             None,
                         )
                     ]

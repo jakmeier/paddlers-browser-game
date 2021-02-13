@@ -21,17 +21,22 @@ impl Game {
                     actions: vec![DialogueAction::OpenScene(SceneIndex::Entrance, 0)],
                 })?;
             }
-            StoryState::WatergateBuilt => {
-                self.add_trigger_to_hero(EntityTrigger {
-                    actions: vec![DialogueAction::OpenScene(SceneIndex::WelcomeVisitor, 0)],
-                })?;
-            }
             StoryState::TempleBuilt => {
                 self.add_trigger_to_hero(EntityTrigger {
                     actions: vec![DialogueAction::OpenScene(SceneIndex::BuildWatergate, 0)],
                 })?;
             }
-            StoryState::VisitorArrived
+            StoryState::WatergateBuilt => {
+                self.add_trigger_to_hero(EntityTrigger {
+                    actions: vec![DialogueAction::OpenScene(SceneIndex::ExplainWatergate, 0)],
+                })?;
+            }
+            StoryState::VisitorArrived => {
+                self.add_trigger_to_hero(EntityTrigger {
+                    actions: vec![DialogueAction::OpenScene(SceneIndex::WelcomeVisitor, 0)],
+                })?;
+            }
+            StoryState::VisitorQueued
             | StoryState::FirstVisitorWelcomed
             | StoryState::ServantAccepted
             | StoryState::BuildingWatergate
@@ -42,6 +47,7 @@ impl Game {
             | StoryState::SolvingSecondaryQuestB
             | StoryState::DialogueBalanceA
             | StoryState::DialogueBalanceB
+            | StoryState::WelcomeVisitorQuestStarted
             | StoryState::AllDone => {}
         }
         Ok(())

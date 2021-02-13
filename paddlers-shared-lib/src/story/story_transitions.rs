@@ -19,8 +19,6 @@ pub struct StoryTransition {
     pub actions: StoryActionList,
 }
 
-// TODO: Add trigger to watergate -> to duck slots (also make slote more visually appealing)
-// TODO: Something is missing here. Something that introduces quests and something for letters. Maybe more.
 impl StoryState {
     pub const fn transition(self, trigger: &StoryTrigger) -> Option<StoryTransition> {
         let transitions = self.guards();
@@ -50,16 +48,25 @@ impl StoryState {
             }
             Self::WatergateBuilt => {
                 out = out.push(
-                    StoryTransition::on_dialogue(Self::VisitorArrived)
+                    StoryTransition::on_dialogue(Self::VisitorQueued)
                         .with(StoryAction::SendHobo(SINGLE_ONE_HP)),
                 );
             }
+            Self::VisitorQueued => {
+                out = out.push(StoryTransition {
+                    trigger: StoryTrigger::LetVisitorIn,
+                    next_state: Self::VisitorArrived,
+                    actions: StoryActionList::new(),
+                });
+            }
             Self::VisitorArrived => {
                 out = out.push(
-                    StoryTransition::on_dialogue(Self::VisitorArrived)
+                    StoryTransition::on_dialogue(Self::WelcomeVisitorQuestStarted)
                         .with(StoryAction::StartQuest(QuestName::HelloWorld))
                         .with(StoryAction::AddMana(10)),
                 );
+            }
+            Self::WelcomeVisitorQuestStarted => {
                 out = out.push(
                     StoryTransition::after_quest(QuestName::HelloWorld, Self::FirstVisitorWelcomed)
                         .with(StoryAction::StartQuest(QuestName::CreateForest)),
@@ -204,6 +211,7 @@ impl StoryTransition {
         // Yeah, I whish I knew a better way doing that... (Maybe PartialEq will eventually get a const version)
         match (&self.trigger, trigger) {
             (StoryTrigger::DialogueStoryTrigger, StoryTrigger::DialogueStoryTrigger) => true,
+            (StoryTrigger::LetVisitorIn, StoryTrigger::LetVisitorIn) => true,
             (StoryTrigger::DialogueChoice(a), StoryTrigger::DialogueChoice(b)) => a.const_eq(*b),
             (StoryTrigger::FinishedQuest(a), StoryTrigger::FinishedQuest(b)) => a.const_eq(*b),
             (StoryTrigger::BuildingBuilt(a), StoryTrigger::BuildingBuilt(b)) => a.const_eq(*b),
@@ -216,5 +224,18 @@ impl StoryTransition {
 impl BuildingType {
     pub const fn const_eq(self, other: Self) -> bool {
         self as usize == other as usize
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    #[test]
+    fn let_visitor_in() {
+        assert!(StoryState::VisitorQueued.guards().len() == 1);
+        println!("Guards: {:?}", StoryState::VisitorQueued.guards());
+        assert!(StoryState::VisitorQueued
+            .transition(&StoryTrigger::LetVisitorIn)
+            .is_some());
     }
 }

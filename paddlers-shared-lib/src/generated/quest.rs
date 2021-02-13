@@ -1,5 +1,5 @@
 //! This module has been auto-generate using specification loader.
-#[derive(Clone, Copy, Debug, PartialEq, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum QuestName {
     HelloWorld,
     CreateForest,

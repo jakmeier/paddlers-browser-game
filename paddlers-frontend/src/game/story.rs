@@ -2,8 +2,9 @@ pub mod entity_trigger;
 
 use crate::game::{player_info::PlayerInfo, Game};
 use crate::prelude::*;
-use paddlers_shared_lib::specification_types::*;
-use paddlers_shared_lib::story::story_state::StoryState;
+use paddle::NutsCheck;
+use paddlers_shared_lib::story::{story_action::StoryAction, story_state::StoryState};
+use paddlers_shared_lib::{specification_types::*, story::story_trigger::StoryTrigger};
 
 impl Game {
     pub fn set_story_state(&self, s: StoryState) {
@@ -22,6 +23,22 @@ impl Game {
         self.load_story_triggers(&story_state)?;
         Ok(())
     }
+    // TODO: This should be called everywhere in the frontend where a story state changing action happens. And then the code should be changed to not do the full const computation every time-
+    pub fn handle_story_trigger(&mut self, trigger: StoryTrigger) {
+        let story_state = self.story_state();
+        if let Some(t) = story_state.transition(&trigger) {
+            if t.next_state != story_state {
+                self.set_story_state(t.next_state);
+                self.load_story_state().nuts_check();
+            }
+            for action in t.actions.into_iter() {
+                if let StoryAction::AddMana(_) = action {
+                    // one could go and add Mana manually. In favour of a more widely applicable solution, I want to trigger a reload instead (for now).
+                    crate::net::request_worker_update();
+                }
+            }
+        }
+    }
 }
 
 pub fn select_dialogue_scene(story_state: StoryState) -> Option<(SceneIndex, SlideIndex)> {
@@ -37,9 +54,10 @@ pub fn select_dialogue_scene(story_state: StoryState) -> Option<(SceneIndex, Sli
         | StoryState::SolvingSecondaryQuestA
         | StoryState::SolvingSecondaryQuestB
         | StoryState::AllDone
+        | StoryState::VisitorQueued
+        | StoryState::WelcomeVisitorQuestStarted
         | StoryState::TempleBuilt => None,
         StoryState::ServantAccepted => Some((SceneIndex::Entrance, 5)),
-        // TODO
         StoryState::DialogueBalanceA => None,
         StoryState::DialogueBalanceB => None,
     }

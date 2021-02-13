@@ -12,12 +12,15 @@ use crate::{
 use crate::{gui::ui_state::Now, net::state::current_village};
 use crate::{gui::ui_state::UiState, net::game_master_api::GameMasterMessage};
 use paddle::{Domain, NutsCheck};
-use paddlers_shared_lib::api::{
-    attacks::{InvitationDescriptor, StartFightRequest},
-    hobo::SettleHobo,
-    story::StoryStateTransition,
-};
 use paddlers_shared_lib::prelude::*;
+use paddlers_shared_lib::{
+    api::{
+        attacks::{InvitationDescriptor, StartFightRequest},
+        hobo::SettleHobo,
+        story::StoryStateTransition,
+    },
+    story::story_trigger::StoryTrigger,
+};
 use specs::prelude::*;
 
 use super::{toplevel::Signal, town::nests::Nest};
@@ -128,6 +131,7 @@ impl Game {
                 };
                 nuts::send_to::<RestApiState, _>(message);
                 self.release_attack(attack);
+                self.handle_story_trigger(StoryTrigger::LetVisitorIn);
             }
             GameEvent::NetObjId(entity, obj) => {
                 self.town_world()
@@ -195,6 +199,11 @@ impl Game {
                 };
                 nuts::send_to::<RestApiState, _>(t);
                 paddle::share(crate::game::dialogue::NewStoryState { new_story_state });
+                if let Some(choice) = choice {
+                    self.handle_story_trigger(StoryTrigger::DialogueChoice(choice));
+                } else {
+                    self.handle_story_trigger(StoryTrigger::DialogueStoryTrigger);
+                }
             }
             DialogueAction::ClearSelectedUnit => {
                 let world = self.town_context.world();

@@ -51,6 +51,7 @@ struct RequestMapRead {
     min: i32,
     max: i32,
 }
+struct RequestWorkerUpdate;
 struct RequestWorkerTasksUpdate {
     unit_id: i64,
 }
@@ -94,6 +95,9 @@ pub fn request_map_read(min: i32, max: i32) {
 pub fn request_worker_tasks_update(unit_id: i64) {
     nuts::publish(RequestWorkerTasksUpdate { unit_id });
 }
+pub fn request_worker_update() {
+    nuts::publish(RequestWorkerUpdate);
+}
 pub fn request_resource_update() {
     nuts::publish(RequestResourceUpdate);
 }
@@ -118,6 +122,7 @@ impl NetState {
         net_activity.subscribe(NetState::request_client_state);
         net_activity.subscribe(NetState::request_resource_update);
         net_activity.subscribe(NetState::request_map_read);
+        net_activity.subscribe(NetState::request_worker_update);
         net_activity.subscribe(NetState::request_worker_tasks_update);
         net_activity.subscribe(NetState::request_foreign_town);
         net_activity.subscribe(NetState::request_quests);
@@ -181,6 +186,9 @@ impl NetState {
 
     fn request_worker_tasks_update(&mut self, msg: &RequestWorkerTasksUpdate) {
         self.transfer_response(GraphQlState::worker_tasks_query(msg.unit_id));
+    }
+    fn request_worker_update(&mut self, _msg: &RequestWorkerUpdate) {
+        self.transfer_response(GraphQlState::workers_query());
     }
 
     fn request_resource_update(&mut self, _: &RequestResourceUpdate) {

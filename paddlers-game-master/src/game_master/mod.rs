@@ -131,6 +131,8 @@ fn repetitive_attack_strength(player: &Player) -> Option<HoboLevel> {
         | StoryState::SolvingSecondaryQuestB
         | StoryState::DialogueBalanceA
         | StoryState::DialogueBalanceB
+        | StoryState::VisitorQueued
+        | StoryState::WelcomeVisitorQuestStarted
         | StoryState::VisitorArrived => None,
         StoryState::FirstVisitorWelcomed => Some(HoboLevel::zero()),
         StoryState::AllDone => Some(HoboLevel::anarchist(player.karma)),

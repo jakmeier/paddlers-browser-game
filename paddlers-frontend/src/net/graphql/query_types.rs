@@ -303,6 +303,10 @@ impl Into<StoryState> for &PlayerStoryState {
             PlayerStoryState::BUILDING_WATERGATE => StoryState::BuildingWatergate,
             PlayerStoryState::TEMPLE_BUILT => StoryState::TempleBuilt,
             PlayerStoryState::VISITOR_ARRIVED => StoryState::VisitorArrived,
+            PlayerStoryState::VISITOR_QUEUED => StoryState::VisitorQueued,
+            PlayerStoryState::WELCOME_VISITOR_QUEST_STARTED => {
+                StoryState::WelcomeVisitorQuestStarted
+            }
             PlayerStoryState::FIRST_VISITOR_WELCOMED => StoryState::FirstVisitorWelcomed,
             PlayerStoryState::PICKING_PRIMARY_CIV_BONUS => StoryState::PickingPrimaryCivBonus,
             PlayerStoryState::SOLVING_PRIMARY_CIV_QUEST_PART_A => {

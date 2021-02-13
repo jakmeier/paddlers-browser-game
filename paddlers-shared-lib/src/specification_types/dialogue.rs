@@ -66,11 +66,19 @@ impl Scene {
 
 #[cfg_attr(feature = "enum_utils", derive(EnumVariantNames, AsRefStr))]
 #[derive(Debug, Clone, Copy, PartialEq, Deserialize, Hash, Eq)]
+/// Reference to a scene defined in an external RON file
 pub enum SceneIndex {
+    /// The first scene where the player meets its first follower, including instruction to build a temple.
     Entrance,
+    /// Instructions to place the visitor entrance.
     BuildWatergate,
+    /// Explain how visitors queue up and how they can be released.
+    ExplainWatergate,
+    /// Explain how to use abilities to make visitors happy.
     WelcomeVisitor,
+    /// Scene for an applying Paddler to live in a nest
     NewHobo,
+    /// Decision for a first specialization, masked behind advice for life.
     FirstChoice,
 }
 

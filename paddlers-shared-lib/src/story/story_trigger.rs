@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 pub type StoryTriggerList = ConstList<StoryTrigger>;
 
 /// Event that can trigger a story transition
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum StoryTrigger {
     /// Client acknowledges that player went through the blocking UI states of the current story
     DialogueStoryTrigger,
@@ -15,9 +15,13 @@ pub enum StoryTrigger {
     BuildingBuilt(BuildingType),
     /// Quest has been completed
     FinishedQuest(QuestName),
+    /// Letting (the first) visitor into town
+    LetVisitorIn,
+    // Note on adding new values: Make sure to add them to `is_trigger` in paddlers-shared-lib/src/story/story_transitions.rs
+    // (That's a custom partial_eq implementation)
 }
 
-#[derive(Clone, Copy, Serialize, Deserialize, Debug, PartialEq, Hash)]
+#[derive(Clone, Copy, Serialize, Deserialize, Debug, PartialEq, Hash, Eq)]
 #[serde(transparent)]
 pub struct StoryChoice {
     chosen_option: u8,

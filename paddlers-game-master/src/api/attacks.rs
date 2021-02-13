@@ -1,18 +1,18 @@
 use super::{check_owns_village0, internal_server_error};
-use crate::authentication::Authentication;
 use crate::game_master::attack_funnel::PlannedAttack;
 use crate::game_master::event::Event;
 use crate::game_master::town_worker::TownWorkerEventMsg;
+use crate::{authentication::Authentication, game_master::story_worker::StoryWorkerMessage};
 use actix::prelude::*;
 use actix_web::error::BlockingError;
 use actix_web::Responder;
 use actix_web::{web, HttpResponse};
 use futures::future::join_all;
-use paddlers_shared_lib::prelude::*;
 use paddlers_shared_lib::{
     api::attacks::{AttackDescriptor, InvitationDescriptor, StartFightRequest},
     civilization::CivilizationPerk,
 };
+use paddlers_shared_lib::{prelude::*, story::story_trigger::StoryTrigger};
 
 pub(crate) fn create_attack(
     pool: web::Data<crate::db::Pool>,
@@ -94,13 +94,21 @@ pub(crate) fn create_attack(
 pub(crate) fn welcome_visitor(
     pool: web::Data<crate::db::Pool>,
     body: web::Json<StartFightRequest>,
-    auth: Authentication,
+    mut auth: Authentication,
+    addr: web::Data<crate::ActorAddresses>,
 ) -> HttpResponse {
     let db: crate::db::DB = pool.get_ref().into();
     let destination_village = body.destination;
     let attack = body.attack;
     if !db.village_owned_by(destination_village, auth.user.uuid) {
         return HttpResponse::Forbidden().body("Village not owned by player");
+    }
+    if let Some(player) = auth.player_object(&db) {
+        addr.story_worker.do_send(StoryWorkerMessage::new_verified(
+            player.key(),
+            player.story_state,
+            StoryTrigger::LetVisitorIn,
+        ));
     }
     db.start_fight(attack, Some(destination_village));
     HttpResponse::Ok().into()
