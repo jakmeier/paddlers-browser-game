@@ -84,12 +84,14 @@ impl AttackSpawner {
                 typ: HoboType::DefaultRandom,
                 level,
                 hurried: true,
+                hp: None,
             })
             .collect();
         hobos.push(VisitorDefinition {
             typ: HoboType::DefaultRandom,
             level,
             hurried: false,
+            hp: None,
         });
         self.spawn_anonymous(
             village, village, /* TODO: pick an anarchist village instead */
@@ -107,7 +109,9 @@ impl AttackSpawner {
             .into_iter()
             .map(|def| {
                 let hp;
-                if def.hurried {
+                if let Some(fixed_hp) = def.hp {
+                    hp = fixed_hp as i64;
+                } else if def.hurried {
                     let (min_hp, max_hp) = def.level.hurried_anarchist_hp_range();
                     hp = rng.gen_range(min_hp, max_hp);
                 } else {

@@ -56,7 +56,7 @@
     ),
     (
         quest_key: "socialize-more",
-        karma_condition: 53,
+        karma_condition: 22,
         condition: (),
         reward: (
             resources: { Sticks: 5, Feathers: 5, },

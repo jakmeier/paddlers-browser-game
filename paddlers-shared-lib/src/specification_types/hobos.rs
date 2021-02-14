@@ -14,6 +14,7 @@ pub enum HoboType {
 pub struct VisitorDefinition {
     pub typ: HoboType,
     pub level: HoboLevel,
+    pub hp: Option<u16>,
     pub hurried: bool,
 }
 
@@ -22,7 +23,16 @@ impl VisitorDefinition {
         Self {
             typ,
             hurried,
+            hp: None,
             level,
+        }
+    }
+    pub const fn new_fixed_hp(typ: HoboType, hurried: bool, hp: u16) -> Self {
+        Self {
+            typ,
+            hurried,
+            hp: Some(hp),
+            level: HoboLevel::zero(),
         }
     }
 }

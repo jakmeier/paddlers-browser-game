@@ -227,7 +227,7 @@ msgstr ""
 msgid "balance-important"
 msgstr ""
 "You have done great so far.\n"
-"But it is important to keep balance in mind."
+"But it is important to keep balance."
 
 msgid "visitor-balance-town"
 msgstr ""
