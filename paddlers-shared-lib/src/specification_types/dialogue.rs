@@ -80,6 +80,12 @@ pub enum SceneIndex {
     NewHobo,
     /// Decision for a first specialization, masked behind advice for life.
     FirstChoice,
+    /// After several successful visits, unlock the invitation perk and explain how it works
+    UnlockingInvitation,
+    /// After solving all visitor quests, turn attention to town building
+    VisitorBalanceTown,
+    /// After solving all town building quests, turn attention to visitors
+    TownBalanceVisitor,
 }
 
 #[cfg(feature = "enum_utils")]

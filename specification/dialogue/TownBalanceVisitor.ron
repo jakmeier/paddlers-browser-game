@@ -1,0 +1,34 @@
+#![enable(implicit_some)]
+(slides: [
+    Slide(
+        text_key: "balance-important",
+        buttons: [],
+        sprite: Simple(Karma),
+        back_button: false,
+        next_button: true,
+    ),
+    Slide(
+        text_key: "town-balance-visitor-0",
+        buttons: [],
+        sprite: Simple(Tree),
+        back_button: true,
+        next_button: true,
+    ),
+    Slide(
+        text_key: "town-balance-visitor-1",
+        sprite: Simple(DuckHappy),
+        back_button: true,
+        next_button: false,
+        buttons: [
+            SlideButton (
+                text_key: "confirm",
+                action: SlideButtonAction(
+                    next_view: Town,
+                    actions: [
+                        StoryProgress(SolvingSecondaryQuestB, None)
+                    ],
+                )
+            ),
+        ],
+    ),
+])

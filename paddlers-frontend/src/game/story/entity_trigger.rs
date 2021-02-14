@@ -1,5 +1,5 @@
-use crate::game::story::DialogueAction;
 use crate::game::units::workers::Worker;
+use crate::game::{story::DialogueAction, town::Town};
 use crate::gui::ui_state::UiState;
 use crate::prelude::*;
 use paddlers_shared_lib::story::story_state::StoryState;
@@ -36,6 +36,24 @@ impl Game {
                     actions: vec![DialogueAction::OpenScene(SceneIndex::WelcomeVisitor, 0)],
                 })?;
             }
+            StoryState::UnlockingInvitationPathA | StoryState::UnlockingInvitationPathB => {
+                self.add_trigger_to_temple(EntityTrigger {
+                    actions: vec![DialogueAction::OpenScene(
+                        SceneIndex::UnlockingInvitation,
+                        0,
+                    )],
+                })?;
+            }
+            StoryState::DialogueBalanceA => {
+                self.add_trigger_to_temple(EntityTrigger {
+                    actions: vec![DialogueAction::OpenScene(SceneIndex::VisitorBalanceTown, 0)],
+                })?;
+            }
+            StoryState::DialogueBalanceB => {
+                self.add_trigger_to_temple(EntityTrigger {
+                    actions: vec![DialogueAction::OpenScene(SceneIndex::TownBalanceVisitor, 0)],
+                })?;
+            }
             StoryState::VisitorQueued
             | StoryState::FirstVisitorWelcomed
             | StoryState::ServantAccepted
@@ -45,8 +63,6 @@ impl Game {
             | StoryState::SolvingPrimaryCivQuestPartB
             | StoryState::SolvingSecondaryQuestA
             | StoryState::SolvingSecondaryQuestB
-            | StoryState::DialogueBalanceA
-            | StoryState::DialogueBalanceB
             | StoryState::WelcomeVisitorQuestStarted
             | StoryState::AllDone => {}
         }
@@ -58,6 +74,14 @@ impl Game {
         let hero_id = Worker::find_hero(workers, entities)?;
         let mut triggers: WriteStorage<'_, EntityTrigger> = world.write_storage();
         triggers.insert(hero_id, trigger)?;
+        Ok(())
+    }
+    fn add_trigger_to_temple(&mut self, trigger: EntityTrigger) -> PadlResult<()> {
+        let world = self.home_town_world();
+        if let Some(e) = Town::find_building_entity(world, BuildingType::Temple) {
+            let mut triggers: WriteStorage<'_, EntityTrigger> = world.write_storage();
+            triggers.insert(e, trigger)?;
+        }
         Ok(())
     }
 }

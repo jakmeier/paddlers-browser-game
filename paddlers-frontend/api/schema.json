@@ -1832,6 +1832,18 @@
               "deprecationReason": null,
               "description": null,
               "isDeprecated": false,
+              "name": "UNLOCKING_INVITATION_PATH_A"
+            },
+            {
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
+              "name": "UNLOCKING_INVITATION_PATH_B"
+            },
+            {
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
               "name": "DIALOGUE_BALANCE_A"
             },
             {

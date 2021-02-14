@@ -56,6 +56,8 @@ pub fn select_dialogue_scene(story_state: StoryState) -> Option<(SceneIndex, Sli
         | StoryState::AllDone
         | StoryState::VisitorQueued
         | StoryState::WelcomeVisitorQuestStarted
+        | StoryState::UnlockingInvitationPathA
+        | StoryState::UnlockingInvitationPathB
         | StoryState::TempleBuilt => None,
         StoryState::ServantAccepted => Some((SceneIndex::Entrance, 5)),
         StoryState::DialogueBalanceA => None,

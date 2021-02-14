@@ -319,6 +319,8 @@ impl Into<StoryState> for &PlayerStoryState {
             PlayerStoryState::SOLVING_SECONDARY_QUEST_B => StoryState::SolvingSecondaryQuestB,
             PlayerStoryState::DIALOGUE_BALANCE_A => StoryState::DialogueBalanceA,
             PlayerStoryState::DIALOGUE_BALANCE_B => StoryState::DialogueBalanceB,
+            PlayerStoryState::UNLOCKING_INVITATION_PATH_A => StoryState::UnlockingInvitationPathA,
+            PlayerStoryState::UNLOCKING_INVITATION_PATH_B => StoryState::UnlockingInvitationPathB,
             PlayerStoryState::ALL_DONE => StoryState::AllDone,
             PlayerStoryState::Other(_) => panic!("Unexpected story state"),
         }

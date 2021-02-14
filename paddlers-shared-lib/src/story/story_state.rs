@@ -20,6 +20,8 @@ pub enum StoryState {
     PickingPrimaryCivBonus,
     SolvingPrimaryCivQuestPartA,
     SolvingPrimaryCivQuestPartB,
+    UnlockingInvitationPathA,
+    UnlockingInvitationPathB,
     DialogueBalanceA,
     DialogueBalanceB,
     SolvingSecondaryQuestA,

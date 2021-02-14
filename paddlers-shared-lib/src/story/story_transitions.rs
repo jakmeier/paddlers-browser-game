@@ -95,14 +95,14 @@ impl StoryState {
             Self::PickingPrimaryCivBonus => {
                 out = out.push(
                     StoryTransition::on_choice(
-                        StoryChoice::new(0),
+                        StoryChoice::new(1),
                         Self::SolvingPrimaryCivQuestPartA,
                     )
                     .with(StoryAction::StartQuest(QuestName::Socialize)),
                 );
                 out = out.push(
                     StoryTransition::on_choice(
-                        StoryChoice::new(1),
+                        StoryChoice::new(2),
                         Self::SolvingPrimaryCivQuestPartA,
                     )
                     .with(StoryAction::StartQuest(QuestName::BuildNest))
@@ -110,20 +110,23 @@ impl StoryState {
                 );
             }
             Self::SolvingPrimaryCivQuestPartA => {
-                out = out.push(
-                    StoryTransition::after_quest(
-                        QuestName::Socialize,
-                        Self::SolvingPrimaryCivQuestPartB,
-                    )
-                    .with(StoryAction::StartQuest(QuestName::SocializeMore))
-                    .with(StoryAction::UnlockPerk(CivilizationPerk::Invitation)),
-                );
+                out = out.push(StoryTransition::after_quest(
+                    QuestName::Socialize,
+                    Self::UnlockingInvitationPathA,
+                ));
                 out = out.push(
                     StoryTransition::after_quest(
                         QuestName::BuildNest,
                         Self::SolvingPrimaryCivQuestPartB,
                     )
                     .with(StoryAction::StartQuest(QuestName::GrowPopulation)),
+                );
+            }
+            Self::UnlockingInvitationPathA => {
+                out = out.push(
+                    StoryTransition::on_dialogue(Self::SolvingPrimaryCivQuestPartB)
+                        .with(StoryAction::StartQuest(QuestName::SocializeMore))
+                        .with(StoryAction::UnlockPerk(CivilizationPerk::Invitation)),
                 );
             }
             Self::SolvingPrimaryCivQuestPartB => {
@@ -139,13 +142,13 @@ impl StoryState {
             Self::DialogueBalanceA => {
                 out = out.push(
                     StoryTransition::on_dialogue(Self::SolvingSecondaryQuestA)
-                        .with(StoryAction::StartQuest(QuestName::GrowPopulation)),
+                        .with(StoryAction::StartQuest(QuestName::GrowPopulation))
+                        .with(StoryAction::UnlockPerk(CivilizationPerk::NestBuilding)),
                 );
             }
             Self::DialogueBalanceB => {
                 out = out.push(
                     StoryTransition::on_dialogue(Self::SolvingSecondaryQuestB)
-                        .with(StoryAction::UnlockPerk(CivilizationPerk::Invitation))
                         .with(StoryAction::StartQuest(QuestName::SocializeMore)),
                 );
             }
@@ -158,8 +161,14 @@ impl StoryState {
             Self::SolvingSecondaryQuestB => {
                 out = out.push(StoryTransition::after_quest(
                     QuestName::SocializeMore,
-                    Self::AllDone,
+                    Self::UnlockingInvitationPathB,
                 ));
+            }
+            Self::UnlockingInvitationPathB => {
+                out = out.push(
+                    StoryTransition::on_dialogue(Self::AllDone)
+                        .with(StoryAction::UnlockPerk(CivilizationPerk::Invitation)),
+                );
             }
             Self::AllDone => {}
         }

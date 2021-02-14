@@ -47,10 +47,11 @@
         text_key: "make-friends-description",
         buttons: [
             SlideButton(
-                text_key: "confirm",
+                text_key: "NIY",
                 action: SlideButtonAction(
-                    next_slide: 6,
-                    actions: [StoryProgress(SolvingPrimaryCivQuestPartA, 0)],
+                    next_slide: 3,
+                    actions: [],
+                    // actions: [StoryProgress(SolvingPrimaryCivQuestPartA, 0)],
                 )
             ),
         ],
@@ -64,7 +65,7 @@
             SlideButton (
                 text_key: "confirm",
                 action: SlideButtonAction(
-                    next_slide: 6,
+                    next_slide: 7,
                     actions: [StoryProgress(SolvingPrimaryCivQuestPartA, 1)],
                 )
             ),
@@ -89,8 +90,23 @@
         next_button: false,
     ),
     Slide(
+        text_key: "expl-nest",
+        buttons: [
+            SlideButton (
+                text_key: "confirm",
+                action: SlideButtonAction(
+                    next_slide: 7,
+                    actions: [],
+                )
+            ),
+        ],
+        sprite: Simple(SingleNest),
+        back_button: false,
+        next_button: false,
+    ),
+    Slide(
         text_key: "look-for-quest",
-                buttons: [
+        buttons: [
             SlideButton (
                 text_key: "button-back-to-town",
                 action: SlideButtonAction(
