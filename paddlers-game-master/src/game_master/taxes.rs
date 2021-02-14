@@ -40,24 +40,23 @@ impl DB {
     fn collect_taxes(&self, village: Village, seed: u8) {
         let hobos = self.hobos(village.key());
         for hobo in &hobos {
-            let mut report = NewVisitReport {
-                sender: Some(hobo.id),
-                village_id: village.id,
-                karma: 0,
-            };
-            if hobos.len() == 0 {
-                return;
+            if hobo.nest.is_some() {
+                let mut report = NewVisitReport {
+                    sender: Some(hobo.id),
+                    village_id: village.id,
+                    karma: 0,
+                };
+                let mut feathers = 0;
+                let mut logs = 0;
+                report.karma += 1;
+                match (hobo.id.wrapping_mul(seed as i64).abs() + seed as i64) % 255 {
+                    0 => feathers += 3,
+                    1..20 => logs += 1,
+                    11..60 => feathers += 1,
+                    _ => {}
+                }
+                self.add_new_report(report, feathers, 0, logs);
             }
-            let mut feathers = 0;
-            let mut logs = 0;
-            report.karma += 1;
-            match (hobo.id.wrapping_mul(seed as i64).abs() + seed as i64) % 255 {
-                0 => feathers += 3,
-                1..20 => logs += 1,
-                11..60 => feathers += 1,
-                _ => {}
-            }
-            self.add_new_report(report, feathers, 0, logs);
         }
     }
 }

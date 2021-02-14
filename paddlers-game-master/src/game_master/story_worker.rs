@@ -5,7 +5,7 @@ use paddlers_shared_lib::{
     story::{story_state::StoryState, story_trigger::StoryTrigger},
 };
 
-use super::attack_spawn::{AttackSpawner, SendAnarchistAttack};
+use super::attack_spawn::{AttackSpawner, SendAnonymousAttack};
 
 /// Actor for performing story state transitions
 pub struct StoryWorker {
@@ -75,19 +75,20 @@ impl Handler<StoryWorkerMessage> for StoryWorker {
                     self.db_actor
                         .do_send(DeferredDbStatement::AssignQuest(msg.player, q));
                 }
-                paddlers_shared_lib::story::story_action::StoryAction::SendHobo(_) => {
-                    // TODO: send defined attack wave
-                    // For now: Send one hard-coded hobo
+                paddlers_shared_lib::story::story_action::StoryAction::SendHobo(attack_def) => {
                     let village_lookup = PlayerHomeLookup { player: msg.player };
+                    let visitors = attack_def.into_iter().collect::<Vec<_>>();
 
                     let attack_spawner = self.attack_spawner.clone();
                     let future = self
                         .db_actor
                         .send(village_lookup)
-                        .and_then(move |PlayerHome(village)| {
-                            let msg = SendAnarchistAttack {
-                                village,
-                                level: paddlers_shared_lib::specification_types::HoboLevel::zero(),
+                        .and_then(move |PlayerHome(destination)| {
+                            let origin = destination;
+                            let msg = SendAnonymousAttack {
+                                destination,
+                                origin,
+                                visitors,
                             };
                             attack_spawner.send(msg)
                         })

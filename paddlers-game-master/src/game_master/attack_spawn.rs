@@ -4,8 +4,8 @@ use crate::db::*;
 use crate::game_master::attack_funnel::{AttackFunnel, PlannedAttack};
 use actix::prelude::*;
 use futures::future::join_all;
-use paddlers_shared_lib::prelude::*;
-use paddlers_shared_lib::specification_types::HoboLevel;
+use paddlers_shared_lib::specification_types::{HoboLevel, HoboType};
+use paddlers_shared_lib::{prelude::*, specification_types::VisitorDefinition};
 use rand::Rng;
 
 pub struct AttackSpawner {
@@ -26,11 +26,12 @@ impl Actor for AttackSpawner {
     }
 }
 
-/// Attack from no specific origin
+/// Randomized attack from no specific origin
 pub(super) struct SendAnarchistAttack {
     pub village: VillageKey,
     pub level: HoboLevel,
 }
+
 impl Message for SendAnarchistAttack {
     type Result = ();
 }
@@ -39,6 +40,23 @@ impl Handler<SendAnarchistAttack> for AttackSpawner {
 
     fn handle(&mut self, msg: SendAnarchistAttack, _ctx: &mut Context<Self>) -> Self::Result {
         self.spawn_anarchists(msg.village, msg.level);
+    }
+}
+
+/// Specific attack to be sent without persistent hobos (spawn them on-the-fly, deletion still TODO)
+pub(super) struct SendAnonymousAttack {
+    pub destination: VillageKey,
+    pub origin: VillageKey,
+    pub visitors: Vec<VisitorDefinition>,
+}
+impl Message for SendAnonymousAttack {
+    type Result = ();
+}
+impl Handler<SendAnonymousAttack> for AttackSpawner {
+    type Result = ();
+
+    fn handle(&mut self, msg: SendAnonymousAttack, _ctx: &mut Context<Self>) -> Self::Result {
+        self.spawn_anonymous(msg.destination, msg.origin, msg.visitors);
     }
 }
 
@@ -61,34 +79,53 @@ impl AttackSpawner {
         let n = rng.gen_range(2, 4);
 
         // weak hobos
-        let (min_hp, max_hp) = level.hurried_anarchist_hp_range();
-        let mut futures: Vec<Request<DbActor, NewHoboMessage>> = (0..n)
-            .map(|_| {
+        let mut hobos: Vec<VisitorDefinition> = (0..n)
+            .map(|_| VisitorDefinition {
+                typ: HoboType::DefaultRandom,
+                level,
+                hurried: true,
+            })
+            .collect();
+        hobos.push(VisitorDefinition {
+            typ: HoboType::DefaultRandom,
+            level,
+            hurried: false,
+        });
+        self.spawn_anonymous(
+            village, village, /* TODO: pick an anarchist village instead */
+            hobos,
+        );
+    }
+    fn spawn_anonymous(
+        &self,
+        destination: VillageKey,
+        origin: VillageKey,
+        visitors: Vec<VisitorDefinition>,
+    ) {
+        let mut rng = rand::thread_rng();
+        let futures: Vec<Request<DbActor, NewHoboMessage>> = visitors
+            .into_iter()
+            .map(|def| {
+                let hp;
+                if def.hurried {
+                    let (min_hp, max_hp) = def.level.hurried_anarchist_hp_range();
+                    hp = rng.gen_range(min_hp, max_hp);
+                } else {
+                    hp = def.level.unhurried_anarchist_hp();
+                };
+                let color = Self::unit_color(&mut rng, def.typ);
                 let hobo = NewHobo {
-                    color: Some(Self::gen_color(&mut rng)),
-                    hp: rng.gen_range(min_hp, max_hp),
+                    color: Some(color),
+                    hp,
                     speed: 0.05,
-                    home: village.num(), // TODO: anarchists home
-                    hurried: true,
+                    home: origin.num(),
+                    hurried: def.hurried,
                     nest: None,
                 };
                 let msg = NewHoboMessage(hobo);
                 self.db_actor.send(msg)
             })
             .collect();
-        // strong unhurried hobo
-        futures.push({
-            let hobo = NewHobo {
-                color: Some(Self::gen_color(&mut rng)),
-                hp: level.unhurried_anarchist_hp(),
-                speed: 0.25,
-                home: village.num(), // TODO: anarchists home
-                hurried: false,
-                nest: None,
-            };
-            let msg = NewHoboMessage(hobo);
-            self.db_actor.send(msg)
-        });
 
         let attack_funnel = self.attack_funnel_actor.clone();
         let pool = self.dbpool.clone();
@@ -100,7 +137,7 @@ impl AttackSpawner {
 
                 let pa = PlannedAttack {
                     origin_village: None,
-                    destination_village: db.village(village).unwrap(),
+                    destination_village: db.village(destination).unwrap(),
                     hobos: hobos,
                     no_delay: false,
                     subject_to_visitor_queue_limit: true,
@@ -111,6 +148,18 @@ impl AttackSpawner {
         Arbiter::spawn(planned_attack);
     }
 
+    fn unit_color<R>(rng: &mut R, hobo_color: HoboType) -> UnitColor
+    where
+        R: Rng,
+    {
+        match hobo_color {
+            HoboType::DefaultRandom => Self::gen_color(rng),
+            HoboType::Yellow => UnitColor::Yellow,
+            HoboType::Camo => UnitColor::Camo,
+            HoboType::White => UnitColor::White,
+            HoboType::Prophet => UnitColor::Prophet,
+        }
+    }
     fn gen_color<R>(rng: &mut R) -> UnitColor
     where
         R: Rng,

@@ -6,13 +6,15 @@ pub enum HoboType {
     Camo,
     White,
     Prophet,
+    /// Pick one of Yellow/Camo/White
+    DefaultRandom,
 }
 
 #[derive(Copy, Clone, Debug)]
 pub struct VisitorDefinition {
-    typ: HoboType,
-    level: HoboLevel,
-    hurried: bool,
+    pub typ: HoboType,
+    pub level: HoboLevel,
+    pub hurried: bool,
 }
 
 impl VisitorDefinition {
