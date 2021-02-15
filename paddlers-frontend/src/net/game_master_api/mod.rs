@@ -1,4 +1,10 @@
-use super::{ajax, authentication::keycloak_preferred_name, url::*, RequestHobos, RequestQuests};
+use super::{
+    ajax,
+    authentication::keycloak_preferred_name,
+    graphql::{ForceRequest, PeriodicalSyncRequest},
+    url::*,
+    RequestHobos, RequestQuests,
+};
 use crate::{
     game::{components::NetObj, game_event_manager::game_event},
     prelude::*,
@@ -137,7 +143,7 @@ impl RestApiState {
         let uri = self.game_master_url.clone() + "/shop/unit/prophet";
         let future = async move {
             ajax::fetch_json("POST", &uri, &msg).await?;
-            crate::net::request_player_update();
+            nuts::publish(ForceRequest::SyncAsap(PeriodicalSyncRequest::PlayerInfo));
             // TODO: Also update hobos afterwards, not only player info...
             Ok(())
         };

@@ -36,9 +36,10 @@ struct NetState {
     chan: Sender<NetMsg>,
     logged_in: bool,
     gql_state: GraphQlState,
+    sync: graphql::SyncState,
 }
 
-const NET_THREAD_TIMEOUT_MS: i32 = 5000;
+const NET_THREAD_TIMEOUT_MS: i32 = 100;
 
 // Requests
 struct NetworkUpdate;
@@ -51,7 +52,6 @@ struct RequestMapRead {
     min: i32,
     max: i32,
 }
-struct RequestWorkerUpdate;
 struct RequestWorkerTasksUpdate {
     unit_id: i64,
 }
@@ -95,9 +95,6 @@ pub fn request_map_read(min: i32, max: i32) {
 pub fn request_worker_tasks_update(unit_id: i64) {
     nuts::publish(RequestWorkerTasksUpdate { unit_id });
 }
-pub fn request_worker_update() {
-    nuts::publish(RequestWorkerUpdate);
-}
 pub fn request_resource_update() {
     nuts::publish(RequestResourceUpdate);
 }
@@ -114,6 +111,7 @@ impl NetState {
             logged_in: false,
             chan,
             gql_state: GraphQlState::new(),
+            sync: graphql::SyncState::new(),
         };
         let net_activity = nuts::new_domained_activity(ns, &Domain::Network);
         net_activity.subscribe(NetState::log_in);
@@ -122,22 +120,19 @@ impl NetState {
         net_activity.subscribe(NetState::request_client_state);
         net_activity.subscribe(NetState::request_resource_update);
         net_activity.subscribe(NetState::request_map_read);
-        net_activity.subscribe(NetState::request_worker_update);
         net_activity.subscribe(NetState::request_worker_tasks_update);
         net_activity.subscribe(NetState::request_foreign_town);
         net_activity.subscribe(NetState::request_quests);
         net_activity.subscribe(NetState::request_hobos);
         net_activity.subscribe(NetState::update_attack_id);
         net_activity.subscribe(NetState::update_report_id);
+        net_activity.subscribe(NetState::scheduled_update);
     }
 
     // For frequent updates.
     // This is called every time NetworkUpdate is being published, which happens every NET_THREAD_TIMEOUT_MS once loading has completed.
     fn work(&mut self, _: &NetworkUpdate) {
-        self.transfer_response(self.gql_state.attacks_query());
-        self.transfer_response(self.gql_state.reports_query());
-        self.transfer_response(GraphQlState::resource_query());
-        self.transfer_response(GraphQlState::player_info_query());
+        self.sync_tick();
     }
 
     pub fn start_working() {
@@ -149,8 +144,6 @@ impl NetState {
     // If the player is not logged in, yet, this function queues itself until the player is logged in.
     // Once logged in, the requests are sent exactly once.
     fn request_client_state(&mut self, _: &RequestClientStateUpdate) {
-        // TODO: Instead of forcing a request every time the 10s are too long, use something smarter.
-        // E.g.: Once a second check what needs to be updated and then allow this list to be altered from outside
         if self.logged_in {
             self.transfer_response(GraphQlState::buildings_query());
             self.transfer_response(GraphQlState::workers_query());
@@ -186,9 +179,6 @@ impl NetState {
 
     fn request_worker_tasks_update(&mut self, msg: &RequestWorkerTasksUpdate) {
         self.transfer_response(GraphQlState::worker_tasks_query(msg.unit_id));
-    }
-    fn request_worker_update(&mut self, _msg: &RequestWorkerUpdate) {
-        self.transfer_response(GraphQlState::workers_query());
     }
 
     fn request_resource_update(&mut self, _: &RequestResourceUpdate) {

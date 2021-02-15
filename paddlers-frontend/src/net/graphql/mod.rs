@@ -1,16 +1,19 @@
+use crate::net::state::current_village_async;
+use crate::prelude::*;
+use paddlers_shared_lib::prelude::VillageKey;
+use std::future::Future;
+
 mod http_calls;
 pub mod query_types;
 mod response;
-use std::future::Future;
+
+mod sync;
+pub use sync::{ForceRequest, PeriodicalSyncRequest, ScheduledRequest, SyncState};
 
 use super::{NetMsg, NewAttackId, NewReportId};
 use http_calls::*;
 pub use query_types::*;
 pub(crate) use response::gql_extract_data;
-
-use crate::net::state::current_village_async;
-use crate::prelude::*;
-use paddlers_shared_lib::prelude::VillageKey;
 
 pub struct GraphQlState {
     next_attack_id: i64,

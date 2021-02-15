@@ -1,7 +1,10 @@
 pub mod entity_trigger;
 
-use crate::game::{player_info::PlayerInfo, Game};
-use crate::prelude::*;
+use crate::{
+    game::{player_info::PlayerInfo, Game},
+    net::graphql::{ForceRequest, PeriodicalSyncRequest},
+};
+use crate::{net::graphql::ScheduledRequest, prelude::*};
 use paddle::NutsCheck;
 use paddlers_shared_lib::story::{story_action::StoryAction, story_state::StoryState};
 use paddlers_shared_lib::{specification_types::*, story::story_trigger::StoryTrigger};
@@ -30,12 +33,17 @@ impl Game {
             if t.next_state != story_state {
                 self.set_story_state(t.next_state);
                 self.load_story_state().nuts_check();
+                nuts::publish(ForceRequest::SyncAsap(PeriodicalSyncRequest::PlayerInfo));
             }
+            let mut mana_changed = false;
             for action in t.actions.into_iter() {
                 if let StoryAction::AddMana(_) = action {
-                    // one could go and add Mana manually. In favour of a more widely applicable solution, I want to trigger a reload instead (for now).
-                    crate::net::request_worker_update();
+                    mana_changed = true;
                 }
+            }
+            if mana_changed {
+                // one could go and add Mana manually. In favour of a more widely applicable solution, I want to trigger a reload instead (for now).
+                nuts::publish(ForceRequest::Extra(ScheduledRequest::Workers, 3));
             }
         }
     }

@@ -20,7 +20,7 @@ use paddle::{
     FitStrategy,
 };
 
-use paddlers_shared_lib::story::story_state::StoryState;
+use paddlers_shared_lib::story::{story_state::StoryState, story_trigger::StoryTrigger};
 use specs::prelude::*;
 use std::ops::Deref;
 
@@ -117,19 +117,16 @@ impl<'a, 'b> TownFrame<'a, 'b> {
             Signal::PlayerInfoUpdated => {
                 state.update_temple().nuts_check();
             }
-            Signal::BuildingBuilt(BuildingType::Temple) => {
+            Signal::BuildingBuilt(bt) => {
                 state.home_town_world_mut().maintain();
+                state.handle_story_trigger(StoryTrigger::BuildingBuilt(*bt));
                 state
                     .load_story_triggers(&StoryState::TempleBuilt)
                     .nuts_check();
-            }
-            Signal::BuildingBuilt(BuildingType::Watergate) => {
-                state.home_town_world_mut().maintain();
-                state
-                    .load_story_triggers(&StoryState::WatergateBuilt)
-                    .nuts_check();
-                state.town_mut().refresh_attacker_direction();
-                state.refresh_visitor_gate();
+                if *bt == BuildingType::Watergate {
+                    state.town_mut().refresh_attacker_direction();
+                    state.refresh_visitor_gate();
+                }
             }
             Signal::BuildingUpgraded(BuildingType::Watergate) => {
                 state.refresh_visitor_gate();
