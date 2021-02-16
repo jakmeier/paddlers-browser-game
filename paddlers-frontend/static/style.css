@@ -206,4 +206,7 @@ div.quest .button {
     #game-root {
         font-size: 13px;
     }
+    div.dialogue {
+        font-size: 160%;
+    }
 }

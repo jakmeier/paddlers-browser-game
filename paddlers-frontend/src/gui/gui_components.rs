@@ -16,6 +16,7 @@ use paddlers_shared_lib::{api::shop::Price, civilization::CivilizationPerk};
 
 pub enum TableRow<'a> {
     Text(String),
+    MultiRowText(String, u32),
     TextWithImage(String, SpriteIndex),
     InteractiveArea(&'a mut dyn InteractiveTableArea),
     ProgressBar(Color, Color, i32, i32, Option<String>),
@@ -146,7 +147,16 @@ pub fn draw_table(
                     .allocate()
                     .write(window, &text_area, z, FitStrategy::Center, text)
                     .nuts_check();
-                line.pos.y += row_height;
+                line.pos.y += text_area.size.y;
+            }
+            TableRow::MultiRowText(text, n) => {
+                let mut text_area = line.clone();
+                text_area.size.y = *n as f32 * row_height;
+                floats
+                    .allocate()
+                    .write(window, &text_area, z, FitStrategy::Center, text)
+                    .nuts_check();
+                line.pos.y += text_area.size.y;
             }
             TableRow::TextWithImage(text, img) => {
                 let symbol = Rectangle::new(line.pos, (img_s, img_s));
@@ -217,6 +227,7 @@ fn row_count(table: &[TableRow]) -> usize {
     table.iter().fold(0, |acc, row| {
         acc + match row {
             TableRow::Text(_) => 1,
+            TableRow::MultiRowText(_, n) => *n as usize,
             TableRow::TextWithImage(_, _) => 1,
             TableRow::InteractiveArea(ia) => ia.rows(),
             TableRow::ProgressBar(_, _, _, _, _) => 1,

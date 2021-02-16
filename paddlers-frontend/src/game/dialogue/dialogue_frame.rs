@@ -16,7 +16,7 @@ pub(crate) struct DialogueFrame {
     scenes: SceneLoader,
     image: SpriteIndex,
     buttons: UiBox,
-    text_lines: Vec<String>,
+    text: String,
     text_provider: TableTextProvider,
     text_bubble: AbstractMesh,
     current_scene: Option<SceneIndex>,
@@ -35,7 +35,7 @@ impl DialogueFrame {
         let dialogue = DialogueFrame {
             buttons: UiBox::new(2, 1, 20.0, 15.0),
             image: SpriteIndex::Simple(SingleSprite::Roger),
-            text_lines: Vec::new(),
+            text: String::new(),
             text_provider,
             text_bubble,
             current_scene: None,
@@ -60,7 +60,7 @@ impl DialogueFrame {
     /// Panics if no scene is active
     fn reload(&mut self, locale: &TextDb) {
         self.buttons.clear();
-        self.text_lines.clear();
+        self.text.clear();
 
         if let Some(scene_index) = self.current_scene {
             if let Some(scene) = self.scenes.get(scene_index) {
@@ -70,15 +70,11 @@ impl DialogueFrame {
                 let back_button = scene.back_button(self.current_slide);
                 let next_button = scene.next_button(self.current_slide);
 
-                // Write text into text bubble
-                for s in text.split("\n") {
-                    self.text_lines.push(s.to_owned());
-                }
-                // load sprite
+                self.text += text;
                 self.image = image;
+
                 // Create dialogue buttons for interactions
                 let extra_buttons = scene.slide_buttons(self.current_slide);
-
                 // Create and add navigation buttons
                 if let Some(i) = back_button {
                     let back_button =
@@ -116,8 +112,9 @@ impl DialogueFrame {
         mouse_pos: Option<Vector>,
     ) {
         let mut table = Vec::new();
-        for s in &self.text_lines {
-            table.push(TableRow::Text(s.to_owned()));
+        if self.text.len() > 0 {
+            let rows = 8;
+            table.push(TableRow::MultiRowText(self.text.clone(), rows));
         }
         table.push(TableRow::InteractiveArea(&mut self.buttons));
         draw_table(

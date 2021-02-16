@@ -69,7 +69,7 @@ const fn active_area() -> Rectangle {
 
 const fn text_area() -> Rectangle {
     let active_area = active_area();
-    let mut text_area = active_area.const_shrink_to_center(0.875);
+    let mut text_area = active_area.const_shrink_to_center(0.95);
     let d = 0.1875 * active_area.size.x;
     text_area.size.x -= d;
     text_area.pos.x += d;
