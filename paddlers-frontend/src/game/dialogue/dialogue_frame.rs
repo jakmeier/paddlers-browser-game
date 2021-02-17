@@ -10,6 +10,7 @@ use chrono::NaiveDateTime;
 use paddle::Frame;
 use paddle::*;
 use paddle::{graphics::AbstractMesh, quicksilver_compat::Color};
+use quicksilver_compat::Shape;
 use specs::WorldExt;
 
 pub(crate) struct DialogueFrame {
@@ -22,6 +23,7 @@ pub(crate) struct DialogueFrame {
     current_scene: Option<SceneIndex>,
     current_slide: SlideIndex,
     mouse: PointerTracker,
+    waiting_for_scene_data: bool,
 }
 
 impl DialogueFrame {
@@ -42,6 +44,7 @@ impl DialogueFrame {
             current_slide: 0,
             mouse: PointerTracker::new(),
             scenes: Default::default(),
+            waiting_for_scene_data: false,
         };
 
         Ok(dialogue)
@@ -99,8 +102,10 @@ impl DialogueFrame {
                     self.buttons.add(button);
                 }
             } else {
-                // TODO: display something that shows that data is loading
+                self.waiting_for_scene_data = true;
             }
+        } else {
+            panic!("Called reload without an active scene.")
         }
     }
 
@@ -168,6 +173,11 @@ impl DialogueFrame {
         frame_handle.register_receiver(DialogueFrame::receive_scene)
     }
     fn receive_scene(&mut self, state: &mut Game, msg: scene_loader::SceneResponse) {
+        if let Some(wait_for_it) = self.current_scene {
+            if msg.index == wait_for_it {
+                self.waiting_for_scene_data = false;
+            }
+        }
         self.scenes.add(msg);
         self.reload(&state.locale);
     }
@@ -208,22 +218,37 @@ impl Frame for DialogueFrame {
     type State = Game;
     const WIDTH: u32 = crate::resolution::SCREEN_W;
     const HEIGHT: u32 = crate::resolution::SCREEN_H;
-    fn draw(&mut self, state: &mut Self::State, window: &mut DisplayArea, _timestamp: f64) {
+    fn draw(&mut self, state: &mut Self::State, window: &mut DisplayArea, timestamp: f64) {
         self.text_provider.reset();
-        let main_area = Rectangle::new_sized(Self::size());
-        self.draw_background(&mut state.sprites, window, main_area);
-        self.draw_image_with_text_bubble(&mut state.sprites, window, self.image);
-        self.draw_active_area(
-            &mut state.sprites,
-            state.world.read_resource::<Now>().0,
-            window,
-            self.mouse.pos(),
-        );
+        self.draw_background(&mut state.sprites, window, Self::area());
+        if self.waiting_for_scene_data {
+            let rot = timestamp / 2000.0 * 360.0;
+            let splash_area = Rectangle::new_sized((500.0, 500.0)).with_center(Self::size() / 2.0);
+            draw_image(
+                &mut state.sprites,
+                window,
+                &splash_area,
+                SpriteIndex::Simple(SingleSprite::Karma),
+                Z_UI_MENU,
+                FitStrategy::Center,
+                Transform::rotate(rot),
+            );
+        } else {
+            self.draw_image_with_text_bubble(&mut state.sprites, window, self.image);
+            self.draw_active_area(
+                &mut state.sprites,
+                state.world.read_resource::<Now>().0,
+                window,
+                self.mouse.pos(),
+            );
+        }
         self.text_provider.finish_draw();
     }
 
     fn leave(&mut self, _state: &mut Self::State) {
         self.text_provider.hide();
+        self.current_scene = None;
+        self.current_slide = 0;
     }
     fn pointer(&mut self, state: &mut Self::State, event: PointerEvent) {
         self.mouse.track_pointer_event(&event);
