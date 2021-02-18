@@ -3,9 +3,8 @@
     /* LINEAR STARTER QUESTS */
     (
         quest_key: "hello-world",
-        condition: (
-            karma: 1,
-        ),
+        karma_condition: 1,
+        condition: (),
         reward: (
             resources: {
             },

@@ -125,7 +125,7 @@ pub trait GameDB {
             .filter(attacks::destination_village_id.eq(village.num()))
             .filter(attacks::id.ge(min_id.unwrap_or(0)))
             .filter(
-                attacks::entered_destination.ge(diesel::dsl::now.at_time_zone("UTC").nullable()),
+                attacks::entered_destination.le(diesel::dsl::now.at_time_zone("UTC").nullable()),
             )
             .order_by(attacks::entered_destination)
             .limit(500)
