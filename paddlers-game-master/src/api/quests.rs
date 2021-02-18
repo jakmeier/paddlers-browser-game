@@ -1,3 +1,4 @@
+use crate::game_master::story_worker::StoryWorkerMessage;
 use crate::{authentication::Authentication, db::CollectQuestMessage};
 use actix::prelude::*;
 use actix_web::error::BlockingError;
@@ -5,6 +6,7 @@ use actix_web::{web, HttpResponse};
 use paddlers_shared_lib::{
     api::quests::QuestCollect,
     prelude::{Player, Quest, QuestKey},
+    story::story_trigger::StoryTrigger,
 };
 use paddlers_shared_lib::{
     keys::SqlKey,
@@ -57,6 +59,21 @@ pub(crate) fn collect_quest(
             .db_actor
             .send(msg)
             .map_err(|e| eprintln!("Quest collection spawn failed: {:?}", e));
+        Arbiter::spawn(future);
+
+        let quest_id = quest
+            .quest_key
+            .parse()
+            .expect("Couldn't parse QuestName from value found in DB");
+        let msg = StoryWorkerMessage::new_verified(
+            player_key,
+            player.story_state,
+            StoryTrigger::FinishedQuest(quest_id),
+        );
+        let future = addr
+            .story_worker
+            .send(msg)
+            .map_err(|e| eprintln!("Quest finished spawn failed: {:?}", e));
         Arbiter::spawn(future);
 
         Ok(())
