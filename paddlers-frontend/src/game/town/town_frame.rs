@@ -120,9 +120,12 @@ impl<'a, 'b> TownFrame<'a, 'b> {
             Signal::BuildingBuilt(bt) => {
                 state.home_town_world_mut().maintain();
                 state.handle_story_trigger(StoryTrigger::BuildingBuilt(*bt));
-                state
-                    .load_story_triggers(&StoryState::TempleBuilt)
-                    .nuts_check();
+                // TODO: Can these be integrated in specs?
+                if *bt == BuildingType::Temple {
+                    state
+                        .load_story_triggers(&StoryState::TempleBuilt)
+                        .nuts_check();
+                }
                 if *bt == BuildingType::Watergate {
                     state.town_mut().refresh_attacker_direction();
                     state.refresh_visitor_gate();
