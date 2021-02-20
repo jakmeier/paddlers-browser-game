@@ -36,14 +36,21 @@ impl Game {
                 nuts::publish(ForceRequest::SyncAsap(PeriodicalSyncRequest::PlayerInfo));
             }
             let mut mana_changed = false;
+            let mut visitors_sent = false;
             for action in t.actions.into_iter() {
                 if let StoryAction::AddMana(_) = action {
                     mana_changed = true;
+                }
+                if let StoryAction::SendHobo(_) = action {
+                    visitors_sent = true;
                 }
             }
             if mana_changed {
                 // one could go and add Mana manually. In favour of a more widely applicable solution, I want to trigger a reload instead (for now).
                 nuts::publish(ForceRequest::Extra(ScheduledRequest::Workers, 3));
+            }
+            if visitors_sent {
+                nuts::publish(ForceRequest::Extra(ScheduledRequest::Visitors, 3));
             }
         }
     }

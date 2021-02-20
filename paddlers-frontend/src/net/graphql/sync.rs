@@ -36,6 +36,7 @@ pub enum PeriodicalSyncRequest {
 #[derive(PartialEq, Eq, Hash, Debug, Clone, Copy)]
 pub enum ScheduledRequest {
     Workers,
+    Visitors,
 }
 
 pub struct SyncState {
@@ -148,6 +149,9 @@ impl RequestDescriptor for ScheduledRequest {
         match self {
             ScheduledRequest::Workers => {
                 net_state.transfer_response(GraphQlState::workers_query());
+            }
+            ScheduledRequest::Visitors => {
+                net_state.transfer_response(net_state.gql_state.attacks_query());
             }
         }
     }

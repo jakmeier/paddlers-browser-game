@@ -41,7 +41,7 @@ pub struct PlannedAttack {
     pub origin_village: Option<Village>,
     pub destination_village: Village,
     pub hobos: Vec<Hobo>,
-    pub no_delay: bool,
+    pub fixed_travel_time_s: Option<i32>,
     pub subject_to_visitor_queue_limit: bool,
 }
 impl Message for PlannedAttack {
@@ -77,8 +77,8 @@ impl Handler<PlannedAttack> for AttackFunnel {
         let hobos = msg.hobos.into_iter().map(|h| h.key()).collect();
 
         let travel_time;
-        if msg.no_delay {
-            travel_time = 0;
+        if let Some(s) = msg.fixed_travel_time_s {
+            travel_time = s as i64;
         } else if let Some(v0) = msg.origin_village {
             let v1 = msg.destination_village;
             let distance = map_distance((v0.x, v0.y), (v1.x, v1.y));

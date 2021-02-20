@@ -4,7 +4,11 @@
 //! Transitions are performed in the game-master when a StoryTrigger happens, following the FSM definied in `fn transition`.
 //! In each transition, a set of StoryActions is also performed in the game-master and/or frontend.
 
-use super::{story_action::StoryActionList, story_state::StoryState, story_trigger::StoryChoice};
+use super::{
+    story_action::{StoryActionList, StoryVisitDefinition},
+    story_state::StoryState,
+    story_trigger::StoryChoice,
+};
 use crate::{
     civilization::CivilizationPerk,
     specification_types::{PAIR_OF_LV0, SINGLE_ONE_HP_HURRIED},
@@ -51,10 +55,9 @@ impl StoryState {
                 ));
             }
             Self::WatergateBuilt => {
-                out = out.push(
-                    StoryTransition::on_dialogue(Self::VisitorQueued)
-                        .with(StoryAction::SendHobo(SINGLE_ONE_HP)),
-                );
+                out = out.push(StoryTransition::on_dialogue(Self::VisitorQueued).with(
+                    StoryAction::SendHobo(StoryVisitDefinition::delayed(SINGLE_ONE_HP, 0)),
+                ));
             }
             Self::VisitorQueued => {
                 out = out.push(StoryTransition {
@@ -103,12 +106,24 @@ impl StoryState {
                         Self::SolvingPrimaryCivQuestPartA,
                     )
                     .with(StoryAction::StartQuest(QuestName::Socialize))
-                    .with(StoryAction::SendHobo(SINGLE_ONE_HP))
-                    .with(StoryAction::SendHobo(SINGLE_ONE_HP_HURRIED))
-                    .with(StoryAction::SendHobo(PAIR_OF_ONE_HP))
-                    .with(StoryAction::SendHobo(PAIR_OF_ONE_HP))
-                    .with(StoryAction::SendHobo(PAIR_OF_ONE_HP))
-                    .with(StoryAction::SendHobo(PAIR_OF_ONE_HP)),
+                    .with(StoryAction::SendHobo(StoryVisitDefinition::new(
+                        SINGLE_ONE_HP,
+                    )))
+                    .with(StoryAction::SendHobo(StoryVisitDefinition::new(
+                        SINGLE_ONE_HP_HURRIED,
+                    )))
+                    .with(StoryAction::SendHobo(StoryVisitDefinition::new(
+                        PAIR_OF_ONE_HP,
+                    )))
+                    .with(StoryAction::SendHobo(StoryVisitDefinition::new(
+                        PAIR_OF_ONE_HP,
+                    )))
+                    .with(StoryAction::SendHobo(StoryVisitDefinition::new(
+                        PAIR_OF_ONE_HP,
+                    )))
+                    .with(StoryAction::SendHobo(StoryVisitDefinition::new(
+                        PAIR_OF_ONE_HP,
+                    ))),
                 );
                 out = out.push(
                     StoryTransition::on_choice(
@@ -117,9 +132,15 @@ impl StoryState {
                     )
                     .with(StoryAction::StartQuest(QuestName::BuildNest))
                     .with(StoryAction::UnlockPerk(CivilizationPerk::NestBuilding))
-                    .with(StoryAction::SendHobo(SINGLE_ONE_HP))
-                    .with(StoryAction::SendHobo(SINGLE_ONE_HP_HURRIED))
-                    .with(StoryAction::SendHobo(PAIR_OF_ONE_HP)),
+                    .with(StoryAction::SendHobo(StoryVisitDefinition::new(
+                        SINGLE_ONE_HP,
+                    )))
+                    .with(StoryAction::SendHobo(StoryVisitDefinition::new(
+                        SINGLE_ONE_HP_HURRIED,
+                    )))
+                    .with(StoryAction::SendHobo(StoryVisitDefinition::new(
+                        PAIR_OF_ONE_HP,
+                    ))),
                 );
             }
             Self::SolvingPrimaryCivQuestPartA => {
@@ -133,7 +154,9 @@ impl StoryState {
                         Self::SolvingPrimaryCivQuestPartB,
                     )
                     .with(StoryAction::StartQuest(QuestName::GrowPopulation))
-                    .with(StoryAction::SendHobo(PAIR_OF_ONE_HP)),
+                    .with(StoryAction::SendHobo(StoryVisitDefinition::new(
+                        PAIR_OF_ONE_HP,
+                    ))),
                 );
             }
             Self::UnlockingInvitationPathA => {
@@ -141,9 +164,15 @@ impl StoryState {
                     StoryTransition::on_dialogue(Self::SolvingPrimaryCivQuestPartB)
                         .with(StoryAction::StartQuest(QuestName::SocializeMore))
                         .with(StoryAction::UnlockPerk(CivilizationPerk::Invitation))
-                        .with(StoryAction::SendHobo(PAIR_OF_LV0))
-                        .with(StoryAction::SendHobo(PAIR_OF_ONE_HP))
-                        .with(StoryAction::SendHobo(PAIR_OF_ONE_HP)),
+                        .with(StoryAction::SendHobo(StoryVisitDefinition::new(
+                            PAIR_OF_LV0,
+                        )))
+                        .with(StoryAction::SendHobo(StoryVisitDefinition::new(
+                            PAIR_OF_ONE_HP,
+                        )))
+                        .with(StoryAction::SendHobo(StoryVisitDefinition::new(
+                            PAIR_OF_ONE_HP,
+                        ))),
                 );
             }
             Self::SolvingPrimaryCivQuestPartB => {
@@ -153,7 +182,9 @@ impl StoryState {
                 ));
                 out = out.push(
                     StoryTransition::after_quest(QuestName::GrowPopulation, Self::DialogueBalanceB)
-                        .with(StoryAction::SendHobo(PAIR_OF_LV0)),
+                        .with(StoryAction::SendHobo(StoryVisitDefinition::new(
+                            PAIR_OF_LV0,
+                        ))),
                 );
             }
             Self::DialogueBalanceA => {
@@ -161,19 +192,33 @@ impl StoryState {
                     StoryTransition::on_dialogue(Self::SolvingSecondaryQuestA)
                         .with(StoryAction::StartQuest(QuestName::GrowPopulation))
                         .with(StoryAction::UnlockPerk(CivilizationPerk::NestBuilding))
-                        .with(StoryAction::SendHobo(PAIR_OF_LV0)),
+                        .with(StoryAction::SendHobo(StoryVisitDefinition::new(
+                            PAIR_OF_LV0,
+                        ))),
                 );
             }
             Self::DialogueBalanceB => {
                 out = out.push(
                     StoryTransition::on_dialogue(Self::SolvingSecondaryQuestB)
                         .with(StoryAction::StartQuest(QuestName::SocializeMore))
-                        .with(StoryAction::SendHobo(PAIR_OF_ONE_HP))
-                        .with(StoryAction::SendHobo(PAIR_OF_LV0))
-                        .with(StoryAction::SendHobo(PAIR_OF_ONE_HP))
-                        .with(StoryAction::SendHobo(PAIR_OF_LV0))
-                        .with(StoryAction::SendHobo(PAIR_OF_ONE_HP))
-                        .with(StoryAction::SendHobo(PAIR_OF_LV0)),
+                        .with(StoryAction::SendHobo(StoryVisitDefinition::new(
+                            PAIR_OF_ONE_HP,
+                        )))
+                        .with(StoryAction::SendHobo(StoryVisitDefinition::new(
+                            PAIR_OF_LV0,
+                        )))
+                        .with(StoryAction::SendHobo(StoryVisitDefinition::new(
+                            PAIR_OF_ONE_HP,
+                        )))
+                        .with(StoryAction::SendHobo(StoryVisitDefinition::new(
+                            PAIR_OF_LV0,
+                        )))
+                        .with(StoryAction::SendHobo(StoryVisitDefinition::new(
+                            PAIR_OF_ONE_HP,
+                        )))
+                        .with(StoryAction::SendHobo(StoryVisitDefinition::new(
+                            PAIR_OF_LV0,
+                        ))),
                 );
             }
             Self::SolvingSecondaryQuestA => {

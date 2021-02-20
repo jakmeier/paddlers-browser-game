@@ -63,7 +63,7 @@ impl Handler<StoryWorkerMessage> for StoryWorker {
         let transition = msg.confirmed_current_story_state.transition(&msg.trigger);
         if transition.is_none() {
             eprintln!(
-                "Invalid transition attempt: {:?} --- {:?} ---> ???",
+                "Invalid transition attempt: {:?} --( {:?} )--> ???",
                 msg.confirmed_current_story_state, msg.trigger
             );
             return;
@@ -77,7 +77,8 @@ impl Handler<StoryWorkerMessage> for StoryWorker {
                 }
                 paddlers_shared_lib::story::story_action::StoryAction::SendHobo(attack_def) => {
                     let village_lookup = PlayerHomeLookup { player: msg.player };
-                    let visitors = attack_def.into_iter().collect::<Vec<_>>();
+                    let visitors = attack_def.visitors.into_iter().collect::<Vec<_>>();
+                    let fixed_travel_time_s = attack_def.fixed_travel_time_s;
 
                     let attack_spawner = self.attack_spawner.clone();
                     let future = self
@@ -89,6 +90,7 @@ impl Handler<StoryWorkerMessage> for StoryWorker {
                                 destination,
                                 origin,
                                 visitors,
+                                fixed_travel_time_s,
                             };
                             attack_spawner.send(msg)
                         })

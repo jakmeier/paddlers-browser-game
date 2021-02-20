@@ -201,10 +201,10 @@ impl AttackerDirection {
         let x;
         match self {
             AttackerDirection::LeftToRight => {
-                x = 0.0;
+                x = -0.5 * TOWN_TILE_S as f32;
             }
             AttackerDirection::RightToLeft => {
-                x = TOWN_X as f32 * TOWN_TILE_S as f32;
+                x = (TOWN_X as f32 - 0.5) * TOWN_TILE_S as f32;
             }
         }
         (x, y).into()

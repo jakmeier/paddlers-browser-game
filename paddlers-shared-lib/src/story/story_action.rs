@@ -9,7 +9,28 @@ pub type StoryActionList = ConstList<StoryAction>;
 #[derive(Copy, Clone, Debug)]
 pub enum StoryAction {
     AddMana(i16),
-    SendHobo(VisitorGroupDefinition),
+    SendHobo(StoryVisitDefinition),
     StartQuest(QuestName),
     UnlockPerk(CivilizationPerk),
+}
+
+#[derive(Copy, Clone, Debug)]
+pub struct StoryVisitDefinition {
+    pub fixed_travel_time_s: Option<i32>,
+    pub visitors: VisitorGroupDefinition,
+}
+
+impl StoryVisitDefinition {
+    pub const fn new(visitors: VisitorGroupDefinition) -> Self {
+        Self {
+            visitors,
+            fixed_travel_time_s: None,
+        }
+    }
+    pub const fn delayed(visitors: VisitorGroupDefinition, delay: i32) -> Self {
+        Self {
+            visitors,
+            fixed_travel_time_s: Some(delay),
+        }
+    }
 }

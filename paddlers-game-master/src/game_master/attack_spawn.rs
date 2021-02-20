@@ -48,6 +48,7 @@ pub(super) struct SendAnonymousAttack {
     pub destination: VillageKey,
     pub origin: VillageKey,
     pub visitors: Vec<VisitorDefinition>,
+    pub fixed_travel_time_s: Option<i32>,
 }
 impl Message for SendAnonymousAttack {
     type Result = ();
@@ -56,7 +57,12 @@ impl Handler<SendAnonymousAttack> for AttackSpawner {
     type Result = ();
 
     fn handle(&mut self, msg: SendAnonymousAttack, _ctx: &mut Context<Self>) -> Self::Result {
-        self.spawn_anonymous(msg.destination, msg.origin, msg.visitors);
+        self.spawn_anonymous(
+            msg.destination,
+            msg.origin,
+            msg.visitors,
+            msg.fixed_travel_time_s,
+        );
     }
 }
 
@@ -95,7 +101,7 @@ impl AttackSpawner {
         });
         self.spawn_anonymous(
             village, village, /* TODO: pick an anarchist village instead */
-            hobos,
+            hobos, None,
         );
     }
     fn spawn_anonymous(
@@ -103,6 +109,7 @@ impl AttackSpawner {
         destination: VillageKey,
         origin: VillageKey,
         visitors: Vec<VisitorDefinition>,
+        fixed_travel_time_s: Option<i32>,
     ) {
         let mut rng = rand::thread_rng();
         let futures: Vec<Request<DbActor, NewHoboMessage>> = visitors
@@ -143,7 +150,7 @@ impl AttackSpawner {
                     origin_village: None,
                     destination_village: db.village(destination).unwrap(),
                     hobos: hobos,
-                    no_delay: false,
+                    fixed_travel_time_s,
                     subject_to_visitor_queue_limit: true,
                 };
                 attack_funnel.send(pa)

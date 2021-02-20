@@ -83,7 +83,7 @@ pub(crate) fn create_attack(
                 origin_village: Some(origin_village),
                 destination_village,
                 hobos,
-                no_delay: false,
+                fixed_travel_time_s: None,
                 subject_to_visitor_queue_limit: false,
             },
         )
@@ -151,7 +151,7 @@ pub(crate) fn new_invitation(
             origin_village,
             destination_village,
             hobos,
-            no_delay: false,
+            fixed_travel_time_s: None,
             subject_to_visitor_queue_limit: true,
         };
         addr.attack_funnel

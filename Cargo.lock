@@ -2074,7 +2074,6 @@ dependencies = [
 name = "nuts"
 version = "0.2.0"
 dependencies = [
- "wasm-bindgen",
  "web-sys",
 ]
 

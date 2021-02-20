@@ -89,7 +89,7 @@ msgstr "Build me a temple"
 ## Temple built scene
 msgid "templebuilt-A0"
 msgstr ""
-"I built the temple!\n"
+"I've built the temple!\n"
 "Look how awesome it is!"
 
 msgid "templebuilt-A10"
@@ -121,7 +121,7 @@ msgstr ""
 
 msgid "expl-watergate-release"
 msgstr ""
-"Go to the watergate and click on\n"
+"Select the watergate and click on\n"
 "the visitors to let them in."
 
 msgid "gatebuilt-A10"
