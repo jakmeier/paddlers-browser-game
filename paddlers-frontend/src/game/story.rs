@@ -37,12 +37,16 @@ impl Game {
             }
             let mut mana_changed = false;
             let mut visitors_sent = false;
+            let mut new_quest = false;
             for action in t.actions.into_iter() {
                 if let StoryAction::AddMana(_) = action {
                     mana_changed = true;
                 }
                 if let StoryAction::SendHobo(_) = action {
                     visitors_sent = true;
+                }
+                if let StoryAction::StartQuest(_) = action {
+                    new_quest = true;
                 }
             }
             if mana_changed {
@@ -51,6 +55,9 @@ impl Game {
             }
             if visitors_sent {
                 nuts::publish(ForceRequest::Extra(ScheduledRequest::Visitors, 3));
+            }
+            if new_quest {
+                nuts::publish(ForceRequest::Extra(ScheduledRequest::Quests, 3));
             }
         }
     }
