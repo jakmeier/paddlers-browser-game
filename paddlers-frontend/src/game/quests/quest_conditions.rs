@@ -12,6 +12,7 @@ use super::quest_component::QuestIn;
 #[derive(Clone)]
 pub(super) struct KarmaCondition {
     amount: i64,
+    cached_current: i64,
     gizmo: Gizmo<QuestConditionComponent>,
 }
 #[derive(Clone)]
@@ -45,6 +46,7 @@ impl KarmaCondition {
         );
         let gizmo = Gizmo::from(component);
         Self {
+            cached_current: karma_now,
             amount: karma_goal,
             gizmo,
         }
@@ -52,11 +54,15 @@ impl KarmaCondition {
     pub fn view_builder(&self) -> ViewBuilder<HtmlElement> {
         self.gizmo.view_builder()
     }
-    pub fn update_karma(&self, karma: i64) {
+    pub fn update_karma(&mut self, karma: i64) {
+        self.cached_current = karma;
         self.gizmo.send(&NewCurrentValue(karma));
     }
     pub fn subscriber(&mut self, sub: &Subscriber<QuestIn>) {
         sub.subscribe_map(&self.gizmo.recv, |msg| QuestIn::ChildMessage(msg.clone()));
+    }
+    pub fn is_complete(&self) -> bool {
+        self.amount <= self.cached_current
     }
 }
 
@@ -233,7 +239,7 @@ impl Component for QuestConditionComponent {
         let img = Sprites::new_image_node_builder(self.sprite);
         let current = self.current.min(self.goal);
         builder!(
-            <div class={( if current < self.goal { "condition condition-in-progress".to_string() } else  { "condition condition-met".to_owned() } , rx.branch_map(css_class))}>
+            <div class={( if current < self.goal { "condition condition-in-progress".to_string() } else  { "condition condition-met".to_owned() } , rx.branch_filter_map(css_class))}>
                 <div> { (current.to_string(), rx.branch_filter_map(filter_progress_update)) } "/" {self.goal.to_string()} </div>
                 { img }
             </div>
@@ -270,10 +276,12 @@ fn filter_progress_update(msg: &QuestConditionViewUpdate) -> Option<String> {
     }
 }
 
-fn css_class(msg: &QuestConditionViewUpdate) -> String {
+fn css_class(msg: &QuestConditionViewUpdate) -> Option<String> {
     if let QuestConditionViewUpdate::MarkComplete = msg {
-        "condition condition-met".to_owned()
+        Some("condition condition-met".to_owned())
+    } else if let QuestConditionViewUpdate::MarkIncomplete = msg {
+        Some("condition condition-in-progress".to_owned())
     } else {
-        "condition condition-in-progress".to_owned()
+        None
     }
 }

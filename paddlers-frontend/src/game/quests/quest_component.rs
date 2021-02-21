@@ -55,7 +55,13 @@ impl QuestComponent {
             .filter(|c| c.is_complete())
             .count();
         let worker_completed = worker_conditions.iter().filter(|c| c.is_complete()).count();
-        let completed_conditions = res_completed + buildings_completed + worker_completed;
+        let karma_completed = karma_condition
+            .as_ref()
+            .map(|c| c.is_complete())
+            .unwrap_or(false);
+        let karma_completed = if karma_completed { 1 } else { 0 };
+        let completed_conditions =
+            res_completed + buildings_completed + worker_completed + karma_completed;
         let total_conditions = karma_condition.iter().count()
             + building_conditions.len()
             + worker_conditions.len()
@@ -149,7 +155,7 @@ impl Component for QuestComponent {
                 }
             }
             QuestIn::Karma(karma) => {
-                if let Some(child) = &self.karma_condition {
+                if let Some(child) = &mut self.karma_condition {
                     child.update_karma(*karma);
                 }
             }
