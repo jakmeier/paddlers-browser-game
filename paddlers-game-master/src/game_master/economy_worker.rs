@@ -46,17 +46,20 @@ impl EconomyWorker {
                             if let Some((res, rate)) =
                                 hero_resource_collection_per_hour(task.task_type)
                             {
-                                let interval_ms = 3_600_000 / rate as i64;
-                                let n = (now - flag.last_update).num_milliseconds() / interval_ms;
-                                if n > 0 {
+                                let gathered = rate
+                                    * (now - flag.last_update).num_milliseconds() as f32
+                                    / 3_600_000.0;
+                                let n = gathered.floor();
+                                if n > 0.0 {
+                                    let time_rewarded_s = n * 3_600.0 / rate;
                                     let new_time = flag.last_update
-                                        + chrono::Duration::milliseconds(interval_ms * n);
+                                        + chrono::Duration::seconds(time_rewarded_s as i64);
                                     db.update_worker_flag_timestamp(
                                         w.key(),
                                         WorkerFlagType::Work,
                                         new_time,
                                     );
-                                    db.add_resource(res, village_id, n)
+                                    db.add_resource(res, village_id, n as i64)
                                         .expect("Adding resources");
                                 }
                             }

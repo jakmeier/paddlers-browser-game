@@ -135,9 +135,9 @@ impl DB {
 /// TODO [0.1.5]
 fn reward_feathers(unit: &Hobo) -> i64 {
     let f = if unit.hurried {
-        (1.0 + unit.hp as f32 * unit.speed / 4.0).log2().floor()
+        (2.0 + unit.hp as f32 * unit.speed / 4.0).log2().floor()
     } else {
-        (1.0 + unit.hp as f32 / 16.0).log2().ceil()
+        (2.0 + unit.hp as f32 / 16.0).log2().ceil()
     };
     // println!("Unit {:?} gives {} feathers", unit, f);
     f as i64

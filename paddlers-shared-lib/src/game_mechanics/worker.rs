@@ -12,10 +12,10 @@ pub const fn hero_mana_regeneration_per_hour() -> i32 {
     10
 }
 
-pub fn hero_resource_collection_per_hour(task: TaskType) -> Option<(ResourceType, i32)> {
+pub fn hero_resource_collection_per_hour(task: TaskType) -> Option<(ResourceType, f32)> {
     match task {
-        TaskType::ChopTree => Some((ResourceType::Logs, 5)),
-        TaskType::GatherSticks => Some((ResourceType::Sticks, 60)),
+        TaskType::ChopTree => Some((ResourceType::Logs, 0.25)),
+        TaskType::GatherSticks => Some((ResourceType::Sticks, 2.0)),
         _ => None,
     }
 }

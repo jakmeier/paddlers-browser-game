@@ -50,9 +50,10 @@ impl DB {
                 let mut logs = 0;
                 report.karma += 1;
                 match (hobo.id.wrapping_mul(seed as i64).abs() + seed as i64) % 255 {
-                    0 => feathers += 3,
-                    1..20 => logs += 1,
-                    11..60 => feathers += 1,
+                    0 => feathers += 5,
+                    1..41 => logs += 1,
+                    41..121 => feathers += 3,
+                    121..201 => feathers += 1,
                     _ => {}
                 }
                 self.add_new_report(report, feathers, 0, logs);

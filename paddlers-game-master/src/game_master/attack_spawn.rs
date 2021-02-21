@@ -128,7 +128,7 @@ impl AttackSpawner {
                 let hobo = NewHobo {
                     color: Some(color),
                     hp,
-                    speed: 0.05,
+                    speed: 0.075,
                     home: origin.num(),
                     hurried: def.hurried,
                     nest: None,

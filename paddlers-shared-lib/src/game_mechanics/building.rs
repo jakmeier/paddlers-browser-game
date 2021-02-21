@@ -80,12 +80,14 @@ impl BuildingType {
         civ: CivilizationPerks,
     ) -> bool {
         match self {
-            BuildingType::BlueFlowers => karma >= 1,
-            BuildingType::BundlingStation => karma >= 20,
-            BuildingType::PresentA => karma >= 250,
-            BuildingType::PresentB => karma >= 750,
-            BuildingType::RedFlowers => karma >= 450,
-            BuildingType::SawMill => karma >= 150,
+            BuildingType::BlueFlowers => story_state == StoryState::AllDone,
+            BuildingType::BundlingStation => {
+                (story_state == StoryState::FirstVisitorWelcomed) || karma >= 20
+            }
+            BuildingType::PresentA => karma >= 150,
+            BuildingType::PresentB => karma >= 250,
+            BuildingType::RedFlowers => karma >= 200,
+            BuildingType::SawMill => story_state == StoryState::AllDone,
             BuildingType::Temple => story_state == StoryState::ServantAccepted,
             BuildingType::Tree => karma >= 1,
             BuildingType::SingleNest => civ.has(CivilizationPerk::NestBuilding),
