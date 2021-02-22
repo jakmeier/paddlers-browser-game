@@ -36,29 +36,47 @@ impl Game {
                     actions: vec![DialogueAction::OpenScene(SceneIndex::WelcomeVisitor, 0)],
                 })?;
             }
-            StoryState::UnlockingInvitationPathA | StoryState::UnlockingInvitationPathB => {
-                self.add_trigger_to_temple(EntityTrigger {
-                    actions: vec![DialogueAction::OpenScene(
-                        SceneIndex::UnlockingInvitation,
-                        0,
-                    )],
+            StoryState::VisitorQueued => {
+                self.add_trigger_to_building(
+                    EntityTrigger { actions: vec![] },
+                    BuildingType::Watergate,
+                )?;
+            }
+            StoryState::PickingPrimaryCivBonus => {
+                self.add_trigger_to_hero(EntityTrigger {
+                    actions: vec![DialogueAction::OpenScene(SceneIndex::FirstChoice, 0)],
                 })?;
+            }
+            StoryState::UnlockingInvitationPathA | StoryState::UnlockingInvitationPathB => {
+                self.add_trigger_to_building(
+                    EntityTrigger {
+                        actions: vec![DialogueAction::OpenScene(
+                            SceneIndex::UnlockingInvitation,
+                            0,
+                        )],
+                    },
+                    BuildingType::Temple,
+                )?;
             }
             StoryState::DialogueBalanceA => {
-                self.add_trigger_to_temple(EntityTrigger {
-                    actions: vec![DialogueAction::OpenScene(SceneIndex::VisitorBalanceTown, 0)],
-                })?;
+                self.add_trigger_to_building(
+                    EntityTrigger {
+                        actions: vec![DialogueAction::OpenScene(SceneIndex::VisitorBalanceTown, 0)],
+                    },
+                    BuildingType::Temple,
+                )?;
             }
             StoryState::DialogueBalanceB => {
-                self.add_trigger_to_temple(EntityTrigger {
-                    actions: vec![DialogueAction::OpenScene(SceneIndex::TownBalanceVisitor, 0)],
-                })?;
+                self.add_trigger_to_building(
+                    EntityTrigger {
+                        actions: vec![DialogueAction::OpenScene(SceneIndex::TownBalanceVisitor, 0)],
+                    },
+                    BuildingType::Temple,
+                )?;
             }
-            StoryState::VisitorQueued
-            | StoryState::FirstVisitorWelcomed
+            StoryState::FirstVisitorWelcomed
             | StoryState::ServantAccepted
             | StoryState::BuildingWatergate
-            | StoryState::PickingPrimaryCivBonus
             | StoryState::SolvingPrimaryCivQuestPartA
             | StoryState::SolvingPrimaryCivQuestPartB
             | StoryState::SolvingSecondaryQuestA
@@ -76,9 +94,13 @@ impl Game {
         triggers.insert(hero_id, trigger)?;
         Ok(())
     }
-    fn add_trigger_to_temple(&mut self, trigger: EntityTrigger) -> PadlResult<()> {
+    fn add_trigger_to_building(
+        &mut self,
+        trigger: EntityTrigger,
+        bt: BuildingType,
+    ) -> PadlResult<()> {
         let world = self.home_town_world();
-        if let Some(e) = Town::find_building_entity(world, BuildingType::Temple) {
+        if let Some(e) = Town::find_building_entity(world, bt) {
             let mut triggers: WriteStorage<'_, EntityTrigger> = world.write_storage();
             triggers.insert(e, trigger)?;
         }
