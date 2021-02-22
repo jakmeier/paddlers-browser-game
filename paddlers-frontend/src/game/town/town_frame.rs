@@ -98,10 +98,10 @@ impl<'a, 'b> TownFrame<'a, 'b> {
             .build();
 
         let town_dispatcher = DispatcherBuilder::new()
-            .with(WorkerSystem::new(), "work", &[])
+            .with(ForestrySystem, "forest", &[])
+            .with(WorkerSystem::new(), "work", &["forest"])
             .with(MoveSystem, "move", &["work"])
             .with(FightSystem::new(), "fight", &["move"])
-            .with(ForestrySystem, "forest", &[])
             .with(EntityTriggerSystem::new(), "ets", &[])
             .with(WatergateQueueSystem, "wgq", &[])
             .build();
@@ -165,7 +165,7 @@ impl<'a, 'b> TownFrame<'a, 'b> {
 
         if let Some(e) = (*ui_state).selected_entity {
             if let Some(worker) = worker.get_mut(e) {
-                let maybe_job = worker.task_on_right_click(&mouse_pos, &town);
+                let maybe_job = crate::game::units::workers::task_on_right_click(&mouse_pos, &town);
                 if let Some((job, destination)) = maybe_job {
                     let target = maybe_top_hit.and_then(|e| net_ids.get(e)).map(|n| n.id);
                     let (from, movement) = (&position, &moving).join().get(e, &entities).unwrap();

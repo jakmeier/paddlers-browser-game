@@ -93,22 +93,6 @@ impl Worker {
         };
         Ok(msg)
     }
-    /// Finds the default-task that is performed on a right click in the town area
-    pub fn task_on_right_click<'a>(
-        &mut self,
-        click: &Vector,
-        town: &Town,
-    ) -> Option<(TaskType, TileIndex)> {
-        let destination = crate::game::town::tiling::tile(*click); // TODO: destination is not always where it has been clicked
-        let job = town
-            .available_tasks(destination)
-            .into_iter()
-            // .filter(
-            //     || TODO
-            // )
-            .next()?;
-        Some((job, destination))
-    }
     fn go_idle(&mut self, idx: TileIndex) -> Result<TaskList, String> {
         let tasks = vec![RawTask::new(TaskType::Idle, idx)];
         Ok(TaskList {
@@ -125,6 +109,13 @@ impl Worker {
         }
         None
     }
+}
+
+/// Finds the default-task that is performed on a right click in the town area
+pub fn task_on_right_click<'a>(click: &Vector, town: &Town) -> Option<(TaskType, TileIndex)> {
+    let destination = crate::game::town::tiling::tile(*click); // TODO: destination is not always where it has been clicked
+    let job = town.available_tasks(destination).into_iter().next()?;
+    Some((job, destination))
 }
 
 pub fn move_worker_into_building<'a>(

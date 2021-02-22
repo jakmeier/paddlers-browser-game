@@ -142,18 +142,18 @@ impl Town {
                     }
                 }
                 Grabbable::Ability(a) => {
-                    let target = maybe_top_hit.and_then(|e| net_ids.get(e)).map(|n| n.id);
+                    let target = maybe_top_hit;
                     match a {
                         AbilityType::Welcome => {
-                            if target.is_some() {
-                                return Some((TaskType::WelcomeAbility, target));
+                            if let Some(t) = target.and_then(|e| net_ids.get(e)).map(|n| n.id) {
+                                return Some((TaskType::WelcomeAbility, Some(t)));
                             } else {
                                 return None;
                             }
                         }
                         AbilityType::Work => {
-                            let job = TaskType::Walk; // TODO: find right job
-                            return Some((job, None));
+                            let job = task_on_right_click(&mouse_pos, &self);
+                            return job.map(|(j, _)| (j, None));
                         }
                     }
                 }

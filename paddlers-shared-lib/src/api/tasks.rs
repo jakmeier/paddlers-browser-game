@@ -31,11 +31,16 @@ impl RawTask {
     }
     #[cfg(feature = "game_mechanics")]
     pub fn new_with_target(t: (TaskType, Option<PadlId>), i: TileIndex) -> Self {
+        let target = if t.0 == TaskType::WelcomeAbility {
+            t.1
+        } else {
+            None
+        };
         RawTask {
             task_type: t.0,
             x: i.0,
             y: i.1,
-            target: t.1,
+            target,
         }
     }
 }
