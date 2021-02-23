@@ -35,6 +35,12 @@ pub struct SlideButtonAction {
 
 pub type SlideIndex = usize;
 
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub enum ButtonLayout {
+    SingleColumn,
+    SingleRow,
+}
+
 impl Scene {
     pub fn slide_text_key(&self, i: SlideIndex) -> &OwnedTextKey {
         &self.slides[i].text_key
@@ -45,12 +51,8 @@ impl Scene {
     pub fn slide_buttons(&self, i: SlideIndex) -> &[SlideButton] {
         self.slides[i].buttons.as_slice()
     }
-    pub fn back_button(&self, i: SlideIndex) -> Option<SlideIndex> {
-        if self.current_slide(i).back_button {
-            Some(i - 1)
-        } else {
-            None
-        }
+    pub fn back_button(&self, i: SlideIndex) -> bool {
+        self.current_slide(i).back_button
     }
     pub fn next_button(&self, i: SlideIndex) -> Option<SlideIndex> {
         if self.current_slide(i).next_button {
@@ -61,6 +63,13 @@ impl Scene {
     }
     pub fn slide_sprite(&self, i: SlideIndex) -> SpriteIndex {
         self.slides[i].sprite
+    }
+    pub fn button_layout(&self, i: SlideIndex) -> ButtonLayout {
+        if self.slides[i].buttons.len() > 2 {
+            ButtonLayout::SingleColumn
+        } else {
+            ButtonLayout::SingleRow
+        }
     }
 }
 

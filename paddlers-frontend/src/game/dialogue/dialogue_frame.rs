@@ -17,11 +17,13 @@ pub(crate) struct DialogueFrame {
     scenes: SceneLoader,
     image: SpriteIndex,
     buttons: UiBox,
+    current_layout: ButtonLayout,
     text: String,
     text_provider: TableTextProvider,
     text_bubble: AbstractMesh,
     current_scene: Option<SceneIndex>,
     current_slide: SlideIndex,
+    previous_slide: SlideIndex,
     mouse: PointerTracker,
     waiting_for_scene_data: bool,
 }
@@ -33,15 +35,18 @@ impl DialogueFrame {
             text_area().const_translate(-right_area().pos),
         );
         let text_provider = TableTextProvider::new_styled("dialogue");
+        let button_layout = ButtonLayout::SingleRow;
 
         let dialogue = DialogueFrame {
-            buttons: UiBox::new(2, 1, 20.0, 15.0),
+            current_layout: button_layout,
+            buttons: buttons_ui_box(button_layout),
             image: SpriteIndex::Simple(SingleSprite::Roger),
             text: String::new(),
             text_provider,
             text_bubble,
             current_scene: None,
             current_slide: 0,
+            previous_slide: 0,
             mouse: PointerTracker::new(),
             scenes: Default::default(),
             waiting_for_scene_data: false,
@@ -56,6 +61,9 @@ impl DialogueFrame {
         self.reload(locale);
     }
     fn load_slide(&mut self, i: usize, locale: &TextDb) -> PadlResult<()> {
+        if self.current_slide != i {
+            self.previous_slide = self.current_slide;
+        }
         self.current_slide = i;
         self.reload(locale);
         Ok(())
@@ -70,8 +78,18 @@ impl DialogueFrame {
                 let key = scene.slide_text_key(self.current_slide).key();
                 let text = locale.gettext(key);
                 let image = scene.slide_sprite(self.current_slide);
-                let back_button = scene.back_button(self.current_slide);
+                let back_button = if scene.back_button(self.current_slide) {
+                    Some(self.previous_slide)
+                } else {
+                    None
+                };
                 let next_button = scene.next_button(self.current_slide);
+                let layout = scene.button_layout(self.current_slide);
+
+                if self.current_layout != layout {
+                    self.buttons = buttons_ui_box(layout);
+                    self.current_layout = layout;
+                }
 
                 self.text += text;
                 self.image = image;
@@ -118,7 +136,7 @@ impl DialogueFrame {
     ) {
         let mut table = Vec::new();
         if self.text.len() > 0 {
-            let rows = 8;
+            let rows = rows_for_text(self.current_layout);
             table.push(TableRow::MultiRowText(self.text.clone(), rows));
         }
         table.push(TableRow::InteractiveArea(&mut self.buttons));
@@ -255,5 +273,17 @@ impl Frame for DialogueFrame {
         if let PointerEvent(PointerEventType::PrimaryClick, pos) = event {
             self.left_click(state, pos)
         }
+    }
+}
+fn buttons_ui_box(layout: ButtonLayout) -> UiBox {
+    match layout {
+        ButtonLayout::SingleColumn => UiBox::new(1, 4, 20.0, 15.0),
+        ButtonLayout::SingleRow => UiBox::new(2, 1, 20.0, 15.0),
+    }
+}
+fn rows_for_text(layout: ButtonLayout) -> u32 {
+    match layout {
+        ButtonLayout::SingleColumn => 5,
+        ButtonLayout::SingleRow => 8,
     }
 }
