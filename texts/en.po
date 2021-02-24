@@ -269,6 +269,30 @@ msgstr "Use Bundling station"
 msgid "use-bundling-station-description"
 msgstr "Send your servant to gather sticks and bundle them. Select the Paddler and then right-click or long-tap on the bundling station."
 
+msgid "socialize"
+msgstr "Be nice to others!"
+
+msgid "socialize-description"
+msgstr "Every Paddler you make happy will grant you 1 Karma. More visitors are on their way, can you please them all?"
+
+msgid "socialize-more"
+msgstr "Invitations"
+
+msgid "socialize-more-description"
+msgstr "Use your new abiliy to invite visitors and show them your town. Click on other place on the map, descend and see if you can find any Paddlers sitting around."
+
+msgid "build-nest"
+msgstr "A home for a Paddler"
+
+msgid "build-nest-description"
+msgstr "Build a nest in your village. If you make it nice, maybe a Paddler will even want to live in it."
+
+msgid "grow-population"
+msgstr "More citizens"
+
+msgid "grow-population-description"
+msgstr "Enlarge your village by building more nests and have Paddlers move in."
+
 
 # Civ perks
 msgid "perk-nest-building"
