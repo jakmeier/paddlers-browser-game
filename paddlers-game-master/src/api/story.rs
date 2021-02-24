@@ -4,7 +4,6 @@ use crate::db::DB;
 use crate::{authentication::Authentication, game_master::story_worker::StoryWorkerMessage};
 use actix_web::{web, HttpResponse, Responder};
 use paddlers_shared_lib::prelude::*;
-use paddlers_shared_lib::story::story_state::StoryState;
 use paddlers_shared_lib::{api::story::StoryStateTransition, story::story_trigger::StoryTrigger};
 
 pub(crate) fn story_transition(

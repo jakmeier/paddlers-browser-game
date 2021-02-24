@@ -91,6 +91,7 @@ impl Handler<StoryWorkerMessage> for StoryWorker {
                                 origin,
                                 visitors,
                                 fixed_travel_time_s,
+                                subject_to_visitor_queue_limit: false,
                             };
                             attack_spawner.send(msg)
                         })
