@@ -70,6 +70,7 @@ pub enum SingleSprite {
     WhiteDuckHappy,
     Temple,
     Karma,
+    Population,
     Prophet,
     AttacksButton,
     AttacksButtonHov,
