@@ -23,7 +23,7 @@
             SlideButton (
                 text_key: "confirm",
                 action: SlideButtonAction(
-                    next_view: Town,
+                    next_view: UiView(Town),
                     actions: [
                         StoryProgress(SolvingSecondaryQuestB, None)
                     ],

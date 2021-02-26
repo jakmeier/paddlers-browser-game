@@ -30,7 +30,7 @@
             SlideButton (
                 text_key: "confirm",
                 action: SlideButtonAction(
-                    next_view: Town,
+                    next_view: UiView(Town),
                     actions: [
                         // TODO: This next state is not true for all paths. Can I not remove this redudant defintion of next state?
                         StoryProgress(AllDone, None)

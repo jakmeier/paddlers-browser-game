@@ -28,9 +28,24 @@ pub struct SlideButton {
 }
 #[derive(Default, Clone, Debug, PartialEq, Deserialize)]
 pub struct SlideButtonAction {
-    pub next_slide: Option<SlideIndex>,
-    pub next_view: Option<UiView>,
+    #[serde(default)]
+    pub next_view: NextView,
+    #[serde(default)]
     pub actions: Vec<DialogueAction>,
+}
+
+#[derive(Clone, Debug, PartialEq, Deserialize)]
+pub enum NextView {
+    Stay,
+    GoOneSlideBack,
+    Slide(SlideIndex),
+    UiView(UiView),
+}
+
+impl Default for NextView {
+    fn default() -> Self {
+        Self::Stay
+    }
 }
 
 pub type SlideIndex = usize;
@@ -111,8 +126,13 @@ impl SceneIndex {
 impl SlideButtonAction {
     pub fn to_slide(next_slide: SlideIndex) -> Self {
         SlideButtonAction {
-            next_slide: Some(next_slide),
-            next_view: None,
+            next_view: NextView::Slide(next_slide),
+            actions: vec![],
+        }
+    }
+    pub fn go_back() -> Self {
+        SlideButtonAction {
+            next_view: NextView::GoOneSlideBack,
             actions: vec![],
         }
     }

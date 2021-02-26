@@ -20,21 +20,21 @@
             SlideButton (
                 text_key: "make-friends",
                 action: SlideButtonAction(
-                    next_slide: 3,
+                    next_view: Slide(3),
                     actions: [],
                 )
             ),
             SlideButton (
                 text_key: "help-others",
                 action: SlideButtonAction(
-                    next_slide: 4,
+                    next_view: Slide(4),
                     actions: [],
                 )
             ),
             SlideButton (
                 text_key: "build-something",
                 action: SlideButtonAction(
-                    next_slide: 5,
+                    next_view: Slide(5),
                     actions: [],
                 )
             ),
@@ -49,7 +49,7 @@
             SlideButton(
                 text_key: "NIY",
                 action: SlideButtonAction(
-                    next_slide: 3,
+                    next_view: Slide(3),
                     actions: [],
                     // actions: [StoryProgress(SolvingPrimaryCivQuestPartA, 0)],
                 )
@@ -65,7 +65,7 @@
             SlideButton (
                 text_key: "confirm",
                 action: SlideButtonAction(
-                    next_slide: 7,
+                    next_view: Slide(7),
                     actions: [StoryProgress(SolvingPrimaryCivQuestPartA, 1)],
                 )
             ),
@@ -80,7 +80,7 @@
             SlideButton (
                 text_key: "confirm",
                 action: SlideButtonAction(
-                    next_slide: 6,
+                    next_view: Slide(6),
                     actions: [StoryProgress(SolvingPrimaryCivQuestPartA, 2)],
                 )
             ),
@@ -95,7 +95,7 @@
             SlideButton (
                 text_key: "confirm",
                 action: SlideButtonAction(
-                    next_slide: 7,
+                    next_view: Slide(7),
                     actions: [],
                 )
             ),
@@ -110,7 +110,7 @@
             SlideButton (
                 text_key: "button-back-to-town",
                 action: SlideButtonAction(
-                    next_view: Town,
+                    next_view: UiView(Town),
                     actions: [],
                 )
             ),

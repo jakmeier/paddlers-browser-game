@@ -6,14 +6,14 @@
             SlideButton(
                 text_key: "button-yes",
                 action: SlideButtonAction(
-                    next_view: Town,
+                    next_view: UiView(Town),
                     actions: [SettleHobo],
                 ),
             ),
             SlideButton(
                 text_key: "button-no",
                 action: SlideButtonAction(
-                    next_view: Town,
+                    next_view: UiView(Town),
                     actions: [],
                 ),
             ),

@@ -20,7 +20,7 @@
             SlideButton (
                 text_key: "button-back-to-town",
                 action: SlideButtonAction(
-                    next_view: Town,
+                    next_view: UiView(Town),
                     actions: [
                         StoryProgress(
                             WelcomeVisitorQuestStarted,

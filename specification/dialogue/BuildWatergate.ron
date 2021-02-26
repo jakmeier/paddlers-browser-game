@@ -24,7 +24,7 @@
                         StoryProgress(BuildingWatergate, None),
                         ClearSelectedUnit,
                     ],
-                    next_view: Town,
+                    next_view: UiView(Town),
                 )
             ),
         ],

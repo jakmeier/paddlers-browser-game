@@ -35,7 +35,7 @@
             SlideButton (
                 text_key: "welcomescene-A60",
                 action: SlideButtonAction(
-                    next_slide: 5,
+                    next_view: Slide(5),
                     actions: [StoryProgress(ServantAccepted, None)],
                 )
             ),
@@ -57,7 +57,7 @@
             SlideButton (
                 text_key: "welcomescene-A90",
                 action: SlideButtonAction(
-                    next_view: Town,
+                    next_view: UiView(Town),
                     actions: [ClearSelectedUnit ]
                 )
             )

@@ -22,8 +22,7 @@ pub(crate) struct DialogueFrame {
     text_provider: TableTextProvider,
     text_bubble: AbstractMesh,
     current_scene: Option<SceneIndex>,
-    current_slide: SlideIndex,
-    previous_slide: SlideIndex,
+    slide_stack: Vec<SlideIndex>,
     mouse: PointerTracker,
     waiting_for_scene_data: bool,
 }
@@ -45,8 +44,7 @@ impl DialogueFrame {
             text_provider,
             text_bubble,
             current_scene: None,
-            current_slide: 0,
-            previous_slide: 0,
+            slide_stack: vec![],
             mouse: PointerTracker::new(),
             scenes: Default::default(),
             waiting_for_scene_data: false,
@@ -57,14 +55,13 @@ impl DialogueFrame {
 
     pub fn load(&mut self, scene: SceneIndex, slide: SlideIndex, locale: &TextDb) {
         self.current_scene = Some(scene);
-        self.current_slide = slide;
+        self.slide_stack.push(slide);
         self.reload(locale);
     }
     fn load_slide(&mut self, i: usize, locale: &TextDb) -> PadlResult<()> {
-        if self.current_slide != i {
-            self.previous_slide = self.current_slide;
+        if self.current_slide() != i {
+            self.slide_stack.push(i);
         }
-        self.current_slide = i;
         self.reload(locale);
         Ok(())
     }
@@ -73,18 +70,15 @@ impl DialogueFrame {
         self.buttons.clear();
         self.text.clear();
 
+        let current_slide = self.current_slide();
         if let Some(scene_index) = self.current_scene {
             if let Some(scene) = self.scenes.get(scene_index) {
-                let key = scene.slide_text_key(self.current_slide).key();
+                let key = scene.slide_text_key(current_slide).key();
                 let text = locale.gettext(key);
-                let image = scene.slide_sprite(self.current_slide);
-                let back_button = if scene.back_button(self.current_slide) {
-                    Some(self.previous_slide)
-                } else {
-                    None
-                };
-                let next_button = scene.next_button(self.current_slide);
-                let layout = scene.button_layout(self.current_slide);
+                let image = scene.slide_sprite(current_slide);
+                let has_back_button = scene.back_button(current_slide);
+                let next_button = scene.next_button(current_slide);
+                let layout = scene.button_layout(current_slide);
 
                 if self.current_layout != layout {
                     self.buttons = buttons_ui_box(layout);
@@ -95,11 +89,11 @@ impl DialogueFrame {
                 self.image = image;
 
                 // Create dialogue buttons for interactions
-                let extra_buttons = scene.slide_buttons(self.current_slide);
+                let extra_buttons = scene.slide_buttons(current_slide);
                 // Create and add navigation buttons
-                if let Some(i) = back_button {
+                if has_back_button {
                     let back_button =
-                        UiElement::new(ClickOutput::SlideAction(SlideButtonAction::to_slide(i)))
+                        UiElement::new(ClickOutput::SlideAction(SlideButtonAction::go_back()))
                             .with_render_variant(RenderVariant::Shape(PadlShapeIndex::LeftArrow));
                     self.buttons.add(back_button);
                 } else if extra_buttons.len() < 2 {
@@ -210,12 +204,19 @@ impl DialogueFrame {
         if let Some(output) = self.buttons.click(pos.into()) {
             match output {
                 (ClickOutput::SlideAction(a), None) => {
-                    if let Some(i) = a.next_slide {
-                        self.load_slide(i, &state.locale).nuts_check();
-                    }
-                    if let Some(v) = a.next_view {
-                        let evt = GameEvent::SwitchToView(v);
-                        game_event(evt);
+                    match a.next_view {
+                        NextView::Stay => {}
+                        NextView::GoOneSlideBack => {
+                            self.slide_stack.pop();
+                            self.reload(&state.locale);
+                        }
+                        NextView::Slide(i) => {
+                            self.load_slide(i, &state.locale).nuts_check();
+                        }
+                        NextView::UiView(view) => {
+                            let evt = GameEvent::SwitchToView(view);
+                            game_event(evt);
+                        }
                     }
                     if a.actions.len() > 0 {
                         let evt = GameEvent::DialogueActions(a.actions);
@@ -229,6 +230,9 @@ impl DialogueFrame {
                 }
             }
         }
+    }
+    fn current_slide(&self) -> SlideIndex {
+        self.slide_stack.last().cloned().unwrap_or(0)
     }
 }
 
@@ -266,7 +270,7 @@ impl Frame for DialogueFrame {
     fn leave(&mut self, _state: &mut Self::State) {
         self.text_provider.hide();
         self.current_scene = None;
-        self.current_slide = 0;
+        self.slide_stack.clear();
     }
     fn pointer(&mut self, state: &mut Self::State, event: PointerEvent) {
         self.mouse.track_pointer_event(&event);
