@@ -83,6 +83,10 @@ impl Game {
                             // => Set it moving again, assuming it has been released by the game-master
                             let moving = release_and_move_visitor(hobo, now);
                             v_store.insert(id, moving)?;
+                        } else {
+                            // hobo currently moving but it might have the resting place defined as final position
+                            let mut target_store = town_world.write_storage::<TargetPosition>();
+                            target_store.remove(id);
                         }
                         // Tell backend that release might be required
                         let net_store = town_world.read_storage::<NetObj>();
