@@ -38,6 +38,7 @@ pub(crate) fn collect_quest(
         check_building_conditions(&db, quest_key, village.key())?;
         check_resource_conditions(&db, quest_key, village.key())?;
         check_karma_conditions(&quest, &player)?;
+        check_pop_conditions(&db, &quest, village.key())?;
         check_worker_conditions(&db, quest_key, village.key())?;
 
         let follow_up_quest = quest.follow_up_quest.map(|name| {
@@ -148,8 +149,22 @@ fn check_resource_conditions(
 
 fn check_karma_conditions(quest: &Quest, player: &Player) -> Result<(), std::string::String> {
     if let Some(karma_required) = quest.karma_condition {
-        if karma_required < player.karma {
+        if player.karma < karma_required {
             return Err("Need more Karma".to_owned());
+        }
+    }
+    Ok(())
+}
+
+fn check_pop_conditions(
+    db: &crate::db::DB,
+    quest: &Quest,
+    village_key: VillageKey,
+) -> Result<(), std::string::String> {
+    if let Some(pop_required) = quest.pop_condition {
+        let pop = db.settled_hobo_count(village_key) + db.worker_count(village_key);
+        if pop < pop_required {
+            return Err("Need more Population".to_owned());
         }
     }
     Ok(())

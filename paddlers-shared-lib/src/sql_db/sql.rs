@@ -44,6 +44,14 @@ pub trait GameDB {
             .expect("Error loading data");
         results
     }
+    fn settled_hobo_count(&self, village: VillageKey) -> i64 {
+        hobos::table
+            .filter(hobos::home.eq(village.num()))
+            .filter(diesel::dsl::not(hobos::nest.is_null()))
+            .count()
+            .get_result(self.dbconn())
+            .expect("Error loading data")
+    }
     fn worker_priv(&self, worker_id: WorkerKey) -> Option<Worker> {
         let results = workers::table
             .filter(workers::id.eq(worker_id.num()))
@@ -63,6 +71,13 @@ pub trait GameDB {
             .optional()
             .expect("Error loading data");
         results
+    }
+    fn worker_count(&self, village: VillageKey) -> i64 {
+        workers::table
+            .filter(workers::home.eq(village.num()))
+            .count()
+            .get_result(self.dbconn())
+            .expect("Error loading data")
     }
     fn workers(&self, village: VillageKey) -> Vec<Worker> {
         let results = workers::table
