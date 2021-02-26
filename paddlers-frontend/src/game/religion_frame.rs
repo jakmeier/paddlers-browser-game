@@ -53,7 +53,11 @@ impl ReligionFrame {
     }
     pub fn signal(&mut self, state: &mut Game, msg: &Signal) {
         match msg {
-            Signal::PlayerInfoUpdated => self.perks = state.player().civilization_perks(),
+            Signal::PlayerStateUpdated => {
+                if let Some(info) = state.player().info {
+                    self.perks = info.civilization_perks();
+                }
+            }
             _ => {}
         }
     }

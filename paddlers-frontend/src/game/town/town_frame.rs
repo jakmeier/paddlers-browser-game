@@ -114,7 +114,7 @@ impl<'a, 'b> TownFrame<'a, 'b> {
     }
     pub fn signal(&mut self, state: &mut Game, msg: &Signal) {
         match msg {
-            Signal::PlayerInfoUpdated => {
+            Signal::PlayerStateUpdated => {
                 state.update_temple().nuts_check();
             }
             Signal::BuildingBuilt(bt) => {

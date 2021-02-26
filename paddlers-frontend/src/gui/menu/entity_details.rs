@@ -5,7 +5,7 @@ use crate::{
         fight::{Aura, Health},
         mana::Mana,
         map::VillageMetaInfo,
-        player_info::PlayerInfo,
+        player_info::{PlayerInfo, PlayerState},
     },
     gui::{gui_components::*, menu::*, sprites::*, ui_state::Now, utils::*, z::*},
 };
@@ -179,8 +179,8 @@ pub fn draw_town_entity_details_table(
         match b.bt {
             BuildingType::Temple => {
                 if ui_menu.get(e).is_some() {
-                    let player_info = world.read_resource::<PlayerInfo>();
-                    table.extend(temple_details(&player_info));
+                    let player_info = world.read_resource::<PlayerState>();
+                    table.extend(temple_details(player_info.info()));
                 }
             }
             BuildingType::Watergate => {

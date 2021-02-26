@@ -1,4 +1,4 @@
-use crate::game::player_info::PlayerInfo;
+use crate::game::player_info::{PlayerInfo, PlayerState};
 use crate::gui::{gui_components::*, menu::entity_details::*, ui_state::Now, utils::*, z::*};
 use crate::gui::{input::Grabbable, sprites::WithSprite};
 use crate::prelude::*;
@@ -32,7 +32,7 @@ impl DefaultShop {
         result
     }
     pub fn reload(world: &mut specs::World) {
-        let player_info = (*world.read_resource::<PlayerInfo>()).clone();
+        let player_info = (*world.read_resource::<PlayerState>()).info().clone();
         world.insert(DefaultShop::new(&player_info));
     }
 

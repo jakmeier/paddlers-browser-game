@@ -1433,6 +1433,18 @@
               "deprecationReason": null,
               "description": null,
               "isDeprecated": false,
+              "name": "pop",
+              "type": {
+                "kind": "SCALAR",
+                "name": "Int",
+                "ofType": null
+              }
+            },
+            {
+              "args": [],
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
               "name": "resources",
               "type": {
                 "kind": "NON_NULL",

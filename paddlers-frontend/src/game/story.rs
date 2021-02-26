@@ -1,7 +1,7 @@
 pub mod entity_trigger;
 
 use crate::{
-    game::{player_info::PlayerInfo, Game},
+    game::Game,
     net::graphql::{ForceRequest, PeriodicalSyncRequest},
 };
 use crate::{net::graphql::ScheduledRequest, prelude::*};
@@ -9,12 +9,17 @@ use paddle::NutsCheck;
 use paddlers_shared_lib::story::{story_action::StoryAction, story_state::StoryState};
 use paddlers_shared_lib::{specification_types::*, story::story_trigger::StoryTrigger};
 
+use super::player_info::PlayerState;
+
 impl Game {
     pub fn set_story_state(&self, s: StoryState) {
-        self.world.fetch_mut::<PlayerInfo>().set_story_state(s);
+        self.world
+            .fetch_mut::<PlayerState>()
+            .info_mut()
+            .set_story_state(s);
     }
     pub fn story_state(&self) -> StoryState {
-        self.world.fetch::<PlayerInfo>().story_state()
+        self.world.fetch::<PlayerState>().info().story_state()
     }
     pub fn load_story_state(&mut self) -> PadlResult<()> {
         let story_state = self.story_state();

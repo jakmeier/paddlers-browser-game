@@ -25,6 +25,7 @@ pub(crate) mod town_resources;
 pub(crate) mod units;
 pub(crate) mod visits;
 
+use self::player_info::PlayerState;
 use crate::game::net_receiver::*;
 use crate::gui::{input, sprites::*, ui_state::*};
 use crate::init::loading::GameLoadingData;
@@ -107,14 +108,17 @@ impl Game {
         // Make sure buildings are loaded properly before inserting any types of units
         game.world.maintain();
         game.town_world_mut().maintain();
+        game.world.write_resource::<PlayerState>().worker_population =
+            Some(game_data.worker_response.len() as u32);
         load_workers_from_net_response(
             game.town_context.active_context_mut(),
             game_data.worker_response,
         );
-        load_hobos_from_net_response(
+        let n = load_hobos_from_net_response(
             game.town_context.active_context_mut(),
             game_data.hobos_response,
         )?;
+        game.world.write_resource::<PlayerState>().hobo_population = Some(n);
         game.refresh_visitor_gate();
         game.load_attacking_hobos(game_data.attacking_hobos)?;
         game.load_player_info(game_data.player_info)?;
@@ -162,7 +166,7 @@ impl Game {
     pub fn map_mut(&mut self) -> GlobalMap {
         GlobalMap::combined(self.map.as_mut().unwrap(), self.world.write_resource())
     }
-    pub fn player(&self) -> specs::shred::Fetch<PlayerInfo> {
+    pub fn player(&self) -> specs::shred::Fetch<PlayerState> {
         self.world.read_resource()
     }
     pub fn update_time_reference(&mut self) {

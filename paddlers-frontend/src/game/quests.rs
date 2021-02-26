@@ -1,5 +1,5 @@
 use super::{
-    player_info::PlayerInfo, toplevel::Signal, town::Town, town_resources::TownResources, Game,
+    player_info::PlayerState, toplevel::Signal, town::Town, town_resources::TownResources, Game,
 };
 use crate::{
     net::{graphql::PlayerQuest, NetMsg},
@@ -109,9 +109,9 @@ impl QuestsFrame {
             Signal::BuildingRemoved(b) => {
                 self.quests_gizmo.send(&QuestListIn::BuildingChange(*b, -1));
             }
-            Signal::PlayerInfoUpdated => self
+            Signal::PlayerStateUpdated => self
                 .quests_gizmo
-                .send(&QuestListIn::PlayerInfo(*state.player().clone())),
+                .send(&QuestListIn::PlayerState((*state.player()).clone())),
             Signal::NewWorker(t) => {
                 self.quests_gizmo.send(&QuestListIn::WorkerChange(*t, 1));
             }
@@ -133,7 +133,7 @@ impl QuestsFrame {
         locale: &TextDb,
         town: &Town,
         bank: &TownResources,
-        player_info: &PlayerInfo,
+        player_info: &PlayerState,
     ) {
         self.quests_gizmo
             .send(&QuestListIn::NewQuestComponent(QuestComponent::new(

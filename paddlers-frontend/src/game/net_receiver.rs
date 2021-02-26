@@ -1,4 +1,4 @@
-use super::*;
+use super::{player_info::PlayerState, *};
 use crate::game::{
     components::*, toplevel::Signal, town::visitor_gate::VisitorGate, town::TownContext,
     town_resources::TownResources, units::hobos::insert_hobos,
@@ -92,7 +92,9 @@ impl Game {
                     }
                     NetMsg::Hobos(hobos, vid) => {
                         let ctx = self.maybe_town_context_mut(vid, "villages")?;
-                        load_hobos_from_net_response(ctx, hobos)?;
+                        let settled_hobos = load_hobos_from_net_response(ctx, hobos)?;
+                        self.world.write_resource::<PlayerState>().hobo_population =
+                        Some(settled_hobos as u32);
                     }
                     NetMsg::Leaderboard(offset, list) => {
                         paddle::share(NetMsg::Leaderboard(offset, list));
@@ -126,6 +128,8 @@ impl Game {
                         paddle::share(Signal::ResourcesUpdated);
                     }
                     NetMsg::Workers(response, vid) => {
+                        self.world.write_resource::<PlayerState>().worker_population =
+                            Some(response.len() as u32);
                         let ctx = self.maybe_town_context_mut(vid, "workers")?;
                         flush_workers(ctx.world())?;
                         ctx.world_mut().maintain();
@@ -211,10 +215,14 @@ impl Game {
         Ok(())
     }
     pub fn load_player_info(&mut self, player_info: PlayerInfo) -> PadlResult<()> {
-        self.world.insert(player_info.clone());
-        self.town_world_mut().insert(DefaultShop::new(&player_info));
-        self.town_world_mut().insert(player_info);
-        paddle::share(Signal::PlayerInfoUpdated);
+        let mut player_state = self.world.write_resource::<PlayerState>();
+        player_state.info = Some(player_info);
+        let player_state_copy = player_state.clone();
+        std::mem::drop(player_state);
+        self.town_world_mut()
+            .insert(DefaultShop::new(player_state_copy.info.as_ref().unwrap()));
+        self.town_world_mut().insert(player_state_copy);
+        paddle::share(Signal::PlayerStateUpdated);
         Ok(())
     }
     fn maybe_town_context_mut(
@@ -239,13 +247,14 @@ pub fn load_workers_from_net_response(ctx: &mut TownContext, response: WorkerRes
         }
     }
 }
-/// Home hobos (not attackers) are loaded
+/// Home hobos (not attackers) are loaded.
+/// Returns the number of hobos that are settled civilians, aka tax payers.
 pub fn load_hobos_from_net_response(
     ctx: &mut TownContext,
     hobos: HobosQueryResponse,
-) -> PadlResult<()> {
+) -> PadlResult<u32> {
     let world = ctx.world_mut();
     flush_home_hobos(world)?;
-    insert_hobos(ctx, hobos)?;
-    Ok(())
+    let n = insert_hobos(ctx, hobos)?;
+    Ok(n)
 }

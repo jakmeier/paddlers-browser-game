@@ -21,6 +21,7 @@ pub struct WorkerCondition {
 pub struct QuestConditions {
     res: Resources,
     karma: Option<i32>,
+    pop: Option<i32>,
     buildings: Vec<BuildingCondition>,
     worker: Vec<WorkerCondition>,
 }
@@ -42,6 +43,9 @@ impl Resources {
 impl QuestConditions {
     pub fn karma(&self) -> Option<i32> {
         self.karma
+    }
+    pub fn pop(&self) -> Option<i32> {
+        self.pop
     }
     pub fn resources(&self) -> &Resources {
         &self.res
@@ -93,12 +97,14 @@ impl QuestConditions {
     pub fn new(
         res: Resources,
         karma: Option<i64>,
+        pop: Option<i64>,
         buildings: Vec<BuildingCondition>,
         worker: Vec<WorkerCondition>,
     ) -> Self {
         Self {
             res,
             karma: karma.map(|i| i as i32),
+            pop: pop.map(|i| i as i32),
             buildings,
             worker,
         }

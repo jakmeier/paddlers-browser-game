@@ -10,6 +10,7 @@ query PlayerQuestsQuery {
             }
             conditions {
                 karma
+                pop
                 resources {
                     feathers
                     sticks

@@ -1,5 +1,5 @@
 use crate::{
-    game::{player_info::PlayerInfo, town::Town, town_resources::TownResources},
+    game::{player_info::PlayerState, town::Town, town_resources::TownResources},
     net::{game_master_api::RestApiState, graphql::PlayerQuest},
     prelude::TextDb,
 };
@@ -9,6 +9,7 @@ use mogwai::prelude::*;
 use paddlers_shared_lib::{
     api::quests::QuestCollect,
     prelude::{BuildingType, QuestKey, ResourceType, TaskType},
+    specification_types::SingleSprite,
 };
 
 #[derive(Clone)]
@@ -19,7 +20,8 @@ pub(super) struct QuestComponent {
     text: String,
     init: bool,
     // conditions
-    karma_condition: Option<KarmaCondition>,
+    karma_condition: Option<SimpleCondition>,
+    pop_condition: Option<SimpleCondition>,
     building_conditions: Vec<BuildingCondition>,
     worker_conditions: Vec<WorkerCondition>,
     resource_conditions: Vec<ResourceCondition>,
@@ -36,14 +38,17 @@ impl QuestComponent {
         locale: &TextDb,
         town: &Town,
         bank: &TownResources,
-        player: &PlayerInfo,
+        player: &PlayerState,
     ) -> Self {
         let id = quest.id.parse().unwrap();
         let key = &quest.key;
-        let karma_condition = quest
+        let karma_condition = quest.conditions.karma.map(|karma_goal| {
+            SimpleCondition::new(karma_goal, player.karma(), SingleSprite::Karma)
+        });
+        let pop_condition = quest
             .conditions
-            .karma
-            .map(|karma_goal| KarmaCondition::new(karma_goal, player.karma()));
+            .pop
+            .map(|pop_goal| SimpleCondition::new(pop_goal, player.pop(), SingleSprite::Population));
 
         let building_conditions = BuildingCondition::from_quest_ref(quest, town);
         let worker_conditions = WorkerCondition::from_quest_ref(quest, town);
@@ -55,14 +60,27 @@ impl QuestComponent {
             .filter(|c| c.is_complete())
             .count();
         let worker_completed = worker_conditions.iter().filter(|c| c.is_complete()).count();
+
         let karma_completed = karma_condition
             .as_ref()
             .map(|c| c.is_complete())
             .unwrap_or(false);
         let karma_completed = if karma_completed { 1 } else { 0 };
-        let completed_conditions =
-            res_completed + buildings_completed + worker_completed + karma_completed;
+
+        let pop_completed = pop_condition
+            .as_ref()
+            .map(|c| c.is_complete())
+            .unwrap_or(false);
+        let pop_completed = if pop_completed { 1 } else { 0 };
+
+        let completed_conditions = res_completed
+            + buildings_completed
+            + worker_completed
+            + karma_completed
+            + pop_completed;
+
         let total_conditions = karma_condition.iter().count()
+            + pop_condition.iter().count()
             + building_conditions.len()
             + worker_conditions.len()
             + resource_conditions.len();
@@ -74,6 +92,7 @@ impl QuestComponent {
                 .gettext(&(key.to_owned() + "-description"))
                 .to_owned(),
             karma_condition,
+            pop_condition,
             building_conditions,
             worker_conditions,
             resource_conditions,
@@ -96,6 +115,9 @@ impl QuestComponent {
         for child in &mut self.karma_condition {
             child.subscriber(sub);
         }
+        for child in &mut self.pop_condition {
+            child.subscriber(sub);
+        }
     }
 }
 
@@ -107,6 +129,7 @@ pub(super) enum QuestIn {
     BuildingChange(BuildingType, i64),
     WorkerChange(TaskType, i64),
     Karma(i64),
+    Population(i64),
     ChildMessage(QuestConditionViewUpdate),
 }
 
@@ -156,7 +179,12 @@ impl Component for QuestComponent {
             }
             QuestIn::Karma(karma) => {
                 if let Some(child) = &mut self.karma_condition {
-                    child.update_karma(*karma);
+                    child.update(*karma);
+                }
+            }
+            QuestIn::Population(pop) => {
+                if let Some(child) = &mut self.pop_condition {
+                    child.update(*pop);
                 }
             }
             QuestIn::ChildMessage(child_msg) => {
@@ -200,7 +228,8 @@ impl Component for QuestComponent {
             <p> { &self.text } </p>
             <div class="conditions">
                 <div class="title"> { ("CONDITIONS", ui_texts_rx.branch_map(|uit| uit.conditions.clone())) }":" </div>
-                { self.karma_condition.as_ref().map(KarmaCondition::view_builder) }
+                { self.karma_condition.as_ref().map(SimpleCondition::view_builder) }
+                { self.pop_condition.as_ref().map(SimpleCondition::view_builder) }
                 { self.building_conditions.get(0).map(BuildingCondition::view_builder) }
                 { self.building_conditions.get(1).map(BuildingCondition::view_builder) }
                 { self.building_conditions.get(2).map(BuildingCondition::view_builder) }

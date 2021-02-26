@@ -4,6 +4,7 @@ use paddlers_shared_lib::story::story_state::StoryState;
 use paddlers_shared_lib::{api::shop::Price, civilization::CivilizationPerks};
 
 #[derive(Debug, Clone, Copy)]
+/// Input directly received from Network
 pub struct PlayerInfo {
     karma: i64,
     /// Prophets currently owned by player that are not ruling a village, yet
@@ -11,6 +12,15 @@ pub struct PlayerInfo {
     village_count: i64,
     story_state: StoryState,
     civilization_perks: CivilizationPerks,
+}
+
+#[derive(Debug, Clone, Default)]
+/// Full player info with directly received and indirectly computed values.
+/// Attention: Implements Default and is stored in World. This means it will return a value even when it was not put in there explicitly.
+pub struct PlayerState {
+    pub info: Option<PlayerInfo>,
+    pub hobo_population: Option<u32>,
+    pub worker_population: Option<u32>,
 }
 
 impl From<PlayerQueryResponse> for PlayerInfo {
@@ -24,7 +34,25 @@ impl From<PlayerQueryResponse> for PlayerInfo {
         }
     }
 }
-
+impl PlayerState {
+    #[inline]
+    pub fn karma(&self) -> i64 {
+        self.info.map(|info| info.karma).unwrap_or(0)
+    }
+    /// Number of settled hobos + workers (cached, must be computed)
+    #[inline]
+    pub fn pop(&self) -> i64 {
+        self.worker_population.unwrap_or(0) as i64 + self.hobo_population.unwrap_or(0) as i64
+    }
+    #[inline]
+    pub fn info(&self) -> &PlayerInfo {
+        self.info.as_ref().unwrap()
+    }
+    #[inline]
+    pub fn info_mut(&mut self) -> &mut PlayerInfo {
+        self.info.as_mut().unwrap()
+    }
+}
 impl PlayerInfo {
     #[inline]
     pub fn karma(&self) -> i64 {

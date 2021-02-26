@@ -2,7 +2,7 @@ use paddle::quicksilver_compat::*;
 use specs::prelude::*;
 
 use super::{task_factory::NewTaskDescriptor, tiling};
-use crate::game::{game_event_manager::game_event, toplevel::Signal};
+use crate::game::{game_event_manager::game_event, player_info::PlayerState, toplevel::Signal};
 use crate::gui::gui_components::{ClickOutput, Condition, InteractiveTableArea};
 use crate::gui::input::{Clickable, Grabbable};
 use crate::gui::ui_state::*;
@@ -99,7 +99,7 @@ impl Town {
         ui_state: &mut WriteExpect<'a, UiState>,
         shop: ReadExpect<'a, DefaultShop>,
         resources: WriteExpect<'a, TownResources>,
-        player_info: ReadExpect<'a, PlayerInfo>,
+        player_info: ReadExpect<'a, PlayerState>,
     ) -> PadlResult<()> {
         let maybe_grab = shop.click(mouse_pos);
         match maybe_grab {
@@ -108,7 +108,7 @@ impl Town {
                 ui_state.set_grabbed_item(g);
             }
             Some((g, Some(condition))) => {
-                check_condition(&condition, &*resources, &player_info)?;
+                check_condition(&condition, &*resources, player_info.info())?;
                 ui_state.set_grabbed_item(g);
             }
         }

@@ -24,7 +24,7 @@ impl Game {
     }
 }
 
-pub fn insert_hobos(ctx: &mut TownContext, hobos: HobosQueryResponse) -> PadlResult<()> {
+pub fn insert_hobos(ctx: &mut TownContext, hobos: HobosQueryResponse) -> PadlResult<u32> {
     // Insert idle prophets
     ctx.town_mut().idle_prophets = hobos
         .iter()
@@ -33,13 +33,18 @@ pub fn insert_hobos(ctx: &mut TownContext, hobos: HobosQueryResponse) -> PadlRes
         .map(|h| new_prophet(ctx.world_mut(), &h.id))
         .collect::<Result<Vec<_>, _>>()?;
     // Insert sitting hobos
+    let mut sitting_hobos = 0;
     hobos
         .iter()
         .filter(|h| h.idle)
         .filter(|h| h.nest.is_some())
+        .map(|h| {
+            sitting_hobos += 1;
+            h
+        })
         .map(|h| new_sitting_hobo(ctx.world_mut(), &h.id, h.nest.as_ref().unwrap()))
         .collect::<Result<Vec<_>, _>>()?;
-    Ok(())
+    Ok(sitting_hobos)
 }
 
 fn new_prophet(world: &mut World, id: &str) -> PadlResult<Entity> {

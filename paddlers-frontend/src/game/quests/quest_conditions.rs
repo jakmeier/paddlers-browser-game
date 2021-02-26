@@ -10,12 +10,14 @@ use paddlers_shared_lib::prelude::*;
 use super::quest_component::QuestIn;
 
 #[derive(Clone)]
-pub(super) struct KarmaCondition {
+/// Tries to reach a fixed amount of *something*, receives updates of absolute values
+pub(super) struct SimpleCondition {
     amount: i64,
     cached_current: i64,
     gizmo: Gizmo<QuestConditionComponent>,
 }
 #[derive(Clone)]
+/// Combines all resource conditions into one
 pub(super) struct ResourceCondition {
     t: ResourceType,
     amount: i64,
@@ -37,13 +39,10 @@ pub(super) struct WorkerCondition {
     gizmo: Gizmo<QuestConditionComponent>,
 }
 
-impl KarmaCondition {
-    pub fn new(karma_goal: i64, karma_now: i64) -> Self {
-        let component = QuestConditionComponent::new(
-            SpriteIndex::Simple(SingleSprite::Karma),
-            karma_goal,
-            karma_now,
-        );
+impl SimpleCondition {
+    pub fn new(karma_goal: i64, karma_now: i64, image: SingleSprite) -> Self {
+        let component =
+            QuestConditionComponent::new(SpriteIndex::Simple(image), karma_goal, karma_now);
         let gizmo = Gizmo::from(component);
         Self {
             cached_current: karma_now,
@@ -54,7 +53,7 @@ impl KarmaCondition {
     pub fn view_builder(&self) -> ViewBuilder<HtmlElement> {
         self.gizmo.view_builder()
     }
-    pub fn update_karma(&mut self, karma: i64) {
+    pub fn update(&mut self, karma: i64) {
         self.cached_current = karma;
         self.gizmo.send(&NewCurrentValue(karma));
     }

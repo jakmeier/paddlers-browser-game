@@ -1,7 +1,7 @@
 use crate::game::{
     components::*,
     fight::Aura,
-    player_info::PlayerInfo,
+    player_info::{PlayerInfo, PlayerState},
     story::entity_trigger::EntityTrigger,
     town::DefaultShop,
     town::Town,
@@ -21,8 +21,10 @@ pub(super) fn insert_global_resources(world: &mut World, player_info: PlayerInfo
     world.insert(ClockTick(0));
     world.insert(Now(utc_now()));
     world.insert(UiState::new());
-    world.insert(player_info);
     let view = entry_view(player_info.story_state());
+    let mut player_state = PlayerState::default();
+    player_state.info = Some(player_info);
+    world.insert(player_state);
     world.insert(view);
 }
 

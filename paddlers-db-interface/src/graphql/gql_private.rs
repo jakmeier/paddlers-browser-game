@@ -239,6 +239,7 @@ impl GqlQuest {
             .map(Into::into)
             .collect();
         let karma = self.0.karma_condition;
-        QuestConditions::new(res, karma, buildings, worker)
+        let pop = self.0.pop_condition;
+        QuestConditions::new(res, karma, pop, buildings, worker)
     }
 }

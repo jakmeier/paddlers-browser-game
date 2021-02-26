@@ -1,4 +1,4 @@
-use crate::game::player_info::PlayerInfo;
+use crate::game::player_info::PlayerState;
 
 use super::{
     quest_component::{QuestComponent, QuestIn},
@@ -19,7 +19,7 @@ pub(super) enum QuestListIn {
     Clear,
     ResourceUpdate(Vec<(ResourceType, i64)>),
     BuildingChange(BuildingType, i64),
-    PlayerInfo(PlayerInfo),
+    PlayerState(PlayerState),
     WorkerChange(TaskType, i64),
 }
 
@@ -81,10 +81,12 @@ impl Component for QuestList {
                     q.send(&QuestIn::WorkerChange(*task, *n));
                 }
             }
-            QuestListIn::PlayerInfo(p) => {
+            QuestListIn::PlayerState(p) => {
                 let karma = p.karma();
+                let pop = p.pop();
                 for q in &self.quest_components {
                     q.send(&QuestIn::Karma(karma));
+                    q.send(&QuestIn::Population(pop));
                 }
             }
         }

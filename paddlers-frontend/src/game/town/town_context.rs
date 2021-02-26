@@ -1,4 +1,7 @@
-use crate::game::{player_info::PlayerInfo, town::Town};
+use crate::game::{
+    player_info::{PlayerInfo, PlayerState},
+    town::Town,
+};
 use crate::init::specs_registration::*;
 use crate::prelude::*;
 use paddlers_shared_lib::prelude::*;
@@ -31,7 +34,7 @@ impl TownContextManager {
     /// Load a new town context for a foreign town
     pub fn load_foreign(&mut self, v: VillageKey) {
         let home_data = self.home_town.world();
-        let player_info = *home_data.fetch::<PlayerInfo>();
+        let player_info = *home_data.fetch::<PlayerState>().info();
         self.foreign_town = Some(TownContext::new(player_info, v, true));
     }
     /// Remove all loaded foreign towns from the view and display home again

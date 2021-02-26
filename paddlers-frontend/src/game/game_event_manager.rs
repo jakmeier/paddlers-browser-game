@@ -23,7 +23,7 @@ use paddlers_shared_lib::{
 };
 use specs::prelude::*;
 
-use super::{toplevel::Signal, town::nests::Nest};
+use super::{player_info::PlayerState, toplevel::Signal, town::nests::Nest};
 
 pub struct EventManager;
 
@@ -96,8 +96,10 @@ impl Game {
                 }
             }
             GameEvent::HttpBuyProphet => {
-                let player: PlayerInfo = *self.player().clone();
-                crate::game::town::purchase_prophet(&player)?;
+                if let Some(info) = self.player().info {
+                    let player: PlayerInfo = info.clone();
+                    crate::game::town::purchase_prophet(&player)?;
+                }
             }
             GameEvent::SendProphetAttack((x, y)) => {
                 self.send_prophet_attack((x, y))?;
@@ -228,6 +230,13 @@ impl Game {
 
                 let rest_msg = SettleHobo { nest };
                 nuts::send_to::<RestApiState, _>(rest_msg);
+                *self
+                    .world
+                    .write_resource::<PlayerState>()
+                    .hobo_population
+                    .as_mut()
+                    .unwrap() += 1;
+                paddle::share(Signal::PlayerStateUpdated);
             }
         }
         Ok(())

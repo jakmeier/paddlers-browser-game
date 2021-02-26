@@ -13,7 +13,7 @@ use crate::specs::WorldExt;
 /// Signals are a way to broadcast events for event listeners across views.
 pub enum Signal {
     ResourcesUpdated,
-    PlayerInfoUpdated,
+    PlayerStateUpdated,
     LocaleUpdated,
     BuildingBuilt(BuildingType),
     BuildingUpgraded(BuildingType),

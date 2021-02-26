@@ -7,7 +7,7 @@ use super::{Clickable, MouseState};
 use crate::game::{
     components::*,
     movement::*,
-    player_info::PlayerInfo,
+    player_info::PlayerState,
     town::nests::Nest,
     town::{tiling, DefaultShop, Town},
     town_resources::TownResources,
@@ -121,7 +121,7 @@ impl<'a> System<'a> for TownMenuLeftClickSystem {
         ReadExpect<'a, DefaultShop>,
         WriteExpect<'a, TownResources>,
         WriteExpect<'a, Town>,
-        ReadExpect<'a, PlayerInfo>,
+        ReadExpect<'a, PlayerState>,
         Read<'a, LazyUpdate>,
         ReadStorage<'a, Position>,
         WriteStorage<'a, EntityContainer>,
@@ -167,7 +167,7 @@ impl<'a> System<'a> for TownMenuLeftClickSystem {
                         &mut nests,
                         &lazy,
                         &*resources,
-                        &player_info,
+                        player_info.info(),
                     );
                 }
             }
@@ -184,7 +184,7 @@ impl<'a> System<'a> for TownMenuLeftClickSystem {
                         &mut nests,
                         &lazy,
                         &*resources,
-                        &player_info,
+                        player_info.info(),
                     );
                 }
             }
