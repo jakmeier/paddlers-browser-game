@@ -1,8 +1,13 @@
 use crate::db::DB;
 use crate::StringErr;
 use crate::{buildings::BuildingFactory, game_master::story_worker::StoryWorkerMessage};
-use paddlers_shared_lib::story::story_trigger::StoryTrigger;
-use paddlers_shared_lib::{api::shop::*, game_mechanics::attributes::Attributes, prelude::*};
+use paddlers_shared_lib::{
+    api::shop::*,
+    game_mechanics::attributes::Attributes,
+    game_mechanics::town::{TOWN_LANE_Y, TOWN_Y},
+    prelude::*,
+    story::story_trigger::StoryTrigger,
+};
 
 impl DB {
     pub fn try_buy_building(
@@ -37,7 +42,6 @@ impl DB {
         debug_assert_eq!(w, 1, "Not implemented yet");
         debug_assert_eq!(h, 1, "Not implemented yet");
         let (x0, y0) = (pos.0 as usize, pos.1 as usize);
-        // let(x1,y1) = (x0+w, y0+h);
         for other in self.buildings(village) {
             let typ: BuildingType = other.building_type;
             let (w, h) = typ.size();
@@ -50,8 +54,7 @@ impl DB {
         }
 
         // Check conflict with map
-        // Note: Cleaner handling of map shape might be necessary in the future
-        if y0 == 6 {
+        if y0 == TOWN_LANE_Y || y0 >= TOWN_Y {
             return Err("Cannot build here".to_owned());
         }
 
