@@ -97,6 +97,8 @@ pub enum SingleSprite {
     SingleDuckBackgroundShape,
     VisitorGateSymbol,
     Plus,
+    Duties,
+    Letter,
 }
 
 #[derive(Debug, Clone, Copy, Deserialize)]

@@ -128,11 +128,13 @@ section.quests {
 }
 
 div.quest {
-    background-color: whitesmoke;
+    background-color: #969696;
     padding: 4vh;
     margin: 10px;
     border-radius: 33px;
     text-align: center;
+    border-style: outset;
+    border-width: 15px;
 }
 
 div.quest h3 {
