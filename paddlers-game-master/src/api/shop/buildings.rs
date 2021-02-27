@@ -54,7 +54,7 @@ impl DB {
         }
 
         // Check conflict with map
-        if y0 == TOWN_LANE_Y || y0 >= TOWN_Y {
+        if (y0 == TOWN_LANE_Y && typ != BuildingType::Watergate) || y0 >= TOWN_Y {
             return Err("Cannot build here".to_owned());
         }
 

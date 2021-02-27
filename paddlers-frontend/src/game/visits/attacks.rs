@@ -55,9 +55,6 @@ impl Attack {
             view: None,
         }
     }
-    pub fn has_arrived(&self) -> bool {
-        self.arrival < utc_now()
-    }
     fn arrival(&self) -> String {
         let t = (self.arrival - utc_now()).num_seconds();
         if t > 0 {

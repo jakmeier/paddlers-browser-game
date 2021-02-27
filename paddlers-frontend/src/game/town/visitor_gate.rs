@@ -26,8 +26,6 @@ pub type GraphqlVisitingHobo = crate::net::graphql::attacks_query::AttacksQueryV
 /// Stores information about incoming attacks
 pub struct VisitorGate {
     queue: HashMap<AttackKey, WaitingAttack>,
-    /// Number of attacks not yet arrived at the watergate
-    inflight_visitor_groups: usize,
     town_entity: Option<Entity>,
     display_capacity: usize,
     level: usize,
@@ -46,18 +44,11 @@ impl VisitorGate {
     pub fn new() -> Self {
         Self {
             queue: Default::default(),
-            inflight_visitor_groups: 0,
             town_entity: None,
             display_capacity: 1,
             level: 1,
             net_id: None,
         }
-    }
-    pub fn inflight_visitor_groups(&self) -> usize {
-        self.inflight_visitor_groups
-    }
-    pub fn set_inflight_visitor_groups(&mut self, n: usize) {
-        self.inflight_visitor_groups = n;
     }
     pub fn queue_attack(&mut self, ui: &mut UiBox, atk: WaitingAttack) {
         ui.add(atk.ui_element());
@@ -80,7 +71,7 @@ impl VisitorGate {
     }
 }
 impl Game {
-    /// Refresh internal state of watergate to make sure the capacity is displayed correctly
+    /// Refresh internal state of watergate to make sure the capacity is displayed correctly + update town state that remembers how long the queue is (for checks on sending new invites)
     pub fn refresh_visitor_gate(&self) {
         if let Some((gate_entity, gate_building)) =
             super::Town::find_building(self.home_town_world(), BuildingType::Watergate)
@@ -103,6 +94,9 @@ impl Game {
                 }
                 gate.complement_ui_table(&mut ui.ui);
             }
+            self.town_mut()
+                .set_entity_count_for_building_by_id(gate_entity, gate.queue.len())
+                .nuts_check();
         }
     }
     pub fn queue_attack(&mut self, atk: WaitingAttack) {
@@ -144,7 +138,7 @@ impl Game {
                 }
                 // Keep town/tile state consistent
                 self.town_mut()
-                    .add_entity_to_building_by_id(gate_entity)
+                    .remove_entity_from_building_by_id(gate_entity)
                     .nuts_check();
             }
             std::mem::drop(gate);

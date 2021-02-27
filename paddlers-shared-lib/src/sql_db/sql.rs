@@ -157,6 +157,15 @@ pub trait GameDB {
             .expect("Error loading data");
         results as usize
     }
+    fn attacks_not_entered_count(&self, village: VillageKey) -> usize {
+        let results = attacks::table
+            .filter(attacks::destination_village_id.eq(village.num()))
+            .filter(attacks::entered_destination.is_null())
+            .select(diesel::dsl::count(attacks::id))
+            .first::<i64>(self.dbconn())
+            .expect("Error loading data");
+        results as usize
+    }
     fn attack_hobos(&self, atk: AttackKey) -> Vec<Hobo> {
         let results = attacks_to_hobos::table
             .inner_join(hobos::table)

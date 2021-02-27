@@ -204,11 +204,11 @@ impl<I: Eq + std::hash::Hash + Clone + Copy + std::fmt::Debug> TownState<I> {
             acc + tile_state.building_state.contained_queued_visitors()
         })
     }
-    /// Given a number of visitor groups already on the way (but not queued yet), can a new invitation be sent out?
-    pub fn can_send_invite(&self, inflight_visitor_groups: usize) -> bool {
+    /// Given the current town state (with watergate level + how many attacks are queued) can a new invitation be sent out?
+    pub fn can_send_invite(&self) -> bool {
         let capacity = self.visitor_capacity();
         let used = self.visitors_in_queue();
-        capacity > used + inflight_visitor_groups
+        capacity > used
     }
 }
 
@@ -226,6 +226,9 @@ impl<I: Eq + std::hash::Hash + Clone + Copy + std::fmt::Debug> TileState<I> {
         } else {
             Err(TownError::BuildingFull)
         }
+    }
+    pub fn set_entity_count(&mut self, n: usize) {
+        self.building_state.set_entity_count(n);
     }
     pub fn try_remove_entity(&mut self) -> Result<(), TownError> {
         if 0 < self.building_state.entity_count() {

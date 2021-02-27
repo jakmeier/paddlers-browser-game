@@ -48,3 +48,17 @@ impl ErrorQueue {
         }
     }
 }
+pub trait PaddlersCheck<T> {
+    fn paddlers_check(self) -> Option<T>;
+}
+impl<T> PaddlersCheck<T> for Result<T, PadlError> {
+    fn paddlers_check(self) -> Option<T> {
+        match self {
+            Ok(t) => Some(t),
+            Err(msg) => {
+                nuts::publish(msg);
+                None
+            }
+        }
+    }
+}

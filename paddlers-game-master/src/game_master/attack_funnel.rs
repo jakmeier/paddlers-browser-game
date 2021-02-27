@@ -57,7 +57,7 @@ impl Handler<PlannedAttack> for AttackFunnel {
 
         // Check that the visitor queue capacity is respected
         if msg.subject_to_visitor_queue_limit {
-            let active_attacks = db.attacks(vid, None).len();
+            let active_attacks = db.attacks_not_entered_count(vid);
             let town_context = TownView::load_village(&db, vid);
             if town_context.state.visitor_capacity() <= active_attacks {
                 eprintln!("Attempted to invite more than allowed. Request ignored.");

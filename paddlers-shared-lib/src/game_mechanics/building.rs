@@ -32,6 +32,9 @@ impl BuildingState {
     pub const fn entity_count(&self) -> usize {
         self.entity_count as usize
     }
+    pub fn set_entity_count(&mut self, n: usize) {
+        self.entity_count = n as u16
+    }
     pub fn add_entity(&mut self) {
         self.entity_count += 1;
     }

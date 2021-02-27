@@ -1,8 +1,8 @@
 use super::{player_info::PlayerState, *};
 use crate::game::{
-    components::*, toplevel::Signal, town::visitor_gate::VisitorGate, town::TownContext,
-    town_resources::TownResources, units::hobos::insert_hobos,
-    units::worker_factory::create_worker_entities, units::workers::Worker, visits::attacks::Attack,
+    components::*, toplevel::Signal, town::TownContext, town_resources::TownResources,
+    units::hobos::insert_hobos, units::worker_factory::create_worker_entities,
+    units::workers::Worker,
 };
 use crate::net::game_master_api::{HttpCreatePlayer, RestApiState};
 use crate::net::graphql::query_types::{
@@ -85,7 +85,7 @@ impl Game {
                     NetMsg::Attacks(response) => {
                         self.load_attacking_hobos(response)?;
                         self.check_resting_queue()?;
-                        self.update_inflight_attack_count()?;
+                        self.refresh_visitor_gate();
                     }
                     NetMsg::Buildings(response) => {
                         self.load_buildings_from_net_response(response)?;
@@ -94,7 +94,7 @@ impl Game {
                         let ctx = self.maybe_town_context_mut(vid, "villages")?;
                         let settled_hobos = load_hobos_from_net_response(ctx, hobos)?;
                         self.world.write_resource::<PlayerState>().hobo_population =
-                        Some(settled_hobos as u32);
+                            Some(settled_hobos as u32);
                     }
                     NetMsg::Leaderboard(offset, list) => {
                         paddle::share(NetMsg::Leaderboard(offset, list));
@@ -192,19 +192,6 @@ impl Game {
         for atk in data.village.attacks {
             atk.create_entities(self)?;
         }
-        Ok(())
-    }
-    pub fn update_inflight_attack_count(&mut self) -> PadlResult<()> {
-        let attacks = self.world.read_component::<Attack>();
-        let mut n = 0;
-        for (a,) in (&attacks,).join() {
-            if !a.has_arrived() {
-                n += 1;
-            }
-        }
-        self.home_town_world()
-            .fetch_mut::<VisitorGate>()
-            .set_inflight_visitor_groups(n);
         Ok(())
     }
     pub fn load_village_info(&mut self, data: VolatileVillageInfoResponse) -> PadlResult<()> {

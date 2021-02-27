@@ -13,10 +13,12 @@ mod town_context;
 mod town_frame;
 pub use default_shop::*;
 pub(crate) mod town_summary;
+use paddle::NutsCheck;
 pub(crate) use temple_shop::*;
 pub(crate) use town_context::*;
 pub(crate) use town_frame::*;
 
+use super::{toplevel::Signal, units::attackers::AttackerDirection};
 use crate::gui::{sprites::*, z::*};
 use crate::prelude::*;
 pub use paddlers_shared_lib::game_mechanics::town::TileIndex;
@@ -25,9 +27,6 @@ pub(crate) use paddlers_shared_lib::game_mechanics::town::TownTileType as TileTy
 use paddlers_shared_lib::game_mechanics::town::*;
 use paddlers_shared_lib::prelude::*;
 
-use self::visitor_gate::VisitorGate;
-
-use super::{toplevel::Signal, units::attackers::AttackerDirection};
 pub type TileState = TileStateEx<specs::Entity>;
 
 pub struct Town {
@@ -201,6 +200,24 @@ impl Town {
         let i = *self.state.find(id).expect("Building not found");
         self.add_entity_to_building(&i)
     }
+    pub fn remove_entity_from_building_by_id(&mut self, id: specs::Entity) -> PadlResult<()> {
+        let i = *self.state.find(id).expect("Building not found");
+        self.remove_entity_from_building(&i)
+    }
+    pub fn set_entity_count_for_building_by_id(
+        &mut self,
+        id: specs::Entity,
+        n: usize,
+    ) -> PadlResult<()> {
+        let i = *self.state.find(id).expect("Building not found");
+        match self.state.get_mut(&i) {
+            None => PadlErrorCode::NoStateForTile(i).dev(),
+            Some(s) => {
+                s.set_entity_count(n);
+                Ok(())
+            }
+        }
+    }
     pub fn remove_entity_from_building(&mut self, i: &TileIndex) -> PadlResult<()> {
         match self.state.get_mut(i) {
             None => PadlErrorCode::NoStateForTile(*i).dev(),
@@ -238,10 +255,18 @@ impl Game {
             .home_town_context()
             .town()
             .state
-            .can_send_invite(
-                self.home_town_world()
-                    .fetch_mut::<VisitorGate>()
-                    .inflight_visitor_groups(),
-            )
+            .can_send_invite()
+    }
+    pub fn remove_one_watergate_capacity(&mut self) {
+        if let Some(gate_entity) = Town::find_building_entity(
+            self.town_context.home_town_context().world(),
+            BuildingType::Watergate,
+        ) {
+            self.town_context
+                .home_town_context()
+                .town_mut()
+                .add_entity_to_building_by_id(gate_entity)
+                .nuts_check();
+        }
     }
 }

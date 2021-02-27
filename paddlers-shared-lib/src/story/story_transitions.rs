@@ -163,16 +163,7 @@ impl StoryState {
                 out = out.push(
                     StoryTransition::on_dialogue(Self::SolvingPrimaryCivQuestPartB)
                         .with(StoryAction::StartQuest(QuestName::SocializeMore))
-                        .with(StoryAction::UnlockPerk(CivilizationPerk::Invitation))
-                        .with(StoryAction::SendHobo(StoryVisitDefinition::new(
-                            PAIR_OF_LV0,
-                        )))
-                        .with(StoryAction::SendHobo(StoryVisitDefinition::new(
-                            PAIR_OF_ONE_HP,
-                        )))
-                        .with(StoryAction::SendHobo(StoryVisitDefinition::new(
-                            PAIR_OF_ONE_HP,
-                        ))),
+                        .with(StoryAction::UnlockPerk(CivilizationPerk::Invitation)),
                 );
             }
             Self::SolvingPrimaryCivQuestPartB => {
@@ -201,12 +192,6 @@ impl StoryState {
                 out = out.push(
                     StoryTransition::on_dialogue(Self::SolvingSecondaryQuestB)
                         .with(StoryAction::StartQuest(QuestName::SocializeMore))
-                        .with(StoryAction::SendHobo(StoryVisitDefinition::new(
-                            PAIR_OF_ONE_HP,
-                        )))
-                        .with(StoryAction::SendHobo(StoryVisitDefinition::new(
-                            PAIR_OF_LV0,
-                        )))
                         .with(StoryAction::SendHobo(StoryVisitDefinition::new(
                             PAIR_OF_ONE_HP,
                         )))

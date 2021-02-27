@@ -9,7 +9,7 @@ pub const fn hero_max_mana() -> i32 {
 }
 
 pub const fn hero_mana_regeneration_per_hour() -> i32 {
-    10
+    20
 }
 
 pub fn hero_resource_collection_per_hour(task: TaskType) -> Option<(ResourceType, f32)> {

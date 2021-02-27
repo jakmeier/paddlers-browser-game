@@ -46,7 +46,9 @@ pub fn insert_town_resources(world: &mut World, player_info: PlayerInfo, town: T
     world.insert(Now(utc_now()));
     world.insert(TownResources::default());
     world.insert(UiState::new());
-    world.insert(player_info);
+    let mut player_state = PlayerState::default();
+    player_state.info = Some(player_info);
+    world.insert(player_state);
     world.insert(town);
     world.insert(VisitorGate::new());
 }

@@ -30,7 +30,7 @@ impl AbilityType {
     /// How long until the ability can be used again
     pub fn cooldown(&self) -> Duration {
         let ms = match self {
-            AbilityType::Welcome => 30000,
+            AbilityType::Welcome => 10000,
             AbilityType::Work => 0,
         };
         Duration::milliseconds(ms)
