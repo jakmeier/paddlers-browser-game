@@ -9,30 +9,32 @@ use crate::{
 use paddle::{DisplayArea, PointerEvent, PointerEventType, PointerTracker};
 use specs::WorldExt;
 
-pub(crate) struct VisitorMenuFrame {
+pub(crate) struct LeaderboardMenuFrame {
     ui: UiBox,
     text_provider: TableTextProvider,
     mouse: PointerTracker,
 }
 
-impl VisitorMenuFrame {
+impl LeaderboardMenuFrame {
     pub fn new() -> Self {
         let mut ui_box = UiBox::new(1, 5, 0.0, 10.0);
         let tabs = [
-            (VisitorViewTab::Letters, SingleSprite::Letters),
-            (VisitorViewTab::IncomingAttacks, SingleSprite::DuckShapes),
-            (VisitorViewTab::Quests, SingleSprite::Karma),
+            (LeaderboardViewTab::KarmaLeaderboard, SingleSprite::Karma),
+            (
+                LeaderboardViewTab::IncomingAttacks,
+                SingleSprite::DuckShapes,
+            ),
         ];
         for (view, img) in &tabs {
             let rend =
                 RenderVariant::ImgWithHoverShape(SpriteSet::Simple(*img), PadlShapeIndex::Frame);
             ui_box.add(
-                UiElement::new(GameEvent::SwitchToView(UiView::Visitors(*view)))
+                UiElement::new(GameEvent::SwitchToView(UiView::Leaderboard(*view)))
                     .with_render_variant(rend),
             );
         }
 
-        VisitorMenuFrame {
+        LeaderboardMenuFrame {
             ui: ui_box,
             text_provider: TableTextProvider::new(),
             mouse: PointerTracker::new(),
@@ -49,7 +51,7 @@ impl VisitorMenuFrame {
     }
 }
 
-impl Frame for VisitorMenuFrame {
+impl Frame for LeaderboardMenuFrame {
     type State = Game;
     const WIDTH: u32 = crate::gui::menu::INNER_MENU_AREA_W as u32;
     const HEIGHT: u32 = crate::gui::menu::INNER_MENU_AREA_H as u32;

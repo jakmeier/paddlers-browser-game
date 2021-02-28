@@ -19,8 +19,9 @@ pub fn new_temple_menu(player_info: &PlayerInfo, has_quests: bool) -> UiMenu {
     let mut menu = UiMenu::new_private(UiBox::new(1, 2, 5.0, 5.0));
     if has_quests {
         menu.ui.add(
-            UiElement::new(ClickOutput::Event(GameEvent::SwitchToView(
-                UiView::Visitors(VisitorViewTab::Quests),
+            UiElement::new(ClickOutput::Event(GameEvent::ToggleBetweenViews(
+                UiView::Quests,
+                UiView::Town,
             )))
             .with_image(SpriteSet::Simple(SingleSprite::Duties))
             .with_background_color(Color::BLACK),

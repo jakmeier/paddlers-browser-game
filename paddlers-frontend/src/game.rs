@@ -8,6 +8,7 @@ pub(crate) mod fight;
 pub(crate) mod forestry;
 pub(crate) mod game_event_manager;
 pub(crate) mod leaderboard;
+pub(crate) mod leaderboard_menu;
 pub(crate) mod level;
 pub(crate) mod mana;
 pub(crate) mod map;

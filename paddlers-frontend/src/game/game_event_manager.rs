@@ -51,6 +51,7 @@ pub enum GameEvent {
     SendInvitation(Entity),
     DialogueActions(Vec<DialogueAction>),
     SwitchToView(UiView),
+    ToggleBetweenViews(UiView, UiView),
     DisplayConfirmation(TextKey),
     LetVisitorsIn(AttackKey),
     /// For objects that already exist in the frontend but are lacking the net id
@@ -117,6 +118,13 @@ impl Game {
             }
             GameEvent::SwitchToView(view) => {
                 self.switch_view(view);
+            }
+            GameEvent::ToggleBetweenViews(view0, view1) => {
+                if *self.world.fetch::<UiView>() == view0 {
+                    self.switch_view(view1);
+                } else {
+                    self.switch_view(view0);
+                }
             }
             GameEvent::DialogueActions(actions) => {
                 for a in actions {

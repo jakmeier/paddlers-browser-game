@@ -1,21 +1,20 @@
 use crate::game::{
-    dialogue::DialogueFrame, religion_frame::ReligionFrame, town::town_summary::TownSummaryFrame,
-};
-use crate::game::{
+    dialogue::DialogueFrame,
+    leaderboard::LeaderboardFrame,
+    leaderboard_menu::LeaderboardMenuFrame,
+    map::MapFrame,
     quests::QuestsFrame,
-    visits::{attacks::VisitorFrame, reports::ReportFrame, visitor_menu::VisitorMenuFrame},
+    religion_frame::ReligionFrame,
+    town::town_summary::TownSummaryFrame,
+    town::TownFrame,
+    visits::{attacks::VisitorFrame, reports::ReportFrame},
 };
-use crate::gui::menu::{MapMenuFrame, MenuBackgroundFrame, TownMenuFrame};
+use crate::gui::menu::{
+    MapMenuFrame, MenuBackgroundFrame, TownMenuFrame, INNER_MENU_AREA_X, INNER_MENU_AREA_Y,
+};
+use crate::gui::z::*;
 use crate::prelude::*;
-use crate::{
-    game::leaderboard::LeaderboardFrame,
-    gui::menu::{INNER_MENU_AREA_X, INNER_MENU_AREA_Y},
-};
-use crate::{
-    game::map::MapFrame,
-    resolution::{OUTER_MENU_AREA_X, OUTER_MENU_AREA_Y},
-};
-use crate::{game::town::TownFrame, gui::z::*};
+use crate::resolution::{OUTER_MENU_AREA_X, OUTER_MENU_AREA_Y};
 use paddle::ViewManager;
 
 pub(crate) fn load_viewer(view: UiView) -> ViewManager<UiView> {
@@ -30,7 +29,7 @@ pub(crate) fn load_viewer(view: UiView) -> ViewManager<UiView> {
     let menu = TownMenuFrame::new().expect("Town menu loading");
     let town_menu_handle = viewer.add_frame(
         menu,
-        &[UiView::Town, UiView::TownHelp],
+        &[UiView::Town, UiView::TownHelp, UiView::Quests],
         (INNER_MENU_AREA_X as u32, INNER_MENU_AREA_Y as u32),
     );
     town_menu_handle.listen(TownMenuFrame::new_story_state);
@@ -43,11 +42,11 @@ pub(crate) fn load_viewer(view: UiView) -> ViewManager<UiView> {
         menu,
         &[
             UiView::Town,
-            UiView::Leaderboard,
+            UiView::Quests,
+            UiView::Mailbox,
             UiView::Map,
-            UiView::Visitors(VisitorViewTab::IncomingAttacks),
-            UiView::Visitors(VisitorViewTab::Letters),
-            UiView::Visitors(VisitorViewTab::Quests),
+            UiView::Leaderboard(LeaderboardViewTab::IncomingAttacks),
+            UiView::Leaderboard(LeaderboardViewTab::KarmaLeaderboard),
             UiView::TownHelp,
         ],
         (OUTER_MENU_AREA_X, OUTER_MENU_AREA_Y),
@@ -69,45 +68,47 @@ pub(crate) fn load_viewer(view: UiView) -> ViewManager<UiView> {
     );
     menu_handler.set_z(MENU_Z_LAYER);
 
-    /* Visitors */
+    /* Mailbox */
+    let frame = ReportFrame::new().expect("Report frame loading");
+    let report_handler = viewer.add_frame(frame, &[UiView::Mailbox], (0, 0));
+    ReportFrame::init_listeners(report_handler);
 
-    let menu = VisitorMenuFrame::new();
+    /* Quests */
+    let frame = QuestsFrame::new();
+    let quests_handler = viewer.add_frame(frame, &[UiView::Quests], (0, 0));
+    QuestsFrame::init_listeners(quests_handler);
+
+    /* Leaderboard */
+
+    let menu = LeaderboardMenuFrame::new();
     let menu_handler = viewer.add_frame(
         menu,
         &[
-            UiView::Visitors(VisitorViewTab::IncomingAttacks),
-            UiView::Visitors(VisitorViewTab::Letters),
-            UiView::Visitors(VisitorViewTab::Quests),
+            UiView::Leaderboard(LeaderboardViewTab::IncomingAttacks),
+            UiView::Leaderboard(LeaderboardViewTab::KarmaLeaderboard),
         ],
         (INNER_MENU_AREA_X as u32, INNER_MENU_AREA_Y as u32),
     );
     menu_handler.set_z(MENU_Z_LAYER);
 
-    let menu = VisitorFrame::new(0.0, 0.0).expect("Attacks loading");
-    viewer.add_frame(
+    let menu = LeaderboardFrame::new().expect("Leaderboard loading");
+    let leaderboard_handler = viewer.add_frame(
         menu,
-        &[UiView::Visitors(VisitorViewTab::IncomingAttacks)],
+        &[UiView::Leaderboard(LeaderboardViewTab::KarmaLeaderboard)],
         (0, 0),
     );
-
-    let frame = ReportFrame::new().expect("Report frame loading");
-    let report_handler =
-        viewer.add_frame(frame, &[UiView::Visitors(VisitorViewTab::Letters)], (0, 0));
-    ReportFrame::init_listeners(report_handler);
-
-    let frame = QuestsFrame::new();
-    let quests_handler =
-        viewer.add_frame(frame, &[UiView::Visitors(VisitorViewTab::Quests)], (0, 0));
-    QuestsFrame::init_listeners(quests_handler);
-
-    /* Leaderboard */
-
-    let menu = LeaderboardFrame::new().expect("Leaderboard loading");
-    let leaderboard_handler = viewer.add_frame(menu, &[UiView::Leaderboard], (0, 0));
     leaderboard_handler.listen(LeaderboardFrame::network_message);
 
     let summary = TownSummaryFrame::new().expect("Town summary loading");
     viewer.add_frame(summary, &[UiView::TownHelp], (0, 0));
+
+    /* Incoming visitors */
+    let menu = VisitorFrame::new(0.0, 0.0).expect("Attacks loading");
+    viewer.add_frame(
+        menu,
+        &[UiView::Leaderboard(LeaderboardViewTab::IncomingAttacks)],
+        (0, 0),
+    );
 
     /* Dialogue box */
     let dialogue = DialogueFrame::new().expect("Dialogue loading");

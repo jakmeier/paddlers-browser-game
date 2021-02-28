@@ -16,10 +16,14 @@ impl Game {
         let view = *self.world.fetch::<UiView>();
         let next = match view {
             UiView::Map => UiView::Town,
-            UiView::Town | UiView::TownHelp => UiView::Visitors(VisitorViewTab::Letters),
-            UiView::Visitors(_) => UiView::Leaderboard,
-            UiView::Leaderboard => UiView::Map,
+            UiView::Town | UiView::TownHelp => UiView::Mailbox,
+            UiView::Mailbox => UiView::Leaderboard(LeaderboardViewTab::KarmaLeaderboard),
+            UiView::Leaderboard(LeaderboardViewTab::KarmaLeaderboard) => {
+                UiView::Leaderboard(LeaderboardViewTab::IncomingAttacks)
+            }
+            UiView::Leaderboard(LeaderboardViewTab::IncomingAttacks) => UiView::Map,
             UiView::Dialogue | UiView::Religion => return,
+            UiView::Quests => UiView::Town,
         };
 
         self.switch_view(next);

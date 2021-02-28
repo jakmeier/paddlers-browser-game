@@ -1,17 +1,19 @@
 use serde::Deserialize;
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Deserialize)]
 pub enum UiView {
-    Visitors(VisitorViewTab),
-    Leaderboard,
+    Dialogue,
+    Leaderboard(LeaderboardViewTab),
+    Mailbox,
     Map,
+    Quests,
+    Religion,
     Town,
     TownHelp,
-    Dialogue,
-    Religion,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Deserialize)]
-pub enum VisitorViewTab {
+pub enum LeaderboardViewTab {
+    // TownOverview, // Forestry, Karma, ...
+    KarmaLeaderboard,
     IncomingAttacks,
-    Letters,
-    Quests,
+    // PopulationLeaderboard,
 }

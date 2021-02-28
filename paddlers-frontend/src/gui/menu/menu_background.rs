@@ -30,13 +30,10 @@ impl MenuBackgroundFrame {
             UiElement::new(GameEvent::SwitchToView(UiView::Map)).with_render_variant(map_button),
         );
 
-        let atk_button =
-            Self::button_render(SingleSprite::AttacksButton, SingleSprite::AttacksButtonHov);
+        let mailbox_button = Self::button_render(SingleSprite::Letter, SingleSprite::LetterHov);
         ui_box.add(
-            UiElement::new(GameEvent::SwitchToView(UiView::Visitors(
-                VisitorViewTab::Letters,
-            )))
-            .with_render_variant(atk_button),
+            UiElement::new(GameEvent::SwitchToView(UiView::Mailbox))
+                .with_render_variant(mailbox_button),
         );
 
         let leaderboard_button = Self::button_render(
@@ -44,8 +41,10 @@ impl MenuBackgroundFrame {
             SingleSprite::LeaderboardButtonHov,
         );
         ui_box.add(
-            UiElement::new(GameEvent::SwitchToView(UiView::Leaderboard))
-                .with_render_variant(leaderboard_button),
+            UiElement::new(GameEvent::SwitchToView(UiView::Leaderboard(
+                LeaderboardViewTab::KarmaLeaderboard,
+            )))
+            .with_render_variant(leaderboard_button),
         );
 
         let tp = TableTextProvider::new();
