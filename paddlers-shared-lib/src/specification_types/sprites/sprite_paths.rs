@@ -1,6 +1,6 @@
 use super::*;
 
-pub const SPRITE_PATHS_NUM: usize = 74;
+pub const SPRITE_PATHS_NUM: usize = 75;
 pub const SPRITE_PATHS: [&'static str; SPRITE_PATHS_NUM] = [
     "textures/grass.png", // 0
     "textures/water.png",
@@ -76,6 +76,7 @@ pub const SPRITE_PATHS: [&'static str; SPRITE_PATHS_NUM] = [
     "resources/population.png",
     "gui/duties.png",
     "gui/letter.png",
+    "gui/letter_hov.png",
 ];
 
 impl SingleSprite {
@@ -151,6 +152,7 @@ impl SingleSprite {
             SingleSprite::Population => 71,
             SingleSprite::Duties => 72,
             SingleSprite::Letter => 73,
+            SingleSprite::LetterHov => 74,
         }
     }
 }

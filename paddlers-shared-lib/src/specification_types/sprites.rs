@@ -99,6 +99,7 @@ pub enum SingleSprite {
     Plus,
     Duties,
     Letter,
+    LetterHov,
 }
 
 #[derive(Debug, Clone, Copy, Deserialize)]

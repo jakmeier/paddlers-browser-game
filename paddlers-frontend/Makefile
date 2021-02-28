@@ -20,6 +20,7 @@ images:
 	$(MAKE) $(STATIC)/gui/leaves/leaves.png width=$(UI_BUTTON_WIDTH)
 	$(MAKE) $(STATIC)/gui/duties.png width=$(UI_BUTTON_WIDTH)
 	$(MAKE) $(STATIC)/gui/letter.png width=$(UI_BUTTON_WIDTH)
+	$(MAKE) $(STATIC)/gui/letter_hov.png width=$(UI_BUTTON_WIDTH)
 	$(MAKE) $(STATIC)/religion.png width=$(MENU_WIDTH)
 	$(MAKE) $(STATIC)/perks/conversion.png width=$(PERK_WIDTH)
 	$(MAKE) $(STATIC)/perks/invitation.png width=$(PERK_WIDTH)
