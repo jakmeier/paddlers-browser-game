@@ -2072,7 +2072,9 @@ dependencies = [
 
 [[package]]
 name = "nuts"
-version = "0.2.0"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "de140f855243e190552367bac713a5e7092966db4b79bf5aff2ef1bddebadcd9"
 dependencies = [
  "web-sys",
 ]
@@ -2097,7 +2099,28 @@ checksum = "2839e79665f131bdb5782e51f2c6c9599c133c6098982a54c794358bf432529c"
 
 [[package]]
 name = "paddle"
-version = "0.1.0-beta.0"
+version = "0.1.0-beta.1"
+dependencies = [
+ "chrono",
+ "console_error_panic_hook",
+ "div",
+ "js-sys",
+ "lyon",
+ "nuts",
+ "rand 0.7.3",
+ "serde",
+ "strum 0.20.0",
+ "strum_macros 0.20.1",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
+]
+
+[[package]]
+name = "paddle"
+version = "0.1.0-beta.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a356a372cf711b8fafc9225433b3aa018134f1ab3c8c0d2eacc0eafd58f72ea0"
 dependencies = [
  "chrono",
  "console_error_panic_hook",
@@ -2135,7 +2158,7 @@ dependencies = [
 
 [[package]]
 name = "paddlers-frontend"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "chrono",
  "div",
@@ -2145,7 +2168,7 @@ dependencies = [
  "lyon",
  "mogwai",
  "nuts",
- "paddle",
+ "paddle 0.1.0-beta.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "paddlers-shared-lib",
  "pathfinding",
  "ron",
