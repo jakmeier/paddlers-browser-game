@@ -5,13 +5,11 @@ use crate::{
         fight::{Aura, Health},
         mana::Mana,
         map::VillageMetaInfo,
-        player_info::{PlayerInfo, PlayerState},
     },
     gui::{gui_components::*, menu::*, sprites::*, ui_state::Now, utils::*, z::*},
 };
 use paddle::*;
 use paddle::{DisplayArea, FitStrategy};
-use paddlers_shared_lib::prelude::*;
 use specs::prelude::*;
 
 pub fn draw_entity_img(
@@ -173,22 +171,6 @@ pub fn draw_town_entity_details_table(
         )));
     }
 
-    let buildings = world.write_storage::<Building>();
-    let mut ui_menu = world.write_storage::<UiMenu>();
-    if let Some(b) = buildings.get(e) {
-        match b.bt {
-            BuildingType::Temple => {
-                if ui_menu.get(e).is_some() {
-                    let player_info = world.read_resource::<PlayerState>();
-                    table.extend(temple_details(player_info.info()));
-                }
-            }
-            BuildingType::Watergate => {
-                // TODO: Display capacity etc
-            }
-            _ => {}
-        }
-    }
     let effects = world.read_storage::<StatusEffects>();
     if let Some(ef) = effects.get(e) {
         let list = ef.menu_table_infos();
@@ -198,6 +180,7 @@ pub fn draw_town_entity_details_table(
         }
     }
 
+    let mut ui_menu = world.write_storage::<UiMenu>();
     if let Some(ui) = ui_menu.get_mut(e) {
         if ui.show(foreign) {
             Game::draw_shop_prices(window, &mut area, &mut ui.ui, res_comp, mouse_pos).nuts_check();
@@ -246,20 +229,6 @@ pub fn forest_details<'a>(forest_size: usize, forest_usage: usize) -> TableRow<'
 pub fn total_aura_details<'a>(aura_size: i64) -> TableRow<'a> {
     let text = format!("Ambience: {}", aura_size);
     TableRow::TextWithImage(text, SpriteIndex::Simple(SingleSprite::Ambience))
-}
-fn temple_details<'a>(player: &PlayerInfo) -> Vec<TableRow<'a>> {
-    let karma = player.karma();
-    let row1 = TableRow::TextWithImage(
-        format!("{} Karma", karma),
-        SpriteIndex::Simple(SingleSprite::Karma),
-    );
-    let prophets = player.prophets_available();
-    let max_prophets = player.prophets_limit();
-    let row2 = TableRow::TextWithImage(
-        format!("{} / {}", prophets, max_prophets),
-        SpriteIndex::Simple(SingleSprite::Prophet),
-    );
-    vec![row1, row2]
 }
 // fn faith_details<'a>(faith: u8) -> TableRow<'a> {
 //     let text = format!("{}% faith", faith);

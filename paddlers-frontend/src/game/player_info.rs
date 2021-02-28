@@ -71,6 +71,7 @@ impl PlayerInfo {
         self.civilization_perks
     }
     /// Count of current hobo prophets available to the player, either idle or on a mission
+    #[allow(dead_code)]
     #[inline]
     pub fn prophets_available(&self) -> i64 {
         self.prophets

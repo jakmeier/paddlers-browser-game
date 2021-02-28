@@ -20,6 +20,9 @@ pub struct CivilizationPerks {
 }
 
 impl CivilizationPerks {
+    pub fn has_any(&self) -> bool {
+        self.bitflags != 0
+    }
     pub fn has(&self, p: CivilizationPerk) -> bool {
         let index = p as usize;
         (self.bitflags >> index) & 1 == 1
