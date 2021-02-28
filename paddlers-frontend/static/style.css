@@ -141,6 +141,10 @@ div.quest h3 {
     margin: 0;
 }
 
+div.quest .conditions {
+    margin: 15px 0;
+}
+
 div.quest .condition {
     display: grid;
     grid-template-columns: max-content max-content;

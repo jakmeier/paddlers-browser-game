@@ -3,8 +3,15 @@
     Slide (
         text_key: "templebuilt-A0",
         buttons: [],
-        sprite: Simple(Temple),
+        sprite: Simple(RogerLarge),
         back_button: false,
+        next_button: true,
+    ),
+    Slide (
+        text_key: "templebuilt-A5",
+        buttons: [],
+        sprite: Simple(Temple),
+        back_button: true,
         next_button: true,
     ),
     Slide (

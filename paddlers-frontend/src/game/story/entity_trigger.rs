@@ -1,4 +1,4 @@
-use crate::game::units::workers::Worker;
+use crate::game::units::{attackers::Visitor, workers::Worker};
 use crate::game::{story::DialogueAction, town::Town};
 use crate::gui::ui_state::UiState;
 use crate::prelude::*;
@@ -32,7 +32,7 @@ impl Game {
                 })?;
             }
             StoryState::VisitorArrived => {
-                self.add_trigger_to_hero(EntityTrigger {
+                self.add_trigger_to_visitor(EntityTrigger {
                     actions: vec![DialogueAction::OpenScene(SceneIndex::WelcomeVisitor, 0)],
                 })?;
             }
@@ -92,6 +92,23 @@ impl Game {
         let hero_id = Worker::find_hero(workers, entities)?;
         let mut triggers: WriteStorage<'_, EntityTrigger> = world.write_storage();
         triggers.insert(hero_id, trigger)?;
+        Ok(())
+    }
+    fn add_trigger_to_visitor(&mut self, trigger: EntityTrigger) -> PadlResult<()> {
+        let world = self.town_world();
+        let entities = world.entities();
+        let visitors = world.read_component::<Visitor>();
+        let first_id =
+            (&visitors, &entities)
+                .join()
+                .next()
+                .map(|(_, e)| e)
+                .ok_or(PadlError::dev_err(PadlErrorCode::MissingComponent(
+                    "Visitor",
+                )))?;
+
+        let mut triggers: WriteStorage<'_, EntityTrigger> = world.write_storage();
+        triggers.insert(first_id, trigger)?;
         Ok(())
     }
     fn add_trigger_to_building(
