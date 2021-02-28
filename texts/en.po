@@ -224,7 +224,7 @@ msgid "expl-invitation-1"
 msgstr ""
 "Gods voice:\n"
 "You made yourself a bit of reputation as a great host.\n"
-"You can now invite Paddlers to have even more visitors."
+"I'm sure Paddlers around the world are keen to visit us."
 
 msgid "expl-invitation-2"
 msgstr ""
@@ -235,7 +235,7 @@ msgstr ""
 msgid "expl-invitation-3"
 msgstr ""
 "Hint:\n"
-"Inside the village, find Paddlers who are at home\n"
+"Inside the village, find Paddlers who are hanging around in their nest\n"
 "and invite them to visit your town."
 
 ## Balance after first choice scene(s)

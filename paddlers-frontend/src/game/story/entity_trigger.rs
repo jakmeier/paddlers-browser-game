@@ -48,31 +48,22 @@ impl Game {
                 })?;
             }
             StoryState::UnlockingInvitationPathA | StoryState::UnlockingInvitationPathB => {
-                self.add_trigger_to_building(
-                    EntityTrigger {
-                        actions: vec![DialogueAction::OpenScene(
-                            SceneIndex::UnlockingInvitation,
-                            0,
-                        )],
-                    },
-                    BuildingType::Temple,
-                )?;
+                self.add_trigger_to_hero(EntityTrigger {
+                    actions: vec![DialogueAction::OpenScene(
+                        SceneIndex::UnlockingInvitation,
+                        0,
+                    )],
+                })?;
             }
             StoryState::DialogueBalanceA => {
-                self.add_trigger_to_building(
-                    EntityTrigger {
-                        actions: vec![DialogueAction::OpenScene(SceneIndex::VisitorBalanceTown, 0)],
-                    },
-                    BuildingType::Temple,
-                )?;
+                self.add_trigger_to_hero(EntityTrigger {
+                    actions: vec![DialogueAction::OpenScene(SceneIndex::VisitorBalanceTown, 0)],
+                })?;
             }
             StoryState::DialogueBalanceB => {
-                self.add_trigger_to_building(
-                    EntityTrigger {
-                        actions: vec![DialogueAction::OpenScene(SceneIndex::TownBalanceVisitor, 0)],
-                    },
-                    BuildingType::Temple,
-                )?;
+                self.add_trigger_to_hero(EntityTrigger {
+                    actions: vec![DialogueAction::OpenScene(SceneIndex::TownBalanceVisitor, 0)],
+                })?;
             }
             StoryState::FirstVisitorWelcomed
             | StoryState::ServantAccepted

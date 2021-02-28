@@ -107,14 +107,24 @@ fn stream_path(points: &[Vector]) -> Path {
 fn add_path_to_mesh(mesh: &mut AbstractMesh, path: &Path, thickness: f32) {
     let mut shape = ShapeRenderer::new(mesh);
     let mut tessellator = StrokeTessellator::new();
+    // Use this to change how many triangles are drawn
+    #[cfg(not(debug_assertions))]
+    let tolerance = 1.0 / 1024.0;
+    #[cfg(debug_assertions)]
+    let tolerance = 1.0 / 32.0;
     tessellator
         .tessellate_path(
             path,
             &StrokeOptions::default()
-                .with_tolerance(1.0 / 2048.0)
+                .with_tolerance(tolerance)
                 .with_line_width(thickness)
                 .with_line_cap(LineCap::Round),
             &mut shape,
         )
         .unwrap();
+    // This number is getting quite high, even with high tolerance > 1000 triangles for each segment and with something like 1/2048 tolerance it is more like 6k per segment.
+    // This might be okay if transformations on the mesh are done on the GPU, if it's cached, or if it is at least offloaded from the main thread. But for now this stresses the CPU way too much.
+    // Especially when running without optimizations, this is very noticeable in FPS.
+    // Therefore, in debug mode, the tolerance if set to a high number and the water shapes on map look very rough.
+    // println!("Number of triangles in mesh: {}", mesh.triangles.len());
 }
