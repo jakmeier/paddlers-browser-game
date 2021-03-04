@@ -9,50 +9,58 @@ But soon, there are visitors coming to the player's village and they are in a pa
 
 In order to keep all visitors satisfied, more and more resources are required, hence the player will need to build up the infrastructure in the village. But as the quality of life inside of the village grows, the deeper is the depression of visitors. The only way to make everyone happy seems to be to unite all of Paddland in a single community. But will players cooperate with each other? Or will they fight for the leadership in this community?
 
-## Game characteristics
-
-Paddlers can be categorized as an MMORTS browser game (massively multiplayer online real-time strategy) with a peaceful-looking theme around ducks and religions.
-
-Real-time in this context means that the clock is always ticking and that it matters *when* players do something. (As opposed to round-based games.)
-However, Paddlers is nothing like Starcraft or similar RTS games which require good players to perform several actions per second.
-
-## Status
-
-The demo currently shows an alpha version which can be played by everyone by signing up. (No email verification required, fake addresses are okay. And please note that the chosen user name will be displayed publicly on a scoreboard.)
-Many things are lacking, including:
- * In-game tutorials and explanations
- * User-friendly mobile control
- * Game balance
- * An external wiki
- * Many, many features
-
 ## Demo
 
 A [live-demo](https://demo.paddlers.ch) of the current state is online now! Usually, the latest tagged commit is deployed. However, it's only semi-automated deployment at this point, therefore the deployed version may diverge from the master branch.
 
-Currently deployed version: 0.1.3
+Currently deployed version: 0.2.1
 
 If you experience problems with the live-demo, I would appreciate a short bug report that explains what you see and what kind of device and browser you are using. Firefox on a laptop with Ubuntu 20.04 is what I test the most but the goal is that it works on all (major) platforms.
 
-##  Roadmap for 2020
+## Game characteristics
+
+Paddlers can be categorized as an MMORTS browser game (massively multiplayer online real-time strategy) with a peaceful-looking theme around ducks and religions.
+
+It can be played on any device with a browser, although right now it is optimally played on a laptop or desktop PC.
+Players create an account for themselves and then join global server where all players share a universe.
+All changes made by the players are permanent and the account keeps going even while the player is not logged in.
+
+Real-time (the RT in MMORTS) for Paddlers means that the clock is always ticking and that it matters *when* players do something. (As opposed to round-based games.)
+However, Paddlers is nothing like Starcraft or similar RTS games which require good players to perform several actions per second.
+
+## Status & Goal
+
+The demo currently shows an alpha version which can be played by everyone who signs up. (No email verification required, fake addresses are okay. And please note that the chosen user name will be displayed publicly on a scoreboard.) When a new version is updated, the account usually are still saved but the player state will be reset.
+
+The game itself sadly is not complete enough to provide a good experience.
+But I firmly believe the game could be fun if the right kind of people put in enough effort to polish it. (I can try the best on my own but I a painfully aware of my lack of expertise in many topics around creating a game.)
 
 At the core, Paddlers is a developer's playground.
-It's existence is already justified by the fact that I had no clue about WebAssembly when I started this and now I am understanding at least how it is used from Rust and JavaScript. But I still want to dig much deeper in terms of learning, as well as in terms of creating a complete game.
+I started this project in 2019 to learn more about WASM in my free time, building on my experience with Rust from many other projects before that.
+Working on Paddlers has been good fun, I like the creative process it involves.
+And it has proven to be a good platform to try many different things and learn more about numerous topics. 
 
-Probably, this will stay a long-term hobby project which I keep on working from time to time.
-I am especially interested in optimizing and refactoring the frontend code of Paddlers.
-This should give me a better understanding of the architectural trade-offs available in the browser when combining Rust, WASM and JS.
-Maybe this would then lead to a couple of crates and/or contributions to existing projects, adding a bit to the quickly growing ecosystem.
+Moving forward, I want to retain the freedom to try out new and experimental things but also start to iron out a few things.
+It would be really awesome to draw some conclusions from the learning process, remove experiments that did not turn out well, and double-down on those which did.
+Ideally, this would lead to some contributions also useful to other projects.
 
-There is no plan to make Paddlers commercial and therefore it is unlikely it will ever be a quality game or even have an active community of players. In fact, a goal is that the game can be fun to play even in single-player mode, relying on some simple AI players, so that an active community is not as important.
+##  Roadmap for 2021
+- Improve and separate [Paddle](https://github.com/jakmeier/paddle) the framework enough from Paddlers the game such that it could be useful to others.
+- Make the game mobile friendly with support for as many platforms as possible
+- ...
 
-It is still too early to define a scope for Paddlers 1.0.
-All I can say now is that it will have to be a playable game that makes some fun to play before I can call it an alpha-1.0 version.
-For me, this includes a well-rounded set of game features as well as technical stability.
-But it does not necessarily include better graphics than the amateur drafts you can see right now.
-And in terms of features, one should expect many pragmatic solutions, rather than perfect ones.
+## Commercial aspiration?
 
-On the flip side of the coin, any feature could still become part of Paddlers 1.0. If you have some interesting (or crazy) ideas and you want to contribute, see the [Contribution section](#Contributing) below.
+I still see no commercial path for Paddlers.
+Although, in the long run, I would love to see the game achieve a certain level of quality and an active player base.
+If this is ever achieved, then I would need to find a solution to cover the server costs.
+
+In this hypothetical scenario, I would prefer to avoid ads if at all possible and I definitely would stay away from pay-to-win micro transactions.
+Maybe some kind of a premium account that makes certain things more convenient (without giving an actual advantage).
+Or some pure cosmetics features that need to be purchased.
+
+To be perfectly clear, I think it is rather unlikely to happen.
+I just want to be open and clear about my strategy right from the beginning, so that interested people and potential contributors can understand possible scenarios for the project.
 
 ## Blog and Videos
 
@@ -63,6 +71,8 @@ Some of the game development process is documented in this blog series:
 - [Gamedev #2: Multiplayer and procedural map generation](https://www.jakobmeier.ch/blogging/Paddlers_2.html)
 - [Gamedev #3: Fun with Rust and distributed systems](https://www.jakobmeier.ch/blogging/Paddlers_3.html) (Technical overview)
 - [Gamedev #4: Benefits of full-stack Rust](https://www.jakobmeier.ch/blogging/Paddlers_4.html)
+- [Gamedev #5: Version 0.2 Released](https://www.jakobmeier.ch/blogging/Paddlers_5.html)
+- [Gamedev #6: New features in 0.2.1](https://www.jakobmeier.ch/blogging/Paddlers_6.html)
 
 There is now also a [Paddlers YouTube channel](https://www.youtube.com/channel/UCoSAx5MYeSP5wXvE4syN-LA) and a first [teaser](https://youtu.be/3Syw7hxQ-z0) that shows the game in action.
 
