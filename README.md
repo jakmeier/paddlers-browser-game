@@ -62,7 +62,7 @@ Or some pure cosmetics features that need to be purchased.
 To be perfectly clear, I think it is rather unlikely to happen.
 I just want to be open and clear about my strategy right from the beginning, so that interested people and potential contributors can understand possible scenarios for the project.
 
-## Blog and Videos
+## Blog articles
 
 Some of the game development process is documented in this blog series:
 
@@ -74,7 +74,12 @@ Some of the game development process is documented in this blog series:
 - [Gamedev #5: Version 0.2 Released](https://www.jakobmeier.ch/blogging/Paddlers_5.html)
 - [Gamedev #6: New features in 0.2.1](https://www.jakobmeier.ch/blogging/Paddlers_6.html)
 
-There is now also a [Paddlers YouTube channel](https://www.youtube.com/channel/UCoSAx5MYeSP5wXvE4syN-LA) and a first [teaser](https://youtu.be/3Syw7hxQ-z0) that shows the game in action.
+
+## Videos
+
+I also released a few videos about Paddlers on the [Paddlers YouTube channel](https://www.youtube.com/channel/UCoSAx5MYeSP5wXvE4syN-LA).
+* [First teaser](https://youtu.be/3Syw7hxQ-z0)(31.05.2020)
+* [Feature overview version 0.2.1](https://youtu.be/Z0_YqiP_kN0) (06.03.2021)
 
 ## Website
 
