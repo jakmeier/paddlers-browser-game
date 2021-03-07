@@ -200,20 +200,7 @@ impl buildings_query::BuildingsQueryVillageBuildings {
         let coordinates = (self.x as usize, self.y as usize);
         let maybe_range = self.building_range.map(|f| f as f32);
         let maybe_ap = self.attack_power.map(|f| f as i64);
-        let bt = match self.building_type {
-            buildings_query::BuildingType::RED_FLOWERS => BuildingType::RedFlowers,
-            buildings_query::BuildingType::BLUE_FLOWERS => BuildingType::BlueFlowers,
-            buildings_query::BuildingType::TREE => BuildingType::Tree,
-            buildings_query::BuildingType::BUNDLING_STATION => BuildingType::BundlingStation,
-            buildings_query::BuildingType::SAW_MILL => BuildingType::SawMill,
-            buildings_query::BuildingType::PRESENT_A => BuildingType::PresentA,
-            buildings_query::BuildingType::PRESENT_B => BuildingType::PresentB,
-            buildings_query::BuildingType::TEMPLE => BuildingType::Temple,
-            buildings_query::BuildingType::SINGLE_NEST => BuildingType::SingleNest,
-            buildings_query::BuildingType::TRIPLE_NEST => BuildingType::TripleNest,
-            buildings_query::BuildingType::WATERGATE => BuildingType::Watergate,
-            buildings_query::BuildingType::Other(_) => panic!("Unexpected BuildingType"),
-        };
+        let bt = self.building_type;
         let created = GqlTimestamp::from_string(&self.creation)
             .unwrap()
             .to_chrono();

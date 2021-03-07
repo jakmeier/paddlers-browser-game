@@ -30,7 +30,7 @@ impl StatusEffects {
     pub fn from_gql_query(effects: &[HoboEffect]) -> PadlResult<Self> {
         let mut status = Self::new();
         for ef in effects {
-            match (&ef.attribute).into() {
+            match ef.attribute {
                 HoboAttributeType::Health => {
                     let strength = ef.strength.ok_or(PadlError::dev_err(
                         PadlErrorCode::InvalidGraphQLData("Health effect without strength"),

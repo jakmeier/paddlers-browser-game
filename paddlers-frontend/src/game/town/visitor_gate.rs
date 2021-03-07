@@ -192,7 +192,7 @@ impl WaitingAttack {
         UiElement::new(self.click_output()).with_render_variant(self.render_variant())
     }
     fn render_variant(&self) -> RenderVariant {
-        let main_img = hobo_sprite_sad(self.hobos[0].hobo.color.as_ref().unwrap().into());
+        let main_img = hobo_sprite_sad(self.hobos[0].hobo.color.unwrap());
         if self.shown_as_arrived {
             WaitingAttack::arrived_render_variant(main_img)
         } else {

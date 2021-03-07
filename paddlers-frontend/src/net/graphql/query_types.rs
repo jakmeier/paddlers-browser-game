@@ -1,9 +1,11 @@
 use crate::game::components::NetObj;
+use crate::game::units::workers::WorkerTask;
 use crate::prelude::*;
 use chrono::NaiveDateTime;
 use graphql_client::GraphQLQuery;
 use paddlers_shared_lib::graphql_types;
 use paddlers_shared_lib::models::*;
+use paddlers_shared_lib::story::story_state::StoryState;
 use specs::prelude::*;
 
 pub use serde::Deserialize;
@@ -19,12 +21,13 @@ fn timestamp(s: &String) -> graphql_types::GqlTimestamp {
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "api/schema.json",
-    query_path = "api/queries/attacks_query.graphql"
+    query_path = "api/queries/attacks_query.graphql",
+    response_derives = "PartialEq",
+    extern_enums("UnitColor", "HoboAttributeType")
 )]
 pub struct AttacksQuery;
 pub type AttacksResponse = attacks_query::ResponseData;
 pub type HoboEffect = attacks_query::AttacksQueryVillageAttacksUnitsHoboEffects;
-pub type HoboAttribute = attacks_query::HoboAttributeType;
 
 impl attacks_query::AttacksQueryVillageAttacks {
     #[allow(dead_code)]
@@ -37,20 +40,11 @@ impl attacks_query::AttacksQueryVillageAttacks {
     }
 }
 
-impl Into<HoboAttributeType> for &HoboAttribute {
-    fn into(self) -> HoboAttributeType {
-        match self {
-            HoboAttribute::HEALTH => HoboAttributeType::Health,
-            HoboAttribute::SPEED => HoboAttributeType::Speed,
-            HoboAttribute::Other(_) => panic!("Unexpected attribute"),
-        }
-    }
-}
-
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "api/schema.json",
-    query_path = "api/queries/buildings_query.graphql"
+    query_path = "api/queries/buildings_query.graphql",
+    extern_enums("BuildingType")
 )]
 pub struct BuildingsQuery;
 pub type BuildingsResponse = buildings_query::ResponseData;
@@ -66,17 +60,14 @@ pub type VolatileVillageInfoResponse = volatile_village_info_query::ResponseData
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "api/schema.json",
-    query_path = "api/queries/village_units_query.graphql"
+    query_path = "api/queries/village_units_query.graphql",
+    extern_enums("TaskType", "AbilityType")
 )]
 pub struct VillageUnitsQuery;
 pub type VillageUnitsResponse = village_units_query::ResponseData;
 pub type WorkerResponse = Vec<village_units_query::VillageUnitsQueryVillageWorkers>;
-#[allow(dead_code)]
 pub type VillageUnitsTask = village_units_query::VillageUnitsQueryVillageWorkersTasks;
-pub type VillageUnitsTaskType = village_units_query::TaskType;
-pub type VillageUnitsAbilityType = village_units_query::AbilityType;
 
-use crate::game::units::workers::WorkerTask;
 impl VillageUnitsTask {
     pub fn create(
         &self,
@@ -89,34 +80,24 @@ impl VillageUnitsTask {
             None
         };
         Ok(WorkerTask {
-            task_type: (&self.task_type).into(),
+            task_type: self.task_type,
             position: (self.x as usize, self.y as usize),
             start_time: timestamp(&self.start_time).to_chrono(),
             target,
         })
     }
 }
-impl Into<AbilityType> for &VillageUnitsAbilityType {
-    fn into(self) -> AbilityType {
-        match self {
-            VillageUnitsAbilityType::WORK => AbilityType::Work,
-            VillageUnitsAbilityType::WELCOME => AbilityType::Welcome,
-            VillageUnitsAbilityType::Other(_) => panic!("Unexpected ability"),
-        }
-    }
-}
 
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "api/schema.json",
-    query_path = "api/queries/worker_tasks_query.graphql"
+    query_path = "api/queries/worker_tasks_query.graphql",
+    extern_enums("TaskType")
 )]
 pub struct WorkerTasksQuery;
 pub type WorkerTasksRawResponse = worker_tasks_query::ResponseData;
 pub type WorkerTasksResponse = worker_tasks_query::WorkerTasksQueryWorker;
-#[allow(dead_code)]
 pub type WorkerTaskEx = worker_tasks_query::WorkerTasksQueryWorkerTasks;
-pub type WorkerTaskType = worker_tasks_query::TaskType;
 
 impl WorkerTaskEx {
     pub fn create(
@@ -130,7 +111,7 @@ impl WorkerTaskEx {
             None
         };
         Ok(WorkerTask {
-            task_type: (&self.task_type).into(),
+            task_type: self.task_type,
             position: (self.x as usize, self.y as usize),
             start_time: timestamp(&self.start_time).to_chrono(),
             target,
@@ -141,7 +122,8 @@ impl WorkerTaskEx {
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "api/schema.json",
-    query_path = "api/queries/hobos_query.graphql"
+    query_path = "api/queries/hobos_query.graphql",
+    response_derives = "PartialEq"
 )]
 pub struct HobosQuery;
 pub type HobosQueryRawResponse = hobos_query::ResponseData;
@@ -152,12 +134,12 @@ pub type HobosQueryUnitColor = hobos_query::UnitColor;
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "api/schema.json",
-    query_path = "api/queries/player_query.graphql"
+    query_path = "api/queries/player_query.graphql",
+    extern_enums("StoryState")
 )]
 pub struct PlayerQuery;
 pub type PlayerQueryRawResponse = player_query::ResponseData;
 pub type PlayerQueryResponse = player_query::PlayerQueryPlayer;
-pub type PlayerStoryState = player_query::StoryState;
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -179,110 +161,13 @@ pub type PlayerVillagesResponse = player_villages_query::PlayerVillagesQueryPlay
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "api/schema.json",
-    query_path = "api/queries/player_quests_query.graphql"
+    query_path = "api/queries/player_quests_query.graphql",
+    extern_enums("BuildingType", "TaskType")
 )]
 pub struct PlayerQuestsQuery;
 pub type QuestsRawResponse = player_quests_query::ResponseData;
 pub type QuestsResponse = Vec<player_quests_query::PlayerQuestsQueryPlayerQuests>;
 pub type PlayerQuest = player_quests_query::PlayerQuestsQueryPlayerQuests;
-
-use paddlers_shared_lib::models::BuildingType;
-impl Into<BuildingType> for &player_quests_query::BuildingType {
-    fn into(self) -> BuildingType {
-        match self {
-            player_quests_query::BuildingType::RED_FLOWERS => BuildingType::RedFlowers,
-            player_quests_query::BuildingType::BLUE_FLOWERS => BuildingType::BlueFlowers,
-            player_quests_query::BuildingType::TREE => BuildingType::Tree,
-            player_quests_query::BuildingType::BUNDLING_STATION => BuildingType::BundlingStation,
-            player_quests_query::BuildingType::SAW_MILL => BuildingType::SawMill,
-            player_quests_query::BuildingType::PRESENT_A => BuildingType::PresentA,
-            player_quests_query::BuildingType::PRESENT_B => BuildingType::PresentB,
-            player_quests_query::BuildingType::TEMPLE => BuildingType::Temple,
-            player_quests_query::BuildingType::SINGLE_NEST => BuildingType::SingleNest,
-            player_quests_query::BuildingType::TRIPLE_NEST => BuildingType::TripleNest,
-            player_quests_query::BuildingType::WATERGATE => BuildingType::Watergate,
-            player_quests_query::BuildingType::Other(_) => panic!("Unexpected BuildingType"),
-        }
-    }
-}
-impl Into<TaskType> for &player_quests_query::TaskType {
-    fn into(self) -> TaskType {
-        match self {
-            player_quests_query::TaskType::IDLE => TaskType::Idle,
-            player_quests_query::TaskType::WALK => TaskType::Walk,
-            player_quests_query::TaskType::GATHER_STICKS => TaskType::GatherSticks,
-            player_quests_query::TaskType::CHOP_TREE => TaskType::ChopTree,
-            player_quests_query::TaskType::DEFEND => TaskType::Defend,
-            player_quests_query::TaskType::WELCOME_ABILITY => TaskType::WelcomeAbility,
-            player_quests_query::TaskType::COLLECT_REWARD => TaskType::CollectReward,
-            player_quests_query::TaskType::Other(_) => panic!("Unexpected task type"),
-        }
-    }
-}
-
-use paddlers_shared_lib::models::TaskType;
-impl Into<TaskType> for &WorkerTaskType {
-    fn into(self) -> TaskType {
-        match self {
-            WorkerTaskType::IDLE => TaskType::Idle,
-            WorkerTaskType::WALK => TaskType::Walk,
-            WorkerTaskType::GATHER_STICKS => TaskType::GatherSticks,
-            WorkerTaskType::CHOP_TREE => TaskType::ChopTree,
-            WorkerTaskType::DEFEND => TaskType::Defend,
-            WorkerTaskType::WELCOME_ABILITY => TaskType::WelcomeAbility,
-            WorkerTaskType::COLLECT_REWARD => TaskType::CollectReward,
-            WorkerTaskType::Other(_) => panic!("Unexpected task type"),
-        }
-    }
-}
-impl Into<TaskType> for WorkerTaskType {
-    fn into(self) -> TaskType {
-        (&self).into()
-    }
-}
-impl Into<TaskType> for &VillageUnitsTaskType {
-    fn into(self) -> TaskType {
-        match self {
-            VillageUnitsTaskType::IDLE => TaskType::Idle,
-            VillageUnitsTaskType::WALK => TaskType::Walk,
-            VillageUnitsTaskType::GATHER_STICKS => TaskType::GatherSticks,
-            VillageUnitsTaskType::CHOP_TREE => TaskType::ChopTree,
-            VillageUnitsTaskType::DEFEND => TaskType::Defend,
-            VillageUnitsTaskType::WELCOME_ABILITY => TaskType::WelcomeAbility,
-            VillageUnitsTaskType::COLLECT_REWARD => TaskType::CollectReward,
-            VillageUnitsTaskType::Other(_) => panic!("Unexpected task type"),
-        }
-    }
-}
-impl Into<TaskType> for VillageUnitsTaskType {
-    fn into(self) -> TaskType {
-        (&self).into()
-    }
-}
-
-impl Into<UnitColor> for &attacks_query::UnitColor {
-    fn into(self) -> UnitColor {
-        match self {
-            attacks_query::UnitColor::YELLOW => UnitColor::Yellow,
-            attacks_query::UnitColor::WHITE => UnitColor::White,
-            attacks_query::UnitColor::CAMO => UnitColor::Camo,
-            attacks_query::UnitColor::PROPHET => UnitColor::Prophet,
-            attacks_query::UnitColor::Other(_) => panic!("Unexpected unit color"),
-        }
-    }
-}
-
-impl Into<UnitColor> for &reports_query::UnitColor {
-    fn into(self) -> UnitColor {
-        match self {
-            reports_query::UnitColor::YELLOW => UnitColor::Yellow,
-            reports_query::UnitColor::WHITE => UnitColor::White,
-            reports_query::UnitColor::CAMO => UnitColor::Camo,
-            reports_query::UnitColor::PROPHET => UnitColor::Prophet,
-            reports_query::UnitColor::Other(_) => panic!("Unexpected unit color"),
-        }
-    }
-}
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -293,49 +178,11 @@ pub struct LeaderboardQuery;
 pub type LeaderboardRawResponse = leaderboard_query::ResponseData;
 pub type LeaderboardResponse = Vec<leaderboard_query::LeaderboardQueryScoreboard>;
 
-use paddlers_shared_lib::story::story_state::StoryState;
-impl Into<StoryState> for &PlayerStoryState {
-    fn into(self) -> StoryState {
-        match self {
-            PlayerStoryState::INITIALIZED => StoryState::Initialized,
-            PlayerStoryState::SERVANT_ACCEPTED => StoryState::ServantAccepted,
-            PlayerStoryState::WATERGATE_BUILT => StoryState::WatergateBuilt,
-            PlayerStoryState::BUILDING_WATERGATE => StoryState::BuildingWatergate,
-            PlayerStoryState::TEMPLE_BUILT => StoryState::TempleBuilt,
-            PlayerStoryState::VISITOR_ARRIVED => StoryState::VisitorArrived,
-            PlayerStoryState::VISITOR_QUEUED => StoryState::VisitorQueued,
-            PlayerStoryState::WELCOME_VISITOR_QUEST_STARTED => {
-                StoryState::WelcomeVisitorQuestStarted
-            }
-            PlayerStoryState::FIRST_VISITOR_WELCOMED => StoryState::FirstVisitorWelcomed,
-            PlayerStoryState::PICKING_PRIMARY_CIV_BONUS => StoryState::PickingPrimaryCivBonus,
-            PlayerStoryState::SOLVING_PRIMARY_CIV_QUEST_PART_A => {
-                StoryState::SolvingPrimaryCivQuestPartA
-            }
-            PlayerStoryState::SOLVING_PRIMARY_CIV_QUEST_PART_B => {
-                StoryState::SolvingPrimaryCivQuestPartB
-            }
-            PlayerStoryState::SOLVING_SECONDARY_QUEST_A => StoryState::SolvingSecondaryQuestA,
-            PlayerStoryState::SOLVING_SECONDARY_QUEST_B => StoryState::SolvingSecondaryQuestB,
-            PlayerStoryState::DIALOGUE_BALANCE_A => StoryState::DialogueBalanceA,
-            PlayerStoryState::DIALOGUE_BALANCE_B => StoryState::DialogueBalanceB,
-            PlayerStoryState::UNLOCKING_INVITATION_PATH_A => StoryState::UnlockingInvitationPathA,
-            PlayerStoryState::UNLOCKING_INVITATION_PATH_B => StoryState::UnlockingInvitationPathB,
-            PlayerStoryState::ALL_DONE => StoryState::AllDone,
-            PlayerStoryState::Other(_) => panic!("Unexpected story state"),
-        }
-    }
-}
-impl Into<StoryState> for PlayerStoryState {
-    fn into(self) -> StoryState {
-        (&self).into()
-    }
-}
-
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "api/schema.json",
-    query_path = "api/queries/reports_query.graphql"
+    query_path = "api/queries/reports_query.graphql",
+    extern_enums("UnitColor")
 )]
 pub struct ReportsQuery;
 pub type ReportsResponse = reports_query::ResponseData;

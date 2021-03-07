@@ -89,7 +89,7 @@ impl ReportFrame {
                     let report = if let Some(sender) = &r.sender {
                         let unit_color = match &sender.color {
                             None => UnitColor::Yellow,
-                            Some(col) => col.into(),
+                            Some(col) => *col,
                         };
                         if VillageKey(sender.home.id) == current_village() {
                             Report::inhabitant_letter(id, r, Some(unit_color))

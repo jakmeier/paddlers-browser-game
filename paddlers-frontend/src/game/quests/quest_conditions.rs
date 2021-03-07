@@ -119,7 +119,7 @@ impl BuildingCondition {
     pub fn from_quest_ref(quest: &PlayerQuest, town: &Town) -> Vec<Self> {
         let mut out = vec![];
         for c in &quest.conditions.buildings {
-            let t: BuildingType = (&c.building_type).into();
+            let t: BuildingType = c.building_type;
             let amount = c.amount;
             let cached_current = town.count_building(t) as i64;
             let gizmo = Gizmo::new(QuestConditionComponent::new(
@@ -157,7 +157,7 @@ impl WorkerCondition {
     pub fn from_quest_ref(quest: &PlayerQuest, town: &Town) -> Vec<Self> {
         let mut out = vec![];
         for c in &quest.conditions.workers {
-            let t: TaskType = (&c.task_type).into();
+            let t: TaskType = c.task_type;
             let amount = c.amount;
             let cached_current = town.count_workers(t) as i64;
             let gizmo = Gizmo::new(QuestConditionComponent::new(

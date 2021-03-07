@@ -33,7 +33,7 @@ impl AbilitySet {
         let mut last_used: [Option<NaiveDateTime>; MAX_ABILITIES] = [None; MAX_ABILITIES];
         let mut i = 0;
         for gqla in gql_abilities {
-            abilities[i] = Some((&gqla.ability_type).into());
+            abilities[i] = Some(gqla.ability_type);
             last_used[i] = gqla.last_used.as_ref().map(parse_timestamp).into();
             i += 1;
         }

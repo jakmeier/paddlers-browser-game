@@ -1,7 +1,7 @@
 use super::*;
 use crate::game::buildings::Building;
 use crate::game::fight::Aura;
-use crate::net::graphql::attacks_query::{AttacksQueryVillageAttacksUnits, HoboAttributeType};
+use crate::net::graphql::attacks_query::AttacksQueryVillageAttacksUnits;
 use paddlers_shared_lib::game_mechanics::town::*;
 use paddlers_shared_lib::graphql_types::*;
 use specs::prelude::*;
@@ -36,7 +36,7 @@ impl IAttackingHobo for AttackingHobo {
             .hobo
             .effects
             .iter()
-            .filter(|e| e.attribute == HoboAttributeType::HEALTH)
+            .filter(|e| e.attribute == HoboAttributeType::Health)
             .filter(|e| e.strength.is_some())
             .fold(0, |acc, e| acc + e.strength.unwrap() as i64) as i32
     }

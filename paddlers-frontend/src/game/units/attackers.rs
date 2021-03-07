@@ -226,13 +226,7 @@ impl AttackingHobo {
         let mut t0 = birth;
         let hp = self.unit.hobo.hp;
         let netid = self.unit.hobo.id.parse().expect("Parsing id");
-        let color = self
-            .unit
-            .hobo
-            .color
-            .as_ref()
-            .map(|c| c.into())
-            .unwrap_or(UnitColor::Yellow);
+        let color = self.unit.hobo.color.unwrap_or(UnitColor::Yellow);
         let time_until_resting = self.time_until_resting().as_duration();
 
         // Simulate all interactions with buildings for the visitor which happened in the past
