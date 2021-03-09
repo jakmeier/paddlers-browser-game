@@ -282,7 +282,7 @@ checksum = "068a33520e21c1eea89726be4d6b3ce2e6b81046904367e1677287695a043abb"
 dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.9",
- "syn 1.0.62",
+ "syn 1.0.63",
 ]
 
 [[package]]
@@ -885,7 +885,7 @@ checksum = "45f5098f628d02a7a0f68ddba586fb61e80edec3bdc1be3b921f4ceec60858d3"
 dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.9",
- "syn 1.0.62",
+ "syn 1.0.63",
 ]
 
 [[package]]
@@ -1065,7 +1065,7 @@ checksum = "aa4da3c766cd7a0db8242e326e9e4e081edd567072893ed320008189715366a4"
 dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.9",
- "syn 1.0.62",
+ "syn 1.0.63",
  "synstructure",
 ]
 
@@ -1236,7 +1236,7 @@ checksum = "9b919933a397b79c37e33b77bb2aa3dc8eb6e165ad809e58ff75bc7db2e34574"
 [[package]]
 name = "graphql-introspection-query"
 version = "0.1.0"
-source = "git+https://github.com/jakmeier/graphql-client?branch=external_enum#c66cf3aec26fc6a5f783877c00ddf82403929f88"
+source = "git+https://github.com/graphql-rust/graphql-client#da80b9af9a3d6787c8df8cd1201a3dbd3edcd078"
 dependencies = [
  "serde",
 ]
@@ -1254,7 +1254,7 @@ dependencies = [
 [[package]]
 name = "graphql_client"
 version = "0.9.0"
-source = "git+https://github.com/jakmeier/graphql-client?branch=external_enum#c66cf3aec26fc6a5f783877c00ddf82403929f88"
+source = "git+https://github.com/graphql-rust/graphql-client#da80b9af9a3d6787c8df8cd1201a3dbd3edcd078"
 dependencies = [
  "doc-comment",
  "graphql_query_derive",
@@ -1265,7 +1265,7 @@ dependencies = [
 [[package]]
 name = "graphql_client_codegen"
 version = "0.9.0"
-source = "git+https://github.com/jakmeier/graphql-client?branch=external_enum#c66cf3aec26fc6a5f783877c00ddf82403929f88"
+source = "git+https://github.com/graphql-rust/graphql-client#da80b9af9a3d6787c8df8cd1201a3dbd3edcd078"
 dependencies = [
  "graphql-introspection-query",
  "graphql-parser",
@@ -1275,18 +1275,18 @@ dependencies = [
  "quote 1.0.9",
  "serde",
  "serde_json",
- "syn 1.0.62",
+ "syn 1.0.63",
  "thiserror",
 ]
 
 [[package]]
 name = "graphql_query_derive"
 version = "0.9.0"
-source = "git+https://github.com/jakmeier/graphql-client?branch=external_enum#c66cf3aec26fc6a5f783877c00ddf82403929f88"
+source = "git+https://github.com/graphql-rust/graphql-client#da80b9af9a3d6787c8df8cd1201a3dbd3edcd078"
 dependencies = [
  "graphql_client_codegen",
  "proc-macro2 1.0.24",
- "syn 1.0.62",
+ "syn 1.0.63",
 ]
 
 [[package]]
@@ -1597,7 +1597,7 @@ checksum = "d40af234d8e971a9d7dda93ffbcc8a44a93f17e69e3067f72ce7a6894c41d51b"
 dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.9",
- "syn 1.0.62",
+ "syn 1.0.63",
 ]
 
 [[package]]
@@ -1821,7 +1821,7 @@ dependencies = [
  "migrations_internals",
  "proc-macro2 1.0.24",
  "quote 1.0.9",
- "syn 1.0.62",
+ "syn 1.0.63",
 ]
 
 [[package]]
@@ -1936,7 +1936,7 @@ checksum = "4b1f082ace5ac528627ab8069556a3ed7ca5c69b0ba376f9d26cb11aa4a72101"
 dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.9",
- "syn 1.0.62",
+ "syn 1.0.63",
  "syn-rsx",
 ]
 
@@ -2882,7 +2882,7 @@ checksum = "1800f7693e94e186f5e25a28291ae1570da908aff7d97a095dec1e56ff99069b"
 dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.9",
- "syn 1.0.62",
+ "syn 1.0.63",
 ]
 
 [[package]]
@@ -3037,7 +3037,7 @@ checksum = "3e23e09360f3d2190fec4222cd9e19d3158d5da948c0d1ea362df617dd103511"
 dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.9",
- "syn 1.0.62",
+ "syn 1.0.63",
 ]
 
 [[package]]
@@ -3092,7 +3092,7 @@ dependencies = [
  "heck",
  "proc-macro2 1.0.24",
  "quote 1.0.9",
- "syn 1.0.62",
+ "syn 1.0.63",
 ]
 
 [[package]]
@@ -3104,7 +3104,7 @@ dependencies = [
  "heck",
  "proc-macro2 1.0.24",
  "quote 1.0.9",
- "syn 1.0.62",
+ "syn 1.0.63",
 ]
 
 [[package]]
@@ -3147,9 +3147,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "1.0.62"
+version = "1.0.63"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "123a78a3596b24fee53a6464ce52d8ecbf62241e6294c7e7fe12086cd161f512"
+checksum = "8fd9bc7ccc2688b3344c2f48b9b546648b25ce0b20fc717ee7fa7981a8ca9717"
 dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.9",
@@ -3164,7 +3164,7 @@ checksum = "22ff75cba682dea31200f91acf163a87f3dffc6406f14d0f7704c0b12d612af4"
 dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.9",
- "syn 1.0.62",
+ "syn 1.0.63",
 ]
 
 [[package]]
@@ -3184,7 +3184,7 @@ checksum = "b834f2d66f734cb897113e34aaff2f1ab4719ca946f9a7358dba8f8064148701"
 dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.9",
- "syn 1.0.62",
+ "syn 1.0.63",
  "unicode-xid 0.2.1",
 ]
 
@@ -3223,7 +3223,7 @@ checksum = "7765189610d8241a44529806d6fd1f2e0a08734313a35d5b3a556f92b381f3c0"
 dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.9",
- "syn 1.0.62",
+ "syn 1.0.63",
 ]
 
 [[package]]
@@ -3718,7 +3718,7 @@ dependencies = [
  "log 0.4.14",
  "proc-macro2 1.0.24",
  "quote 1.0.9",
- "syn 1.0.62",
+ "syn 1.0.63",
  "wasm-bindgen-shared",
 ]
 
@@ -3752,7 +3752,7 @@ checksum = "cc053ec74d454df287b9374ee8abb36ffd5acb95ba87da3ba5b7d3fe20eb401e"
 dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.9",
- "syn 1.0.62",
+ "syn 1.0.63",
  "wasm-bindgen-backend",
  "wasm-bindgen-shared",
 ]
