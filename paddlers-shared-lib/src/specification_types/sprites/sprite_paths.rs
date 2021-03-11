@@ -4,7 +4,7 @@ pub const SPRITE_PATHS_NUM: usize = 75;
 pub const SPRITE_PATHS: [&'static str; SPRITE_PATHS_NUM] = [
     "textures/grass.png", // 0
     "textures/water.png",
-    "ducks/yellow_sad.png",
+    "ducks/sad_yellow.png",
     "plants/red_flowers.png",
     "plants/blue_flowers.png",
     "resources/yellow_feather.png",
@@ -15,8 +15,8 @@ pub const SPRITE_PATHS: [&'static str; SPRITE_PATHS_NUM] = [
     "plants/tree.png",
     "plants/sapling.png",
     "plants/young_tree.png",
-    "ducks/camo_duck_sad.png",
-    "ducks/white_duck_sad.png",
+    "ducks/duck_sad_camo.png",
+    "ducks/duck_sad_white.png",
     "buildings/bundling_station.png",
     "buildings/saw_mill.png",
     "gui/map_button.png",
@@ -43,8 +43,8 @@ pub const SPRITE_PATHS: [&'static str; SPRITE_PATHS_NUM] = [
     "buildings/red_present.png",
     "buildings/orange_present.png",
     "ducks/yellow_duck_happy.png", // 40
-    "ducks/camo_duck_happy.png",
-    "ducks/white_duck_happy.png",
+    "ducks/duck_happy_camo.png",
+    "ducks/duck_happy_white.png",
     "buildings/temple.png",
     "resources/karma.png",
     "ducks/prophet_swimming.png",
