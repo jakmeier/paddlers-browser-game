@@ -4,7 +4,7 @@ pub const SPRITE_PATHS_NUM: usize = 75;
 pub const SPRITE_PATHS: [&'static str; SPRITE_PATHS_NUM] = [
     "textures/grass.png", // 0
     "textures/water.png",
-    "ducks/sad_yellow.png",
+    "ducks/duck_sad_yellow.png",
     "plants/red_flowers.png",
     "plants/blue_flowers.png",
     "resources/yellow_feather.png",
@@ -42,7 +42,7 @@ pub const SPRITE_PATHS: [&'static str; SPRITE_PATHS_NUM] = [
     "gui/abilities/green_frame_3.png",
     "buildings/red_present.png",
     "buildings/orange_present.png",
-    "ducks/yellow_duck_happy.png", // 40
+    "ducks/duck_happy_yellow.png", // 40
     "ducks/duck_happy_camo.png",
     "ducks/duck_happy_white.png",
     "buildings/temple.png",
