@@ -1,6 +1,6 @@
 {
     "name": "paddlers-browser-game",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "description": "Entry point to the paddlers browser game frontend",
     "main": "paddlers.js",
     "scripts": {
@@ -26,14 +26,14 @@
     "homepage": "https://www.paddlers.ch",
     "devDependencies": {
         "copy-webpack-plugin": "^5.0.0",
-        "hello-wasm-pack": "^0.1.0",
         "css-loader": "^4.3.0",
+        "hello-wasm-pack": "^0.1.0",
         "style-loader": "^1.2.1",
-        "svelte": "^3.29.0",
+        "svelte": "^3.35.0",
         "svelte-loader": "^2.13.6",
-        "webpack": "^4.29.3",
+        "webpack": "^4.46.0",
         "webpack-cli": "^3.1.0",
-        "webpack-dev-server": "^3.1.5",
-        "webpack-merge": "^5.2.0"
+        "webpack-dev-server": "^3.11.2",
+        "webpack-merge": "^5.7.3"
     }
 }
