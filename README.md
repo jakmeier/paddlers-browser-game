@@ -30,10 +30,13 @@ However, Paddlers is nothing like Starcraft or similar RTS games which require g
 
 ## Status & Goal
 
+*As of April 2021, there is no active work going on in this crate. But the project is not dead, yet. Just a pause from gamedev and some other programming experiments which may or may not be integrated in Paddlers a few months down the line.*
+
 The demo currently shows an alpha version which can be played by everyone who signs up. (No email verification required, fake addresses are okay. And please note that the chosen user name will be displayed publicly on a scoreboard.) When a new version is updated, the account usually are still saved but the player state will be reset.
 
 The game itself sadly is not complete enough to provide a good experience.
-But I firmly believe the game could be fun if the right kind of people put in enough effort to polish it. (I can try the best on my own but I a painfully aware of my lack of expertise in many topics around creating a game.)
+I firmly believe the game could be fun if the right kind of people put in enough effort to polish it. (I can try the best on my own but I a painfully aware of my lack of expertise in many topics around creating a game.)
+But right now I have no plans to actively bring those people in. Therefore, I expect this to remain an amateur game that works on paper but is not really fun to play.
 
 At the core, Paddlers is a developer's playground.
 I started this project in 2019 to learn more about WASM in my free time, building on my experience with Rust from many other projects before that.
@@ -44,23 +47,16 @@ Moving forward, I want to retain the freedom to try out new and experimental thi
 It would be really awesome to draw some conclusions from the learning process, remove experiments that did not turn out well, and double-down on those which did.
 Ideally, this would lead to some contributions also useful to other projects.
 
-##  Roadmap for 2021
+## Roadmap for 2021 (in no particular order)
 - Improve and separate [Paddle](https://github.com/jakmeier/paddle) the framework enough from Paddlers the game such that it could be useful to others.
 - Make the game mobile friendly with support for as many platforms as possible
+- Experimentation as I see fit! (For example, multi-threaded WASM execution, or a better client / server model)
 - ...
 
 ## Commercial aspiration?
 
-I still see no commercial path for Paddlers.
-Although, in the long run, I would love to see the game achieve a certain level of quality and an active player base.
-If this is ever achieved, then I would need to find a solution to cover the server costs.
-
-In this hypothetical scenario, I would prefer to avoid ads if at all possible and I definitely would stay away from pay-to-win micro transactions.
-Maybe some kind of a premium account that makes certain things more convenient (without giving an actual advantage).
-Or some pure cosmetics features that need to be purchased.
-
-To be perfectly clear, I think it is rather unlikely to happen.
-I just want to be open and clear about my strategy right from the beginning, so that interested people and potential contributors can understand possible scenarios for the project.
+I see no commercial path for Paddlers.
+Even the support for an active player base would require a commitment I'm currently not willing to make.
 
 ## Blog articles
 
