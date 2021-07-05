@@ -103,6 +103,7 @@ impl GraphQlState {
                 .into_iter()
                 .map(|player| (player.display_name, player.karma))
                 .collect(),
+            response.players_count as usize,
         ))
     }
     pub(super) fn reports_query(&self) -> impl Future<Output = PadlResult<NetMsg>> {

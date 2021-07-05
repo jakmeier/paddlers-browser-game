@@ -92,8 +92,22 @@ div.letter .button {
 
 section.leaderboard {
     display: grid;
-    grid-template-columns: 1fr 2fr 2fr;
+    grid-template-columns: 1fr 2fr 1fr;
+    justify-items: center;
     padding: 20px;
+}
+
+.leaderboard div:nth-child(-n+3),
+.leaderboard div:nth-last-child(-n+3) {
+    font-size: 75%;
+    font-weight: 100;
+}
+.leaderboard div:nth-child(-n+3) {
+    padding-bottom: 15px;
+}
+
+.leaderboard div:nth-last-child(-n+3) {
+    padding-top: 15px;
 }
 
 div.pdl-res-comp {

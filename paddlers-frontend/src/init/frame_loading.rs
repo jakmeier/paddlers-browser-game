@@ -97,7 +97,7 @@ pub(crate) fn load_viewer(view: UiView) -> ViewManager<UiView> {
         &[UiView::Leaderboard(LeaderboardViewTab::KarmaLeaderboard)],
         (0, 0),
     );
-    leaderboard_handler.listen(LeaderboardFrame::network_message);
+    LeaderboardFrame::init_listeners(leaderboard_handler);
 
     let summary = TownSummaryFrame::new().expect("Town summary loading");
     viewer.add_frame(summary, &[UiView::TownHelp], (0, 0));

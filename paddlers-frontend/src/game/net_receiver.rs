@@ -93,8 +93,8 @@ impl Game {
                         self.world.write_resource::<PlayerState>().hobo_population =
                             Some(settled_hobos as u32);
                     }
-                    NetMsg::Leaderboard(offset, list) => {
-                        paddle::share(NetMsg::Leaderboard(offset, list));
+                    NetMsg::Leaderboard(offset, list, total) => {
+                        paddle::share(NetMsg::Leaderboard(offset, list, total));
                     }
                     NetMsg::Map(data, min, max) => {
                         let streams = data
