@@ -10,6 +10,9 @@ use web_sys::Node;
 pub(crate) struct LeaderboardFrame {
     pane: div::DivHandle,
     table: Node,
+    players_by_karma: Vec<(String, i64)>,
+    page_size: usize,
+    current_page: usize,
 }
 
 impl LeaderboardFrame {
@@ -24,11 +27,17 @@ impl LeaderboardFrame {
             &[""],
             &[("color", "white")],
         )?;
-        let node = pane.first_inner_node()?;
+        let table_node = pane.first_inner_node()?;
 
         pane.hide()?;
 
-        Ok(LeaderboardFrame { pane, table: node })
+        Ok(LeaderboardFrame {
+            pane,
+            table: table_node,
+            players_by_karma: vec![],
+            page_size: 15,
+            current_page: 0,
+        })
     }
     pub fn clear(&self) -> PadlResult<()> {
         while let Some(child) = self.table.last_child() {
@@ -56,12 +65,29 @@ impl LeaderboardFrame {
     pub fn network_message(&mut self, _state: &mut Game, msg: &NetMsg) {
         match msg {
             NetMsg::Leaderboard(offset, list) => {
-                self.clear().nuts_check();
+                let required_len = offset + list.len();
+                if self.players_by_karma.len() < required_len {
+                    self.players_by_karma
+                        .resize(required_len, Default::default())
+                }
                 for (i, (name, karma)) in list.into_iter().enumerate() {
-                    self.insert_row(offset + i, &name, *karma).nuts_check();
+                    self.players_by_karma[offset + i] = (name.clone(), *karma);
+                }
+                if self.current_page * self.page_size < required_len
+                    && (self.current_page + 1) * self.page_size > *offset
+                {
+                    self.reload();
                 }
             }
             _ => {}
+        }
+    }
+    fn reload(&mut self) {
+        self.clear().nuts_check();
+        let start = self.current_page * self.page_size;
+        let end = start + self.page_size;
+        for (i, (name, karma)) in self.players_by_karma[start..end].iter().enumerate() {
+            self.insert_row(start + i + 1, &name, *karma).nuts_check();
         }
     }
 }
@@ -79,6 +105,7 @@ impl Frame for LeaderboardFrame {
         window.fill(&DARK_BLUE);
     }
     fn enter(&mut self, _state: &mut Self::State) {
+        crate::net::request_leaderboard(self.current_page as i64, self.page_size as i64);
         self.pane.show().nuts_check();
     }
     fn leave(&mut self, _state: &mut Self::State) {

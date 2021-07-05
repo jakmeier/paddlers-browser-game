@@ -33,6 +33,10 @@ pub struct GqlHobo(pub paddlers_shared_lib::models::Hobo);
 pub struct GqlAttackUnit(pub GqlHobo, pub GqlHoboAttackInfo);
 /// Additional information for a hobo that is currently attacking
 pub struct GqlHoboAttackInfo(pub paddlers_shared_lib::models::AttackToHobo);
+pub struct GqlScoreboard {
+    pub offset: i32,
+    pub limit: i32,
+}
 
 // Complete list of public objects with restricted fields access.
 pub struct GqlBuilding(pub paddlers_shared_lib::models::Building);
@@ -339,6 +343,23 @@ impl GqlStream {
         // vec.extend_from_slice(&self.0.control_points)
         vec.extend(self.0.control_points.iter().map(|f| *f as f64));
         vec
+    }
+}
+
+#[juniper::object (Context = Context)]
+impl GqlScoreboard {
+    /// Field Visibility: public
+    fn players_count(&self, ctx: &Context) -> i32 {
+        ctx.db().players_count() as i32
+    }
+    /// Field Visibility: public
+    /// Returns up to 100 players starting from the given rank upwards
+    fn players_by_karma(&self, ctx: &Context) -> Vec<GqlPlayer> {
+        ctx.db()
+            .players_sorted_by_karma(self.offset as i64, self.limit.min(100) as i64)
+            .into_iter()
+            .map(GqlPlayer)
+            .collect()
     }
 }
 

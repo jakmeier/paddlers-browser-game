@@ -1,6 +1,9 @@
-query LeaderboardQuery($offset: Int!) {
-    scoreboard(rankOffset: $offset) {
-        displayName,
-        karma,
+query LeaderboardQuery($offset: Int!, $limit: Int) {
+    scoreboard(offset: $offset, limit: $limit) {
+        playersCount,
+        playersByKarma {
+            displayName,
+            karma,
+        }
     }
 }

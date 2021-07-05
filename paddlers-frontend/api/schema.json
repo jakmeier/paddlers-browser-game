@@ -1371,7 +1371,7 @@
                 {
                   "defaultValue": null,
                   "description": null,
-                  "name": "rankOffset",
+                  "name": "offset",
                   "type": {
                     "kind": "NON_NULL",
                     "name": null,
@@ -1380,6 +1380,16 @@
                       "name": "Int",
                       "ofType": null
                     }
+                  }
+                },
+                {
+                  "defaultValue": null,
+                  "description": null,
+                  "name": "limit",
+                  "type": {
+                    "kind": "SCALAR",
+                    "name": "Int",
+                    "ofType": null
                   }
                 }
               ],
@@ -1391,17 +1401,9 @@
                 "kind": "NON_NULL",
                 "name": null,
                 "ofType": {
-                  "kind": "LIST",
-                  "name": null,
-                  "ofType": {
-                    "kind": "NON_NULL",
-                    "name": null,
-                    "ofType": {
-                      "kind": "OBJECT",
-                      "name": "GqlPlayer",
-                      "ofType": null
-                    }
-                  }
+                  "kind": "OBJECT",
+                  "name": "GqlScoreboard",
+                  "ofType": null
                 }
               }
             }
@@ -1931,6 +1933,57 @@
           "interfaces": [],
           "kind": "OBJECT",
           "name": "WorkerCondition",
+          "possibleTypes": null
+        },
+        {
+          "description": null,
+          "enumValues": null,
+          "fields": [
+            {
+              "args": [],
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
+              "name": "playersCount",
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "Int",
+                  "ofType": null
+                }
+              }
+            },
+            {
+              "args": [],
+              "deprecationReason": null,
+              "description": null,
+              "isDeprecated": false,
+              "name": "playersByKarma",
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "LIST",
+                  "name": null,
+                  "ofType": {
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "OBJECT",
+                      "name": "GqlPlayer",
+                      "ofType": null
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "inputFields": null,
+          "interfaces": [],
+          "kind": "OBJECT",
+          "name": "GqlScoreboard",
           "possibleTypes": null
         },
         {

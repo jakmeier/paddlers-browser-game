@@ -80,8 +80,12 @@ pub(super) async fn http_read_quests() -> PadlResult<QuestsResponse> {
     Ok(response)
 }
 
-pub(super) async fn http_read_leaderboard() -> PadlResult<LeaderboardResponse> {
-    let request_body = LeaderboardQuery::build_query(leaderboard_query::Variables { offset: 0 });
+pub(super) async fn http_read_leaderboard(
+    offset: i64,
+    limit: Option<i64>,
+) -> PadlResult<LeaderboardResponse> {
+    let request_body =
+        LeaderboardQuery::build_query(leaderboard_query::Variables { offset, limit });
     let raw_response: LeaderboardRawResponse =
         ajax::gql_query(&graphql_url()?, &request_body).await?;
     let response = raw_response.scoreboard;

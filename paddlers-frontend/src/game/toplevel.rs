@@ -106,9 +106,6 @@ impl GameActivity {
 
         let mut loaded_data = game.loaded_data.take().unwrap();
 
-        let leaderboard_data = *loaded_data.extract::<NetMsg>()?;
-        paddle::share(leaderboard_data);
-
         let reports = *loaded_data.extract::<ReportsResponse>()?;
         paddle::share(NetMsg::Reports(reports));
 

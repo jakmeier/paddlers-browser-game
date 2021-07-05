@@ -176,7 +176,7 @@ pub type PlayerQuest = player_quests_query::PlayerQuestsQueryPlayerQuests;
 )]
 pub struct LeaderboardQuery;
 pub type LeaderboardRawResponse = leaderboard_query::ResponseData;
-pub type LeaderboardResponse = Vec<leaderboard_query::LeaderboardQueryScoreboard>;
+pub type LeaderboardResponse = leaderboard_query::LeaderboardQueryScoreboard;
 
 #[derive(GraphQLQuery)]
 #[graphql(

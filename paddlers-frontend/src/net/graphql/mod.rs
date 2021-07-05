@@ -94,11 +94,12 @@ impl GraphQlState {
         Ok(NetMsg::Player(response.into()))
     }
 
-    pub async fn leaderboard_query() -> PadlResult<NetMsg> {
-        let response = http_read_leaderboard().await?;
+    pub async fn leaderboard_query(offset: i64, limit: i64) -> PadlResult<NetMsg> {
+        let response = http_read_leaderboard(offset, Some(limit)).await?;
         Ok(NetMsg::Leaderboard(
-            1,
+            offset as usize,
             response
+                .players_by_karma
                 .into_iter()
                 .map(|player| (player.display_name, player.karma))
                 .collect(),

@@ -48,6 +48,10 @@ struct RequestClientStateUpdate;
 struct RequestResourceUpdate;
 struct LoggedIn;
 struct RequestQuests;
+struct RequestLeaderboard {
+    offset: i64,
+    limit: i64,
+}
 struct RequestMapRead {
     min: i32,
     max: i32,
@@ -101,6 +105,9 @@ pub fn request_resource_update() {
 pub fn request_player_update() {
     nuts::publish(RequestPlayerUpdate);
 }
+pub fn request_leaderboard(offset: i64, limit: i64) {
+    nuts::publish(RequestLeaderboard { offset, limit });
+}
 pub fn request_foreign_town(vid: VillageKey) {
     nuts::publish(RequestForeignTownUpdate { vid });
 }
@@ -117,6 +124,7 @@ impl NetState {
         net_activity.subscribe(NetState::log_in);
         net_activity.subscribe(NetState::work);
         net_activity.subscribe(NetState::request_player_update);
+        net_activity.subscribe(NetState::request_leaderboard);
         net_activity.subscribe(NetState::request_client_state);
         net_activity.subscribe(NetState::request_resource_update);
         net_activity.subscribe(NetState::request_map_read);
@@ -148,11 +156,10 @@ impl NetState {
             self.transfer_response(GraphQlState::buildings_query());
             self.transfer_response(GraphQlState::workers_query());
             self.transfer_response(GraphQlState::hobos_query());
-            self.transfer_response(GraphQlState::leaderboard_query());
             self.transfer_response(self.gql_state.attacks_query());
             self.transfer_response(GraphQlState::resource_query());
-            self.transfer_response(self.gql_state.reports_query());
-            self.transfer_response(GraphQlState::quests_query());
+            self.transfer_response(self.gql_state.reports_query()); // TODO: Don't load this for initial view
+            self.transfer_response(GraphQlState::quests_query()); // TODO: Don't load this for initial view
             request_player_update();
         } else {
             let mut thread = paddle::web_integration::create_thread(request_client_state);
@@ -175,6 +182,10 @@ impl NetState {
             thread.set_timeout(50).nuts_check();
             nuts::store_to_domain(&Domain::Network, (thread,));
         }
+    }
+
+    fn request_leaderboard(&mut self, msg: &RequestLeaderboard) {
+        self.transfer_response(GraphQlState::leaderboard_query(msg.offset, msg.limit));
     }
 
     fn request_worker_tasks_update(&mut self, msg: &RequestWorkerTasksUpdate) {

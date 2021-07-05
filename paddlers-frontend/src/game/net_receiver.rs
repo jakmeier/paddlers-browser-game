@@ -49,9 +49,6 @@ pub fn loading_update_net(
             NetMsg::VillageInfo(response) => {
                 progress.add_progress(response);
             }
-            NetMsg::Leaderboard(offset, list) => {
-                progress.add_progress::<NetMsg>(NetMsg::Leaderboard(offset, list));
-            }
             NetMsg::Reports(data) => {
                 progress.add_progress(data);
             }

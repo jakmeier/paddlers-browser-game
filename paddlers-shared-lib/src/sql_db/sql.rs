@@ -523,6 +523,13 @@ pub trait GameDB {
             .expect("Error loading data");
         results
     }
+    fn players_count(&self) -> i64 {
+        let results = players::table
+            .select(diesel::dsl::count(players::id))
+            .first(self.dbconn())
+            .expect("Error counting players");
+        results
+    }
     fn report(&self, id: VisitReportKey) -> Option<VisitReport> {
         visit_reports::table
             .filter(visit_reports::id.eq(id.num()))
