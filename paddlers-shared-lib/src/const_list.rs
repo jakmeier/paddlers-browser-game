@@ -36,7 +36,7 @@ impl<T> ConstList<T> {
     pub const MAX_LEN: usize = CONST_LIST_MAX_LEN;
 }
 
-impl<T> ConstList<T> {
+impl<T: Copy> ConstList<T> {
     pub const fn new() -> ConstList<T> {
         Self {
             data: [None; CONST_LIST_MAX_LEN],

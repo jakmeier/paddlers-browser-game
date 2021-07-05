@@ -2,7 +2,6 @@
 #![feature(
     is_sorted,
     associated_type_bounds,
-    vec_remove_item,
     const_fn,
     const_fn_floating_point_arithmetic
 )]

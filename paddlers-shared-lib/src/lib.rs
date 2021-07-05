@@ -1,5 +1,4 @@
 #![feature(trivial_bounds)]
-#![feature(const_in_array_repeat_expressions)]
 #![feature(const_fn)]
 #[cfg(feature = "sql_db")]
 #[macro_use]
