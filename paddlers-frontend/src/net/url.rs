@@ -36,7 +36,7 @@ fn hostname() -> PadlResult<String> {
         .map_err(PadlError::from)
 }
 
-fn query_param(key: &str) -> PadlResult<String> {
+pub(crate) fn query_param(key: &str) -> PadlResult<String> {
     let err = PadlError::dev_err(PadlErrorCode::UrlParseError(format!(
         "No such URL query param: {}",
         key

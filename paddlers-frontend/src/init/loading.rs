@@ -207,7 +207,9 @@ async fn load_animation(def: &'static AnimatedObjectDef) -> PadlResult<AnimatedO
 }
 
 async fn start_loading_locale() -> PadlResult<TextDb> {
-    let binary = paddle::load_file("locale/en.mo").await?;
+    let maybe_lang_id = crate::net::url::query_param("lang");
+    let lang_id = maybe_lang_id.as_ref().map(String::as_str).unwrap_or("en");
+    let binary = paddle::load_file(&format!("locale/{}.mo", lang_id)).await?;
     let tdb = TextDb::parse(binary.as_slice())
         .map_err(|_| ErrorMessage::technical("could not parse the catalog".to_owned()))?;
     Ok(tdb)
