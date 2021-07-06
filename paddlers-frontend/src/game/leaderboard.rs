@@ -32,8 +32,8 @@ impl LeaderboardFrame {
     pub fn new() -> PadlResult<Self> {
         let area = Self::area();
         let pane = div::new_styled(
-            area.x() as u32,
-            area.y() as u32,
+            area.x() as i32,
+            area.y() as i32,
             area.width() as u32,
             area.height() as u32,
             r#"<section class="leaderboard"></section>"#,
@@ -159,7 +159,7 @@ impl LeaderboardFrame {
         let start = self.current_page * self.page_size;
         self.players_by_karma
             .get(start)
-            .map(|(name, karma)| name.len() == 0)
+            .map(|(name, _karma)| name.len() == 0)
             .unwrap_or(true)
     }
     fn next_page(&mut self, _state: &mut Game, _msg: &EvNextPage) {

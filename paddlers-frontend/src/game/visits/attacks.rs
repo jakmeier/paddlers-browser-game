@@ -90,8 +90,8 @@ pub(crate) struct VisitorFrame<'a, 'b> {
 impl<'a, 'b> VisitorFrame<'a, 'b> {
     pub fn new(x: f32, y: f32) -> PadlResult<Self> {
         let pane = div::new(
-            x as u32,
-            y as u32,
+            x as i32,
+            y as i32,
             Self::WIDTH / 2,
             Self::HEIGHT,
             r#"<div class="attack-table"><h2>Incoming Visitors</h2><div>ORIGIN</div><div>PADDLERS</div><div>ARRIVAL</div></div>"#,

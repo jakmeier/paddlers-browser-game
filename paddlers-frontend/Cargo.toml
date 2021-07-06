@@ -11,12 +11,12 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 paddlers-shared-lib = { path = "../paddlers-shared-lib", features = ["enum_utils", "game_mechanics", "web"] }
-# div = {path = "../div-rs" }
-div = "0.3"
+div = {path = "../div-rs" }
+# div = "0.3"
 # nuts = { path = "../nuts", features = ["web-debug"] }
 nuts = { version = "0.2.1", features = ["web-debug"] }
-# paddle = { path = "../paddle", features = ["const_fn"] }
-paddle = { version = "0.1.0-beta.1", features = ["const_fn"] }
+paddle = { path = "../paddle", features = ["const_fn"] }
+# paddle = { version = "0.1.0-beta.1", features = ["const_fn"] }
 specs = { version = "0.16.1", default-features = false } # parallel not supported in wasm
 shred = { version = "0.10.2", default-features = false }
 specs-derive = "0.4"

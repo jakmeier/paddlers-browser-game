@@ -909,11 +909,11 @@ dependencies = [
 
 [[package]]
 name = "div"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3704dbbe060f0f33063dee164b9be783159644273ad1f99223f4a21d52546fba"
+version = "0.4.0"
 dependencies = [
  "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "wasm-bindgen-test",
  "web-sys",
 ]
 
@@ -2119,27 +2119,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "paddle"
-version = "0.1.0-beta.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a356a372cf711b8fafc9225433b3aa018134f1ab3c8c0d2eacc0eafd58f72ea0"
-dependencies = [
- "chrono",
- "console_error_panic_hook",
- "div",
- "js-sys",
- "lyon",
- "nuts",
- "rand 0.7.3",
- "serde",
- "strum 0.20.0",
- "strum_macros 0.20.1",
- "wasm-bindgen",
- "wasm-bindgen-futures",
- "web-sys",
-]
-
-[[package]]
 name = "paddlers-db-interface"
 version = "0.2.0"
 dependencies = [
@@ -2170,7 +2149,7 @@ dependencies = [
  "lyon",
  "mogwai",
  "nuts",
- "paddle 0.1.0-beta.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "paddle",
  "paddlers-shared-lib",
  "pathfinding",
  "ron",
@@ -2843,6 +2822,12 @@ checksum = "dc6f74fd1204073fa02d5d5d68bec8021be4c38690b61264b2fdb48083d0e7d7"
 dependencies = [
  "parking_lot 0.11.1",
 ]
+
+[[package]]
+name = "scoped-tls"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ea6a9290e3c9cf0f18145ef7ffa62d68ee0bf5fcd651017e586dc7fd5da448c2"
 
 [[package]]
 name = "scopeguard"
@@ -3762,6 +3747,30 @@ name = "wasm-bindgen-shared"
 version = "0.2.71"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7d6f8ec44822dd71f5f221a5847fb34acd9060535c1211b70a05844c0f6383b1"
+
+[[package]]
+name = "wasm-bindgen-test"
+version = "0.3.21"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2ea9e4f0050d5498a160e6b9d278a9699598e445b51dacd05598da55114c801a"
+dependencies = [
+ "console_error_panic_hook",
+ "js-sys",
+ "scoped-tls",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "wasm-bindgen-test-macro",
+]
+
+[[package]]
+name = "wasm-bindgen-test-macro"
+version = "0.3.21"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "43f40402f495d92df6cdd0d329e7cc2580c8f99bcd74faff0e468923a764b7d4"
+dependencies = [
+ "proc-macro2 1.0.24",
+ "quote 1.0.9",
+]
 
 [[package]]
 name = "web-sys"

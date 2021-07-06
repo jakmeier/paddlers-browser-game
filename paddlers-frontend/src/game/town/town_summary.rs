@@ -19,8 +19,8 @@ impl TownSummaryFrame {
     pub fn new() -> PadlResult<Self> {
         let area = Self::area();
         let pane = div::new_styled(
-            area.x() as u32,
-            area.y() as u32,
+            area.x() as i32,
+            area.y() as i32,
             area.width() as u32,
             area.height() as u32,
             r#"<section class="townsummary"><p onload="window.rusvelte.Test({target: this}, props: {})"></p></section>"#,

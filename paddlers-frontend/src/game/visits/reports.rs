@@ -44,8 +44,8 @@ impl ReportFrame {
         let area = Self::area();
         let right_padding = LEAVES_BORDER_W * 0.75;
         let pane = div::new(
-            area.x() as u32,
-            area.y() as u32,
+            area.x() as i32,
+            area.y() as i32,
             (area.width() - right_padding) as u32,
             area.height() as u32,
             r#"<section class="letters"></section>"#,
