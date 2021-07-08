@@ -1,3 +1,318 @@
-#: lib/error.c:116
-msgid "test"
-msgstr "Test"
+#  Confirmations to user
+msgid "attack-sent"
+msgstr "Angriff gesendet"
+
+msgid "invitation-sent"
+msgstr "Einladung abgeschickt"
+
+msgid "visitor-not-here"
+msgstr "Paddlers sind noch unterwegs"
+
+#  UI elements
+msgid "quests"
+msgstr "Pflichten"
+
+msgid "reward"
+msgstr "Belohnung"
+
+msgid "your-task"
+msgstr "Deine Aufgabe"
+
+msgid "button-back-to-town"
+msgstr "Zurück zum Dorf"
+
+msgid "button-yes"
+msgstr "Ja"
+
+msgid "button-no"
+msgstr "Nein"
+
+msgid "confirm"
+msgstr "OK!"
+
+msgid "NIY"
+msgstr "Nich nicht implementiert"
+
+#  Stories
+## Welcome scene
+msgid "welcomescene-A0"
+msgstr ""
+"Hallo, mein Freund!"
+
+msgid "welcomescene-B10"
+msgstr ""
+"Huh? Wer spricht da?\n"
+"Ein Gott besucht mich?\n"
+"Was verschafft mir die Ehre?"
+
+msgid "welcomescene-B20"
+msgstr ""
+"Ich bin ja bloss ein ganz nomaler Paddler.\n"
+"Hier draussen geniesse ich die Natur.\n"
+"Etwas anderes zu tun habe ich auch nicht."
+
+msgid "welcomescene-B30"
+msgstr ""
+"Eigentlich ist mein Leben perfekt.\n"
+"Ich bin frei und kann machen was ich will.\n"
+"Und was alles was ich zum Leben brauche lässt sich einfach finden hier in Paddland."
+
+msgid "welcomescene-B40"
+msgstr ""
+"Aber ich bin einsam hier draussen.\n"
+"Was soll ich mit meinem Leben nur afangen?"
+
+msgid "welcomescene-B50"
+msgstr ""
+"Eure göttlliche Hoheit, darf ich an deiner Seite weilen?\n"
+"So lange du meinem Leben einen Sinn geben kannst, werde ich dir treu dienen."
+
+msgid "welcomescene-A60"
+msgstr "Ja"
+
+msgid "welcomescene-B70"
+msgstr ""
+"Hurra! Das ist wundervoll!\n"
+"Ich werde dein bester Diener sein."
+
+msgid "welcomescene-B80"
+msgstr "Was soll ich tun?"
+
+msgid "welcomescene-A90"
+msgstr "Bitte errichte eine Tempel für mich."
+
+## Temple built scene
+msgid "templebuilt-A0"
+msgstr ""
+"Ich habe den Tempel gebaut\n"
+"Schau mal, ist er nicht toll?"
+
+msgid "templebuilt-A5"
+msgstr ""
+"Hinweis:\n"
+"Wenn du auf den Tempel klickst, gelangst du zur Pflichtentafel. Dort werden Aufgaben für den Paddler aufgelistet."
+
+msgid "templebuilt-A10"
+msgstr ""
+"Wir sollten mehr Paddlers einladen!\n"
+"Ich kann ihnen von deiner Herrlichkeit erzählen und sie können dich anbeten."
+
+msgid "templebuilt-B20"
+msgstr ""
+"Das ist eine sehr gute Idee!"
+
+msgid "templebuilt-B21"
+msgstr ""
+"Du darfst gerne Freunde einladen.\n"
+"Aber ihr sollt mich nicht anbeten."
+
+
+msgid "templebuilt-H20"
+msgstr ""
+"Hinweis:\n"
+"Markiere den Eigang zum Dorf in dem du Steine an den linek oder rechten Rand legst.\n"
+"Besucher werden dort auf dich warten bevor sie das Dorf besichtigen."
+
+## Watergate built scene
+msgid "wonderful"
+msgstr "Wunderbar!"
+
+msgid "visitor-on-its-way"
+msgstr ""
+"Die ersten Besucher sollten jeden Moment eintreffen."
+
+msgid "expl-watergate-queue"
+msgstr ""
+"Höfliche Besucher dringen nicht einfach in das Dorf ein. Du musst sie zuerst hereinlassen."
+
+msgid "expl-watergate-release"
+msgstr ""
+"Hinweis:\n"
+"Wähle die Eingangsteine aus um die Paddlers zu begrüssen."
+
+msgid "gatebuilt-A10"
+msgstr ""
+"Aber nein auch!\n"
+"Warum ist der Besucher so traurig?"
+
+msgid "gatebuilt-A20"
+msgstr ""
+"Ich werde ihn mal freundlich begrüssen.\n"
+"Vielleicht kann ich ihn aufmuntern."
+
+msgid "gatebuilt-H30"
+msgstr ""
+"Hinweis:\n"
+"Wähle deinen Anhänger aus und klicke auf das Willkommenssymbol.\n"
+"Dann klick auf den Besucher"
+
+## New hobo scene
+msgid "new-hobo-text"
+msgstr ""
+"My lord,\n"
+"May I take up residence\n"
+"at this magnificient place?"
+
+## First choice scene and follow ups
+msgid "..."
+msgstr "..."
+
+msgid "bored-and-anxious"
+msgstr ""
+"Mir ist langweilig...\n"
+"Ich fühle mich so nutzlos."
+
+msgid "what-to-do-in-life"
+msgstr ""
+"Was soll ich nur anstellen mit meiner Zeit hier in Paddland?"
+
+msgid "make-friends"
+msgstr "Such dir Freunde"
+
+msgid "make-friends-description"
+msgstr ""
+"(Gott spricht):\n"
+"Finde gleichgesinnt Paddlers. Lade sie ein sich dir in diesem Dorf anzuschliessen.\n"
+"Alles ist besser wenn man Freunde um sich hat."
+
+msgid "help-others"
+msgstr "Mach dich nützlich"
+
+msgid "help-others-description"
+msgstr ""
+"(Gott spricht):\n"
+"Versuch deinen Teil beizutragen um Paddland zu verbessern.\n"
+"Hilf anderen und mach sie glücklich, dabei wirst du selber auch glücklich werden."
+
+msgid "build-something"
+msgstr "Baue eine schönes Dorf"
+
+msgid "build-something-description"
+msgstr ""
+"(Gott spricht):\n"
+"Hör auf zu grübeln und schau dass du was zu tun hast.\n"
+"Du könntest zum Beispiel das Dorf schön einrichten.\n"
+"Vielliecht lockst du damit anderen Paddlern an denen es gefällt."
+
+msgid "expl-nest"
+msgstr ""
+"(Gott spricht):\n"
+"Hier ist etwas das du bauen kannst.\n"
+"Es ist ein einfaches Nest in welchem andere Paddlers leben können."
+
+msgid "look-for-quest"
+msgstr ""
+"(Gott spricht):\n"
+"Folge meinem Rat und du wirst dich bald besser fühlen.\n"
+"Ich habe dir eine Aufgabe dazu im Tempel hinterlassen."
+
+msgid "expl-invitation-0"
+msgstr ""
+"(Gott spricht):\n"
+"Gut gemacht!\n"
+"Die Besucher mochten dich sehr."
+
+msgid "expl-invitation-1"
+msgstr ""
+"(Gott spricht):\n"
+"Du hast dir heute einen guten Ruf als Gastgeber verschaffen.\n"
+"Sicherlich werden mehr Paddlers vorbeikommen wollen."
+
+msgid "expl-invitation-2"
+msgstr ""
+"Hinweis:\n"
+"Um Paddlers einzuladen, gehe auf die Kartenansicht und betritt fremde Dörfer."
+
+msgid "expl-invitation-3"
+msgstr ""
+"Hinweis:\n"
+"Schau ob du Paddlers herumlungern siehts in einem der Dröfer. Du kannst sie einladen dich zu besuchen."
+
+## Balance after first choice scene(s)
+
+msgid "balance-important"
+msgstr ""
+"(Gott spricht):\n"
+"Du hast dich gut geschlagen bisher.\n"
+"Aber es ist wichtig immer ausgeglichen zu sein."
+
+msgid "visitor-balance-town"
+msgstr ""
+"(Gott spricht):\n"
+"Besucher zu unterhlaten ist eine gute Sache.\n"
+"Aber vergiss nicht dein Land zu pflegen!"
+
+msgid "town-balance-visitor-0"
+msgstr ""
+"(Gott spricht):\n"
+"Ein schönes Dorf zu haben ist nicht schlecht.\n"
+"Aber vergiss nicht die Tore für Besucher zu öffnen!"
+
+msgid "town-balance-visitor-1"
+msgstr ""
+"(Gott spricht):\n"
+"Mehr Besucher sind bereits auf dem Weg.\n"
+"Heisse sie willkomen und unterhalte sie."
+
+# Quests
+msgid "hello-world"
+msgstr "Verbreite die Botschaft"
+
+msgid "hello-world-description"
+msgstr "Schau dir den armen Besucher an. Warum versucht du nicht ihn aufzumuntern? Vielleicht erhältst du danach einen Brief als Dankeschön!"
+
+msgid "create-forest"
+msgstr "Waldschaffung"
+
+msgid "create-forest-description"
+msgstr "Erfülle den Ort mit Leben! Beginne damit drei Bäume zu pflanzen."
+
+msgid "build-bundling-station"
+msgstr "Bau eine Vorrichtung um Äste zu bündeln."
+
+msgid "build-bundling-station-description"
+msgstr "Deine Anhänger können Material vom Wald sammeln, sofern die richtigen Gebäude im Dorf stehen. Um Äste zu sammeln, braucht es eine Vorrichtung um sie zu bündeln."
+
+msgid "use-bundling-station"
+msgstr "Geh Äste sammeln"
+
+msgid "use-bundling-station-description"
+msgstr "Lass deinen Anhänger Äste sammeln. Wähle dazu den Paddler aus und klicke mit der rechten Maustaste (oder tippe lange) auf das Gebäude."
+
+msgid "socialize"
+msgstr "Sei nett zu deinen Besuchern!"
+
+msgid "socialize-description"
+msgstr "Jeder Paddler der das Dorf glücklich verlässt, gibt dir 1 Karma. Mehr Besucher sind bereits auf dem Weg. Kannst du sie alle zufriedenstellen?"
+
+msgid "socialize-more"
+msgstr "Einladungen"
+
+msgid "socialize-more-description"
+msgstr "Benutze deine neue Fähigkeit um Besucher einzuladen. Dein Dorf wird ihnen sicher gefallen. Klicke auf fremde Dörfer auf der Kartenansicht, betritt sie und schau ob dort Paddlers untätig herumlungern."
+
+msgid "build-nest"
+msgstr "Ein Heim für einen Paddler"
+
+msgid "build-nest-description"
+msgstr "Baue ein Nest in deinem Dorf. Wenn du es an eine schöne Stelle setzt, dann wird vielleicht bald ein Paddler einziehen wollen."
+
+msgid "grow-population"
+msgstr "Mehr Einwohner"
+
+msgid "grow-population-description"
+msgstr "Erhöhe dein Gefolge indem du mehr Nest baust und Paddlers einziehen lässt."
+
+
+# Civ perks
+msgid "perk-nest-building"
+msgstr "Bau mehr Neste für deine Anhänger."
+
+msgid "perk-triple-nest-building"
+msgstr "Grössere Neste für noch mehr Anhänger."
+
+msgid "perk-invitation"
+msgstr "Lade fremde Paddlers auf einen Besuch ein."
+
+msgid "perk-conversion"
+msgstr "Überzeuge besuchende Paddlers sich dir anzuschliessen."

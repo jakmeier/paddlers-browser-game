@@ -22,6 +22,28 @@
         next_button: true,
     ),
     Slide (
+        text_key: "templebuilt-B20",
+        buttons: [
+            SlideButton (
+                text_key: "templebuilt-B20",
+                action: SlideButtonAction(
+                    next_view: Slide(4),
+                    actions: [],
+                )
+            ),
+            SlideButton (
+                text_key: "templebuilt-B21",
+                action: SlideButtonAction(
+                    next_view: Slide(4),
+                    actions: [],
+                )
+            ),
+        ],
+        sprite: Simple(RogerLarge),
+        back_button: true,
+        next_button: false,
+    ),
+    Slide (
         text_key: "templebuilt-H20",
         buttons: [
             SlideButton (
