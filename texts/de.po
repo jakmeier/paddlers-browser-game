@@ -68,7 +68,10 @@ msgstr ""
 "So lange du meinem Leben einen Sinn geben kannst, werde ich dir treu dienen."
 
 msgid "welcomescene-A60"
-msgstr "Ja"
+msgstr "Ja, sei mein Diener."
+
+msgid "welcomescene-A61"
+msgstr "Wir können gerne Freunde sein."
 
 msgid "welcomescene-B70"
 msgstr ""
@@ -84,7 +87,7 @@ msgstr "Bitte errichte eine Tempel für mich."
 ## Temple built scene
 msgid "templebuilt-A0"
 msgstr ""
-"Ich habe den Tempel gebaut\n"
+"Ich habe den Tempel gebaut.\n"
 "Schau mal, ist er nicht toll?"
 
 msgid "templebuilt-A5"
@@ -106,6 +109,9 @@ msgstr ""
 "Du darfst gerne Freunde einladen.\n"
 "Aber ihr sollt mich nicht anbeten."
 
+msgid "templebuilt-B22"
+msgstr ""
+"Nein, bitte lade niemanden ein."
 
 msgid "templebuilt-H20"
 msgstr ""

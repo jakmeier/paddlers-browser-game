@@ -68,7 +68,10 @@ msgstr ""
 "I will do anything you say, as long as you can give meaning to my life."
 
 msgid "welcomescene-A60"
-msgstr "Yes"
+msgstr "Yes, be my servant."
+
+msgid "welcomescene-A61"
+msgstr "We can be friends."
 
 msgid "welcomescene-B70"
 msgstr ""
@@ -106,6 +109,10 @@ msgid "templebuilt-B21"
 msgstr ""
 "Sure, invite your friends.\n"
 "But there is no need for worship."
+
+msgid "templebuilt-B22"
+msgstr ""
+"No, please don't invite anyone else."
 
 msgid "templebuilt-H20"
 msgstr ""

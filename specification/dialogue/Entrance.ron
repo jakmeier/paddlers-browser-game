@@ -39,6 +39,20 @@
                     actions: [StoryProgress(SERVANT_ACCEPTED, None)],
                 )
             ),
+            SlideButton (
+                text_key: "welcomescene-A61",
+                action: SlideButtonAction(
+                    next_view: Slide(5),
+                    actions: [StoryProgress(SERVANT_ACCEPTED, None)],
+                )
+            ),
+            SlideButton (
+                text_key: "button-no",
+                action: SlideButtonAction(
+                    next_view: UiView(Town),
+                    actions: [ClearSelectedUnit ]
+                ),
+            ),
         ],
         back_button: true,
         next_button: false,
