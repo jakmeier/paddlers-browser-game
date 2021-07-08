@@ -36,7 +36,7 @@
                 text_key: "welcomescene-A60",
                 action: SlideButtonAction(
                     next_view: Slide(5),
-                    actions: [StoryProgress(ServantAccepted, None)],
+                    actions: [StoryProgress(SERVANT_ACCEPTED, None)],
                 )
             ),
         ],

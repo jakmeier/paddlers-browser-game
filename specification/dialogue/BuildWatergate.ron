@@ -50,7 +50,7 @@
                 text_key: "button-back-to-town",
                 action: SlideButtonAction(
                     actions: [
-                        StoryProgress(BuildingWatergate, None),
+                        StoryProgress(BUILDING_WATERGATE, None),
                         ClearSelectedUnit,
                     ],
                     next_view: UiView(Town),

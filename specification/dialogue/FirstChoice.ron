@@ -51,7 +51,7 @@
                 action: SlideButtonAction(
                     next_view: Slide(3),
                     actions: [],
-                    // actions: [StoryProgress(SolvingPrimaryCivQuestPartA, 0)],
+                    // actions: [StoryProgress(SOLVING_PRIMARY_CIV_QUEST_PART_A, 0)],
                 )
             ),
         ],
@@ -66,7 +66,7 @@
                 text_key: "confirm",
                 action: SlideButtonAction(
                     next_view: Slide(7),
-                    actions: [StoryProgress(SolvingPrimaryCivQuestPartA, 1)],
+                    actions: [StoryProgress(SOLVING_PRIMARY_CIV_QUEST_PART_A, 1)],
                 )
             ),
         ],
@@ -81,7 +81,7 @@
                 text_key: "confirm",
                 action: SlideButtonAction(
                     next_view: Slide(6),
-                    actions: [StoryProgress(SolvingPrimaryCivQuestPartA, 2)],
+                    actions: [StoryProgress(SOLVING_PRIMARY_CIV_QUEST_PART_A, 2)],
                 )
             ),
         ],

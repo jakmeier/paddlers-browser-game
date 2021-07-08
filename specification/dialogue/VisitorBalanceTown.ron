@@ -25,7 +25,7 @@
                 action: SlideButtonAction(
                     next_view: UiView(Town),
                     actions: [
-                        StoryProgress(SolvingSecondaryQuestB, None)
+                        StoryProgress(SOLVING_SECONDARY_QUEST_B, None)
                     ],
                 )
             ),

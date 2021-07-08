@@ -23,8 +23,8 @@
                     next_view: UiView(Town),
                     actions: [
                         StoryProgress(
-                            WelcomeVisitorQuestStarted,
-                            None,
+                            WELCOME_VISITOR_QUEST_STARTED,
+                            NONE,
                         )
                     ]
                 )
