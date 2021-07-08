@@ -41,6 +41,8 @@ debug-db-interface-container: paddlers-db-interface/debug.Dockerfile rust-contai
 	docker build --target DbInterface -t $(LOCAL):db-interface-snapshot -f $< .
 
 debug-frontend-container: paddlers-frontend/debug.Dockerfile
+	cd paddlers-frontend; wasm-pack build --debug
+	cd www; npm run build
 	docker build --target WebServer -t $(LOCAL):frontend-snapshot -f $< .
 
 frontend-container: paddlers-frontend/Dockerfile rust-container
