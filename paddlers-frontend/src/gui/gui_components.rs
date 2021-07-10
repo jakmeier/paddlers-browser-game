@@ -15,9 +15,9 @@ use paddlers_shared_lib::prelude::*;
 use paddlers_shared_lib::{api::shop::Price, civilization::CivilizationPerk};
 
 pub enum TableRow<'a> {
-    Text(String),
-    MultiRowText(String, u32),
-    TextWithImage(String, SpriteIndex),
+    Text(String, TextColor),
+    MultiRowText(String, u32, TextColor),
+    TextWithImage(String, SpriteIndex, TextColor),
     InteractiveArea(&'a mut dyn InteractiveTableArea),
     ProgressBar(Color, Color, i32, i32, Option<String>),
 }
@@ -68,6 +68,12 @@ pub enum Condition {
 pub enum TableVerticalAlignment {
     Top,
     Center,
+}
+
+#[derive(Clone, Debug, Copy)]
+pub enum TextColor {
+    Black,
+    White,
 }
 
 pub struct TableTextProvider {
@@ -140,31 +146,43 @@ pub fn draw_table(
         let floats = &mut text_provider.text_pool;
         let white_floats = &mut text_provider.white_text_pool;
         match row {
-            TableRow::Text(text) => {
+            TableRow::Text(text, text_col) => {
                 let mut text_area = line.clone();
                 text_area.size.y = row_height;
+                let floats = match text_col {
+                    TextColor::Black => floats,
+                    TextColor::White => white_floats,
+                };
                 floats
                     .allocate()
                     .write(window, &text_area, z, FitStrategy::Center, text)
                     .nuts_check();
                 line.pos.y += text_area.size.y;
             }
-            TableRow::MultiRowText(text, n) => {
+            TableRow::MultiRowText(text, n, text_col) => {
                 let mut text_area = line.clone();
                 text_area.size.y = *n as f32 * row_height;
+                let floats = match text_col {
+                    TextColor::Black => floats,
+                    TextColor::White => white_floats,
+                };
                 floats
                     .allocate()
                     .write(window, &text_area, z, FitStrategy::Center, text)
                     .nuts_check();
                 line.pos.y += text_area.size.y;
             }
-            TableRow::TextWithImage(text, img) => {
+            TableRow::TextWithImage(text, img, text_col) => {
                 let symbol = Rectangle::new(line.pos, (img_s, img_s));
                 let mut text_area = line.clone();
                 let shift_x = img_s + margin;
                 text_area.size.x -= shift_x;
                 text_area.pos.x += shift_x;
                 text_area.size.y = row_height;
+                let floats = match text_col {
+                    TextColor::Black => floats,
+                    TextColor::White => white_floats,
+                };
                 floats
                     .allocate()
                     .write(window, &text_area, z, FitStrategy::LeftCenter, text)
@@ -226,9 +244,9 @@ pub fn draw_table(
 fn row_count(table: &[TableRow]) -> usize {
     table.iter().fold(0, |acc, row| {
         acc + match row {
-            TableRow::Text(_) => 1,
-            TableRow::MultiRowText(_, n) => *n as usize,
-            TableRow::TextWithImage(_, _) => 1,
+            TableRow::Text(_, _) => 1,
+            TableRow::MultiRowText(_, n, _) => *n as usize,
+            TableRow::TextWithImage(_, _, _) => 1,
             TableRow::InteractiveArea(ia) => ia.rows(),
             TableRow::ProgressBar(_, _, _, _, _) => 1,
         }

@@ -74,6 +74,6 @@ impl StatusEffect {
         } else {
             format!("{}", self.value)
         };
-        TableRow::TextWithImage(text, self.img.default())
+        TableRow::TextWithImage(text, self.img.default(), TextColor::Black)
     }
 }

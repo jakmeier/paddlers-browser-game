@@ -1,7 +1,7 @@
 use crate::game::components::UiMenu;
 use crate::game::game_event_manager::VillageCoordinate;
 use crate::game::GameEvent;
-use crate::gui::gui_components::TableRow;
+use crate::gui::gui_components::{TableRow, TextColor};
 use crate::gui::{
     gui_components::{ClickOutput, UiBox, UiElement},
     sprites::*,
@@ -47,7 +47,7 @@ impl VillageMetaInfo {
     }
     pub fn village_details<'a>(&self) -> Vec<TableRow<'a>> {
         let text = format!("Village <{}:{}>", self.coordinates.0, self.coordinates.1);
-        let row0 = TableRow::Text(text);
+        let row0 = TableRow::Text(text, TextColor::Black);
         let row1 = self.player_info_row();
         vec![row0, row1]
     }
@@ -57,7 +57,7 @@ impl VillageMetaInfo {
         } else {
             "Anarchists".to_owned()
         };
-        TableRow::Text(text)
+        TableRow::Text(text, TextColor::Black)
     }
     pub fn new_village_menu(&self, owned: bool) -> UiMenu {
         let mut menu = UiMenu::new_public(UiBox::new(2, 2, 10.0, 2.0));

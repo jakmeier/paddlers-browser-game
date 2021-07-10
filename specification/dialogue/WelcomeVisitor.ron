@@ -16,6 +16,7 @@
     ),
     Slide (
         text_key: "gatebuilt-H30",
+        text_style: SystemMessage,
         buttons: [
             SlideButton (
                 text_key: "button-back-to-town",
@@ -24,7 +25,7 @@
                     actions: [
                         StoryProgress(
                             WELCOME_VISITOR_QUEST_STARTED,
-                            NONE,
+                            None,
                         )
                     ]
                 )

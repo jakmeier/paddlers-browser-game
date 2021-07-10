@@ -177,7 +177,6 @@ msgstr "Such dir Freunde"
 
 msgid "make-friends-description"
 msgstr ""
-"(Gott spricht):\n"
 "Finde gleichgesinnt Paddlers. Lade sie ein sich dir in diesem Dorf anzuschliessen.\n"
 "Alles ist besser wenn man Freunde um sich hat."
 
@@ -186,7 +185,6 @@ msgstr "Mach dich nützlich"
 
 msgid "help-others-description"
 msgstr ""
-"(Gott spricht):\n"
 "Versuch deinen Teil beizutragen um Paddland zu verbessern.\n"
 "Hilf anderen und mach sie glücklich, dabei wirst du selber auch glücklich werden."
 
@@ -195,32 +193,27 @@ msgstr "Baue eine schönes Dorf"
 
 msgid "build-something-description"
 msgstr ""
-"(Gott spricht):\n"
 "Hör auf zu grübeln und schau dass du was zu tun hast.\n"
 "Du könntest zum Beispiel das Dorf schön einrichten.\n"
 "Vielliecht lockst du damit anderen Paddlern an denen es gefällt."
 
 msgid "expl-nest"
 msgstr ""
-"(Gott spricht):\n"
 "Hier ist etwas das du bauen kannst.\n"
 "Es ist ein einfaches Nest in welchem andere Paddlers leben können."
 
 msgid "look-for-quest"
 msgstr ""
-"(Gott spricht):\n"
 "Folge meinem Rat und du wirst dich bald besser fühlen.\n"
 "Ich habe dir eine Aufgabe dazu im Tempel hinterlassen."
 
 msgid "expl-invitation-0"
 msgstr ""
-"(Gott spricht):\n"
 "Gut gemacht!\n"
 "Die Besucher mochten dich sehr."
 
 msgid "expl-invitation-1"
 msgstr ""
-"(Gott spricht):\n"
 "Du hast dir heute einen guten Ruf als Gastgeber verschaffen.\n"
 "Sicherlich werden mehr Paddlers vorbeikommen wollen."
 
@@ -238,25 +231,21 @@ msgstr ""
 
 msgid "balance-important"
 msgstr ""
-"(Gott spricht):\n"
 "Du hast dich gut geschlagen bisher.\n"
 "Aber es ist wichtig immer ausgeglichen zu sein."
 
 msgid "visitor-balance-town"
 msgstr ""
-"(Gott spricht):\n"
 "Besucher zu unterhlaten ist eine gute Sache.\n"
 "Aber vergiss nicht dein Land zu pflegen!"
 
 msgid "town-balance-visitor-0"
 msgstr ""
-"(Gott spricht):\n"
 "Ein schönes Dorf zu haben ist nicht schlecht.\n"
 "Aber vergiss nicht die Tore für Besucher zu öffnen!"
 
 msgid "town-balance-visitor-1"
 msgstr ""
-"(Gott spricht):\n"
 "Mehr Besucher sind bereits auf dem Weg.\n"
 "Heisse sie willkomen und unterhalte sie."
 

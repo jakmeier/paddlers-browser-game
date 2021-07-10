@@ -126,10 +126,12 @@ msgstr "Wonderful!"
 
 msgid "visitor-on-its-way"
 msgstr ""
+"Hint:\n"
 "The first visitors should arrive any moment."
 
 msgid "expl-watergate-queue"
 msgstr ""
+"Hint:\n"
 "The visitors will politely wait outside the town until you let them in."
 
 msgid "expl-watergate-release"
@@ -179,7 +181,6 @@ msgstr "Form a community"
 
 msgid "make-friends-description"
 msgstr ""
-"Gods voice:\n"
 "Find some like-minded Paddlers and invite them to join your town.\n"
 "Everything is better if you are surrounded by friends."
 
@@ -188,7 +189,6 @@ msgstr "Help others"
 
 msgid "help-others-description"
 msgstr ""
-"Gods voice:\n"
 "Make the world a better place,\n"
 "go and help other Paddlers.\n"
 "It feels good to make someone else happy."
@@ -198,31 +198,26 @@ msgstr "Build a nice place"
 
 msgid "build-something-description"
 msgstr ""
-"Gods voice:\n"
 "Get busy and make this place more habital.\n"
 "If you do a good job, this will attract other Paddlers."
 
 msgid "expl-nest"
 msgstr ""
-"Gods voice:\n"
 "Here is something you can build.\n"
 "It's a simple nest in which other Paddlers can live."
 
 msgid "look-for-quest"
 msgstr ""
-"Gods voice:\n"
 "Follow my advice and you will feel better soon.\n"
 "I've added a new task for you at the temple."
 
 msgid "expl-invitation-0"
 msgstr ""
-"Gods voice:\n"
 "Well done!\n"
 "The Paddlers who visited really liked you."
 
 msgid "expl-invitation-1"
 msgstr ""
-"Gods voice:\n"
 "You made yourself a bit of reputation as a great host.\n"
 "I'm sure Paddlers around the world are keen to visit us."
 
@@ -241,25 +236,21 @@ msgstr ""
 
 msgid "balance-important"
 msgstr ""
-"Gods voice:\n"
 "You have done great so far.\n"
 "But it is important to keep balance."
 
 msgid "visitor-balance-town"
 msgstr ""
-"Gods voice:\n"
 "Entertaining visitors is all good.\n"
 "But don't neglect to maintain your land!"
 
 msgid "town-balance-visitor-0"
 msgstr ""
-"Gods voice:\n"
 "Having a nice place is all good.\n"
 "Now, keep it open to foreign visitors!"
 
 msgid "town-balance-visitor-1"
 msgstr ""
-"Gods voice:\n"
 "Some more visitors are on their way.\n"
 "Entertain them and make them feel welcome."
 

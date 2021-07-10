@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use ::diesel_derive_enum::DbEnum;
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Serialize, Deserialize)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")] 
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[cfg_attr(feature = "enum_utils", derive(EnumIter, Display))]
 #[cfg_attr(feature = "graphql", derive(juniper::GraphQLEnum))]
 #[cfg_attr(feature = "sql_db", DieselType = "Story_state_type", derive(DbEnum))]

@@ -2,6 +2,7 @@
 (slides: [
     Slide(
         text_key: "balance-important",
+        text_style: PlayerSpeech,
         buttons: [],
         sprite: Simple(Karma),
         back_button: false,
@@ -9,6 +10,7 @@
     ),
     Slide(
         text_key: "visitor-balance-town",
+        text_style: PlayerSpeech,
         buttons: [],
         sprite: Simple(Tree),
         back_button: true,
@@ -16,6 +18,7 @@
     ),
     Slide(
         text_key: "expl-nest",
+        text_style: PlayerSpeech,
         sprite: Simple(SingleNest),
         back_button: true,
         next_button: false,

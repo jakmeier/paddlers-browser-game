@@ -9,6 +9,7 @@
     ),
     Slide (
         text_key: "templebuilt-A5",
+        text_style: SystemMessage,
         buttons: [],
         sprite: Simple(Temple),
         back_button: true,
@@ -16,6 +17,7 @@
     ),
     Slide (
         text_key: "templebuilt-A10",
+        button_layout: SingleColumn,
         buttons: [
             SlideButton (
                 text_key: "templebuilt-B20",
@@ -47,6 +49,7 @@
     ),
     Slide (
         text_key: "templebuilt-H20",
+        text_style: SystemMessage,
         buttons: [
             SlideButton (
                 text_key: "button-back-to-town",

@@ -1,3 +1,7 @@
+mod style;
+
+pub use style::{ButtonLayout, SlideTextStyle};
+
 use super::*;
 use crate::story::{story_state::StoryState, story_trigger::StoryChoice};
 use serde::Deserialize;
@@ -16,7 +20,11 @@ pub struct Scene {
 #[derive(Deserialize)]
 pub struct Slide {
     text_key: OwnedTextKey,
+    #[serde(default)]
+    text_style: SlideTextStyle,
     buttons: Vec<SlideButton>,
+    #[serde(default)]
+    button_layout: ButtonLayout,
     sprite: SpriteIndex,
     back_button: bool,
     next_button: bool,
@@ -50,12 +58,6 @@ impl Default for NextView {
 
 pub type SlideIndex = usize;
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug)]
-pub enum ButtonLayout {
-    SingleColumn,
-    SingleRow,
-}
-
 impl Scene {
     pub fn slide_text_key(&self, i: SlideIndex) -> &OwnedTextKey {
         &self.slides[i].text_key
@@ -80,11 +82,10 @@ impl Scene {
         self.slides[i].sprite
     }
     pub fn button_layout(&self, i: SlideIndex) -> ButtonLayout {
-        if self.slides[i].buttons.len() > 2 {
-            ButtonLayout::SingleColumn
-        } else {
-            ButtonLayout::SingleRow
-        }
+        self.slides[i].button_layout
+    }
+    pub fn text_style(&self, i: SlideIndex) -> SlideTextStyle {
+        self.slides[i].text_style
     }
 }
 

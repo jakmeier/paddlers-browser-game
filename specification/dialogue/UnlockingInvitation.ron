@@ -2,6 +2,7 @@
 (slides: [
     Slide(
         text_key: "expl-invitation-0",
+        text_style: PlayerSpeech,
         buttons: [],
         sprite: Simple(DuckHappy),
         back_button: false,
@@ -9,6 +10,7 @@
     ),
     Slide(
         text_key: "expl-invitation-1",
+        text_style: PlayerSpeech,
         buttons: [],
         sprite: Simple(PerkInvitation),
         back_button: true,
@@ -16,6 +18,7 @@
     ),
     Slide(
         text_key: "expl-invitation-2",
+        text_style: SystemMessage,
         buttons: [],
         sprite: Simple(MapButton),
         back_button: true,
@@ -23,6 +26,7 @@
     ),
     Slide(
         text_key: "expl-invitation-3",
+        text_style: SystemMessage,
         sprite: Simple(SittingYellowDuck),
         back_button: true,
         next_button: false,

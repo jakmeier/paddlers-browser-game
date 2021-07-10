@@ -164,18 +164,17 @@ pub fn draw_town_entity_details_table(
 
     let mut container = world.write_storage::<EntityContainer>();
     if let Some(c) = container.get_mut(e) {
-        table.push(TableRow::Text(format!(
-            "{}/{} occupied",
-            c.count(),
-            c.capacity
-        )));
+        table.push(TableRow::Text(
+            format!("{}/{} occupied", c.count(), c.capacity),
+            TextColor::Black,
+        ));
     }
 
     let effects = world.read_storage::<StatusEffects>();
     if let Some(ef) = effects.get(e) {
         let list = ef.menu_table_infos();
         if list.len() > 0 {
-            TableRow::Text("Status effects".to_owned());
+            TableRow::Text("Status effects".to_owned(), TextColor::Black);
             table.extend(list);
         }
     }
@@ -212,23 +211,43 @@ pub fn draw_town_entity_details_table(
 
 fn aura_details(aura: &Aura) -> TableRow {
     let text = format!("+{}", aura.effect);
-    TableRow::TextWithImage(text, SpriteIndex::Simple(SingleSprite::Ambience))
+    TableRow::TextWithImage(
+        text,
+        SpriteIndex::Simple(SingleSprite::Ambience),
+        TextColor::Black,
+    )
 }
 fn health_details(health: &Health) -> TableRow {
     let health_text = format!("Well-being {}/{}", health.max_hp - health.hp, health.max_hp);
-    TableRow::TextWithImage(health_text, SpriteIndex::Simple(SingleSprite::Heart))
+    TableRow::TextWithImage(
+        health_text,
+        SpriteIndex::Simple(SingleSprite::Heart),
+        TextColor::Black,
+    )
 }
 fn tree_details(forest: &ForestComponent) -> TableRow {
     let text = format!("+{}", forest.score);
-    TableRow::TextWithImage(text, SpriteIndex::Simple(SingleSprite::Tree))
+    TableRow::TextWithImage(
+        text,
+        SpriteIndex::Simple(SingleSprite::Tree),
+        TextColor::Black,
+    )
 }
 pub fn forest_details<'a>(forest_size: usize, forest_usage: usize) -> TableRow<'a> {
     let text = format!("{} (using {})", forest_size, forest_usage);
-    TableRow::TextWithImage(text, SpriteIndex::Simple(SingleSprite::Tree))
+    TableRow::TextWithImage(
+        text,
+        SpriteIndex::Simple(SingleSprite::Tree),
+        TextColor::Black,
+    )
 }
 pub fn total_aura_details<'a>(aura_size: i64) -> TableRow<'a> {
     let text = format!("Ambience: {}", aura_size);
-    TableRow::TextWithImage(text, SpriteIndex::Simple(SingleSprite::Ambience))
+    TableRow::TextWithImage(
+        text,
+        SpriteIndex::Simple(SingleSprite::Ambience),
+        TextColor::Black,
+    )
 }
 // fn faith_details<'a>(faith: u8) -> TableRow<'a> {
 //     let text = format!("{}% faith", faith);

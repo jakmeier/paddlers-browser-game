@@ -17,10 +17,12 @@ pub(crate) struct DialogueFrame {
     scenes: SceneLoader,
     image: SpriteIndex,
     buttons: UiBox,
-    current_layout: ButtonLayout,
+    current_slide_text_style: SlideTextStyle,
+    current_button_layout: ButtonLayout,
     text: String,
     text_provider: TableTextProvider,
-    text_bubble: AbstractMesh,
+    text_bubble_to_left: AbstractMesh,
+    text_bubble_to_player: AbstractMesh,
     current_scene: Option<SceneIndex>,
     slide_stack: Vec<SlideIndex>,
     mouse: PointerTracker,
@@ -29,20 +31,32 @@ pub(crate) struct DialogueFrame {
 
 impl DialogueFrame {
     pub fn new() -> PadlResult<Self> {
-        let text_bubble = build_text_bubble(
-            right_area().const_translate(-right_area().pos),
-            text_area().const_translate(-right_area().pos),
-        );
+        const ZEROED_RIGHT_AREA: Rectangle = Rectangle {
+            pos: Vector::ZERO,
+            size: right_area().size,
+        };
+        const TEXT_AREA: Rectangle = Rectangle {
+            pos: Vector {
+                x: text_area().pos.x - right_area().pos.x,
+                y: text_area().pos.y - right_area().pos.y,
+            },
+            size: text_area().size,
+        };
+        let text_bubble_to_left = build_text_bubble_to_left(ZEROED_RIGHT_AREA, TEXT_AREA);
+        let text_bubble_to_player = build_text_bubble_to_bottom(ZEROED_RIGHT_AREA, TEXT_AREA);
         let text_provider = TableTextProvider::new_styled("dialogue");
         let button_layout = ButtonLayout::SingleRow;
+        let current_slide_text_style = SlideTextStyle::SystemMessage;
 
         let dialogue = DialogueFrame {
-            current_layout: button_layout,
+            current_button_layout: button_layout,
+            current_slide_text_style,
             buttons: buttons_ui_box(button_layout),
             image: SpriteIndex::Simple(SingleSprite::Roger),
             text: String::new(),
             text_provider,
-            text_bubble,
+            text_bubble_to_left,
+            text_bubble_to_player,
             current_scene: None,
             slide_stack: vec![],
             mouse: PointerTracker::new(),
@@ -80,10 +94,12 @@ impl DialogueFrame {
                 let next_button = scene.next_button(current_slide);
                 let layout = scene.button_layout(current_slide);
 
-                if self.current_layout != layout {
+                if self.current_button_layout != layout {
                     self.buttons = buttons_ui_box(layout);
-                    self.current_layout = layout;
+                    self.current_button_layout = layout;
                 }
+
+                self.current_slide_text_style = scene.text_style(current_slide);
 
                 self.text += text;
                 self.image = image;
@@ -129,9 +145,17 @@ impl DialogueFrame {
         mouse_pos: Option<Vector>,
     ) {
         let mut table = Vec::new();
+        let main_text_color = match self.current_slide_text_style {
+            SlideTextStyle::SystemMessage => TextColor::White,
+            _ => TextColor::Black,
+        };
         if self.text.len() > 0 {
-            let rows = rows_for_text(self.current_layout);
-            table.push(TableRow::MultiRowText(self.text.clone(), rows));
+            let rows = rows_for_text(self.current_button_layout);
+            table.push(TableRow::MultiRowText(
+                self.text.clone(),
+                rows,
+                main_text_color,
+            ));
         }
         table.push(TableRow::InteractiveArea(&mut self.buttons));
         draw_table(
@@ -163,7 +187,7 @@ impl DialogueFrame {
         draw_leaf_border(window, sprites, &leaf_area, leaf_w, leaf_h);
     }
 
-    pub fn draw_image_with_text_bubble(
+    pub fn draw_slide_background(
         &self,
         sprites: &mut Sprites,
         window: &mut DisplayArea,
@@ -177,7 +201,17 @@ impl DialogueFrame {
             Z_TEXTURE + 1,
             FitStrategy::Center,
         );
-        window.draw_mesh(&self.text_bubble, right_area(), &Color::WHITE);
+        match self.current_slide_text_style {
+            SlideTextStyle::SpeechBubbleToLeft => {
+                window.draw_mesh(&self.text_bubble_to_left, right_area(), &Color::WHITE);
+            }
+            SlideTextStyle::PlayerSpeech => {
+                window.draw_mesh(&self.text_bubble_to_player, right_area(), &LIGHT_GREEN);
+            }
+            SlideTextStyle::SystemMessage => {
+                window.draw(&text_area(), &DARK_BLUE);
+            }
+        }
     }
     pub fn init_listeners(frame_handle: FrameHandle<Self>) {
         frame_handle.listen(DialogueFrame::receive_load_scene);
@@ -256,7 +290,7 @@ impl Frame for DialogueFrame {
                 Transform::rotate(rot),
             );
         } else {
-            self.draw_image_with_text_bubble(&mut state.sprites, window, self.image);
+            self.draw_slide_background(&mut state.sprites, window, self.image);
             self.draw_active_area(
                 &mut state.sprites,
                 state.world.read_resource::<Now>().0,

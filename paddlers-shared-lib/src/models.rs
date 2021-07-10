@@ -23,7 +23,7 @@ use super::schema::{
 };
 
 #[derive(Debug, PartialEq, Clone, Copy, Serialize, Deserialize)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")] 
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[cfg_attr(feature = "enum_utils", derive(EnumIter, Display))]
 #[cfg_attr(feature = "graphql", derive(juniper::GraphQLEnum))]
 #[cfg_attr(feature = "sql_db", derive(DbEnum), DieselType = "Unit_type")]
@@ -32,7 +32,7 @@ pub enum UnitType {
     Hero,
 }
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")] 
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[cfg_attr(feature = "enum_utils", derive(EnumIter, Display))]
 #[cfg_attr(feature = "graphql", derive(juniper::GraphQLEnum))]
 #[cfg_attr(feature = "sql_db", derive(DbEnum), DieselType = "Unit_color")]
@@ -155,7 +155,7 @@ pub struct AttackToHobo {
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize, Hash)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")] 
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[cfg_attr(feature = "enum_utils", derive(EnumIter))]
 #[cfg_attr(feature = "graphql", derive(juniper::GraphQLEnum))]
 #[cfg_attr(feature = "sql_db", derive(DbEnum), DieselType = "Building_type")]
@@ -204,7 +204,7 @@ pub struct NewBuilding {
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Serialize, Deserialize)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")] 
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[cfg_attr(feature = "enum_utils", derive(EnumIter, Display))]
 #[cfg_attr(feature = "graphql", derive(juniper::GraphQLEnum))]
 #[cfg_attr(feature = "sql_db", DieselType = "Resource_type", derive(DbEnum))]
@@ -225,7 +225,7 @@ pub struct Resource {
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Serialize, Deserialize)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")] 
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[cfg_attr(feature = "enum_utils", derive(EnumIter, Display))]
 #[cfg_attr(feature = "graphql", derive(juniper::GraphQLEnum))]
 #[cfg_attr(feature = "sql_db", DieselType = "Task_type", derive(DbEnum))]
@@ -319,7 +319,7 @@ pub struct NewAbility {
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Serialize, Deserialize)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")] 
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[cfg_attr(feature = "enum_utils", derive(EnumIter, Display))]
 #[cfg_attr(feature = "graphql", derive(juniper::GraphQLEnum))]
 #[cfg_attr(feature = "sql_db", DieselType = "Ability_type", derive(DbEnum))]
@@ -351,7 +351,7 @@ pub struct NewEffect {
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Serialize, Deserialize)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")] 
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[cfg_attr(feature = "enum_utils", derive(EnumIter, Display))]
 #[cfg_attr(feature = "graphql", derive(juniper::GraphQLEnum))]
 #[cfg_attr(feature = "sql_db", DieselType = "Hobo_attribute_type", derive(DbEnum))]
@@ -370,7 +370,7 @@ pub struct WorkerFlag {
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Serialize, Deserialize)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")] 
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[cfg_attr(feature = "enum_utils", derive(EnumIter, Display))]
 #[cfg_attr(feature = "graphql", derive(juniper::GraphQLEnum))]
 #[cfg_attr(feature = "sql_db", DieselType = "Worker_flag_type", derive(DbEnum))]

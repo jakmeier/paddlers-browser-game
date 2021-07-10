@@ -16,6 +16,7 @@
     ),
     Slide(
         text_key: "what-to-do-in-life",
+        button_layout: SingleColumn,
         buttons: [
             SlideButton (
                 text_key: "make-friends",
@@ -45,6 +46,7 @@
     ),
     Slide(
         text_key: "make-friends-description",
+        text_style: PlayerSpeech,
         buttons: [
             SlideButton(
                 text_key: "NIY",
@@ -61,6 +63,7 @@
     ),
     Slide(
         text_key: "help-others-description",
+        text_style: PlayerSpeech,
         buttons: [
             SlideButton (
                 text_key: "confirm",
@@ -76,6 +79,7 @@
     ),
     Slide(
         text_key: "build-something-description",
+        text_style: PlayerSpeech,
         buttons: [
             SlideButton (
                 text_key: "confirm",
@@ -91,6 +95,7 @@
     ),
     Slide(
         text_key: "expl-nest",
+        text_style: PlayerSpeech,
         buttons: [
             SlideButton (
                 text_key: "confirm",
@@ -106,6 +111,7 @@
     ),
     Slide(
         text_key: "look-for-quest",
+        text_style: PlayerSpeech,
         buttons: [
             SlideButton (
                 text_key: "button-back-to-town",

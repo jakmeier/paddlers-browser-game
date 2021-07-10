@@ -9,6 +9,7 @@
     ),
     Slide (
         text_key: "visitor-on-its-way",
+        text_style: SystemMessage,
         buttons: [],
         sprite: Simple(DuckHappy),
         back_button: true,
@@ -16,6 +17,7 @@
     ),
     Slide (
         text_key: "expl-watergate-queue",
+        text_style: SystemMessage,
         buttons: [],
         sprite: Simple(Stone2),
         back_button: true,
@@ -23,6 +25,7 @@
     ),
     Slide (
         text_key: "expl-watergate-release",
+        text_style: SystemMessage,
         sprite: Simple(DuckHappy),
         back_button: true,
         next_button: false,
