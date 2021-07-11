@@ -27,7 +27,11 @@ module.exports = {
         }]
     },
     plugins: [
-        new CopyWebpackPlugin(['index.html']),
+        new CopyWebpackPlugin(new CopyWebpackPlugin({
+            patterns: [{
+                from: './index.html'
+            }]
+        })),
         new PaddleWebpackPlugin(),
     ]
 };
