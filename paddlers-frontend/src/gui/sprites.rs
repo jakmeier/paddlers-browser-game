@@ -2,7 +2,6 @@ pub mod animation;
 pub mod paths;
 
 use super::z::*;
-use crate::gui::shapes::*;
 use crate::gui::utils::*;
 use animation::AnimatedObject;
 use mogwai::prelude::*;
@@ -14,7 +13,6 @@ pub use paddlers_shared_lib::specification_types::*;
 pub struct Sprites {
     img: Vec<Image>,
     animations: Vec<AnimatedObject>,
-    shapes: Vec<PadlShape>,
 }
 
 impl Sprites {
@@ -22,7 +20,6 @@ impl Sprites {
         Sprites {
             img: images,
             animations,
-            shapes: load_shapes(),
         }
     }
     pub fn index(&self, index: SpriteIndex) -> Image {
@@ -41,9 +38,6 @@ impl Sprites {
                 animations[i].sprite(d, a)
             }
         }
-    }
-    pub fn shape_index(&self, index: PadlShapeIndex) -> &PadlShape {
-        &self.shapes[index as usize]
     }
     // pub fn new_image_node(img: SpriteIndex) -> HtmlImageElement {
     //     let node = HtmlImageElement::new().unwrap();

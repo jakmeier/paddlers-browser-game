@@ -11,7 +11,6 @@ use crate::net::graphql::query_types::{
 };
 use crate::net::NetMsg;
 use crate::prelude::*;
-use paddle::LoadScheduler;
 use paddlers_shared_lib::prelude::*;
 use specs::prelude::*;
 use std::convert::TryInto;
@@ -19,7 +18,7 @@ use std::sync::mpsc::TryRecvError;
 
 pub fn loading_update_net(
     net_chan: &mut Receiver<NetMsg>,
-    progress: &mut LoadScheduler,
+    loader: LoadSchedulerId,
 ) -> PadlResult<()> {
     match net_chan.try_recv() {
         Ok(msg) => match msg {
@@ -32,28 +31,28 @@ pub fn loading_update_net(
                 }
             },
             NetMsg::Workers(response, _vid) => {
-                progress.add_progress(response);
+                loader.manually_report_progress(response);
             }
             NetMsg::Player(player_info) => {
-                progress.add_progress(player_info);
+                loader.manually_report_progress(player_info);
             }
             NetMsg::Buildings(response) => {
-                progress.add_progress(response);
+                loader.manually_report_progress(response);
             }
             NetMsg::Hobos(hobos, _vid) => {
-                progress.add_progress(hobos);
+                loader.manually_report_progress(hobos);
             }
             NetMsg::Attacks(response) => {
-                progress.add_progress(response);
+                loader.manually_report_progress(response);
             }
             NetMsg::VillageInfo(response) => {
-                progress.add_progress(response);
+                loader.manually_report_progress(response);
             }
             NetMsg::Reports(data) => {
-                progress.add_progress(data);
+                loader.manually_report_progress(data);
             }
             NetMsg::Quests(data) => {
-                progress.add_progress(data);
+                loader.manually_report_progress(data);
             }
             other => {
                 println!(

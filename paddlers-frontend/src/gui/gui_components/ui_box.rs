@@ -91,14 +91,13 @@ impl InteractiveTableArea for UiBox {
                         Some(img)
                     }
                 }
-                RenderVariant::ImgWithHoverShape(img, hov) => {
+                RenderVariant::ImgWithHoverShape(img, hov, col) => {
                     if let Some(mouse_pos) = mouse_pos {
                         if mouse_pos.overlaps_rectangle(&draw_area) {
-                            draw_shape(
-                                sprites,
-                                window,
+                            window.draw_positioned_shape(
                                 &draw_area.padded(self.margin),
-                                *hov,
+                                hov,
+                                col,
                                 FitStrategy::Center,
                                 z_overlay,
                             );
@@ -106,12 +105,11 @@ impl InteractiveTableArea for UiBox {
                     }
                     Some(img)
                 }
-                RenderVariant::Shape(s) => {
-                    draw_shape(
-                        sprites,
-                        window,
+                RenderVariant::Shape(s, col) => {
+                    window.draw_positioned_shape(
                         &draw_area.padded(self.margin),
-                        *s,
+                        s,
+                        col,
                         FitStrategy::Center,
                         z_button_background,
                     );

@@ -10,8 +10,8 @@ use crate::resolution::{SCREEN_H, SCREEN_W};
 use crate::{game::net_receiver::loading_update_net, resolution::OUTER_MENU_AREA_W};
 use nuts::LifecycleStatus;
 use paddle::{
-    DisplayArea, ErrorMessage, Frame, Image, LoadScheduler, LoadedData, LoadingDone,
-    LoadingProgress, NutsCheck, TextBoard,
+    DisplayArea, ErrorMessage, Frame, Image, LoadScheduler, LoadedData, LoadingDoneMsg,
+    LoadingProgressMsg, NutsCheck, TextBoard,
 };
 use paddlers_shared_lib::specification_types::sprite_paths::SPRITE_PATHS;
 use wasm_bindgen::JsCast;
@@ -39,6 +39,9 @@ pub struct PostInit;
 pub(crate) struct LoadingFrame {
     preload_float: FloatingText,
     net_chan: Receiver<NetMsg>,
+    load_tracker: LoadSchedulerId,
+    progress: f32,
+    message: &'static str,
 }
 
 pub struct GameLoadingData {
@@ -52,18 +55,19 @@ pub struct GameLoadingData {
 
 impl LoadingFrame {
     fn run_as_activity(self) {
-        let fh = paddle::register_frame_no_state(self, (0, 0));
+        let fh = paddle::register_frame(self, (), (0, 0));
         let aid = fh.activity();
-        aid.subscribe_domained(|_loading_state, domain, msg: &LoadingProgress| {
+        aid.subscribe_domained(|_loading_state, domain, msg: &LoadingProgressMsg| {
             domain.store(Some(msg.clone()));
         });
         aid.on_delete_domained(|loading_state, domain| {
             let loaded_data = std::mem::take(domain.get_mut::<LoadedData>());
             loading_state.finalize_loading(loaded_data).nuts_check();
         });
-        aid.subscribe(move |_loading_state, _msg: &LoadingDone| {
+        aid.subscribe(move |_loading_state, _msg: &LoadingDoneMsg| {
             aid.set_status(LifecycleStatus::Deleted);
         });
+        aid.subscribe(Self::on_loading_progress);
     }
     pub fn start(root_id: &str, net_chan: Receiver<NetMsg>) -> PadlResult<()> {
         let document = div::doc()?;
@@ -103,7 +107,7 @@ impl LoadingFrame {
         let animations = start_loading_animations();
         let locale = start_loading_locale();
 
-        let load_manager = LoadScheduler::new()
+        let mut load_manager = LoadScheduler::new()
             .with_vec(images, "Drawing visuals for the game")
             .with_vec(animations, "Animating fellow Paddlers")
             .with(locale, "Writing localized texts")
@@ -116,13 +120,26 @@ impl LoadingFrame {
             .with_manually_reported::<ReportsResponse>("Gather letters from mailbox")
             .with_manually_reported::<QuestsResponse>("Listening to god's voice");
 
-        load_manager.attach_to_domain();
+        // TODO: Ideally, this would directly call finalize_loading using the LoadedData received.
+        // But right now, the LoadingFrame state is also required to take out the net_chan.
+        // Thus an ugly indirection is used: 
+        //   1) Store the LoadedData into the domain here
+        //   2) Trigger a deletion on LoadingDoneMsg
+        //   3) In the deletion handler take ownership of the LoadingFrame state and call finalize_loading
+        // I'm sure there is a better way but probably requires some refactoring.
+        load_manager
+            .set_after_loading(|loaded_data| nuts::store_to_domain(&Domain::Frame, loaded_data));
+
+        let load_tracker = load_manager.track_loading();
 
         let preload_float = FloatingText::try_default().expect("FloatingText");
 
         LoadingFrame {
+            load_tracker,
             preload_float,
             net_chan,
+            progress: 0.0,
+            message: "Loading...",
         }
         .run_as_activity();
     }
@@ -159,6 +176,7 @@ impl LoadingFrame {
 
         let net_chan = self.net_chan;
         let sprites = Sprites::new(images, animations);
+        crate::gui::shapes::load_shapes();
 
         let game_data = GameLoadingData::try_from_loaded_data(&mut loaded_data)?;
         Game::register(move |display| {
@@ -178,6 +196,10 @@ impl LoadingFrame {
         });
 
         Ok(())
+    }
+    fn on_loading_progress(&mut self, msg: &LoadingProgressMsg) {
+        self.progress = msg.progress;
+        self.message = msg.description;
     }
 }
 async fn load_image_from_variant(v: &AnimationVariantDef) -> PadlResult<Image> {
@@ -219,24 +241,16 @@ const PROGRESS_BAR_AREA_Y: f32 = 667.4;
 const PROGRESS_BAR_AREA_H: f32 = 200.0;
 
 impl Frame for LoadingFrame {
-    type State = Option<LoadScheduler>;
+    type State = ();
     const WIDTH: u32 = SCREEN_W;
     const HEIGHT: u32 = SCREEN_H;
 
-    fn draw(&mut self, state: &mut Self::State, display: &mut DisplayArea, _timestamp: f64) {
-        if let Some(lm) = state.as_ref() {
-            let progress = lm.progress();
-            let msg = lm.waiting_for();
-            self.draw_progress(display, progress, msg.unwrap_or("Done."))
-                .nuts_check();
-        } else {
-            self.draw_progress(display, 0.0, "Loading...").nuts_check();
-        }
+    fn draw(&mut self, _state: &mut Self::State, display: &mut DisplayArea, _timestamp: f64) {
+        self.draw_progress(display, self.progress, self.message)
+            .nuts_check();
     }
-    fn update(&mut self, maybe_lm: &mut Self::State) {
-        if let Some(lm) = maybe_lm.as_mut() {
-            loading_update_net(&mut self.net_chan, lm).nuts_check();
-        }
+    fn update(&mut self, _state: &mut Self::State) {
+        loading_update_net(&mut self.net_chan, self.load_tracker).nuts_check();
     }
 }
 

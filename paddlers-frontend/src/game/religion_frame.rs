@@ -1,10 +1,9 @@
-use crate::gui::shapes::PadlShapeIndex;
 use crate::{
     gui::{
         decoration::draw_leaf_border,
         menu::{LEAVES_BORDER_H, LEAVES_BORDER_W},
+        shapes::SHAPE_LEFT_ARROW,
         sprites::WithSprite,
-        utils::*,
     },
     prelude::ISpriteIndex,
 };
@@ -130,7 +129,7 @@ impl Frame for ReligionFrame {
         self.tp.reset();
         let bg_shader = &state.shaders.religion_background;
         canvas.update_uniform(
-            bg_shader.render_pipeline(),
+            paddle::Paint::render_pipeline(bg_shader),
             "Time",
             &UniformValue::F32((timestamp / 1000.0) as f32),
         );
@@ -203,11 +202,10 @@ impl Frame for ReligionFrame {
         }
 
         // back button
-        draw_shape(
-            &mut state.sprites,
-            canvas,
-            &Self::button_area(),
-            PadlShapeIndex::LeftArrowV2,
+        canvas.draw_positioned_shape(
+            &Self::button_area().shrink_to_center(0.8),
+            &SHAPE_LEFT_ARROW,
+            &Color::from_rgba(255, 255, 255, 0.4),
             FitStrategy::Center,
             1,
         );

@@ -147,7 +147,7 @@ impl EntityContainer {
             RenderVariant::ImgWithImgBackground(img, _)
             | RenderVariant::ImgWithColBackground(img, _)
             | RenderVariant::Img(img)
-            | RenderVariant::ImgWithHoverShape(img, _)
+            | RenderVariant::ImgWithHoverShape(img, _, _)
             | RenderVariant::ImgWithHoverAlternative(img, _) => {
                 RenderVariant::ImgWithColBackground(*img, GREY)
             }
@@ -155,7 +155,7 @@ impl EntityContainer {
                 RenderVariant::TextWithColBackground(t.to_owned(), GREY)
             }
             RenderVariant::Hide => RenderVariant::Hide,
-            RenderVariant::Shape(s) => RenderVariant::Shape(*s),
+            RenderVariant::Shape(s, col) => RenderVariant::Shape(*s, *col),
             RenderVariant::ImgCollection(vec) => RenderVariant::ImgCollection(vec.clone()),
         };
         ui.ui.add(UiElement::new(e).with_render_variant(style));

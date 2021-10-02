@@ -1,17 +1,21 @@
 use super::{scene_loader::SceneLoader, text_area, *};
 use crate::game::{game_event_manager::game_event, Game};
 use crate::gui::menu::{LEAVES_BORDER_H, LEAVES_BORDER_W};
+use crate::gui::shapes;
 use crate::gui::{
-    decoration::draw_leaf_border, gui_components::*, shapes::PadlShapeIndex, sprites::*,
-    ui_state::Now, utils::colors::LIGHT_BLUE, utils::*, z::*,
+    decoration::draw_leaf_border, gui_components::*, sprites::*, ui_state::Now,
+    utils::colors::LIGHT_BLUE, utils::*, z::*,
 };
 use crate::prelude::*;
 use chrono::NaiveDateTime;
+use paddle::quicksilver_compat::Color;
 use paddle::Frame;
 use paddle::*;
-use paddle::{graphics::AbstractMesh, quicksilver_compat::Color};
 use quicksilver_compat::Shape;
 use specs::WorldExt;
+
+const SHAPE_TEXT_BUBBLE_TO_LEFT: ShapeDesc = ShapeDesc::named("text_bubble_to_left");
+const SHAPE_TEXT_BUBBLE_TO_BOTTOM: ShapeDesc = ShapeDesc::named("text_bubble_to_bottom");
 
 pub(crate) struct DialogueFrame {
     scenes: SceneLoader,
@@ -21,8 +25,6 @@ pub(crate) struct DialogueFrame {
     current_button_layout: ButtonLayout,
     text: String,
     text_provider: TableTextProvider,
-    text_bubble_to_left: AbstractMesh,
-    text_bubble_to_player: AbstractMesh,
     current_scene: Option<SceneIndex>,
     slide_stack: Vec<SlideIndex>,
     mouse: PointerTracker,
@@ -42,8 +44,12 @@ impl DialogueFrame {
             },
             size: text_area().size,
         };
+
         let text_bubble_to_left = build_text_bubble_to_left(ZEROED_RIGHT_AREA, TEXT_AREA);
         let text_bubble_to_player = build_text_bubble_to_bottom(ZEROED_RIGHT_AREA, TEXT_AREA);
+        SHAPE_TEXT_BUBBLE_TO_LEFT.define(text_bubble_to_left);
+        SHAPE_TEXT_BUBBLE_TO_BOTTOM.define(text_bubble_to_player);
+
         let text_provider = TableTextProvider::new_styled("dialogue");
         let button_layout = ButtonLayout::SingleRow;
         let current_slide_text_style = SlideTextStyle::SystemMessage;
@@ -55,8 +61,6 @@ impl DialogueFrame {
             image: SpriteIndex::Simple(SingleSprite::Roger),
             text: String::new(),
             text_provider,
-            text_bubble_to_left,
-            text_bubble_to_player,
             current_scene: None,
             slide_stack: vec![],
             mouse: PointerTracker::new(),
@@ -110,7 +114,10 @@ impl DialogueFrame {
                 if has_back_button {
                     let back_button =
                         UiElement::new(ClickOutput::SlideAction(SlideButtonAction::go_back()))
-                            .with_render_variant(RenderVariant::Shape(PadlShapeIndex::LeftArrow));
+                            .with_render_variant(RenderVariant::Shape(
+                                shapes::SHAPE_LEFT_ARROW,
+                                DARK_GREEN,
+                            ));
                     self.buttons.add(back_button);
                 } else if extra_buttons.len() < 2 {
                     self.buttons.add(UiElement::empty());
@@ -118,7 +125,10 @@ impl DialogueFrame {
                 if let Some(i) = next_button {
                     let next_button =
                         UiElement::new(ClickOutput::SlideAction(SlideButtonAction::to_slide(i)))
-                            .with_render_variant(RenderVariant::Shape(PadlShapeIndex::RightArrow));
+                            .with_render_variant(RenderVariant::Shape(
+                                shapes::SHAPE_RIGHT_ARROW,
+                                DARK_GREEN,
+                            ));
                     self.buttons.add(next_button);
                 }
 
@@ -203,10 +213,22 @@ impl DialogueFrame {
         );
         match self.current_slide_text_style {
             SlideTextStyle::SpeechBubbleToLeft => {
-                window.draw_mesh(&self.text_bubble_to_left, right_area(), &Color::WHITE);
+                window.draw_positioned_shape(
+                    &right_area(),
+                    &SHAPE_TEXT_BUBBLE_TO_LEFT,
+                    &Color::WHITE,
+                    FitStrategy::Center,
+                    Z_UI_MENU,
+                );
             }
             SlideTextStyle::PlayerSpeech => {
-                window.draw_mesh(&self.text_bubble_to_player, right_area(), &LIGHT_GREEN);
+                window.draw_positioned_shape(
+                    &right_area(),
+                    &SHAPE_TEXT_BUBBLE_TO_BOTTOM,
+                    &LIGHT_GREEN,
+                    FitStrategy::Center,
+                    Z_UI_MENU,
+                );
             }
             SlideTextStyle::SystemMessage => {
                 window.draw(&text_area(), &DARK_BLUE);

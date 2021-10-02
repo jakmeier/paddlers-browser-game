@@ -3,7 +3,6 @@
 //! no connection with game logic in here
 
 pub mod colors;
-use crate::gui::shapes::PadlShapeIndex;
 pub use colors::*;
 mod progress_bar;
 pub use progress_bar::*;
@@ -23,11 +22,11 @@ pub enum RenderVariant {
     ImgWithImgBackground(SpriteSet, SingleSprite),
     ImgWithColBackground(SpriteSet, Color),
     ImgWithHoverAlternative(SpriteSet, SpriteSet),
-    ImgWithHoverShape(SpriteSet, PadlShapeIndex),
+    ImgWithHoverShape(SpriteSet, ShapeDesc, Color),
     ImgCollection(ImageCollection),
     Text(String),
     TextWithColBackground(String, Color),
-    Shape(PadlShapeIndex),
+    Shape(ShapeDesc, Color),
     Hide,
 }
 
@@ -75,18 +74,6 @@ pub fn draw_image(
     let unfitted_area = Rectangle::new(max_area.pos, img.natural_size());
     let area = unfitted_area.fit_into_ex(max_area, fit_strat, false);
     window.draw_ex(&area, &img, texture_transform, z);
-}
-pub fn draw_shape(
-    sprites: &mut Sprites,
-    window: &mut DisplayArea,
-    draw_area: &Rectangle,
-    i: PadlShapeIndex,
-    fit_strat: FitStrategy,
-    z: i16,
-) {
-    let shape = sprites.shape_index(i);
-    let place = shape.bounding_box.fit_into_ex(&draw_area, fit_strat, true);
-    window.draw_mesh_ex(&shape.mesh, place, &shape.paint, Transform::IDENTITY, z);
 }
 
 pub fn draw_image_collection(

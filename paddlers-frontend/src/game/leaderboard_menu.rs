@@ -1,10 +1,7 @@
 use crate::prelude::*;
 use crate::{
     game::game_event_manager::game_event,
-    gui::{
-        gui_components::*, shapes::PadlShapeIndex, sprites::*, ui_state::Now, utils::*,
-        z::Z_UI_MENU,
-    },
+    gui::{gui_components::*, shapes, sprites::*, ui_state::Now, utils::*, z::Z_UI_MENU},
 };
 use paddle::{DisplayArea, PointerEvent, PointerEventType, PointerTracker};
 use specs::WorldExt;
@@ -26,8 +23,11 @@ impl LeaderboardMenuFrame {
             ),
         ];
         for (view, img) in &tabs {
-            let rend =
-                RenderVariant::ImgWithHoverShape(SpriteSet::Simple(*img), PadlShapeIndex::Frame);
+            let rend = RenderVariant::ImgWithHoverShape(
+                SpriteSet::Simple(*img),
+                shapes::SHAPE_FRAME,
+                DARK_GREEN,
+            );
             ui_box.add(
                 UiElement::new(GameEvent::SwitchToView(UiView::Leaderboard(*view)))
                     .with_render_variant(rend),

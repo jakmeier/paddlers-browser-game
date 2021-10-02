@@ -14,10 +14,13 @@ use crate::{
     resolution::TOWN_TILE_S,
 };
 
-use paddle::*;
 use paddle::{
     quicksilver_compat::{Color, Shape},
     FitStrategy,
+};
+use paddle::{
+    DisplayArea, NutsCheck, Paint, PointerEvent, PointerEventType, PointerTracker, Rectangle,
+    Transform, UniformValue,
 };
 
 use paddlers_shared_lib::story::{story_state::StoryState, story_trigger::StoryTrigger};

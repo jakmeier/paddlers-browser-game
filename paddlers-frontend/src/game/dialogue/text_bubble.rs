@@ -9,7 +9,7 @@ const RELATIVE_SMALL_TAIL_H: f32 = 0.075;
 /// Creates a shape for tesselation that forms a left-open text bubble.
 /// total_area: Maximum space that text bubble should use
 /// text_area: Minimum space that text should have. Must be a subset of total_area.
-pub fn build_text_bubble_to_left(total_area: Rectangle, text_area: Rectangle) -> AbstractMesh {
+pub fn build_text_bubble_to_left(total_area: Rectangle, text_area: Rectangle) -> ComplexShape {
     // Define start point
     let x0 = total_area.pos.x;
     let y0 = total_area.pos.y + total_area.size.y / 2.0;
@@ -49,13 +49,12 @@ pub fn build_text_bubble_to_left(total_area: Rectangle, text_area: Rectangle) ->
     tessellator
         .tessellate_path(&path, &FillOptions::default(), &mut shape)
         .unwrap();
-    mesh.normalize();
 
-    mesh
+    ComplexShape::new(mesh, total_area)
 }
 
 /// Variation of a text bubble that opens towards the bottom right
-pub fn build_text_bubble_to_bottom(total_area: Rectangle, text_area: Rectangle) -> AbstractMesh {
+pub fn build_text_bubble_to_bottom(total_area: Rectangle, text_area: Rectangle) -> ComplexShape {
     // Define text corners
     let left = text_area.pos.x;
     let top = text_area.pos.y;
@@ -105,7 +104,6 @@ pub fn build_text_bubble_to_bottom(total_area: Rectangle, text_area: Rectangle) 
     tessellator
         .tessellate_path(&path, &FillOptions::default(), &mut shape)
         .unwrap();
-    mesh.normalize();
 
-    mesh
+    ComplexShape::new(mesh, total_area)
 }

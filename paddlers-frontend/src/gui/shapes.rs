@@ -1,59 +1,27 @@
 //! Pre-rendered shapes that can be drawn like sprites
 
-use crate::gui::utils::*;
 use lyon::lyon_tessellation::{FillOptions, StrokeTessellator};
 use lyon::{math::point, path::Path, tessellation::*};
-use paddle::{quicksilver_compat::Color, AbstractMesh, Rectangle, ShapeRenderer};
+use paddle::ShapeDesc;
+use paddle::{AbstractMesh, ComplexShape, Rectangle, ShapeRenderer};
 
-/// A single mesh of triangles ready to be drawn
-pub struct PadlShape {
-    pub bounding_box: Rectangle,
-    pub paint: Color,
-    pub mesh: AbstractMesh,
-}
-#[derive(Debug, Clone, Copy)]
-pub enum PadlShapeIndex {
-    LeftArrow = 0,
-    RightArrow = 1,
-    Frame = 2,
-    LeftArrowV2 = 3,
-}
+// paint: DARK_GREEN.into(),
+pub const SHAPE_LEFT_ARROW: ShapeDesc = ShapeDesc::named("left_arrow");
+pub const SHAPE_RIGHT_ARROW: ShapeDesc = ShapeDesc::named("right_arrow");
+pub const SHAPE_FRAME: ShapeDesc = ShapeDesc::named("frame");
 
-pub fn load_shapes() -> Vec<PadlShape> {
-    let mut shapes = Vec::new();
+pub fn load_shapes() {
     let base = Rectangle::new_sized((200, 100));
 
-    shapes.push(PadlShape {
-        mesh: build_arrow(base, true),
-        bounding_box: base,
-        paint: DARK_GREEN.into(),
-    });
-
-    shapes.push(PadlShape {
-        mesh: build_arrow(base, false),
-        bounding_box: base,
-        paint: DARK_GREEN.into(),
-    });
+    SHAPE_LEFT_ARROW.define(build_arrow(base, true));
+    SHAPE_RIGHT_ARROW.define(build_arrow(base, false));
 
     let base = Rectangle::new_sized((600, 200));
-    shapes.push(PadlShape {
-        mesh: build_frame(base),
-        bounding_box: base,
-        paint: DARK_GREEN.into(),
-    });
-
-    let base = Rectangle::new_sized((200.0, 200.0));
-    shapes.push(PadlShape {
-        mesh: build_arrow(base, true),
-        bounding_box: base,
-        paint: Color::from_rgba(255, 255, 255, 0.4),
-    });
-
-    shapes
+    SHAPE_FRAME.define(build_frame(base));
 }
 
 /// Shape used as button to go back/forth
-fn build_arrow(total_area: Rectangle, left: bool) -> AbstractMesh {
+fn build_arrow(total_area: Rectangle, left: bool) -> ComplexShape {
     let w = total_area.size.x;
     let h = total_area.size.y;
     let mut x0 = total_area.pos.x;
@@ -99,11 +67,10 @@ fn build_arrow(total_area: Rectangle, left: bool) -> AbstractMesh {
     tessellator
         .tessellate_path(&path, &FillOptions::default(), &mut shape)
         .unwrap();
-    mesh.normalize();
-    mesh
+    ComplexShape::new(mesh, total_area)
 }
 
-fn build_frame(area: Rectangle) -> AbstractMesh {
+fn build_frame(area: Rectangle) -> ComplexShape {
     // Create enclosing path
     let mut builder = Path::builder();
     builder.begin(point(area.x(), area.y()));
@@ -128,6 +95,5 @@ fn build_frame(area: Rectangle) -> AbstractMesh {
             &mut shape,
         )
         .unwrap();
-    mesh.normalize();
-    mesh
+    ComplexShape::new(mesh, area)
 }

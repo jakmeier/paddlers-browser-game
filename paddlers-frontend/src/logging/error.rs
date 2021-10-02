@@ -92,6 +92,7 @@ pub enum PadlErrorCode {
     RonParseError(ron::error::Error),
     UrlParseError(String),
     BrowserError(String),
+    #[allow(dead_code)]
     DialogueEmpty,
     #[allow(dead_code)]
     AuthorizationRequired,
