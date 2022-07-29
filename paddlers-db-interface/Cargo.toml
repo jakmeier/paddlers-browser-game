@@ -15,7 +15,7 @@ serde = "1.0"
 serde_derive = "1.0"
 toml = "0.5"
 chrono = "0.4"
-juniper = "0.14"
+juniper = "0.15"
 juniper_codegen = "0.14"
 juniper_rocket = "0.5"
 
