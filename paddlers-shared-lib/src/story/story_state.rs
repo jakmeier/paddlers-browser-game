@@ -7,7 +7,7 @@ use ::diesel_derive_enum::DbEnum;
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[cfg_attr(feature = "enum_utils", derive(EnumIter, Display))]
 #[cfg_attr(feature = "graphql", derive(juniper::GraphQLEnum))]
-#[cfg_attr(feature = "sql_db", DieselType = "Story_state_type", derive(DbEnum))]
+#[cfg_attr(feature = "sql_db", derive(DbEnum), DieselType = "Story_state_type")]
 pub enum StoryState {
     Initialized,
     ServantAccepted,

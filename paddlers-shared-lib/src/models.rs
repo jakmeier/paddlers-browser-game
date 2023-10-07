@@ -207,7 +207,7 @@ pub struct NewBuilding {
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[cfg_attr(feature = "enum_utils", derive(EnumIter, Display))]
 #[cfg_attr(feature = "graphql", derive(juniper::GraphQLEnum))]
-#[cfg_attr(feature = "sql_db", DieselType = "Resource_type", derive(DbEnum))]
+#[cfg_attr(feature = "sql_db", derive(DbEnum), DieselType = "Resource_type")]
 pub enum ResourceType {
     Sticks,
     Logs,
@@ -228,7 +228,7 @@ pub struct Resource {
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[cfg_attr(feature = "enum_utils", derive(EnumIter, Display))]
 #[cfg_attr(feature = "graphql", derive(juniper::GraphQLEnum))]
-#[cfg_attr(feature = "sql_db", DieselType = "Task_type", derive(DbEnum))]
+#[cfg_attr(feature = "sql_db", derive(DbEnum), DieselType = "Task_type")]
 pub enum TaskType {
     Idle,
     Walk,
@@ -322,7 +322,7 @@ pub struct NewAbility {
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[cfg_attr(feature = "enum_utils", derive(EnumIter, Display))]
 #[cfg_attr(feature = "graphql", derive(juniper::GraphQLEnum))]
-#[cfg_attr(feature = "sql_db", DieselType = "Ability_type", derive(DbEnum))]
+#[cfg_attr(feature = "sql_db", derive(DbEnum), DieselType = "Ability_type")]
 /// Abilities are attributes of worker and hero units.
 /// They are closely related to Tasks but there is no one-to-one correspondence.
 pub enum AbilityType {
@@ -354,7 +354,7 @@ pub struct NewEffect {
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[cfg_attr(feature = "enum_utils", derive(EnumIter, Display))]
 #[cfg_attr(feature = "graphql", derive(juniper::GraphQLEnum))]
-#[cfg_attr(feature = "sql_db", DieselType = "Hobo_attribute_type", derive(DbEnum))]
+#[cfg_attr(feature = "sql_db", derive(DbEnum), DieselType = "Hobo_attribute_type")]
 /// Describes an attribute of a hobo
 pub enum HoboAttributeType {
     Health,
@@ -373,7 +373,7 @@ pub struct WorkerFlag {
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[cfg_attr(feature = "enum_utils", derive(EnumIter, Display))]
 #[cfg_attr(feature = "graphql", derive(juniper::GraphQLEnum))]
-#[cfg_attr(feature = "sql_db", DieselType = "Worker_flag_type", derive(DbEnum))]
+#[cfg_attr(feature = "sql_db", derive(DbEnum), DieselType = "Worker_flag_type")]
 pub enum WorkerFlagType {
     ManaRegeneration,
     Work,
