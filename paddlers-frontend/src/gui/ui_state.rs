@@ -19,7 +19,7 @@ pub struct Now(pub NaiveDateTime);
 
 impl Default for Now {
     fn default() -> Self {
-        Self(NaiveDateTime::from_timestamp(0, 0))
+        Self(NaiveDateTime::from_timestamp_opt(0, 0).unwrap())
     }
 }
 

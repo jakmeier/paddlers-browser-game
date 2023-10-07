@@ -35,7 +35,7 @@ struct VillageBatch {
 impl GameMaster {
     pub fn new(dbpool: Pool, attacker_addr: &Addr<AttackSpawner>) -> Self {
         GameMaster {
-            last_attack: NaiveDateTime::from_timestamp(0, 0),
+            last_attack: NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
             dbpool: dbpool,
             attacker_addr: attacker_addr.clone(),
             current_batch: None,

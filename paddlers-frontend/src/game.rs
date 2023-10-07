@@ -171,7 +171,7 @@ impl Game {
         self.world.read_resource()
     }
     pub fn update_time_reference(&mut self) {
-        if self.time_zero != NaiveDateTime::from_timestamp(0, 0) {
+        if self.time_zero != NaiveDateTime::from_timestamp_opt(0, 0).unwrap() {
             let t = utc_now();
             self.world.insert(Now(t));
         }

@@ -15,7 +15,7 @@ struct Claims {
 pub struct PadlUser {
     /// Minimal authenticated user identity. Must remain unique among all services.
     pub uuid: uuid::Uuid,
-    private: (),
+    _private: (),
 }
 
 impl PadlUser {
@@ -34,7 +34,7 @@ impl PadlUser {
         let uuid = uuid::Uuid::parse_str(&token_parsed.claims.sub)
             .map_err(|_| AuthenticationError::InvalidSubject)?;
 
-        Ok(PadlUser { uuid, private: () })
+        Ok(PadlUser { uuid, _private: () })
     }
 }
 

@@ -27,7 +27,7 @@ pub fn loading_update_net(
                     nuts::send_to::<RestApiState, _>(HttpCreatePlayer);
                 }
                 _ => {
-                    println!("Network Error: {}", e);
+                    paddle::println!("Network Error: {}", e);
                 }
             },
             NetMsg::Workers(response, _vid) => {
@@ -55,7 +55,7 @@ pub fn loading_update_net(
                 loader.manually_report_progress(data);
             }
             other => {
-                println!(
+                paddle::println!(
                     "Unexpected network message before complete initialization {:?}",
                     other,
                 );
@@ -76,7 +76,7 @@ impl Game {
                 // println!("Received Network data!");
                 match msg {
                     NetMsg::Error(e) => {
-                        println!("Network Error: {}", e);
+                        paddle::println!("Network Error: {}", e);
                     }
                     NetMsg::Attacks(response) => {
                         self.load_attacking_hobos(response)?;
