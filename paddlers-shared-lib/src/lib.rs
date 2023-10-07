@@ -1,5 +1,3 @@
-#![feature(trivial_bounds)]
-#![feature(const_fn)]
 #[cfg(feature = "sql_db")]
 #[macro_use]
 extern crate diesel;

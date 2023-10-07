@@ -1,10 +1,5 @@
 #![recursion_limit = "512"]
-#![feature(
-    is_sorted,
-    associated_type_bounds,
-    const_fn,
-    const_fn_floating_point_arithmetic
-)]
+#![feature(is_sorted, associated_type_bounds, const_fn_floating_point_arithmetic)]
 extern crate specs;
 #[macro_use]
 extern crate specs_derive;
