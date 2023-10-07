@@ -16,9 +16,8 @@ pub(crate) use story::story_transition;
 use crate::authentication::Authentication;
 use crate::setup::initialize_new_player_account;
 use crate::StringErr;
-use actix_web::error::BlockingError;
 use actix_web::{web, HttpResponse, Responder};
-use futures::Future;
+// use futures::Future;
 use paddlers_shared_lib::sql::GameDB;
 use paddlers_shared_lib::{
     api::{
@@ -30,19 +29,19 @@ use paddlers_shared_lib::{
     keys::SqlKey,
 };
 
-pub fn index() -> impl Responder {
+pub async fn index() -> impl Responder {
     HttpResponse::Ok().body("Game Master OK")
 }
 
-pub(crate) fn purchase_prophet(
+pub(crate) async fn purchase_prophet(
     pool: web::Data<crate::db::Pool>,
     actors: web::Data<crate::ActorAddresses>,
     body: web::Json<ProphetPurchase>,
     mut auth: Authentication,
-) -> impl Future<Item = HttpResponse, Error = ()> {
+) -> HttpResponse {
     let village = body.village;
     std::mem::drop(body);
-    web::block(move || {
+    let result = web::block(move || {
         let db: crate::db::DB = pool.get_ref().into();
         check_owns_village0(&db, &auth, village)?;
         let result = db.try_buy_prophet(
@@ -52,16 +51,16 @@ pub(crate) fn purchase_prophet(
         );
         result
     })
-    .then(
-        |result: Result<(), BlockingError<std::string::String>>| match result {
-            Err(BlockingError::Error(msg)) => Ok(HttpResponse::Forbidden().body(msg).into()),
-            Err(BlockingError::Canceled) => Ok(HttpResponse::InternalServerError().into()),
-            Ok(()) => Ok(HttpResponse::Ok().into()),
-        },
-    )
+    .await;
+
+    match result {
+        Err(_) => HttpResponse::InternalServerError().into(),
+        Ok(Err(msg)) => HttpResponse::Forbidden().body(msg).into(),
+        Ok(Ok(())) => HttpResponse::Ok().into(),
+    }
 }
 
-pub(crate) fn purchase_building(
+pub(crate) async fn purchase_building(
     pool: web::Data<crate::db::Pool>,
     body: web::Json<BuildingPurchase>,
     mut auth: Authentication,
@@ -82,12 +81,12 @@ pub(crate) fn purchase_building(
 
     db.try_buy_building(building, (body.x, body.y), body.village, player, addr)
         .map_or_else(
-            |e| HttpResponse::from(&e),
+            |e| HttpResponse::InternalServerError().body(e),
             |id| HttpResponse::Ok().json(id).into(),
         )
 }
 
-pub fn delete_building(
+pub async fn delete_building(
     pool: web::Data<crate::db::Pool>,
     body: web::Json<BuildingDeletion>,
     auth: Authentication,
@@ -111,7 +110,7 @@ pub fn delete_building(
         HttpResponse::BadRequest().body(format!("No building at {}|{}", body.x, body.y))
     }
 }
-pub fn upgrade_building(
+pub async fn upgrade_building(
     pool: web::Data<crate::db::Pool>,
     body: web::Json<BuildingUpgrade>,
     auth: Authentication,
@@ -141,7 +140,7 @@ pub fn upgrade_building(
     }
 }
 
-pub(super) fn overwrite_tasks(
+pub(super) async fn overwrite_tasks(
     pool: web::Data<crate::db::Pool>,
     body: web::Json<TaskList>,
     addr: web::Data<crate::ActorAddresses>,
@@ -174,7 +173,7 @@ pub(super) fn overwrite_tasks(
 }
 
 /// Must be called by an identified user (via JWT) before using any other Game-Master or GQL services
-pub(super) fn new_player(
+pub(super) async fn new_player(
     pool: web::Data<crate::db::Pool>,
     auth: Authentication,
     body: web::Json<PlayerInitData>,
@@ -211,10 +210,4 @@ fn check_owns_village(
     v: VillageKey,
 ) -> Result<(), HttpResponse> {
     check_owns_village0(db, auth, v).map_err(|msg| HttpResponse::Forbidden().body(msg))
-}
-
-fn internal_server_error(e: impl ToString) -> actix_web::Error {
-    HttpResponse::InternalServerError()
-        .body(e.to_string())
-        .into()
 }

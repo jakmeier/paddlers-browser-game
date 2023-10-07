@@ -31,7 +31,7 @@ fn religion_background_shader(display: &mut Display) -> CustomShader {
     let projection = display.webgl_transform();
 
     let uniform_values = &[
-        ("Projection", UniformValue::Matrix3fv(projection.as_slice())),
+        ("Projection", UniformValue::from(projection)),
         ("Time", UniformValue::F32(0.0)),
     ];
 
@@ -54,7 +54,7 @@ fn water_shader(display: &mut Display, water_texture: Image) -> CustomShader {
     let projection = display.webgl_transform();
 
     let uniform_values = &[
-        ("Projection", UniformValue::Matrix3fv(projection.as_slice())),
+        ("Projection", UniformValue::from(projection)),
         ("Time", UniformValue::F32(0.0)),
     ];
 

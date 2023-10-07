@@ -129,7 +129,7 @@ impl Frame for ReligionFrame {
         self.tp.reset();
         let bg_shader = &state.shaders.religion_background;
         canvas.update_uniform(
-            paddle::Paint::render_pipeline(bg_shader),
+            paddle::Paint::paint_render_pipeline(bg_shader),
             "Time",
             &UniformValue::F32((timestamp / 1000.0) as f32),
         );

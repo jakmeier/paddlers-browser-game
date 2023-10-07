@@ -1,7 +1,5 @@
 use crate::game_master::story_worker::StoryWorkerMessage;
 use crate::{authentication::Authentication, db::CollectQuestMessage};
-use actix::prelude::*;
-use actix_web::error::BlockingError;
 use actix_web::{web, HttpResponse};
 use paddlers_shared_lib::{
     api::quests::QuestCollect,
@@ -13,79 +11,80 @@ use paddlers_shared_lib::{
     prelude::{GameDB, VillageKey},
 };
 
-pub(crate) fn collect_quest(
+pub(crate) async fn collect_quest(
+    pool: web::Data<crate::db::Pool>,
+    body: web::Json<QuestCollect>,
+    auth: Authentication,
+    addr: web::Data<crate::ActorAddresses>,
+) -> HttpResponse {
+    let result = collect_quest_impl(pool, body, auth, addr).await;
+    match result {
+        Err(msg) => HttpResponse::Forbidden().body(msg).into(),
+        Ok(()) => HttpResponse::Ok().into(),
+    }
+}
+pub(crate) async fn collect_quest_impl(
     pool: web::Data<crate::db::Pool>,
     body: web::Json<QuestCollect>,
     mut auth: Authentication,
     addr: web::Data<crate::ActorAddresses>,
-) -> impl Future<Item = HttpResponse, Error = ()> {
-    web::block(move || {
-        // Check that quest is active and all conditions are met, then forward request to DB actor
-        let db: crate::db::DB = pool.get_ref().into();
-        let player_key = auth.player_key(&db)?;
-        let quest_key = body.quest;
-        let quest = db
-            .player_quests(player_key)
-            .into_iter()
-            .find(|q| q.key() == quest_key)
-            .ok_or_else(|| "Player does not have this quest".to_string())?;
-        let village = db.player_villages(player_key)[0]; // Assuming one village per player
-        let player = auth
-            .player_object(&db)
-            .ok_or_else(|| "No player?".to_owned())?;
+) -> Result<(), String> {
+    // Check that quest is active and all conditions are met, then forward request to DB actor
+    let db: crate::db::DB = pool.get_ref().into();
+    let player_key = auth.player_key(&db)?;
+    let quest_key = body.quest;
+    let quest = db
+        .player_quests(player_key)
+        .into_iter()
+        .find(|q| q.key() == quest_key)
+        .ok_or_else(|| "Player does not have this quest".to_string())?;
+    let village = db.player_villages(player_key)[0]; // Assuming one village per player
+    let player = auth
+        .player_object(&db)
+        .ok_or_else(|| "No player?".to_owned())?;
 
-        // TODO (performance) avoid sequential DB lookups throughout checks
-        check_building_conditions(&db, quest_key, village.key())?;
-        check_resource_conditions(&db, quest_key, village.key())?;
-        check_karma_conditions(&quest, &player)?;
-        check_pop_conditions(&db, &quest, village.key())?;
-        check_worker_conditions(&db, quest_key, village.key())?;
+    // TODO (performance) avoid sequential DB lookups throughout checks
+    check_building_conditions(&db, quest_key, village.key())?;
+    check_resource_conditions(&db, quest_key, village.key())?;
+    check_karma_conditions(&quest, &player)?;
+    check_pop_conditions(&db, &quest, village.key())?;
+    check_worker_conditions(&db, quest_key, village.key())?;
 
-        let follow_up_quest = quest.follow_up_quest.map(|name| {
-            db.quest_by_name(
-                name.parse()
-                    .expect("Couldn't parse QuestName from value found in DB"),
-            )
-            .map(|quest| quest.key())
-            .expect("Quest not found in DB")
-        });
+    let follow_up_quest = quest.follow_up_quest.map(|name| {
+        db.quest_by_name(
+            name.parse()
+                .expect("Couldn't parse QuestName from value found in DB"),
+        )
+        .map(|quest| quest.key())
+        .expect("Quest not found in DB")
+    });
 
-        let msg = CollectQuestMessage {
-            quest: quest_key,
-            player: player_key,
-            village: village.key(),
-            follow_up_quest,
-        };
-        let future = addr
-            .db_actor
-            .send(msg)
-            .map_err(|e| eprintln!("Quest collection spawn failed: {:?}", e));
-        Arbiter::spawn(future);
+    let msg = CollectQuestMessage {
+        quest: quest_key,
+        player: player_key,
+        village: village.key(),
+        follow_up_quest,
+    };
+    addr.db_actor
+        .send(msg)
+        .await
+        .map_err(|e| format!("Quest collection spawn failed: {:?}", e))?;
 
-        let quest_id = quest
-            .quest_key
-            .parse()
-            .expect("Couldn't parse QuestName from value found in DB");
-        let msg = StoryWorkerMessage::new_verified(
-            player_key,
-            player.story_state,
-            StoryTrigger::FinishedQuest(quest_id),
-        );
-        let future = addr
-            .story_worker
-            .send(msg)
-            .map_err(|e| eprintln!("Quest finished spawn failed: {:?}", e));
-        Arbiter::spawn(future);
+    let quest_id = quest
+        .quest_key
+        .parse()
+        .expect("Couldn't parse QuestName from value found in DB");
+    let msg = StoryWorkerMessage::new_verified(
+        player_key,
+        player.story_state,
+        StoryTrigger::FinishedQuest(quest_id),
+    );
+    addr.story_worker
+        .send(msg)
+        .await
+        .map_err(|e| format!("Quest finished spawn failed: {:?}", e))?;
 
-        Ok(())
-    })
-    .then(
-        |result: Result<(), BlockingError<std::string::String>>| match result {
-            Err(BlockingError::Error(msg)) => Ok(HttpResponse::Forbidden().body(msg).into()),
-            Err(BlockingError::Canceled) => Ok(HttpResponse::InternalServerError().into()),
-            Ok(()) => Ok(HttpResponse::Ok().into()),
-        },
-    )
+    Ok(())
 }
 
 fn check_building_conditions(

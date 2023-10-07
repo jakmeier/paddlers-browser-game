@@ -6,7 +6,7 @@ use actix_web::{web, HttpResponse, Responder};
 use paddlers_shared_lib::prelude::*;
 use paddlers_shared_lib::{api::story::StoryStateTransition, story::story_trigger::StoryTrigger};
 
-pub(crate) fn story_transition(
+pub(crate) async fn story_transition(
     pool: web::Data<crate::db::Pool>,
     body: web::Json<StoryStateTransition>,
     mut auth: Authentication,
@@ -15,7 +15,10 @@ pub(crate) fn story_transition(
     let db: crate::db::DB = pool.get_ref().into();
     if let Some(player) = auth.player_object(&db) {
         db.try_execute_story_transition(player, body.0, addr)
-            .map_or_else(|e| HttpResponse::from(&e), |_| HttpResponse::Ok().into())
+            .map_or_else(
+                |e| HttpResponse::InternalServerError().body(e),
+                |_| HttpResponse::Ok().into(),
+            )
     } else {
         HttpResponse::BadRequest().body(format!(
             "No such player in the database: {}",

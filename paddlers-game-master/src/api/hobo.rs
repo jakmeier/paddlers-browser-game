@@ -4,7 +4,7 @@ use paddlers_shared_lib::{api::hobo::SettleHobo, prelude::*};
 
 use super::check_owns_village;
 
-pub(crate) fn settle_hobo(
+pub(crate) async fn settle_hobo(
     pool: web::Data<crate::db::Pool>,
     body: web::Json<SettleHobo>,
     auth: Authentication,

@@ -1,3 +1,5 @@
+use std::future::{ready, Ready};
+
 use actix_web::dev::Payload;
 use actix_web::error::{ErrorBadRequest, ErrorUnauthorized};
 use actix_web::{Error, FromRequest, HttpRequest};
@@ -14,25 +16,27 @@ pub struct Authentication {
 
 impl FromRequest for Authentication {
     type Error = Error;
-    type Future = Result<Self, Error>;
-    type Config = ();
+    type Future = Ready<Result<Self, Error>>;
 
     fn from_request(req: &HttpRequest, _: &mut Payload) -> Self::Future {
-        let config: &Config = req.app_data::<Config>().expect("Need config");
-        match req.headers().get(actix_web::http::header::AUTHORIZATION) {
-            Some(auth_header) => match auth_header.to_str() {
-                Ok(token) => match PadlUser::from_token(token, &config) {
-                    Ok(user) => Ok(Authentication {
-                        user,
-                        _private: (),
-                        cached_player: None,
-                    }),
-                    Err(e) => Err(ErrorUnauthorized(e))?,
+        fn authenticate(req: &HttpRequest) -> Result<Authentication, Error> {
+            let config: &Config = req.app_data::<Config>().expect("Need config");
+            match req.headers().get(actix_web::http::header::AUTHORIZATION) {
+                Some(auth_header) => match auth_header.to_str() {
+                    Ok(token) => match PadlUser::from_token(token, &config) {
+                        Ok(user) => Ok(Authentication {
+                            user,
+                            _private: (),
+                            cached_player: None,
+                        }),
+                        Err(e) => Err(ErrorUnauthorized(e))?,
+                    },
+                    Err(_e) => Err(ErrorBadRequest("Unable to parse token"))?,
                 },
-                Err(_e) => Err(ErrorBadRequest("Unable to parse token"))?,
-            },
-            None => Err(ErrorUnauthorized("No Authorization Token provided"))?,
+                None => Err(ErrorUnauthorized("No Authorization Token provided"))?,
+            }
         }
+        ready(authenticate(req))
     }
 }
 

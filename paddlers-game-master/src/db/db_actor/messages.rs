@@ -1,4 +1,4 @@
-use actix::dev::{MessageResponse, ResponseChannel};
+use actix::dev::{MessageResponse, OneshotSender};
 use actix::prelude::*;
 use paddlers_shared_lib::{
     civilization::CivilizationPerk, generated::QuestName, prelude::*,
@@ -27,6 +27,7 @@ pub struct ScheduledAttack {
 }
 
 pub struct NewHoboMessage(pub NewHobo);
+#[derive(Debug)]
 pub struct NewHoboResponse(pub Hobo);
 impl Message for NewHoboMessage {
     type Result = NewHoboResponse;
@@ -37,9 +38,9 @@ where
     A: Actor,
     M: Message<Result = NewHoboResponse>,
 {
-    fn handle<R: ResponseChannel<M>>(self, _: &mut A::Context, tx: Option<R>) {
+    fn handle(self, _: &mut A::Context, tx: Option<OneshotSender<M::Result>>) {
         if let Some(tx) = tx {
-            tx.send(self);
+            tx.send(self).expect("receiver missing");
         }
     }
 }
@@ -64,6 +65,7 @@ impl Message for CollectQuestMessage {
 pub struct PlayerHomeLookup {
     pub player: PlayerKey,
 }
+#[derive(Debug)]
 pub struct PlayerHome(pub VillageKey);
 impl Message for PlayerHomeLookup {
     type Result = PlayerHome;
@@ -73,9 +75,9 @@ where
     A: Actor,
     M: Message<Result = PlayerHome>,
 {
-    fn handle<R: ResponseChannel<M>>(self, _: &mut A::Context, tx: Option<R>) {
+    fn handle(self, _: &mut A::Context, tx: Option<OneshotSender<M::Result>>) {
         if let Some(tx) = tx {
-            tx.send(self);
+            tx.send(self).expect("receiver missing");
         }
     }
 }

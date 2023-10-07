@@ -96,11 +96,10 @@ pub(crate) fn replace_worker_tasks(
             task_id: current_task.key(),
         };
         worker
-            .send(TownWorkerEventMsg(
+            .try_send(TownWorkerEventMsg(
                 event,
                 Utc.from_utc_datetime(&next_task.start_time),
             ))
-            .wait()
             .expect("Send msg to actor");
     }
 }

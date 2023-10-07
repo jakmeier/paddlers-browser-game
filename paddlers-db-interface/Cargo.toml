@@ -20,7 +20,7 @@ juniper_codegen = "0.14"
 juniper_rocket = "0.5"
 
 [dependencies.rocket_contrib]
-version = "0.4"
+version = "0.4.11"
 default-features = false
 features = ["diesel_postgres_pool"]
 

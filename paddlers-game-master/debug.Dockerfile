@@ -1,6 +1,6 @@
 FROM jakmeier/paddlers:builder-base as GameMasterBuilder
 # Install diesel CLI
-RUN cargo install diesel_cli
+RUN cargo install diesel_cli --no-default-features --features "postgres"
 RUN mkdir -p /out && cp /usr/local/cargo/bin/diesel /out/
 # Build only dependencies first to allow Docker's image caching to kick in
 RUN \

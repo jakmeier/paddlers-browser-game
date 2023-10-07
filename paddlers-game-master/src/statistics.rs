@@ -8,7 +8,7 @@ trait LogDisplay {
     fn write(&self, f: &mut File) -> Result<(), std::io::Error>;
 }
 
-pub(super) fn new_frontend_info(body: web::Json<FrontendRuntimeStatistics>) -> impl Responder {
+pub(super) async fn new_frontend_info(body: web::Json<FrontendRuntimeStatistics>) -> impl Responder {
     if let Some(mut f) = open_file_writer() {
         let res = body.write(&mut f).and_then(|_| write!(f, "\n"));
 
