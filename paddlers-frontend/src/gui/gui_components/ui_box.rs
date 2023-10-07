@@ -225,7 +225,7 @@ impl UiBox {
     pub fn add(&mut self, el: UiElement) {
         self.elements.push(el);
         if self.columns * self.rows < self.elements.len() {
-            println!("Warning: Not all elements of the UI Area will be visible")
+            paddle::println!("Warning: Not all elements of the UI Area will be visible")
         }
     }
     pub fn update_notifications(&mut self, notif: Option<Vec<usize>>) {

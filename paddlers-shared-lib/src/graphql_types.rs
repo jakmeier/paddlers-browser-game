@@ -20,7 +20,8 @@ impl GqlTimestamp {
         GqlTimestamp(ndt.timestamp() * 1_000_000 + ndt.timestamp_subsec_micros() as i64)
     }
     pub fn to_chrono(&self) -> chrono::NaiveDateTime {
-        chrono::NaiveDateTime::from_timestamp(self.0 / 1_000_000, (self.0 % 1_000_000) as u32)
+        chrono::NaiveDateTime::from_timestamp_opt(self.0 / 1_000_000, (self.0 % 1_000_000) as u32)
+            .unwrap()
     }
 }
 

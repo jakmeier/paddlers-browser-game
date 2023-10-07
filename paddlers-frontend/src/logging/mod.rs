@@ -34,7 +34,7 @@ impl ErrorQueue {
     fn route_err(&self, e: &PadlError) {
         let err = match e.channel {
             ErrorChannel::Technical => {
-                println!("Error: {}", e);
+                paddle::println!("Error: {}", e);
                 #[cfg(feature = "mobile_debug")]
                 let err = TextBoard::display_error_message(format!("DEBUG: {}", e));
                 #[cfg(not(feature = "mobile_debug"))]
@@ -44,7 +44,7 @@ impl ErrorQueue {
             ErrorChannel::UserFacing => TextBoard::display_error_message(format!("{}", e)),
         };
         if let Err(err) = err {
-            println!("Failed to display error. Reason of failure: {:?}", err);
+            paddle::println!("Failed to display error. Reason of failure: {:?}", err);
         }
     }
 }

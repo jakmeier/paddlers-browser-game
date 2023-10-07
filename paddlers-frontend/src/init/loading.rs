@@ -122,7 +122,7 @@ impl LoadingFrame {
 
         // TODO: Ideally, this would directly call finalize_loading using the LoadedData received.
         // But right now, the LoadingFrame state is also required to take out the net_chan.
-        // Thus an ugly indirection is used: 
+        // Thus an ugly indirection is used:
         //   1) Store the LoadedData into the domain here
         //   2) Trigger a deletion on LoadingDoneMsg
         //   3) In the deletion handler take ownership of the LoadingFrame state and call finalize_loading
