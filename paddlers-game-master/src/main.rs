@@ -15,7 +15,11 @@ mod worker_actions;
 
 use actix::prelude::*;
 use actix_cors::Cors;
-use actix_web::{http::header, web, App, HttpServer};
+use actix_web::{
+    http::header,
+    web::{self, Data},
+    App, HttpServer, ResponseError,
+};
 use db::*;
 use game_master::{
     attack_funnel::AttackFunnel, attack_spawn::AttackSpawner, economy_worker::EconomyWorker,
@@ -52,7 +56,11 @@ struct ActorAddresses {
     story_worker: Addr<StoryWorker>,
 }
 
-fn main() {
+#[derive(Debug)]
+struct StringError(String);
+
+#[actix_web::main]
+async fn main() {
     std::env::set_var("RUST_LOG", "actix_web=info");
     env_logger::init();
 
@@ -64,9 +72,6 @@ fn main() {
     let config = Config::from_env().unwrap_or(Config::default());
     let origin = config.frontend_origin.clone();
     let base_url = config.game_master_service_name.clone();
-
-    // This starts an actix runtime in the current thread that can be used from now on.
-    let sys = actix::System::new("Actix Main System");
 
     // Start some DB actors in separate threads - they will be blocking
     let db = dbpool.clone();
@@ -86,7 +91,7 @@ fn main() {
     HttpServer::new(move || {
         App::new()
             .wrap(
-                Cors::new()
+                Cors::default()
                     .allowed_origin(&origin)
                     .allowed_methods(vec!["POST"])
                     .allowed_headers(vec![header::AUTHORIZATION, header::ACCEPT])
@@ -94,7 +99,7 @@ fn main() {
                     .max_age(3600 * 24),
             )
             .wrap(actix_web::middleware::Logger::default())
-            .data(ActorAddresses {
+            .app_data(Data::new(ActorAddresses {
                 _game_master: gm_actor.clone(),
                 town_worker: town_worker_actor.clone(),
                 _econ_worker: econ_worker.clone(),
@@ -102,89 +107,112 @@ fn main() {
                 db_actor: db_actor.clone(),
                 attack_funnel: attack_funnel.clone(),
                 story_worker: story_worker.clone(),
-            })
-            .data(config.clone())
-            .data(dbpool.clone())
+            }))
+            .app_data(Data::new(config.clone()))
+            .app_data(Data::new(dbpool.clone()))
             .route("/", web::get().to(api::index))
             .service(web::resource("/player/create").route(web::post().to(api::new_player)))
             .service(
                 web::resource("/shop/building")
-                    .data(web::Json::<BuildingPurchase>)
+                    .app_data(Data::new(web::Json::<BuildingPurchase>))
                     .route(web::post().to(api::purchase_building)),
             )
             .service(
                 web::resource("/shop/building/delete")
-                    .data(web::Json::<BuildingDeletion>)
+                    .app_data(Data::new(web::Json::<BuildingDeletion>))
                     .route(web::post().to(api::delete_building)),
             )
             .service(
                 web::resource("/shop/building/upgrade")
-                    .data(web::Json::<BuildingUpgrade>)
+                    .app_data(Data::new(web::Json::<BuildingUpgrade>))
                     .route(web::post().to(api::upgrade_building)),
             )
             .service(
                 web::resource("/shop/unit/prophet")
-                    .data(web::Json::<ProphetPurchase>)
-                    .route(web::post().to_async(api::purchase_prophet)),
+                    .app_data(Data::new(web::Json::<ProphetPurchase>))
+                    .route(web::post().to(api::purchase_prophet)),
             )
             .service(
                 web::resource("/worker/overwriteTasks")
-                    .data(web::Json::<TaskList>)
+                    .app_data(Data::new(web::Json::<TaskList>))
                     .route(web::post().to(api::overwrite_tasks)),
             )
             .service(
                 web::resource("/attacks/create")
-                    .data(web::Json::<AttackDescriptor>)
-                    .route(web::post().to_async(api::create_attack)),
+                    .app_data(Data::new(web::Json::<AttackDescriptor>))
+                    .route(web::post().to(api::create_attack)),
             )
             .service(
                 web::resource("/attacks/startFight")
-                    .data(web::Json::<StartFightRequest>)
+                    .app_data(Data::new(web::Json::<StartFightRequest>))
                     .route(web::post().to(api::welcome_visitor)),
             )
             .service(
                 web::resource("/attacks/invite")
-                    .data(web::Json::<InvitationDescriptor>)
-                    .route(web::post().to_async(api::new_invitation)),
+                    .app_data(Data::new(web::Json::<InvitationDescriptor>))
+                    .route(web::post().to(api::new_invitation)),
             )
             .service(
                 web::resource("/attacks/notifications/visitor_satisfied")
-                    .data(web::Json::<HoboKey>)
+                    .app_data(Data::new(web::Json::<HoboKey>))
                     .route(web::post().to(api::visitor_satisfied_notification)),
             )
             .service(
                 web::resource("/report/collect")
-                    .data(web::Json::<ReportCollect>)
-                    .route(web::post().to_async(api::collect_report_rewards)),
+                    .app_data(Data::new(web::Json::<ReportCollect>))
+                    .route(web::post().to(api::collect_report_rewards)),
             )
             .service(
                 web::resource("/story/transition")
-                    .data(web::Json::<StoryStateTransition>)
+                    .app_data(Data::new(web::Json::<StoryStateTransition>))
                     .route(web::post().to(api::story_transition)),
             )
             .service(
                 web::resource("/stats")
-                    .data(web::Json::<FrontendRuntimeStatistics>)
+                    .app_data(Data::new(web::Json::<FrontendRuntimeStatistics>))
                     .route(web::post().to(statistics::new_frontend_info)),
             )
             .service(
                 web::resource("/quest/collect")
-                    .data(web::Json::<QuestCollect>)
-                    .route(web::post().to_async(api::collect_quest)),
+                    .app_data(Data::new(web::Json::<QuestCollect>))
+                    .route(web::post().to(api::collect_quest)),
             )
             .service(
                 web::resource("/hobo/settle")
-                    .data(web::Json::<SettleHobo>)
+                    .app_data(Data::new(web::Json::<SettleHobo>))
                     .route(web::post().to(api::settle_hobo)),
             )
     })
     .disable_signals()
     .bind(&base_url)
     .expect("binding")
-    .start();
+    .run()
+    .await
+    .expect("failed running actix-web server");
 
     println!("Listening on {}", base_url);
+}
 
-    sys.run().expect("Actix system failure");
-    println!("Web-Actix returned");
+impl ResponseError for StringError {
+    fn status_code(&self) -> actix_web::http::StatusCode {
+        actix_web::http::StatusCode::FORBIDDEN
+    }
+}
+
+impl std::fmt::Display for StringError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl From<String> for StringError {
+    fn from(value: String) -> Self {
+        StringError(value)
+    }
+}
+
+impl From<&str> for StringError {
+    fn from(value: &str) -> Self {
+        StringError(value.to_owned())
+    }
 }

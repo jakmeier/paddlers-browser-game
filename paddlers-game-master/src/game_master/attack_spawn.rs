@@ -3,7 +3,7 @@
 use crate::db::*;
 use crate::game_master::attack_funnel::{AttackFunnel, PlannedAttack};
 use actix::prelude::*;
-use futures::future::join_all;
+use futures_util::future::join_all;
 use paddlers_shared_lib::specification_types::{HoboLevel, HoboType};
 use paddlers_shared_lib::{prelude::*, specification_types::VisitorDefinition};
 use rand::Rng;
@@ -144,22 +144,25 @@ impl AttackSpawner {
         let attack_funnel = self.attack_funnel_actor.clone();
         let pool = self.dbpool.clone();
 
-        let planned_attack = join_all(futures)
-            .and_then(move |hobos| {
-                let hobos = hobos.into_iter().map(|h| h.0).collect();
-                let db: DB = (&pool).into();
-
-                let pa = PlannedAttack {
-                    origin_village: None,
-                    destination_village: db.village(destination).unwrap(),
-                    hobos: hobos,
-                    fixed_travel_time_s,
-                    subject_to_visitor_queue_limit,
-                };
-                attack_funnel.send(pa)
-            })
-            .map_err(|e| eprintln!("Attack spawn failed: {:?}", e));
-        Arbiter::spawn(planned_attack);
+        let planned_attack = async move {
+            let hobos = join_all(futures).await;
+            if let Some(Err(e)) = hobos.iter().find(|r| r.is_err()) {
+                eprintln!("Attack spawn failed: {:?}", e);
+            }
+            let hobos = hobos.into_iter().map(|h| h.unwrap().0).collect();
+            let db: DB = (&pool).into();
+            let pa = PlannedAttack {
+                origin_village: None,
+                destination_village: db.village(destination).unwrap(),
+                hobos: hobos,
+                fixed_travel_time_s,
+                subject_to_visitor_queue_limit,
+            };
+            if let Err(e) = attack_funnel.send(pa).await {
+                eprintln!("Attack spawn failed: {:?}", e);
+            }
+        };
+        Arbiter::current().spawn(planned_attack);
     }
 
     fn unit_color<R>(rng: &mut R, hobo_color: HoboType) -> UnitColor

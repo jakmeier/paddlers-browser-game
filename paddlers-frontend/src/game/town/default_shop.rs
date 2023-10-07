@@ -3,7 +3,7 @@ use crate::gui::{gui_components::*, menu::entity_details::*, ui_state::Now, util
 use crate::gui::{input::Grabbable, sprites::WithSprite};
 use crate::prelude::*;
 use paddle::DisplayArea;
-use paddle::*;
+use paddle::{NutsCheck, Rectangle, Vector};
 use paddlers_shared_lib::api::shop::*;
 use paddlers_shared_lib::prelude::*;
 use specs::prelude::*;

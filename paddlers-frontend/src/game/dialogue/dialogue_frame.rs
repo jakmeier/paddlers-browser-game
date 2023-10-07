@@ -3,14 +3,25 @@ use crate::game::{game_event_manager::game_event, Game};
 use crate::gui::menu::{LEAVES_BORDER_H, LEAVES_BORDER_W};
 use crate::gui::shapes;
 use crate::gui::{
-    decoration::draw_leaf_border, gui_components::*, sprites::*, ui_state::Now,
-    utils::colors::LIGHT_BLUE, utils::*, z::*,
+    decoration::draw_leaf_border,
+    gui_components::{
+        draw_table, ClickOutput, InteractiveTableArea, TableRow, TableTextProvider,
+        TableVerticalAlignment, TextColor, UiBox, UiElement,
+    },
+    sprites::*,
+    ui_state::Now,
+    utils::colors::LIGHT_BLUE,
+    utils::*,
+    z::*,
 };
 use crate::prelude::*;
 use chrono::NaiveDateTime;
 use paddle::quicksilver_compat::Color;
 use paddle::Frame;
-use paddle::*;
+use paddle::{
+    DisplayArea, FitStrategy, FrameHandle, NutsCheck, PointerEvent, PointerEventType,
+    PointerTracker, Rectangle, ShapeDesc, Transform, Vector,
+};
 use quicksilver_compat::Shape;
 use specs::WorldExt;
 

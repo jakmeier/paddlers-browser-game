@@ -81,22 +81,32 @@ impl Handler<StoryWorkerMessage> for StoryWorker {
                     let fixed_travel_time_s = attack_def.fixed_travel_time_s;
 
                     let attack_spawner = self.attack_spawner.clone();
-                    let future = self
-                        .db_actor
-                        .send(village_lookup)
-                        .and_then(move |PlayerHome(destination)| {
-                            let origin = destination;
-                            let msg = SendAnonymousAttack {
-                                destination,
-                                origin,
-                                visitors,
-                                fixed_travel_time_s,
-                                subject_to_visitor_queue_limit: false,
-                            };
-                            attack_spawner.send(msg)
-                        })
-                        .map_err(|e| eprintln!("Attack spawn failed: {:?}", e));
-                    Arbiter::spawn(future);
+                    let db_actor = self.db_actor.clone();
+                    let future = async move {
+                        let player_home = db_actor.send(village_lookup).await;
+
+                        match player_home {
+                            Ok(PlayerHome(destination)) => {
+                                let origin = destination;
+                                let msg = SendAnonymousAttack {
+                                    destination,
+                                    origin,
+                                    visitors,
+                                    fixed_travel_time_s,
+                                    subject_to_visitor_queue_limit: false,
+                                };
+                                let result = attack_spawner.send(msg).await;
+
+                                if let Err(e) = result {
+                                    eprintln!("Attack spawn failed: {e:?}");
+                                }
+                            }
+                            Err(e) => {
+                                eprintln!("Player home not found: {e:?}");
+                            }
+                        }
+                    };
+                    Arbiter::current().spawn(future);
                 }
                 paddlers_shared_lib::story::story_action::StoryAction::AddMana(mana) => {
                     self.db_actor

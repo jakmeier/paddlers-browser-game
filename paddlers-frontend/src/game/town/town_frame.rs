@@ -54,7 +54,7 @@ impl<'a, 'b> Frame for TownFrame<'a, 'b> {
             let town = state.town_context.town_mut();
             let water_shader = &state.shaders.water;
             window.update_uniform(
-                water_shader.render_pipeline(),
+                water_shader.paint_render_pipeline(),
                 "Time",
                 &UniformValue::F32((timestamp / 1000.0) as f32),
             );

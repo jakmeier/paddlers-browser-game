@@ -3,7 +3,12 @@ use crate::net::NetMsg;
 use crate::prelude::*;
 use crate::{
     game::game_event_manager::game_event,
-    gui::{gui_components::*, sprites::*, ui_state::Now, utils::*},
+    gui::{
+        gui_components::{ClickOutput, InteractiveTableArea, TableTextProvider, UiBox, UiElement},
+        sprites::*,
+        ui_state::Now,
+        utils::*,
+    },
 };
 use crate::{game::toplevel::Signal, gui::decoration::*};
 use paddle::{DisplayArea, NutsCheck};

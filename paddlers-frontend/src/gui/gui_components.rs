@@ -9,7 +9,7 @@ pub use resources_component::*;
 use crate::game::game_event_manager::GameEvent;
 use crate::gui::{sprites::*, utils::*, z::*};
 use paddle::quicksilver_compat::*;
-use paddle::*;
+use paddle::{DisplayArea, Rectangle, TextPool, Transform, Vector};
 use paddle::{FitStrategy, NutsCheck};
 use paddlers_shared_lib::prelude::*;
 use paddlers_shared_lib::{api::shop::Price, civilization::CivilizationPerk};

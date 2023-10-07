@@ -3,7 +3,7 @@ use crate::game::{
     town_resources::TownResources, Game,
 };
 use crate::gui::{
-    gui_components::{ResourcesComponent, TableTextProvider},
+    gui_components::{ResourcesComponent, TableTextProvider, UiElement},
     input::{left_click::TownMenuLeftClickSystem, MouseState},
     menu::*,
     ui_state::UiState,
@@ -11,7 +11,10 @@ use crate::gui::{
 };
 use crate::prelude::*;
 use chrono::NaiveDateTime;
-use paddle::*;
+use paddle::{
+    nuts, DisplayArea, ErrorMessage, Frame, NutsCheck, PointerEvent, PointerEventType,
+    PointerTracker, Rectangle, Vector,
+};
 use specs::prelude::*;
 
 use super::entity_details::*;
