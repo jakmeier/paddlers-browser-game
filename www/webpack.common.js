@@ -1,5 +1,4 @@
 const CopyWebpackPlugin = require("copy-webpack-plugin");
-const PaddleWebpackPlugin = require("../paddle/paddle-webpack-plugin");
 const path = require('path');
 
 module.exports = {
@@ -32,6 +31,9 @@ module.exports = {
                 from: './index.html'
             }]
         })),
-        new PaddleWebpackPlugin(),
-    ]
+    ],
+    experiments: {
+        asyncWebAssembly: true,
+        topLevelAwait: true,
+    },
 };

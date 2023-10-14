@@ -1,5 +1,5 @@
 // import * as wasm from "../paddlers-frontend/pkg/paddlers_frontend_bg.js";
-import("../paddlers-frontend/pkg/paddlers_frontend_bg.js").then(
+import("../paddlers-frontend/pkg/paddlers_frontend.js").then(
     wasm => {
 
         window.keycloak = Keycloak('js/keycloak/player.json');
