@@ -84,7 +84,7 @@ I also released a few videos about Paddlers on the [Paddlers YouTube channel](ht
 ## Compiling and running the project 
 
 To build and run the complete project locally with all servers, you can use docker. 
-If everything is set up properly (by me), a simple `make` in the root directory of the repository should give you a locally running game server hosted at `localhost:80`.
+If everything is set up properly (by me), a simple `make` in the root directory of the repository should give you a locally running game server hosted at `localhost:8123`.
 It will take some time for the first compilation (~30 minutes) but later builds should be much faster.
 
 Local builds without docker are also possible using a recent nightly Rust and [cargo web](https://github.com/koute/cargo-web) for the frontend.

@@ -7,9 +7,9 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=password
-      - POSTGRES_PORT=15432
+      - POSTGRES_PORT=55432
     ports:
-      - 15432:5432
+      - 55432:5432
 # 
   game-master:
     image: jakmeier/paddlers-local:game-master-snapshot
@@ -20,9 +20,9 @@ services:
     environment:
       - RUST_BACKTRACE=1
       - DATABASE_URL=postgresql://postgres:password@db:5432
-      - RESET_DB=1
-      - DATABASE_INIT=1
-      - INSERT_TEST_DATA=1
+      # - RESET_DB=1
+      # - DATABASE_INIT=1
+      # - INSERT_TEST_DATA=1
       - RUST_LOG=actix_web=debug
 #
   db-interface:
@@ -38,10 +38,10 @@ services:
   frontend:
     image: jakmeier/paddlers-local:frontend-snapshot
     ports:
-      - 80:80
+      - 8123:8123
 # 
   keycloak-db:
-      image: postgres:latest
+      image: postgres:15
       environment:
         POSTGRES_DB: keycloak
         POSTGRES_USER: keycloak
@@ -56,8 +56,12 @@ services:
       DB_USER: keycloak
       DB_SCHEMA: public
       DB_PASSWORD: password
-      KEYCLOAK_USER: admin
-      KEYCLOAK_PASSWORD: Pa55w0rd
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: Pa55w0rd
+      KC_HOSTNAME_PATH: /auth
+      KC_HOSTNAME_URL: http://localhost:8123/auth/
+      KC_HTTP_RELATIVE_PATH: /auth
+      KC_PROXY: edge
     ports:
       - 10002:8080
     depends_on:

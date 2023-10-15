@@ -2,6 +2,7 @@ use std::future::{ready, Ready};
 
 use actix_web::dev::Payload;
 use actix_web::error::{ErrorBadRequest, ErrorUnauthorized};
+use actix_web::web::Data;
 use actix_web::{Error, FromRequest, HttpRequest};
 
 use crate::db::DB;
@@ -20,7 +21,7 @@ impl FromRequest for Authentication {
 
     fn from_request(req: &HttpRequest, _: &mut Payload) -> Self::Future {
         fn authenticate(req: &HttpRequest) -> Result<Authentication, Error> {
-            let config: &Config = req.app_data::<Config>().expect("Need config");
+            let config: &Config = req.app_data::<Data<Config>>().expect("Need config");
             match req.headers().get(actix_web::http::header::AUTHORIZATION) {
                 Some(auth_header) => match auth_header.to_str() {
                     Ok(token) => match PadlUser::from_token(token, &config) {

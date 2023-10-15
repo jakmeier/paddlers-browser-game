@@ -49,7 +49,7 @@ fn main() {
     let cors = rocket_cors::CorsOptions {
         allowed_origins,
         #[cfg(feature = "local")]
-        allowed_methods: vec![Method::Post, Method::Get]
+        allowed_methods: vec![Method::Post, Method::Get, Method::Options]
             .into_iter()
             .map(From::from)
             .collect(),

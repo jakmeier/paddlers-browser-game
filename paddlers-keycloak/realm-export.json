@@ -493,10 +493,12 @@
       "clientAuthenticatorType": "client-secret",
       "secret": "**********",
       "redirectUris": [
-        "http://localhost/*"
+        "http://localhost/*",
+        "http://localhost:8123/*"
       ],
       "webOrigins": [
         "http://localhost",
+        "http://localhost:8123",
         "http://localhost:65432/graphql"
       ],
       "notBefore": 0,

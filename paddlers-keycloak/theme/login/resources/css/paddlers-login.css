@@ -15,8 +15,9 @@ div.kc-logo-text {
     color: #c8d0db;
 }
 
-a, #kc-locale-dropdown a {
-    color: #4099e5;
+a {
+    color: #c8d0db;
+    font-weight: bold;
 }
 
 body {
@@ -34,6 +35,7 @@ body {
 
 #kc-info-wrapper {
     font-size: 18px;
+    background-color: unset;
 }
 
 #kc-locale-dropdown {
@@ -68,4 +70,8 @@ body {
 
 #kc-locale ul {
     padding: 0;
+}
+
+#kc-registration a {
+    text-decoration-line: underline;
 }

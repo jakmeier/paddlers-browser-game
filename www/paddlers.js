@@ -1,33 +1,35 @@
-// import * as wasm from "../paddlers-frontend/pkg/paddlers_frontend_bg.js";
-import("../paddlers-frontend/pkg/paddlers_frontend.js").then(
-    wasm => {
+import Keycloak from 'keycloak-js';
+import { main, start_network_thread } from "../paddlers-frontend/pkg/paddlers_frontend.js";
 
-        window.keycloak = Keycloak('js/keycloak/player.json');
+await init_kc();
 
-        window.keycloak.init({
+async function init_kc() {
+    window.keycloak = new Keycloak('js/keycloak/player.json');
+
+    try {
+        await window.keycloak.init({
             onLoad: 'login-required'
-        })
-            .success(() => {
-                if (window.keycloak.tokenParsed && window.keycloak.tokenParsed.locale && window.history.replaceState) {
-                    const lang = window.keycloak.tokenParsed.locale;
-                    const url = new URL(window.location.href);
-                    if (!url.searchParams.has("lang")) {
-                        url.searchParams.set("lang", lang);
-                        window.history.replaceState(history.state, "Paddlers", url);
-                    }
-                }
-                wasm.main();
-                wasm.start_network_thread();
-            })
-            .error(function (errorData) {
-                console.error("Login Failed: ", errorData);
-            });
-        window.keycloak.onTokenExpired = () => {
-            window.keycloak.updateToken(300)
-                .success(() => { })
-                .error(() => {
-                    console.error('User token refresh failed')
-                });
+        });
+        if (window.keycloak.tokenParsed && window.keycloak.tokenParsed.locale && window.history.replaceState) {
+            const lang = window.keycloak.tokenParsed.locale;
+            const url = new URL(window.location.href);
+            if (!url.searchParams.has("lang")) {
+                url.searchParams.set("lang", lang);
+                window.history.replaceState(history.state, "Paddlers", url);
+            }
         }
+        main();
+        start_network_thread();
+    } catch (errorData) {
+        console.error("Login Failed: ", errorData);
+    };
+
+
+    window.keycloak.onTokenExpired = () => {
+        window.keycloak.updateToken(300)
+            .success(() => { })
+            .error(() => {
+                console.error('User token refresh failed')
+            });
     }
-)
+}

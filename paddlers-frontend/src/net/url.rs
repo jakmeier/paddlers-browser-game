@@ -3,19 +3,23 @@ use paddle::JsError;
 use paddlers_shared_lib::prelude::*;
 
 pub fn graphql_url() -> PadlResult<String> {
-    let domain = hostname()?;
-    match domain.as_str() {
-        "localhost" => Ok(format!("http://{}/graphql/", &domain)),
-        "10.42.0.1" => Ok(format!("http://{}/graphql/", &domain)),
-        _ => Ok(format!("https://{}/graphql/", &domain)),
+    // host includes port, hostname does not
+    let hostname = hostname()?;
+    let host = host()?;
+    match hostname.as_str() {
+        "localhost" => Ok(format!("http://{}/graphql/", &host)),
+        "10.42.0.1" => Ok(format!("http://{}/graphql/", &host)),
+        _ => Ok(format!("https://{}/graphql/", &host)),
     }
 }
 pub fn game_master_url() -> PadlResult<String> {
-    let domain = hostname()?;
-    match domain.as_str() {
-        "localhost" => Ok(format!("http://{}/api/", &domain)),
-        "10.42.0.1" => Ok(format!("http://{}/api/", &domain)),
-        _ => Ok(format!("https://{}/api/", &domain)),
+    // host includes port, hostname does not
+    let hostname = hostname()?;
+    let host = host()?;
+    match hostname.as_str() {
+        "localhost" => Ok(format!("http://{}/api/", &host)),
+        "10.42.0.1" => Ok(format!("http://{}/api/", &host)),
+        _ => Ok(format!("https://{}/api/", &host)),
     }
 }
 
@@ -32,6 +36,15 @@ fn hostname() -> PadlResult<String> {
         .unwrap()
         .location()
         .hostname()
+        .map_err(JsError::from_js_value)
+        .map_err(PadlError::from)
+}
+
+fn host() -> PadlResult<String> {
+    web_sys::window()
+        .unwrap()
+        .location()
+        .host()
         .map_err(JsError::from_js_value)
         .map_err(PadlError::from)
 }
