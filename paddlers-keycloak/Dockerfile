@@ -1,7 +1,7 @@
-FROM jboss/keycloak:7.0.0 as KeyCloak
-# Import configuration
-COPY ./paddlers-keycloak/realm-export.json /opt/jboss/keycloak/
-COPY ./paddlers-keycloak/standalone.xml /opt/jboss/keycloak/standalone/configuration/standalone.xml
-# Load custom theme
-COPY ./paddlers-keycloak/theme /opt/jboss/keycloak/themes/paddlers
-CMD ["-b", "0.0.0.0", "-Dkeycloak.import=/opt/jboss/keycloak/realm-export.json"]
+FROM quay.io/keycloak/keycloak:22.0 as KeyCloak
+
+COPY ./paddlers-keycloak/theme /opt/keycloak/themes/paddlers
+RUN /opt/keycloak/bin/kc.sh build --db=postgres
+COPY ./paddlers-keycloak/realm-export.json /opt/keycloak/import/
+RUN /opt/keycloak/bin/kc.sh import --file /opt/keycloak/import/realm-export.json
+ENTRYPOINT ["/opt/keycloak/bin/kc.sh", "start", "--proxy", "edge", "--hostname-strict", "true", "--hostname-path", "/auth"]
