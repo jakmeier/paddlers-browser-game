@@ -1,16 +1,31 @@
 use crate::db::DB;
-use diesel::QueryResult;
+use diesel::result::DatabaseErrorKind;
 use paddlers_shared_lib::prelude::*;
+use std::fmt;
 
 impl DB {
-    pub(super) fn new_player(&self, display_name: String, uuid: uuid::Uuid) -> QueryResult<Player> {
+    pub(super) fn new_player(
+        &self,
+        display_name: String,
+        uuid: uuid::Uuid,
+    ) -> Result<Player, PlayerCreationError> {
         let player = NewPlayer {
             display_name: display_name,
             karma: 0,
             uuid,
         };
-        let player = self.insert_player(&player)?;
-        let village = self.new_village(player.key());
+        let player = self.insert_player(&player).map_err(|err| {
+            if let diesel::result::Error::DatabaseError(DatabaseErrorKind::UniqueViolation, _info) =
+                err
+            {
+                PlayerCreationError::AlreadyExists
+            } else {
+                PlayerCreationError::DieselError(err)
+            }
+        })?;
+        let village = self
+            .new_village(player.key())
+            .map_err(PlayerCreationError::Other)?;
 
         self.insert_hero(village.key());
         Ok(player)
@@ -62,10 +77,10 @@ impl DB {
         worker
     }
 
-    fn new_village(&self, pid: PlayerKey) -> Village {
-        let village = self.add_village(pid).expect("Village insertion failed");
+    fn new_village(&self, pid: PlayerKey) -> Result<Village, &'static str> {
+        let village = self.add_village(pid)?;
         self.insert_initial_resources(village.key());
-        village
+        Ok(village)
     }
 
     fn insert_initial_resources(&self, vid: VillageKey) {
@@ -88,3 +103,24 @@ impl DB {
             .expect("Adding dev resources");
     }
 }
+
+#[derive(Debug)]
+pub(super) enum PlayerCreationError {
+    AlreadyExists,
+    DieselError(diesel::result::Error),
+    Other(&'static str),
+}
+
+impl fmt::Display for PlayerCreationError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            PlayerCreationError::AlreadyExists => {
+                write!(f, "Player already exists in the database.")
+            }
+            PlayerCreationError::DieselError(e) => write!(f, "{e}"),
+            PlayerCreationError::Other(msg) => write!(f, "{msg}"),
+        }
+    }
+}
+
+impl std::error::Error for PlayerCreationError {}

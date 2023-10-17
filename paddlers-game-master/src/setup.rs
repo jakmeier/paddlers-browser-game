@@ -8,8 +8,8 @@ mod new_player;
 
 use crate::buildings::BuildingFactory;
 use crate::db::DB;
-use diesel::result::{DatabaseErrorKind, Error};
 use dotenv::dotenv;
+use new_player::PlayerCreationError;
 use paddlers_shared_lib::test_data::*;
 use paddlers_shared_lib::{
     api::PlayerInitData, prelude::*, sql_db::run_db_migrations, story::story_state::StoryState,
@@ -22,12 +22,12 @@ pub(crate) fn initialize_new_player_account(
     info: &PlayerInitData,
 ) -> Result<(), String> {
     let result = db.new_player(info.display_name.clone(), uuid);
-    if let Err(Error::DatabaseError(DatabaseErrorKind::UniqueViolation, _info)) = result {
+    if let Err(PlayerCreationError::AlreadyExists) = result {
         println!("Warning: Tried to create player account that already exists");
         Ok(())
     } else {
         result
-            .map_err(|_e| "Player creation failed".to_owned())
+            .map_err(|e| format!("Player creation failed: {e}"))
             .map(|_p| ())
     }
 }
