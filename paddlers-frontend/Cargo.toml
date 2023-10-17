@@ -20,8 +20,7 @@ paddle = { path = "../paddle", features = ["const_fn"] }
 specs = { version = "0.16.1", default-features = false } # parallel not supported in wasm
 shred = { version = "0.10.2", default-features = false }
 specs-derive = "0.4"
-# graphql_client = "0.9"
-graphql_client = { git="https://github.com/graphql-rust/graphql-client", rev = "da80b9af9a3d6787c8df8cd1201a3dbd3edcd078" }
+graphql_client = "0.13"
 serde = { version = "1.0", features = ["derive"]}
 serde_json = "1.0"
 ron = { version = "0.6" }
