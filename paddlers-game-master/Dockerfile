@@ -20,7 +20,7 @@ RUN cargo build --manifest-path=paddlers-game-master/Cargo.toml --release
 RUN cargo build --manifest-path=specification-loader/Cargo.toml --release
 
 
-FROM buildpack-deps:stretch as GameMaster
+FROM buildpack-deps:bullseye as GameMaster
 WORKDIR /app
 COPY --from=GameMasterBuilder ./paddlers-game-master/target/release/paddlers-game-master ./paddlers-game-master
 COPY --from=GameMasterBuilder ./specification-loader/target/release/specification-loader ./specification-loader

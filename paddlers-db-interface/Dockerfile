@@ -15,7 +15,7 @@ COPY ./migrations ./migrations
 COPY ./paddlers-db-interface/src ./paddlers-db-interface/src
 RUN cargo build --manifest-path=paddlers-db-interface/Cargo.toml --release
 
-FROM buildpack-deps:stretch as DbInterface
+FROM buildpack-deps:bullseye as DbInterface
 WORKDIR /app
 COPY --from=DbInterfaceBuilder ./paddlers-db-interface/target/release/paddlers-db-interface ./paddlers-db-interface
 COPY ./diesel.toml ./diesel.toml

@@ -32,7 +32,7 @@ RUN cargo build --manifest-path=paddlers-game-master/Cargo.toml --features=local
 RUN cargo build --manifest-path=specification-loader/Cargo.toml
 
 
-FROM buildpack-deps:stretch as GameMaster
+FROM buildpack-deps:bullseye as GameMaster
 WORKDIR /app
 COPY --from=GameMasterBuilder ./paddlers-game-master/target/debug/paddlers-game-master ./paddlers-game-master
 COPY --from=GameMasterBuilder ./specification-loader/target/debug/specification-loader ./specification-loader
