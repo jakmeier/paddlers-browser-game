@@ -9,7 +9,7 @@ COPY ./paddlers-frontend/Cargo.toml ./paddlers-frontend/
 # For releases, these should be published to crates.io
 # COPY ./div-rs ./div-rs
 # COPY ./nuts ./nuts
-COPY ./paddle ./paddle
+# COPY ./paddle ./paddle
 COPY ./Cargo.lock ./paddlers-frontend/
 # Build
 RUN cd paddlers-frontend; wasm-pack build

@@ -64,6 +64,10 @@ services:
       DB_PASSWORD # Set this in env
       KEYCLOAK_USER: admin
       KEYCLOAK_PASSWORD # Set this in env
+      KC_HOSTNAME_PATH: /auth
+      KC_HOSTNAME_RELATIVE_PATH: /auth
+      KC_PROXY: edge
+      KC_HOSTNAME_ADMIN_URL: https://demo.paddlers.ch/auth/
     ports:
       - 10002:8080
     depends_on:

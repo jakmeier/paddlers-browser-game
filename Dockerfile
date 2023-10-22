@@ -10,6 +10,7 @@ chmod +x rustup-init; \
 ./rustup-init -y --no-modify-path --default-toolchain nightly-2023-10-07; \
 rm rustup-init; \
 chmod -R a+w $RUSTUP_HOME $CARGO_HOME; \
+rustup override set nightly-2023-10-07; \
 rustup --version; \
 cargo --version; \
 rustc --version;
