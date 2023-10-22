@@ -7,7 +7,7 @@
         condition: (),
         reward: (
             resources: {
-                Feathers: 30,
+                FEATHERS: 30,
             },
         )
     ),
@@ -15,13 +15,13 @@
         quest_key: "create-forest",
         condition: (
             buildings: {
-                Tree: 3,
+                TREE: 3,
             }
         ),
         reward: (
             resources: {
-                Feathers: 20,
-                Logs: 1,
+                FEATHERS: 20,
+                LOGS: 1,
             },
         )
     ),
@@ -29,7 +29,7 @@
         quest_key: "build-bundling-station",
         condition: (
             buildings: {
-                BundlingStation: 1,
+                BUNDLING_STATION: 1,
             }
         ),
         reward: (
@@ -39,11 +39,11 @@
         quest_key: "use-bundling-station",
         condition: (
             workers: {
-                GatherSticks: 1,
+                GATHER_STICKS: 1,
             }
         ),
         reward: (
-            resources: { Sticks: 5 },
+            resources: { STICKS: 5 },
         )
     ),
     /* PATH WITH INVITATION PERK */
@@ -52,7 +52,7 @@
         karma_condition: 8,
         condition: (),
         reward: (
-            resources: { Logs: 5 },
+            resources: { LOGS: 5 },
         )
     ),
     (
@@ -60,17 +60,17 @@
         karma_condition: 18,
         condition: (),
         reward: (
-            resources: { Sticks: 5, Feathers: 5, },
+            resources: { STICKS: 5, FEATHERS: 5, },
         )
     ),
     /* PATH WITH NEST PERK */
     (
         quest_key: "build-nest",
         condition: (
-            buildings: { SingleNest: 1 }
+            buildings: { SINGLE_NEST: 1 }
         ),
         reward: (
-            resources: { Sticks: 10, Feathers: 5 },
+            resources: { STICKS: 10, FEATHERS: 5 },
         )
     ),
     (
@@ -78,7 +78,7 @@
         pop_condition: 5,
         condition: (),
         reward: (
-            resources: { Logs: 5 },
+            resources: { LOGS: 5 },
         )
     ),
 ]
