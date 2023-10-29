@@ -73,7 +73,19 @@ pub fn draw_image(
     let img = sprites.index(i);
     let unfitted_area = Rectangle::new(max_area.pos, img.natural_size());
     let area = unfitted_area.fit_into_ex(max_area, fit_strat, false);
-    window.draw_ex(&area, &img, texture_transform, z);
+
+    // To apply the texture properly, we hav to move around the plane before and after
+    let half_size = img.natural_size() / 2.0;
+    let left_pos = area.pos;
+    let left_transform = Transform::translate(left_pos + half_size);
+    let right_transform = Transform::translate(-left_pos - half_size);
+
+    window.draw_ex(
+        &area,
+        &img,
+        left_transform * texture_transform * right_transform,
+        z,
+    );
 }
 
 pub fn draw_image_collection(
@@ -100,10 +112,6 @@ pub fn draw_image_collection(
             z + img.z_offset,
         );
     }
-}
-
-pub fn horizontal_flip() -> Transform {
-    Transform::from_array([[-1f32, 0f32, 0f32], [0f32, 1f32, 0f32], [0f32, 0f32, 1f32]])
 }
 
 pub fn h_line(start: impl Into<Vector>, len: f32, thickness: f32) -> Rectangle {

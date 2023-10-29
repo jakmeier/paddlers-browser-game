@@ -201,7 +201,7 @@ impl ISpriteIndex for SpriteSet {
             SpriteSet::Animated(i) => SpriteIndex::Animated(*i, *d, 0),
         };
         let t = match d {
-            Direction::East => horizontal_flip(),
+            Direction::East => Transform::horizontal_flip(),
             _ => Transform::IDENTITY,
         };
         (i, t)
@@ -213,7 +213,7 @@ impl ISpriteIndex for SpriteSet {
             SpriteSet::Animated(i) => SpriteIndex::Animated(*i, *d, animation_frame),
         };
         let t = match d {
-            Direction::East => horizontal_flip(),
+            Direction::East => Transform::horizontal_flip(),
             _ => Transform::IDENTITY,
         };
         (i, t)
