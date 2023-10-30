@@ -13,7 +13,7 @@ COPY ./paddlers-frontend/Cargo.toml ./paddlers-frontend/
 COPY ./Cargo.lock ./paddlers-frontend/
 # Build
 RUN cd paddlers-frontend; wasm-pack build
-RUN cd www; npm run release
+RUN cd www; rm dist/*; npm run release
 
 # A lightweight image to host application
 FROM nginx:alpine as WebServer
