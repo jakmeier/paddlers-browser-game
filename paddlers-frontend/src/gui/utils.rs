@@ -75,7 +75,7 @@ pub fn draw_image(
     let area = unfitted_area.fit_into_ex(max_area, fit_strat, false);
 
     // To apply the texture properly, we hav to move around the plane before and after
-    let half_size = img.natural_size() / 2.0;
+    let half_size = area.size / 2.0;
     let left_pos = area.pos;
     let left_transform = Transform::translate(left_pos + half_size);
     let right_transform = Transform::translate(-left_pos - half_size);
